@@ -1,11 +1,13 @@
 ﻿using MinorShift.Emuera.GameProc;
 using MinorShift.Emuera.GameProc.Function;
+using MinorShift.Emuera.GameView;
 using MinorShift.Emuera.Runtime.Script;
 using MinorShift.Emuera.Runtime.Script.Parser;
 using MinorShift.Emuera.Runtime.Script.Statements;
 using MinorShift.Emuera.Runtime.Script.Statements.Variable;
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
 using System.Data;
 using System.Drawing;
 using System.IO;
@@ -275,8 +277,16 @@ namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 				//Directory.CreateDirectory("Plugins");
 			}
 			string[] plugins = Directory.GetFiles(Path.Combine(Program.ExeDir, "Plugins"), "*.dll");
-			bool pluginsAware = File.Exists(Program.ExeDir + "pluginsAware.txt");
+			//bool pluginsAware = File.Exists(Program.ExeDir + "pluginsAware.txt");
 			ClearMethods();
+
+			//プラグインがある
+			if (plugins.Length > 0)
+				GlobalStatic.ExistPlugin = true;
+			else
+				GlobalStatic.ExistPlugin = false;
+
+
 			foreach (var pluginPath in plugins)
 			{
 				Assembly DLL = Assembly.LoadFrom(pluginPath);
@@ -286,10 +296,12 @@ namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 					//TODO: throw warning
 					continue;
 				}
+				/*
 				if (!pluginsAware)
 				{
 					throw new ExeEE("This game comes prepackaged with plugins. This is a security check to make sure you're aware of that: Never run your EE under Administrator rights, Always get your games and Plugins from verified sources and If you're maintainer of the build and it should NOT come with plugins, Investigate immediately. If everything is okay, create file pluginsAware.txt at the root of the game distributive and restart");
 				}
+				*/
 
 				PluginManifestAbstract manifest = (PluginManifestAbstract)Activator.CreateInstance(manifestType);
 				if (manifest == null)

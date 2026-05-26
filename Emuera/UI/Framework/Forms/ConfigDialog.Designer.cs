@@ -148,6 +148,7 @@
 			checkBox34 = new System.Windows.Forms.CheckBox();
 			_useNewRandom = new System.Windows.Forms.CheckBox();
 			_useVAR = new System.Windows.Forms.CheckBox();
+			checkBox36 = new System.Windows.Forms.CheckBox();
 			label25 = new System.Windows.Forms.Label();
 			textBox3 = new System.Windows.Forms.TextBox();
 			label35 = new System.Windows.Forms.Label();
@@ -821,31 +822,23 @@
 			// 
 			// colorBoxBG
 			// 
-			colorBoxBG.ButtonText = "背景色";
 			resources.ApplyResources(colorBoxBG, "colorBoxBG");
 			colorBoxBG.Name = "colorBoxBG";
-			colorBoxBG.SelectingColor = System.Drawing.Color.Transparent;
 			// 
 			// colorBoxFG
 			// 
-			colorBoxFG.ButtonText = "文字色";
 			resources.ApplyResources(colorBoxFG, "colorBoxFG");
 			colorBoxFG.Name = "colorBoxFG";
-			colorBoxFG.SelectingColor = System.Drawing.Color.Transparent;
 			// 
 			// colorBoxSelecting
 			// 
-			colorBoxSelecting.ButtonText = "選択中文字色";
 			resources.ApplyResources(colorBoxSelecting, "colorBoxSelecting");
 			colorBoxSelecting.Name = "colorBoxSelecting";
-			colorBoxSelecting.SelectingColor = System.Drawing.Color.Transparent;
 			// 
 			// colorBoxBacklog
 			// 
-			colorBoxBacklog.ButtonText = "履歴文字色";
 			resources.ApplyResources(colorBoxBacklog, "colorBoxBacklog");
 			colorBoxBacklog.Name = "colorBoxBacklog";
-			colorBoxBacklog.SelectingColor = System.Drawing.Color.Transparent;
 			// 
 			// flowLayoutPanel24
 			// 
@@ -1027,11 +1020,13 @@
 			flowLayoutPanel30.Controls.Add(checkBox34);
 			flowLayoutPanel30.Controls.Add(_useNewRandom);
 			flowLayoutPanel30.Controls.Add(_useVAR);
+			flowLayoutPanel30.Controls.Add(checkBox36);
 			flowLayoutPanel30.Controls.Add(label25);
 			flowLayoutPanel30.Controls.Add(textBox3);
 			flowLayoutPanel30.Controls.Add(label35);
 			flowLayoutPanel30.Controls.Add(textBox4);
 			flowLayoutPanel30.Name = "flowLayoutPanel30";
+			flowLayoutPanel30.Paint += flowLayoutPanel30_Paint;
 			// 
 			// label24
 			// 
@@ -1079,6 +1074,7 @@
 			resources.ApplyResources(checkBox34, "checkBox34");
 			checkBox34.Name = "checkBox34";
 			checkBox34.UseVisualStyleBackColor = true;
+			checkBox34.CheckedChanged += checkBox34_CheckedChanged;
 			// 
 			// _useNewRandom
 			// 
@@ -1093,6 +1089,13 @@
 			_useVAR.Name = "_useVAR";
 			_useVAR.UseVisualStyleBackColor = true;
 			_useVAR.CheckedChanged += _useVAR_CheckedChanged;
+			// 
+			// checkBox36
+			// 
+			resources.ApplyResources(checkBox36, "checkBox36");
+			checkBox36.Name = "checkBox36";
+			checkBox36.UseVisualStyleBackColor = true;
+			checkBox36.CheckedChanged += checkBox36_CheckedChanged;
 			// 
 			// label25
 			// 
@@ -1598,17 +1601,13 @@
 			// 
 			// rikaiColorBoxBG
 			// 
-			rikaiColorBoxBG.ButtonText = "Background Color";
 			resources.ApplyResources(rikaiColorBoxBG, "rikaiColorBoxBG");
 			rikaiColorBoxBG.Name = "rikaiColorBoxBG";
-			rikaiColorBoxBG.SelectingColor = System.Drawing.Color.Transparent;
 			// 
 			// rikaiColorBoxText
 			// 
-			rikaiColorBoxText.ButtonText = "Text Color";
 			resources.ApplyResources(rikaiColorBoxText, "rikaiColorBoxText");
 			rikaiColorBoxText.Name = "rikaiColorBoxText";
-			rikaiColorBoxText.SelectingColor = System.Drawing.Color.Transparent;
 			// 
 			// rikaiCheckBoxSeparateBoxes
 			// 
@@ -2005,5 +2004,6 @@
 		private System.Windows.Forms.Label label35;
 		private System.Windows.Forms.TextBox textBox4;
 		private System.Windows.Forms.CheckBox checkBox27;
+		private System.Windows.Forms.CheckBox checkBox36;
 	}
 }

@@ -87,7 +87,7 @@ static partial class Program
 
 		var result = rootCommand.Parse(args);
 
-		//実行ディレクトリが引数で与えられた場合t
+		//実行ディレクトリが引数で与えられた場合
 		var exeDir = result.GetValueForOption(exeDirOption);
 		if (exeDir != null)
 		{
@@ -154,13 +154,11 @@ static partial class Program
 		JSONConfig.Load();
 
 		//WMPも終了しておく
-		/*
 		FunctionIdentifier.bgm.close();
 		for (int i = 0; i < FunctionIdentifier.sound.Length; i++)
 		{
 			if (FunctionIdentifier.sound[i] != null) FunctionIdentifier.sound[i].close();
 		}
-		*/
 
 		#region EM_私家版_Emuera多言語化改造
 		Lang.LoadLanguageFiles();

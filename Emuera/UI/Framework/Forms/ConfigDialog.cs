@@ -406,6 +406,9 @@ namespace MinorShift.Emuera.Forms
 			setColorBox(colorBoxSelecting, ConfigCode.FocusColor);
 			setColorBox(colorBoxBacklog, ConfigCode.LogColor);
 
+			setCheckBox(checkBox36, ConfigCode.PluginAvailableWarn);
+
+
 
 			ConfigItem<TextDrawingMode> itemTDM = (ConfigItem<TextDrawingMode>)ConfigData.Instance.GetConfigItem(ConfigCode.TextDrawingMode);
 			switch (itemTDM.Value)
@@ -714,7 +717,7 @@ namespace MinorShift.Emuera.Forms
 			config.GetConfigItem(ConfigCode.ZipSaveData).SetValue(checkBox32.Checked);
 			#endregion
 			#region EM_私家版_多言語化改造
-			string language = comboBox7.SelectedIndex == 0? Lang.DefaultLanguage : comboBox7.SelectedItem as string;
+			string language = comboBox7.SelectedIndex == 0 ? Lang.DefaultLanguage : comboBox7.SelectedItem as string;
 			if (language != Config.EmueraLang)
 			{
 				config.GetConfigItem(ConfigCode.EmueraLang).SetValue(language);
@@ -751,6 +754,8 @@ namespace MinorShift.Emuera.Forms
 			config.GetConfigItem(ConfigCode.RikaiUseSeparateBoxes).SetValue(rikaiCheckBoxSeparateBoxes.Checked);
 
 			config.GetConfigItem(ConfigCode.Ctrl_Z_Enabled).SetValue(checkBox27.Checked);
+
+			config.GetConfigItem(ConfigCode.PluginAvailableWarn).SetValue(checkBox36.Checked);
 
 			config.SaveConfig();
 
@@ -1026,6 +1031,21 @@ namespace MinorShift.Emuera.Forms
 		private void _useVAR_CheckedChanged(object sender, EventArgs e)
 		{
 			JSONConfig.Data.UseScopedVariableInstruction = _useVAR.Checked;
+		}
+
+		private void checkBox36_CheckedChanged(object sender, EventArgs e)
+		{
+
+		}
+
+		private void flowLayoutPanel30_Paint(object sender, PaintEventArgs e)
+		{
+
+		}
+
+		private void checkBox34_CheckedChanged(object sender, EventArgs e)
+		{
+
 		}
 	}
 }

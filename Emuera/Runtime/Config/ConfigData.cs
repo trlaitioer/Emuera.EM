@@ -133,6 +133,9 @@ internal sealed class ConfigData
 		#region EE_行連結の改行コード置換
 		configArray.Add(new ConfigItem<string>(ConfigCode.ReplaceContinuationBR, "行連結の改行コードの置換文字列", "String of replacing new line code inside continuation", "\" \""));
 		#endregion
+		#region EE_CALLSHARP注意
+		configArray.Add(new ConfigItem<bool>(ConfigCode.PluginAvailableWarn, "外部プラグインが有効時に警告を表示する", "If available pllugins, Show warning", true));
+		#endregion
 		#region EM_私家版_LoadText＆SaveText機能拡張
 		configArray.Add(new ConfigItem<List<string>>(ConfigCode.ValidExtension, "LOADTEXTとSAVETEXTで使える拡張子", "Valid extensions for LOADTEXT and SAVETEXT", ["txt"]));
 		#endregion

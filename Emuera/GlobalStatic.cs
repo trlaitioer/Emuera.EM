@@ -49,6 +49,9 @@ internal static class GlobalStatic
 	#endregion
 
 	public static CtrlZ ctrlZ = new();
+	#region EE_CALLSHARP注意
+	public static bool ExistPlugin;
+	#endregion
 
 #if DEBUG
 	public static List<FunctionLabelLine> StackList = [];
