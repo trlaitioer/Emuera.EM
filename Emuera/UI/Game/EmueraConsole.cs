@@ -1819,6 +1819,12 @@ internal sealed partial class EmueraConsole : IDisposable
 				//}
 				//else
 				//{
+				if (window.ToolTip.OwnerDraw == false && window.ToolTip.InitialDelay == 0 && tooltip_duration == 0)
+				{
+					window.ToolTip.SetToolTip(window.MainPicBox, title);
+				}
+				else
+				{
 				System.Threading.SynchronizationContext context = System.Threading.SynchronizationContext.Current;
 						Task.Run(async () =>
 						{
@@ -1843,7 +1849,7 @@ internal sealed partial class EmueraConsole : IDisposable
 								}
 							}, null);
 						});
-				//}
+				}
 				//}
 				#endregion
 				tooltipUsed = true;
