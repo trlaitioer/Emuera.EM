@@ -1810,7 +1810,7 @@ internal sealed class ConstantData
 				}
 				if (!defined.Add(index))
 					ParserMediator.Warn(string.Format(trerror.VarKeyAreadyDefined.Text, index.ToString()), position, 1);
-				target.Add(tokens[1], index);
+				target.TryAdd(tokens[1], index);
 			}
 		}
 		catch
