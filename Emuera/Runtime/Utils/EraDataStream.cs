@@ -20,6 +20,7 @@ internal sealed class EraDataResult
 {
 	public EraDataState State = EraDataState.OK;
 	public string DataMes = "";
+	public long Version;
 }
 
 /// <summary>

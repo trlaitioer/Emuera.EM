@@ -1877,6 +1877,7 @@ internal sealed class VariableEvaluator : IDisposable
 		{
 			result.State = EraDataState.FILENOTFOUND;
 			result.DataMes = "----";
+			result.Version = 0;
 			return result;
 		}
 		FileStream fs = null;
@@ -1901,10 +1902,12 @@ internal sealed class VariableEvaluator : IDisposable
 				{
 					result.State = EraDataState.VIRSION_ERROR;
 					result.DataMes = trerror.DifferentVersion.Text;
+					result.Version = version;
 					return result;
 				}
 				result.State = EraDataState.OK;
 				result.DataMes = reader.ReadString();
+				result.Version = version;
 				return result;
 				//result.State = EraDataState.ETC_ERROR;
 				//result.DataMes = "セーブデータが壊れています";
@@ -1928,10 +1931,12 @@ internal sealed class VariableEvaluator : IDisposable
 			{
 				result.State = EraDataState.VIRSION_ERROR;
 				result.DataMes = trerror.DifferentVersion.Text;
+				result.Version = version;
 				return result;
 			}
 			result.State = EraDataState.OK;
 			result.DataMes = bReader.ReadString();
+			result.Version = version;
 			return result;
 		}
 		catch (FileEE fee)

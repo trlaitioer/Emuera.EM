@@ -2454,6 +2454,7 @@ internal static partial class FunctionMethodCreator
 				throw new CodeEE(string.Format(trerror.ArgIsTooLarge.Text, Name, 1, target));
 			EraDataResult result = exm.VEvaluator.CheckData((int)target, type);
 			exm.VEvaluator.RESULTS = result.DataMes;
+			exm.VEvaluator.RESULT_ARRAY[1] = result.Version;
 			return (long)result.State;
 		}
 	}
