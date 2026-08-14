@@ -10,6 +10,7 @@ using MinorShift.Emuera.UI.Game;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Text;
 using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 
 namespace MinorShift.Emuera.GameProc;
@@ -122,8 +123,8 @@ internal sealed partial class Process
 						exm.Console.PrintButton(str, bArg.ButtonWord.GetIntValue(exm));
 					else
 						exm.Console.PrintButton(str, bArg.ButtonWord.GetStrValue(exm));
+					break;
 				}
-				break;
 			case FunctionCode.PRINTBUTTONC://変数の内容
 			case FunctionCode.PRINTBUTTONLC:
 				{
@@ -140,8 +141,8 @@ internal sealed partial class Process
 						exm.Console.PrintButtonC(str, bArg.ButtonWord.GetIntValue(exm), isRight);
 					else
 						exm.Console.PrintButtonC(str, bArg.ButtonWord.GetStrValue(exm), isRight);
+					break;
 				}
-				break;
 			case FunctionCode.PRINTPLAIN:
 			case FunctionCode.PRINTPLAINFORM:
 				{
@@ -151,14 +152,16 @@ internal sealed partial class Process
 					exm.Console.UseSetColorStyle = true;
 					term = ((ExpressionArgument)func.Argument).Term;
 					exm.Console.PrintPlain(term.GetStrValue(exm));
-				}
-				break;
-			case FunctionCode.DRAWLINE://画面の左端から右端まで----と線を引く。
-				if (skipPrint)
 					break;
-				exm.Console.PrintBar();
-				exm.Console.NewLine();
-				break;
+				}
+			case FunctionCode.DRAWLINE://画面の左端から右端まで----と線を引く。
+				{
+					if (skipPrint)
+						break;
+					exm.Console.PrintBar();
+					exm.Console.NewLine();
+					break;
+				}
 			//case FunctionCode.CUSTOMDRAWLINE:
 			case FunctionCode.DRAWLINEFORM:
 				{
@@ -171,8 +174,8 @@ internal sealed partial class Process
 					//exm.Console.PrintBar();
 					exm.Console.NewLine();
 					//exm.Console.setStBar(Config.DrawLineString);
+					break;
 				}
-				break;
 			case FunctionCode.PRINT_ABL://能力。引数は登録番号
 			case FunctionCode.PRINT_TALENT://素質
 			case FunctionCode.PRINT_MARK://刻印
@@ -184,8 +187,8 @@ internal sealed partial class Process
 					long target = intExpArg.Term.GetIntValue(exm);
 					exm.Console.Print(vEvaluator.GetCharacterDataString(target, func.FunctionCode));
 					exm.Console.NewLine();
+					break;
 				}
-				break;
 			case FunctionCode.PRINT_PALAM://パラメータ
 				{
 					if (skipPrint)
@@ -207,14 +210,16 @@ internal sealed partial class Process
 					}
 					exm.Console.PrintFlush(false);
 					exm.Console.RefreshStrings(false);
-				}
-				break;
-			case FunctionCode.PRINT_ITEM://所持アイテム
-				if (skipPrint)
 					break;
-				exm.Console.Print(vEvaluator.GetHavingItemsString());
-				exm.Console.NewLine();
-				break;
+				}
+			case FunctionCode.PRINT_ITEM://所持アイテム
+				{
+					if (skipPrint)
+						break;
+					exm.Console.Print(vEvaluator.GetHavingItemsString());
+					exm.Console.NewLine();
+					break;
+				}
 			case FunctionCode.PRINT_SHOPITEM://ショップで売っているアイテム
 				{
 					if (skipPrint)
@@ -243,8 +248,8 @@ internal sealed partial class Process
 					}
 					exm.Console.PrintFlush(false);
 					exm.Console.RefreshStrings(false);
+					break;
 				}
-				break;
 			case FunctionCode.UPCHECK://パラメータの変動
 				vEvaluator.UpdateInUpcheck(exm.Console, skipPrint);
 				break;
@@ -253,8 +258,8 @@ internal sealed partial class Process
 					ExpressionArgument intExpArg = (ExpressionArgument)func.Argument;
 					long target = intExpArg.Term.GetIntValue(exm);
 					vEvaluator.CUpdateInUpcheck(exm.Console, target, skipPrint);
+					break;
 				}
-				break;
 			case FunctionCode.DELALLCHARA:
 				{
 					vEvaluator.DelAllCharacter();
@@ -274,8 +279,8 @@ internal sealed partial class Process
 								throw new CodeEE(string.Format(trerror.OoRPickupcharaArg.Text, (i + 1).ToString(), NoList[i].ToString()));
 					}
 					vEvaluator.PickUpChara(NoList);
+					break;
 				}
-				break;
 			case FunctionCode.ADDDEFCHARA:
 				{
 					//デバッグコマンドなら通す
@@ -301,16 +306,20 @@ internal sealed partial class Process
 				break;
 			#region EE_FORCE_QUIT系
 			case FunctionCode.QUIT_AND_RESTART:
-				Program.rebootFlag = true;
-				exm.Console.Quit();
-				break;
+				{
+					Program.rebootFlag = true;
+					exm.Console.Quit();
+					break;
+				}
 			case FunctionCode.FORCE_QUIT://ゲームを終了
 				exm.Console.ForceQuit();
 				break;
 			case FunctionCode.FORCE_QUIT_AND_RESTART:
-				Program.rebootFlag = true;
-				exm.Console.ForceQuit();
-				break;
+				{
+					Program.rebootFlag = true;
+					exm.Console.ForceQuit();
+					break;
+				}
 			#endregion
 
 			case FunctionCode.VARSIZE:
@@ -318,8 +327,8 @@ internal sealed partial class Process
 					SpVarsizeArgument versizeArg = (SpVarsizeArgument)func.Argument;
 					VariableToken varID = versizeArg.VariableID;
 					vEvaluator.VarSize(varID);
+					break;
 				}
-				break;
 			case FunctionCode.SAVEDATA:
 				{
 					SpSaveDataArgument spSavedataArg = (SpSaveDataArgument)func.Argument;
@@ -335,8 +344,8 @@ internal sealed partial class Process
 					{
 						console.PrintError(trerror.UnexpectedErrorInSavedata.Text);
 					}
+					break;
 				}
-				break;
 
 			case FunctionCode.POWER:
 				{
@@ -391,8 +400,8 @@ internal sealed partial class Process
 					date = date * 1000 + DateTime.Now.Millisecond;
 					vEvaluator.RESULT = date;//17桁。2京くらい。
 					vEvaluator.RESULTS = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+					break;
 				}
-				break;
 			case FunctionCode.SETCOLOR:
 				{
 					SpColorArgument colorArg = (SpColorArgument)func.Argument;
@@ -418,21 +427,21 @@ internal sealed partial class Process
 					}
 					Color c = Color.FromArgb((int)colorR, (int)colorG, (int)colorB);
 					exm.Console.SetStringStyle(c);
+					break;
 				}
-				break;
 			case FunctionCode.SETCOLORBYNAME:
 				{
 					string colorName = func.Argument.ConstStr;
 					Color c = Color.FromName(colorName);
 					if (c.A == 0)
 					{
-						if (str.Equals("transparent", StringComparison.OrdinalIgnoreCase))
+						if (colorName.Equals("transparent", StringComparison.OrdinalIgnoreCase))
 							throw new CodeEE(trerror.TransparentUnsupported.Text);
 						throw new CodeEE(string.Format(trerror.InvalidColorName.Text, colorName));
 					}
 					exm.Console.SetStringStyle(c);
+					break;
 				}
-				break;
 			case FunctionCode.SETBGCOLOR:
 				{
 					SpColorArgument colorArg = (SpColorArgument)func.Argument;
@@ -465,21 +474,21 @@ internal sealed partial class Process
 					}
 					Color c = Color.FromArgb((int)colorR, (int)colorG, (int)colorB);
 					exm.Console.SetBgColor(c);
+					break;
 				}
-				break;
 			case FunctionCode.SETBGCOLORBYNAME:
 				{
 					string colorName = func.Argument.ConstStr;
 					Color c = Color.FromName(colorName);
 					if (c.A == 0)
 					{
-						if (str.Equals("transparent", StringComparison.OrdinalIgnoreCase))
+						if (colorName.Equals("transparent", StringComparison.OrdinalIgnoreCase))
 							throw new CodeEE(trerror.TransparentUnsupported.Text);
 						throw new CodeEE(string.Format(trerror.InvalidColorName.Text, colorName));
 					}
 					exm.Console.SetBgColor(c);
+					break;
 				}
-				break;
 			case FunctionCode.FONTSTYLE:
 				{
 					FontStyle fs = FontStyle.Regular;
@@ -496,34 +505,40 @@ internal sealed partial class Process
 					if ((iValue & 8) != 0)
 						fs |= FontStyle.Underline;
 					exm.Console.SetStringStyle(fs);
+					break;
 				}
-				break;
 			case FunctionCode.SETFONT:
-				if (func.Argument.IsConst)
-					str = func.Argument.ConstStr;
-				else
-					str = ((ExpressionArgument)func.Argument).Term.GetStrValue(exm);
-				exm.Console.SetFont(str);
-				break;
+				{
+					if (func.Argument.IsConst)
+						str = func.Argument.ConstStr;
+					else
+						str = ((ExpressionArgument)func.Argument).Term.GetStrValue(exm);
+					exm.Console.SetFont(str);
+					break;
+				}
 			case FunctionCode.ALIGNMENT:
-				str = func.Argument.ConstStr;
-				if (str.Equals("LEFT", Config.StringComparison))
-					exm.Console.Alignment = DisplayLineAlignment.LEFT;
-				else if (str.Equals("CENTER", Config.StringComparison))
-					exm.Console.Alignment = DisplayLineAlignment.CENTER;
-				else if (str.Equals("RIGHT", Config.StringComparison))
-					exm.Console.Alignment = DisplayLineAlignment.RIGHT;
-				else
-					throw new CodeEE(string.Format(trerror.InvalidAlignment.Text, str));
-				break;
+				{
+					str = func.Argument.ConstStr;
+					if (str.Equals("LEFT", Config.StringComparison))
+						exm.Console.Alignment = DisplayLineAlignment.LEFT;
+					else if (str.Equals("CENTER", Config.StringComparison))
+						exm.Console.Alignment = DisplayLineAlignment.CENTER;
+					else if (str.Equals("RIGHT", Config.StringComparison))
+						exm.Console.Alignment = DisplayLineAlignment.RIGHT;
+					else
+						throw new CodeEE(string.Format(trerror.InvalidAlignment.Text, str));
+					break;
+				}
 
 			case FunctionCode.REDRAW:
-				if (func.Argument.IsConst)
-					iValue = func.Argument.ConstInt;
-				else
-					iValue = ((ExpressionArgument)func.Argument).Term.GetIntValue(exm);
-				exm.Console.SetRedraw(iValue);
-				break;
+				{
+					if (func.Argument.IsConst)
+						iValue = func.Argument.ConstInt;
+					else
+						iValue = ((ExpressionArgument)func.Argument).Term.GetIntValue(exm);
+					exm.Console.SetRedraw(iValue);
+					break;
+				}
 
 			case FunctionCode.RESET_STAIN:
 				{
@@ -532,8 +547,8 @@ internal sealed partial class Process
 					else
 						iValue = ((ExpressionArgument)func.Argument).Term.GetIntValue(exm);
 					vEvaluator.SetDefaultStain(iValue);
+					break;
 				}
-				break;
 			case FunctionCode.SPLIT:
 				{
 					SpSplitArgument spSplitArg = (SpSplitArgument)func.Argument;
@@ -549,35 +564,37 @@ internal sealed partial class Process
 						//throw new CodeEE("SPLITによる分割後の文字列の数が配列変数の要素数を超えています");
 					}
 					spSplitArg.Var.SetValue(retStr, [0, 0, 0]);
+					break;
 				}
-				break;
 			case FunctionCode.PRINTCPERLINE:
 				{
 					SpGetIntArgument spGetintArg = (SpGetIntArgument)func.Argument;
 					spGetintArg.VarToken.SetValue(Config.PrintCPerLine, exm);
+					break;
 				}
-				break;
 			case FunctionCode.SAVENOS:
 				{
 					SpGetIntArgument spGetintArg = (SpGetIntArgument)func.Argument;
 					spGetintArg.VarToken.SetValue(Config.SaveDataNos, exm);
+					break;
 				}
-				break;
 			case FunctionCode.FORCEKANA:
-				if (func.Argument.IsConst)
-					iValue = func.Argument.ConstInt;
-				else
-					iValue = ((ExpressionArgument)func.Argument).Term.GetIntValue(exm);
-				exm.ForceKana(iValue);
-				break;
+				{
+					if (func.Argument.IsConst)
+						iValue = func.Argument.ConstInt;
+					else
+						iValue = ((ExpressionArgument)func.Argument).Term.GetIntValue(exm);
+					exm.ForceKana(iValue);
+					break;
+				}
 			case FunctionCode.SKIPDISP:
 				{
 					iValue = func.Argument.IsConst ? func.Argument.ConstInt : ((ExpressionArgument)func.Argument).Term.GetIntValue(exm);
 					skipPrint = iValue != 0;
 					userDefinedSkip = iValue != 0;
 					vEvaluator.RESULT = skipPrint ? 1L : 0L;
+					break;
 				}
-				break;
 			case FunctionCode.NOSKIP:
 				{
 					if (func.JumpTo == null)
@@ -585,16 +602,16 @@ internal sealed partial class Process
 					saveSkip = skipPrint;
 					if (skipPrint)
 						skipPrint = false;
+					break;
 				}
-				break;
 			case FunctionCode.ENDNOSKIP:
 				{
 					if (func.JumpTo == null)
 						throw new CodeEE(string.Format(trerror.MissingNoskip.Text, "ENDNOSKIP"));
 					if (saveSkip)
 						skipPrint = true;
+					break;
 				}
-				break;
 			#region EE_OUTPUTLOG拡張
 			/*
 			case FunctionCode.OUTPUTLOG:
@@ -722,8 +739,8 @@ internal sealed partial class Process
 							throw new CodeEE(trerror.DifferentArraycopyArgsType.Text);
 					}
 					VariableEvaluator.CopyArray(vars[0], vars[1]);
+					break;
 				}
-				break;
 			case FunctionCode.ENCODETOUNI:
 				{
 					//int length = Encoding.UTF32.GetEncoder().GetByteCount(target.ToCharArray(), 0, target.Length, false);
@@ -742,12 +759,14 @@ internal sealed partial class Process
 					for (int i = 0; i < target.Length; i++)
 						ary[i] = char.ConvertToUtf32(target, i);
 					vEvaluator.SetEncodingResult(ary);
+					break;
 				}
-				break;
 			case FunctionCode.ASSERT:
-				if (((ExpressionArgument)func.Argument).Term.GetIntValue(exm) == 0)
-					throw new CodeEE(trerror.AssertArgIs0.Text);
-				break;
+				{
+					if (((ExpressionArgument)func.Argument).Term.GetIntValue(exm) == 0)
+						throw new CodeEE(trerror.AssertArgIs0.Text);
+					break;
+				}
 			case FunctionCode.THROW:
 				throw new CodeEE(((ExpressionArgument)func.Argument).Term.GetStrValue(exm));
 			case FunctionCode.CLEARTEXTBOX:
@@ -764,6 +783,7 @@ internal sealed partial class Process
 					int count = func.dataList.Count;
 					int choice = (int)exm.VEvaluator.GetNextRand(count);
 					List<InstructionLine> iList = func.dataList[choice];
+					StringBuilder sb = new();
 					int i = 0;
 					foreach (InstructionLine selectedLine in iList)
 					{
@@ -771,11 +791,11 @@ internal sealed partial class Process
 						if (selectedLine.Argument == null)
 							ArgumentParser.SetArgumentTo(selectedLine);
 						term = ((ExpressionArgument)selectedLine.Argument).Term;
-						str += term.GetStrValue(exm);
+						sb.Append(term.GetStrValue(exm));
 						if (++i < iList.Count)
-							str += "\n";
+							sb.Append('\n');
 					}
-					((StrDataArgument)func.Argument).Var.SetValue(str, exm);
+					((StrDataArgument)func.Argument).Var.SetValue(sb.ToString(), exm);
 					//ジャンプするが、流れが連続であることを保証。
 					state.JumpTo(func.JumpTo);
 					break;
