@@ -429,7 +429,7 @@ internal static partial class LexicalAnalyzer
 					throw new CodeEE(string.Format(trerror.MacroOverLimit.Text, MAX_EXPAND_MACRO.ToString()));
 				if (macro == null)
 					break;
-				if (macro.IDWord != null)
+				if (macro.IDWord == null)
 					throw new CodeEE(string.Format(trerror.MacroIsNotAvailable.Text, macro.Keyword));
 				str = macro.IDWord.Code;
 			}

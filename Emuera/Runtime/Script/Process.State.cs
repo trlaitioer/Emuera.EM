@@ -342,6 +342,8 @@ internal sealed class ProcessState
 	{
 		if (functionList.Count == currentMin)
 			return null;
+		if (curerntDepth < 0 || curerntDepth >= functionList.Count - currentMin)
+			return null;
 		return functionList[functionList.Count - curerntDepth - 1].ReturnAddress;
 	}
 

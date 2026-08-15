@@ -143,7 +143,8 @@ internal sealed partial class Process
 			if (flowinputString)
 				exm.VEvaluator.RESULTS = req.DefStrValue;
 		}
-		console.WaitInput(req);
+		else
+			console.WaitInput(req);
 		#endregion
 	}
 
