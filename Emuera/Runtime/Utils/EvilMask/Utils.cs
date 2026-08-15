@@ -126,7 +126,7 @@ internal sealed class Utils
 			throw new CodeEE(string.Format(Lang.Error.DuplicateAttribute.Text, tag, word));
 		if (attrValue.EndsWith("px", StringComparison.OrdinalIgnoreCase))
 		{
-			if (!int.TryParse(attrValue.Substring(0, attrValue.Length - 2), out num.num))
+			if (!int.TryParse(attrValue.AsSpan(0, attrValue.Length - 2), out num.num))
 				throw new CodeEE(string.Format(Lang.Error.AttributeCanNotInterpretNum.Text, tag, word));
 			num.isPx = true;
 		}
@@ -246,10 +246,9 @@ internal sealed class Utils
 							var factory = new ImageProcessor.ImageFactory();
 							factory.Load(fs);
 							bmp = (Bitmap)factory.Image;*/
-			if (Path.GetExtension(filepath).ToLower() == ".webp")
+			if (Path.GetExtension(filepath).Equals(".webp", StringComparison.CurrentCultureIgnoreCase))
 			{
-				using WebP webp = new();
-				bmp = webp.Load(filepath);
+				bmp = WebP.Load(filepath);
 			}
 			else
 			{
@@ -312,12 +311,12 @@ internal sealed class Utils
 		}
 		public static Type NameToType(string n)
 		{
-			if (builtInDictDTTypeNames_R.ContainsKey(n)) return builtInDictDTTypeNames_R[n];
+			if (builtInDictDTTypeNames_R.TryGetValue(n, out Type value)) return value;
 			return null;
 		}
 		public static string TypeToName(Type t)
 		{
-			if (builtInDictDTTypeNames.ContainsKey(t)) return builtInDictDTTypeNames[t];
+			if (builtInDictDTTypeNames.TryGetValue(t, out string value)) return value;
 			return null;
 		}
 		public static object ConvertInt(long v, Type t)

@@ -269,7 +269,7 @@ namespace MinorShift.Emuera.Forms
 										MessageBox.Show(trmb.FileNotFound.Text);
 										doit = false;
 									}
-									else if (Path.GetExtension(fname).ToUpper() != ".ERB")
+									else if (!Path.GetExtension(fname).Equals(".ERB", StringComparison.CurrentCultureIgnoreCase))
 									{
 										MessageBox.Show(trmb.IsNotErb.Text, trmb.FileFormatError.Text); //
 										doit = false;
@@ -410,7 +410,7 @@ namespace MinorShift.Emuera.Forms
 			}
 			return base.ProcessCmdKey(ref msg, keyData);
 		}
-		#endregion
+			#endregion
 
 
 		protected override void WndProc(ref Message m)
@@ -1512,7 +1512,7 @@ namespace MinorShift.Emuera.Forms
 			Application.ExitThread();
 
 		}
-		
+
 		private void クリップボードにコピーToolStripMenuItem_Click_1(object sender, EventArgs e)
 		{
 			if (クリップボードにコピーToolStripMenuItem.Checked)
@@ -1526,7 +1526,7 @@ namespace MinorShift.Emuera.Forms
 		#region EM_私家版_多言語化改造
 		private void SetLanguageOptions()
 		{
-			if(Config.EmueraLang == Lang.DefaultLanguage)
+			if (Config.EmueraLang == Lang.DefaultLanguage)
 				JapaneseToolStripMenuItem.Checked = true;
 			foreach (var lang in Lang.GetLangList())
 			{

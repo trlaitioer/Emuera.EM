@@ -21,7 +21,7 @@ abstract class ConsoleShapePart : AConsoleColoredPart
 		for (int i = 0; i < param.Length; i++)
 		{
 			// sb.Append(param[i].ToString());
-			sb.Append(param[i].num.ToString());
+			sb.Append(param[i].num);
 			if (param[i].isPx) sb.Append("px");
 			if (i < param.Length - 1)
 				sb.Append(", ");
@@ -39,7 +39,7 @@ abstract class ConsoleShapePart : AConsoleColoredPart
 			sb.Append(HtmlManager.GetColorToString(bcolor));
 			sb.Append('\'');
 		}
-		sb.Append(">");
+		sb.Append('>');
 		ConsoleShapePart ret = null;
 		int lineHeight = Config.FontSize;
 		//float[] paramPixel = new float[param.Length];

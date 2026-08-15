@@ -827,7 +827,7 @@ internal sealed partial class EmueraConsole : IDisposable
 		{
 			var remainingMs = inputReq.Timelimit - _genericTimerStopwatch.ElapsedMilliseconds;
 			timeDisplayCount++;
-			if (timeDisplayCount%10 == 0 && !inputed)
+			if (timeDisplayCount % 10 == 0 && !inputed)
 				window.Invoke(() => changeLastLine(trsl.Remaining.Text + $"{remainingMs / 1000.0f:0.0}"));
 		}
 	}
@@ -1079,7 +1079,7 @@ internal sealed partial class EmueraConsole : IDisposable
 						process.InputString(str);
 					}
 					break;
-					#endregion
+				#endregion
 
 			}
 			stopTimer();
@@ -1171,7 +1171,7 @@ internal sealed partial class EmueraConsole : IDisposable
 			#region EE_INPUTMOUSEKEY拡張
 			// InputMouseKey(3, (int)keycode, (int)keydata, 0, 0);
 			InputMouseKey(3, (int)keycode, (int)keydata, 0, 0, 0);
-		#endregion
+			#endregion
 	}
 
 	//1823 Key入力を捕まえる
@@ -1217,7 +1217,7 @@ internal sealed partial class EmueraConsole : IDisposable
 		else if (state == ConsoleState.Error)
 		{
 			if (Program.DebugMode)
-               return;
+				return;
 			if (input == ErrorButtonsText && selectingButton != null && selectingButton.ErrPos != null)
 			{
 				OpenErrorFile(selectingButton.ErrPos);
@@ -1825,30 +1825,30 @@ internal sealed partial class EmueraConsole : IDisposable
 				}
 				else
 				{
-				System.Threading.SynchronizationContext context = System.Threading.SynchronizationContext.Current;
-						Task.Run(async () =>
-						{
-							ConsoleButtonString savedPointingString = pointingString;
-							if (window.ToolTip.InitialDelay != 0)
+					System.Threading.SynchronizationContext context = System.Threading.SynchronizationContext.Current;
+					Task.Run(async () =>
+					{
+						ConsoleButtonString savedPointingString = pointingString;
+						if (window.ToolTip.InitialDelay != 0)
 							//	await Task.Delay(500);
 							//else
-								await Task.Delay(window.ToolTip.InitialDelay);
-							context.Post((state) =>
+							await Task.Delay(window.ToolTip.InitialDelay);
+						context.Post((state) =>
+						{
+							MoveMouse(GetMousePosition());
+							if (lastPointingString == savedPointingString)
 							{
-								MoveMouse(GetMousePosition());
-								if (lastPointingString == savedPointingString)
-								{
-									Point mousePos = window.MainPicBox.PointToClient(Control.MousePosition);
-									Point p = new Point(mousePos.X + 2, mousePos.Y + Cursor.Current.Size.Height);
-									Point absoluteP = Cursor.Position;
-									if (absoluteP.Y + tooltip_size.Height > Screen.FromPoint(mousePos).WorkingArea.Height) p.Y -= Cursor.Current.Size.Height * 2; 
-									if (tooltip_duration == 0)
-										window.ToolTip.Show(title, window.MainPicBox, p);
-									else
-										window.ToolTip.Show(title, window.MainPicBox, p, tooltip_duration);
-								}
-							}, null);
-						});
+								Point mousePos = window.MainPicBox.PointToClient(Control.MousePosition);
+								Point p = new Point(mousePos.X + 2, mousePos.Y + Cursor.Current.Size.Height);
+								Point absoluteP = Cursor.Position;
+								if (absoluteP.Y + tooltip_size.Height > Screen.FromPoint(mousePos).WorkingArea.Height) p.Y -= Cursor.Current.Size.Height * 2;
+								if (tooltip_duration == 0)
+									window.ToolTip.Show(title, window.MainPicBox, p);
+								else
+									window.ToolTip.Show(title, window.MainPicBox, p, tooltip_duration);
+							}
+						}, null);
+					});
 				}
 				//}
 				#endregion
@@ -2103,7 +2103,7 @@ internal sealed partial class EmueraConsole : IDisposable
 		try
 		{
 			//デバッグコマンドはReadEnabledLineを通してないのでRename変換を入れる
-			if (Config.UseRenameFile && (com.IndexOf("[[", StringComparison.Ordinal) >= 0) && (com.IndexOf("]]", StringComparison.Ordinal) >= 0))
+			if (Config.UseRenameFile && (com.Contains("[[")) && (com.Contains("]]")))
 			{
 				foreach (KeyValuePair<string, string> pair in ParserMediator.RenameDic)
 					com = com.Replace(pair.Key, pair.Value);
@@ -2273,7 +2273,7 @@ internal sealed partial class EmueraConsole : IDisposable
 		//スクリプト実行中は無視//入力・マクロ処理中は無視
 		#region EE_MOUSEB
 		if (IsInProcess && AlwaysRefresh == false)
-			#endregion
+		#endregion
 			goto end;
 		//履歴表示中は無視
 		//if (window.ScrollBar.Value != window.ScrollBar.Maximum)
@@ -2386,22 +2386,22 @@ internal sealed partial class EmueraConsole : IDisposable
 				eidx++;
 			}
 		}
-	#endregion
+		#endregion
 
 
-	//int posy_bottom2up = window.MainPicBox.Height - pointY;
-	//int logNum = window.ScrollBar.Maximum - window.ScrollBar.Value;
-	////表示中の一番下の行番号
-	//int curBottomLineNo = displayLineList.Count - logNum;
-	//int curPointingLineNo = curBottomLineNo - (posy_bottom2up / Config.LineHeight + 1);
-	//if ((curPointingLineNo < 0) || (curPointingLineNo >= displayLineList.Count))
-	//	curLine = null;
-	//else
-	//	curLine =  displayLineList[curPointingLineNo];
-	//if (curLine == null)
-	//	goto end;
+		//int posy_bottom2up = window.MainPicBox.Height - pointY;
+		//int logNum = window.ScrollBar.Maximum - window.ScrollBar.Value;
+		////表示中の一番下の行番号
+		//int curBottomLineNo = displayLineList.Count - logNum;
+		//int curPointingLineNo = curBottomLineNo - (posy_bottom2up / Config.LineHeight + 1);
+		//if ((curPointingLineNo < 0) || (curPointingLineNo >= displayLineList.Count))
+		//	curLine = null;
+		//else
+		//	curLine =  displayLineList[curPointingLineNo];
+		//if (curLine == null)
+		//	goto end;
 
-	//pointing = curLine.GetPointingButton(pointX);
+		//pointing = curLine.GetPointingButton(pointX);
 	breakfor:
 		#region EE_ボタン判定の改善
 		if (pointingStrings.Count > 0)
@@ -2434,7 +2434,7 @@ internal sealed partial class EmueraConsole : IDisposable
 					canSelect = false;
 			}
 		}
-	#endregion
+		#endregion
 	end:
 		if (canSelect)
 			select = pointing;
@@ -2511,8 +2511,8 @@ internal sealed partial class EmueraConsole : IDisposable
 	rikaichan_end:
 		#endregion
 
-		if (pointingStrings.Count!= 0)
-			select = select;
+		// if (pointingStrings.Count != 0)
+		// 	select = select;
 
 		return needRefresh;
 	}

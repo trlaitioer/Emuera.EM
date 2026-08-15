@@ -41,7 +41,7 @@ class ConsoleDivPart : AConsoleDisplayNode
 				AddColorParam4(sb, "bcolor", borderColors);
 			}
 		}
-		sb.Append(">");
+		sb.Append('>');
 		altHeadTag = sb.ToString();
 		Text = string.Empty;
 		xOffset = MixedNum.ToPixel(xPos, 0);
@@ -63,7 +63,7 @@ class ConsoleDivPart : AConsoleDisplayNode
 		children = childs;
 		Depth = depth;
 		IsRelative = isRelative;
-		
+
 		ShiftChildrenX(PointX + xOffset + divXOffset);
 	}
 	int pointX;
@@ -177,7 +177,7 @@ class ConsoleDivPart : AConsoleDisplayNode
 		graph.ResetClip();
 	}
 
-    private void ShiftChildrenX(int diff)
+	private void ShiftChildrenX(int diff)
 	{
 		foreach (var child in children)
 			child.ShiftPositionX(diff);

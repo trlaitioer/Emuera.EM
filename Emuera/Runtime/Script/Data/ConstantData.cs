@@ -442,7 +442,7 @@ internal sealed class ConstantData
 			case VariableCode.DAYNAME:
 			case VariableCode.TIMENAME:
 			case VariableCode.MONEYNAME:
-				#endregion
+			#endregion
 				MaxDataList[(int)(id.Code & VariableCode.__LOWERCASE__)] = length;
 				break;
 			default:
@@ -734,14 +734,14 @@ internal sealed class ConstantData
 			{
 				if (!string.IsNullOrEmpty(nameArray[j]))
 				{
-					if (!preDict.ContainsKey(nameArray[j]))
+					if (!preDict.TryGetValue(nameArray[j], out ErdDictInfo value))
 					{
 						preDict[nameArray[j]] = new ErdDictInfo() { num = j, path = filepath };
 					}
 					else
 					{
 						throw new CodeEE(string.Format(trerror.DuplicateErdKey.Text,
-							varname, nameArray[j], preDict[nameArray[j]].path, filepath));
+							varname, nameArray[j], value.path, filepath));
 					}
 				}
 			}
@@ -1094,7 +1094,7 @@ internal sealed class ConstantData
 				errPos = "money.csv";
 				allowIndex = 0;
 				break;
-				#endregion
+			#endregion
 
 		}
 
@@ -1111,9 +1111,10 @@ internal sealed class ConstantData
 					case VariableCode.VARS:
 					case VariableCode.CVAR:
 					case VariableCode.CVARS:
-						if (!erdNameToIntDics.ContainsKey(varname))
+						if (erdNameToIntDics.TryGetValue(varname, out Dictionary<string, int> value))
+							ret = value;
+						else
 							return ret;
-						ret = erdNameToIntDics[varname];
 						errPos = varname + ".csv";
 						allowIndex = 0;
 						if (code == VariableCode.CVAR || code == VariableCode.CVARS)
@@ -1127,10 +1128,11 @@ internal sealed class ConstantData
 							if ((code == VariableCode.VAR2D || code == VariableCode.VARS2D) && index == 0)
 							{
 								string varnamed = varname + "@1";
-								if (!erdNameToIntDics.ContainsKey(varnamed))
+								if (erdNameToIntDics.TryGetValue(varnamed, out Dictionary<string, int> value1))
+									ret = value1;
+								else
 									return ret;
 
-								ret = erdNameToIntDics[varnamed];
 								errPos = varnamed + ".csv";
 								allowIndex = 0;
 								if (code == VariableCode.CVAR2D || code == VariableCode.CVARS2D)
@@ -1140,10 +1142,11 @@ internal sealed class ConstantData
 							else
 							{
 								string varnamed = varname + "@2";
-								if (!erdNameToIntDics.ContainsKey(varnamed))
+								if (erdNameToIntDics.TryGetValue(varnamed, out Dictionary<string, int> value1))
+									ret = value1;
+								else
 									return ret;
 
-								ret = erdNameToIntDics[varnamed];
 								errPos = varnamed + ".csv";
 								allowIndex = 1;
 								if (code == VariableCode.CVAR2D || code == VariableCode.CVARS2D)
@@ -1154,10 +1157,11 @@ internal sealed class ConstantData
 					case VariableCode.VAR3D:
 					case VariableCode.VARS3D:
 						string varname3d = varname + "@" + (index + 1);
-						if (!erdNameToIntDics.ContainsKey(varname3d))
+						if (erdNameToIntDics.TryGetValue(varname3d, out Dictionary<string, int> value2))
+							ret = value2;
+						else
 							return ret;
 
-						ret = erdNameToIntDics[varname3d];
 						errPos = varname3d + ".csv";
 						allowIndex = index;
 						break;
@@ -1705,7 +1709,7 @@ internal sealed class ConstantData
 		#region EE_ERD
 		// if (disp || Program.AnalysisMode)
 		if ((disp || Program.AnalysisMode) && output != null)
-			#endregion
+		#endregion
 			output.PrintSystemLine(string.Format(trsl.LoadingFile.Text, eReader.Filename));
 		try
 		{

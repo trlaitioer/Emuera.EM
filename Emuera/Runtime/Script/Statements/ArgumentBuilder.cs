@@ -928,7 +928,7 @@ internal static partial class ArgumentParser
 		public override Argument CreateArgument(InstructionLine line, ExpressionMediator exm)
 		{
 			CharStream st = line.PopArgumentPrimitive();
-			AExpression funcname;
+			SingleStrTerm funcname;
 			string str = LexicalAnalyzer.ReadString(st, StrEndWith.LeftParenthesis_Bracket_Comma_Semicolon);
 			str = str.Trim([' ', '\t']);
 			funcname = new SingleStrTerm(str);

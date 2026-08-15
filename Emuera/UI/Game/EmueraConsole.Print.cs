@@ -554,7 +554,7 @@ internal sealed partial class EmueraConsole : IDisposable
 			#region .NET 7化の弊害でPRINTC系の文字数カウントがおかしい不具合修正
 			//length = Config.Encode.GetByteCount(str);
 			length = Encoding.GetEncoding("Shift-JIS").GetByteCount(str);
-		#endregion
+			#endregion
 		int printcLength = Config.PrintCLength;
 		Font font;
 		try
@@ -751,7 +751,7 @@ internal sealed partial class EmueraConsole : IDisposable
 
 	private bool outputLog(string fullpath, bool hideInfo)
 	{
-		StreamWriter writer = null;
+		// StreamWriter writer = null;
 		try
 		{
 			var log = GetLog(hideInfo);
@@ -773,7 +773,7 @@ internal sealed partial class EmueraConsole : IDisposable
 			filename = Program.ExeDir + "emuera.log";
 		else
 			filename = Program.ExeDir + filename;
-		if (filename.IndexOf("../", StringComparison.Ordinal) >= 0)
+		if (filename.Contains("../"))
 		{
 			Dialog.Show(trmb.FailedOutputLog.Text, trmb.CanNotOutputToParentDirectory.Text);
 			return false;

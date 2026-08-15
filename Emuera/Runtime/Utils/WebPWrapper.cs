@@ -38,7 +38,7 @@ public sealed class WebP : IDisposable
 	/// <summary>Read a WebP file</summary>
 	/// <param name="pathFileName">WebP file to load</param>
 	/// <returns>Bitmap with the WebP image</returns>
-	public Bitmap Load(string pathFileName)
+	public static Bitmap Load(string pathFileName)
 	{
 		try
 		{
@@ -52,7 +52,7 @@ public sealed class WebP : IDisposable
 	/// <summary>Decode a WebP image</summary>
 	/// <param name="rawWebP">The data to uncompress</param>
 	/// <returns>Bitmap with the WebP image</returns>
-	public Bitmap Decode(byte[] rawWebP)
+	public static Bitmap Decode(byte[] rawWebP)
 	{
 		Bitmap bmp = null;
 		BitmapData bmpData = null;
@@ -334,7 +334,7 @@ public sealed class WebP : IDisposable
 	/// <param name="bmp">Bitmap with the WebP image</param>
 	/// <param name="pathFileName">The file to write</param>
 	/// <param name="quality">Between 0 (lower quality, lowest file size) and 100 (highest quality, higher file size)</param>
-	public void Save(Bitmap bmp, string pathFileName, int quality = 75)
+	public static void Save(Bitmap bmp, string pathFileName, int quality = 75)
 	{
 		byte[] rawWebP;
 
@@ -357,7 +357,7 @@ public sealed class WebP : IDisposable
 	{
 		//test bmp
 		if (bmp.Width == 0 || bmp.Height == 0)
-			throw new ArgumentException("Bitmap contains no data.", "bmp");
+			throw new ArgumentException("Bitmap contains no data.", nameof(bmp));
 		if (bmp.Width > WEBP_MAX_DIMENSION || bmp.Height > WEBP_MAX_DIMENSION)
 			throw new NotSupportedException("Bitmap's dimension is too large. Max is " + WEBP_MAX_DIMENSION + "x" + WEBP_MAX_DIMENSION + " pixels.");
 		if (bmp.PixelFormat != PixelFormat.Format24bppRgb && bmp.PixelFormat != PixelFormat.Format32bppArgb)
@@ -446,7 +446,7 @@ public sealed class WebP : IDisposable
 	{
 		//test bmp
 		if (bmp.Width == 0 || bmp.Height == 0)
-			throw new ArgumentException("Bitmap contains no data.", "bmp");
+			throw new ArgumentException("Bitmap contains no data.", nameof(bmp));
 		if (bmp.Width > WEBP_MAX_DIMENSION || bmp.Height > WEBP_MAX_DIMENSION)
 			throw new NotSupportedException("Bitmap's dimension is too large. Max is " + WEBP_MAX_DIMENSION + "x" + WEBP_MAX_DIMENSION + " pixels.");
 		if (bmp.PixelFormat != PixelFormat.Format24bppRgb && bmp.PixelFormat != PixelFormat.Format32bppArgb)
@@ -736,7 +736,7 @@ public sealed class WebP : IDisposable
 
 			//test bmp
 			if (bmp.Width == 0 || bmp.Height == 0)
-				throw new ArgumentException("Bitmap contains no data.", "bmp");
+				throw new ArgumentException("Bitmap contains no data.", nameof(bmp));
 			if (bmp.Width > WEBP_MAX_DIMENSION || bmp.Height > WEBP_MAX_DIMENSION)
 				throw new NotSupportedException("Bitmap's dimension is too large. Max is " + WEBP_MAX_DIMENSION + "x" + WEBP_MAX_DIMENSION + " pixels.");
 			if (bmp.PixelFormat != PixelFormat.Format24bppRgb && bmp.PixelFormat != PixelFormat.Format32bppArgb)
@@ -814,7 +814,7 @@ public sealed class WebP : IDisposable
 			//Show statistics
 			if (info)
 			{
-				stats = (WebPAuxStats)Marshal.PtrToStructure(ptrStats, typeof(WebPAuxStats));
+				stats = Marshal.PtrToStructure<WebPAuxStats>(ptrStats);
 				MessageBox.Show("Dimension: " + wpic.width + " x " + wpic.height + " pixels\n" +
 								"Output:    " + stats.coded_size + " bytes\n" +
 								"PSNR Y:    " + stats.PSNRY + " db\n" +

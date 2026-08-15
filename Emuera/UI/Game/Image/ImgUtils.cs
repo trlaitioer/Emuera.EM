@@ -12,12 +12,11 @@ static class ImgUtils
 		{
 			return null;
 		}
-		Bitmap bmp = null;
+		Bitmap bmp;
 
-		if (Path.GetExtension(filepath).ToUpperInvariant() == ".WEBP")
+		if (Path.GetExtension(filepath).Equals(".WEBP", System.StringComparison.InvariantCultureIgnoreCase))
 		{
-			using (WebP webp = new())
-				bmp = webp.Load(filepath);
+			bmp = WebP.Load(filepath);
 
 			if (bmp == null)
 			{

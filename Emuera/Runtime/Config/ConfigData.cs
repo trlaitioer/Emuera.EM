@@ -551,7 +551,7 @@ internal sealed class ConfigData
 				break;
 			default:
 				{
-					if (Enum.IsDefined(typeof(ConfigCode), item.Code))
+					if (Enum.IsDefined(item.Code))
 					{
 						switch (item.ValueToString())
 						{
@@ -641,11 +641,11 @@ internal sealed class ConfigData
 					var sb = new System.Text.StringBuilder();
 					#region EM_私家版_Emuera多言語化改造
 					// sb.Append(ex.Text).Append(":");
-					sb.Append(Config.EnglishConfigOutput ? ex.EngText : ex.Text).Append(":");
+					sb.Append(Config.EnglishConfigOutput ? ex.EngText : ex.Text).Append(':');
 					#endregion
 					foreach (var str in ex.Value)
 					{
-						sb.Append(str).Append(",");
+						sb.Append(str).Append(',');
 					}
 					sb.Remove(sb.Length - 1, 1);
 					writer.WriteLine(sb.ToString());
