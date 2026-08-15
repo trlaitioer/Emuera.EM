@@ -770,7 +770,7 @@ internal sealed class ErbLoader
 						if (!label.NextLine.IsError)
 						{
 							label.NextLine.IsError = true;
-							label.NextLine.ErrMes = "呼び出されないはずの関数が呼ばれた";
+							label.NextLine.ErrMes = trerror.CalledIgnoredFunction.Text;
 						}
 					}
 				}

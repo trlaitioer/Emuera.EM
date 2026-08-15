@@ -589,6 +589,7 @@ Settings apply only at start]]></tr>
     <tr id="Error.Occurrences"><![CDATA[occurrences]]></tr>
     <tr id="Error.SentenceFunc"><![CDATA[○Sentence functions:]]></tr>
     <tr id="Error.IgnoredFuncNeverCalled"><![CDATA[Warning Lv1: {0} ignored warnings about defined functions that were never been called]]></tr>
+    <tr id="Error.CalledIgnoredFunction"><![CDATA[A function that should not have been called was called]]></tr>
     <tr id="Error.IgnoredUndefinedFuncCall"><![CDATA[Warning Lv2: {0} ignored warnings about calling functions that were not defined]]></tr>
     <tr id="Error.TotalFunc"><![CDATA[Number of non-comment lines: {0}, All functions total: {1}, Total called functions: {2}]]></tr>
     <tr id="Error.OverWriteSystemFuncWarn1"><![CDATA[＊＊＊＊＊Warning ＊＊＊＊＊]]></tr>

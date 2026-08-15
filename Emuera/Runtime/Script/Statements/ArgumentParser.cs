@@ -1,5 +1,6 @@
 ﻿using MinorShift.Emuera.Runtime.Script.Statements;
 using MinorShift.Emuera.Runtime.Utils;
+using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 
 namespace MinorShift.Emuera.GameProc.Function;
 
@@ -38,14 +39,12 @@ internal static partial class ArgumentParser
 		{
 			if (!line.IsError)
 			{
-				errmes = "命令の引数解析中に特定できないエラーが発生";
+				errmes = trerror.ArgParsingError.Text;
 				return error(line, errmes);
 			}
 			return false;
 		}
 		line.Argument = arg;
-		if (arg == null)
-			line.IsError = true;
 		return true;
 
 		static bool error(InstructionLine line, string errmes)

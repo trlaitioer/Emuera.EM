@@ -815,6 +815,7 @@ internal sealed partial class Lang
 		[Managed] public static TranslatableString Occurrences { get; } = new TranslatableString("回");
 		[Managed] public static TranslatableString SentenceFunc { get; } = new TranslatableString("　○文中関数:");
 		[Managed] public static TranslatableString IgnoredFuncNeverCalled { get; } = new TranslatableString("警告Lv1:定義された関数が一度も呼び出されていない事に関する警告を{0}件無視しました");
+		[Managed] public static TranslatableString CalledIgnoredFunction { get; } = new TranslatableString("呼び出されないはずの関数が呼ばれた");
 		[Managed] public static TranslatableString IgnoredUndefinedFuncCall { get; } = new TranslatableString("警告Lv2:定義されていない関数を呼び出した事に関する警告を{0}件無視しました");
 		[Managed] public static TranslatableString TotalFunc { get; } = new TranslatableString("非コメント行数:{0}, 全関数合計:{1}, 被呼出関数合計:{2}");
 		[Managed] public static TranslatableString OverWriteSystemFuncWarn1 { get; } = new TranslatableString("＊＊＊＊＊警告＊＊＊＊＊");

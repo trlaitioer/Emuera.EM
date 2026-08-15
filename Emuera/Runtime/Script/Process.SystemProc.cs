@@ -635,7 +635,7 @@ internal sealed partial class Process
 			if (console.LastLineIsEmpty)
 			{
 				console.deleteLine(2);
-				console.PrintTemporaryLine("無効な値です");
+				console.PrintTemporaryLine(trerror.InvalidValue.Text);
 			}
 			console.updatedGeneration = true;
 			endCallShowAblupSelect();

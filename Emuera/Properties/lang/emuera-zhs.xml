@@ -586,6 +586,7 @@ Emuera的历史版本有效的内容变得无效等等现象而设置的。
     <tr id="Error.Occurrences"><![CDATA[事件]]></tr>
     <tr id="Error.SentenceFunc"><![CDATA[○行内函数:]]></tr>
     <tr id="Error.IgnoredFuncNeverCalled"><![CDATA[警告Lv1:已忽略{0}个已定义函数但从未调用过的警告]]></tr>
+    <tr id="Error.CalledIgnoredFunction"><![CDATA[调用了不应被调用的函数]]></tr>
     <tr id="Error.IgnoredUndefinedFuncCall"><![CDATA[警告Lv2:已忽略{0}个调用了未定义函数的警告]]></tr>
     <tr id="Error.TotalFunc"><![CDATA[非注释行数:{0}, 所有函数合计:{1}, 被调用函数合计:{2}]]></tr>
     <tr id="Error.OverWriteSystemFuncWarn1"><![CDATA[＊＊＊＊＊警告＊＊＊＊＊]]></tr>
