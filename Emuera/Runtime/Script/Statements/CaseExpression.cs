@@ -51,8 +51,9 @@ internal sealed class CaseExpression
 			return LeftTerm.GetIntValue(exm) <= Is && Is <= RightTerm.GetIntValue(exm);
 		if (CaseType == CaseExpressionType.Is)
 		{
-			AExpression term = OperatorMethodManager.ReduceBinaryTerm(Operator, new SingleLongTerm(Is), LeftTerm);
-			return term.GetIntValue(exm) != 0;
+			if (LeftTerm.IsInteger)
+				return OperatorMethodManager.ReduceBinaryBool(Operator, Is, LeftTerm.GetIntValue(exm));
+			return OperatorMethodManager.ReduceBinaryTerm(Operator, new SingleLongTerm(Is), LeftTerm).GetIntValue(exm) != 0;
 		}
 		return LeftTerm.GetIntValue(exm) == Is;
 	}
@@ -66,8 +67,9 @@ internal sealed class CaseExpression
 		}
 		if (CaseType == CaseExpressionType.Is)
 		{
-			AExpression term = OperatorMethodManager.ReduceBinaryTerm(Operator, new SingleStrTerm(Is), LeftTerm);
-			return term.GetIntValue(exm) != 0;
+			if (LeftTerm.IsString)
+				return OperatorMethodManager.ReduceBinaryBool(Operator, Is, LeftTerm.GetStrValue(exm));
+			return OperatorMethodManager.ReduceBinaryTerm(Operator, new SingleStrTerm(Is), LeftTerm).GetIntValue(exm) != 0;
 		}
 		return LeftTerm.GetStrValue(exm) == Is;
 	}

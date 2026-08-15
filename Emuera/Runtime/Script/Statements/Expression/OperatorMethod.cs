@@ -2,6 +2,7 @@
 using MinorShift.Emuera.Runtime.Script.Statements.Variable;
 using MinorShift.Emuera.Runtime.Utils;
 using MinorShift.Emuera.Runtime.Utils.EvilMask;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
@@ -139,6 +140,16 @@ internal static class OperatorMethodManager
 
 	public static AExpression ReduceBinaryTerm(OperatorCode op, AExpression left, AExpression right)
 	{
+		//定数同士なら型付きオーバーロードに転送する。
+		if (left is SingleLongTerm leftLong && right is SingleLongTerm rightLong)
+			return ReduceBinaryTerm(op, leftLong.Int, rightLong.Int);
+		if (left is SingleStrTerm leftStr && right is SingleStrTerm rightStr)
+			return ReduceBinaryTerm(op, leftStr.Str, rightStr.Str);
+		if (left is SingleLongTerm leftLong2 && right is SingleStrTerm rightStr2)
+			return ReduceBinaryTerm(op, leftLong2.Int, rightStr2.Str);
+		if (left is SingleStrTerm leftStr3 && right is SingleLongTerm rightLong3)
+			return ReduceBinaryTerm(op, leftStr3.Str, rightLong3.Int);
+
 		OperatorMethod method = null;
 		if (left.GetOperandType() == typeof(long) && right.GetOperandType() == typeof(long))
 		{
@@ -158,21 +169,164 @@ internal static class OperatorMethodManager
 		}
 		if (method != null)
 			return new FunctionMethodTerm(method, [left, right]);
-		string typeName1, typeName2, errMes;
-		if (left.GetOperandType() == typeof(long))
+		throw CreateBinaryOpTypeError(left.GetOperandType(), right.GetOperandType(), op);
+	}
+
+	public static AExpression ReduceBinaryTerm(OperatorCode op, long left, long right)
+	{
+		return new SingleLongTerm(CalcBinaryIntInt(op, left, right));
+	}
+
+	public static AExpression ReduceBinaryTerm(OperatorCode op, string left, string right)
+	{
+		if (op == OperatorCode.Plus)
+			return new SingleStrTerm(left + right);
+		return new SingleLongTerm(CalcBinaryStrStr(op, left, right));
+	}
+
+	public static AExpression ReduceBinaryTerm(OperatorCode op, long left, string right)
+	{
+		if (op != OperatorCode.Mult)
+			throw CreateBinaryOpTypeError(typeof(long), typeof(string), op);
+		return new SingleStrTerm(CalcStringMultiply(left, right));
+	}
+
+	public static AExpression ReduceBinaryTerm(OperatorCode op, string left, long right)
+	{
+		if (op != OperatorCode.Mult)
+			throw CreateBinaryOpTypeError(typeof(string), typeof(long), op);
+		return new SingleStrTerm(CalcStringMultiply(right, left));
+	}
+
+	public static bool ReduceBinaryBool(OperatorCode op, long left, long right)
+	{
+		return CalcBinaryIntInt(op, left, right) != 0;
+	}
+
+	public static bool ReduceBinaryBool(OperatorCode op, string left, string right)
+	{
+		if (op == OperatorCode.Plus)
+			throw new ExeEE(trerror.ReturnTypeDifferentOrNotImpelemnt.Text);
+		return CalcBinaryStrStr(op, left, right) != 0;
+	}
+
+	private static long CalcBinaryIntInt(OperatorCode op, long left, long right)
+	{
+		switch (op)
+		{
+			case OperatorCode.Plus:
+				return left + right;
+			case OperatorCode.Minus:
+				return left - right;
+			case OperatorCode.Mult:
+				return left * right;
+			case OperatorCode.Div:
+				if (right == 0)
+					throw new CodeEE(trerror.DivideByZero.Text);
+				return left / right;
+			case OperatorCode.Mod:
+				if (right == 0)
+					throw new CodeEE(trerror.DivideByZero.Text);
+				return left % right;
+			case OperatorCode.Equal:
+				return left == right ? 1L : 0L;
+			case OperatorCode.NotEqual:
+				return left != right ? 1L : 0L;
+			case OperatorCode.Greater:
+				return left > right ? 1L : 0L;
+			case OperatorCode.Less:
+				return left < right ? 1L : 0L;
+			case OperatorCode.GreaterEqual:
+				return left >= right ? 1L : 0L;
+			case OperatorCode.LessEqual:
+				return left <= right ? 1L : 0L;
+			case OperatorCode.And:
+				return (left != 0 && right != 0) ? 1L : 0L;
+			case OperatorCode.Or:
+				return (left != 0 || right != 0) ? 1L : 0L;
+			case OperatorCode.Xor:
+				return ((left == 0 && right != 0) || (left != 0 && right == 0)) ? 1L : 0L;
+			case OperatorCode.Nand:
+				return (left == 0 || right == 0) ? 1L : 0L;
+			case OperatorCode.Nor:
+				return (left == 0 && right == 0) ? 1L : 0L;
+			case OperatorCode.BitAnd:
+				return left & right;
+			case OperatorCode.BitOr:
+				return left | right;
+			case OperatorCode.BitXor:
+				return left ^ right;
+			case OperatorCode.RightShift:
+				return left >> (int)right;
+			case OperatorCode.LeftShift:
+				return left << (int)right;
+			default:
+				throw CreateBinaryOpTypeError(typeof(long), typeof(long), op);
+		}
+	}
+
+	private static long CalcBinaryStrStr(OperatorCode op, string left, string right)
+	{
+		int c;
+		switch (op)
+		{
+			case OperatorCode.Equal:
+				return left == right ? 1L : 0L;
+			case OperatorCode.NotEqual:
+				return left != right ? 1L : 0L;
+			case OperatorCode.Greater:
+				c = string.Compare(left, right, Config.Config.SCExpression);
+				return c > 0 ? 1L : 0L;
+			case OperatorCode.Less:
+				c = string.Compare(left, right, Config.Config.SCExpression);
+				return c < 0 ? 1L : 0L;
+			case OperatorCode.GreaterEqual:
+				c = string.Compare(left, right, Config.Config.SCExpression);
+				return c >= 0 ? 1L : 0L;
+			case OperatorCode.LessEqual:
+				c = string.Compare(left, right, Config.Config.SCExpression);
+				return c <= 0 ? 1L : 0L;
+			default:
+				throw CreateBinaryOpTypeError(typeof(string), typeof(string), op);
+		}
+	}
+
+	private static string CalcStringMultiply(long value, string str)
+	{
+		if (value < 0)
+			throw new CodeEE(string.Format(trerror.MultiplyNegativeToStr.Text, value.ToString()));
+		if (value >= 10000)
+			throw new CodeEE(string.Format(trerror.Multiply10kToStr.Text, value.ToString()));
+		if (string.IsNullOrEmpty(str) || value == 0)
+			return "";
+		StringBuilder builder = new()
+		{
+			Capacity = str.Length * (int)value
+		};
+		for (int i = 0; i < value; i++)
+		{
+			builder.Append(str);
+		}
+		return builder.ToString();
+	}
+
+	private static CodeEE CreateBinaryOpTypeError(Type leftType, Type rightType, OperatorCode op)
+	{
+		string typeName1;
+		if (leftType == typeof(long))
 			typeName1 = trerror.NumericType.Text;
-		else if (left.GetOperandType() == typeof(string))
+		else if (leftType == typeof(string))
 			typeName1 = trerror.StringType.Text;
 		else
 			typeName1 = trerror.UnknownType.Text;
-		if (right.GetOperandType() == typeof(long))
+		string typeName2;
+		if (rightType == typeof(long))
 			typeName2 = trerror.NumericType.Text;
-		else if (right.GetOperandType() == typeof(string))
+		else if (rightType == typeof(string))
 			typeName2 = trerror.StringType.Text;
 		else
 			typeName2 = trerror.UnknownType.Text;
-		errMes = string.Format(trerror.CanNotAppliedBinaryOp.Text, typeName1, typeName2, OperatorManager.ToOperatorString(op));
-		throw new CodeEE(errMes);
+		return new CodeEE(string.Format(trerror.CanNotAppliedBinaryOp.Text, typeName1, typeName2, OperatorManager.ToOperatorString(op)));
 	}
 
 	public static AExpression ReduceTernaryTerm(AExpression o1, AExpression o2, AExpression o3)
