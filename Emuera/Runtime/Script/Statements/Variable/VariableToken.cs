@@ -1671,10 +1671,7 @@ internal sealed partial class VariableData
 			if (array == null)
 			{
 				array = new long[length];
-				if (defArray != null)
-				{
-					defArray.AsSpan().CopyTo(array.AsSpan());
-				}
+				defArray?.AsSpan().CopyTo(array.AsSpan());
 			}
 		}
 
@@ -1683,8 +1680,7 @@ internal sealed partial class VariableData
 			IfNullInitArray();
 			var span = array.AsSpan();
 			span.Clear();
-			if (defArray != null)
-				defArray.AsSpan().CopyTo(span);
+			defArray?.AsSpan().CopyTo(span);
 		}
 		public override long GetIntValue(ExpressionMediator exm, long[] arguments)
 		{
@@ -2126,8 +2122,7 @@ internal sealed partial class VariableData
 				arrayStack.Push(array);
 			//counter++;
 			array = new long[sizes[0]];
-			if (defArray != null)
-				defArray.AsSpan().CopyTo(array.AsSpan());
+			defArray?.AsSpan().CopyTo(array.AsSpan());
 		}
 
 		public override void ScopeOut()

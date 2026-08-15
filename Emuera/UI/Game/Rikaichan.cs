@@ -740,7 +740,7 @@ partial class Rikaichan
 			int ind;
 			while ((ind = output.IndexOf('/', StringComparison.Ordinal)) != -1)
 			{
-				output = output.Substring(0, ind) + "; " + output.Substring(ind + 1);
+				output = string.Concat(output.AsSpan(0, ind), "; ", output.AsSpan(ind + 1));
 			}
 
 
@@ -761,7 +761,7 @@ partial class Rikaichan
 					}
 					else
 					{
-						outputList.Add("    " + output.Substring(prevSplit, split - prevSplit));
+						outputList.Add(string.Concat("    ", output.AsSpan(prevSplit, split - prevSplit)));
 						linesPerThisBox++;
 					}
 					split++;
@@ -772,7 +772,7 @@ partial class Rikaichan
 					}
 					else
 					{
-						outputList.Add("    " + output.Substring(prevSplit));
+						outputList.Add(string.Concat("    ", output.AsSpan(prevSplit)));
 						linesPerBox.Add(linesPerThisBox);
 						break;
 					}
@@ -820,7 +820,7 @@ partial class Rikaichan
 						currentBoxLine++;
 
 						if (len > length_max) length_max = len;
-						s = "      " + sprev.Substring(s.Length + 1);
+						s = string.Concat("      ", sprev.AsSpan(s.Length + 1));
 						sprev = s;
 						goto do_it_again;
 					}
@@ -831,7 +831,8 @@ partial class Rikaichan
 				outputList2.Add(s);
 				lengths.Add(len);
 				if (len > length_max) length_max = len;
-			};
+			}
+			;
 
 			currentBoxLine++;
 			if (currentBoxIndex < linesPerBox.Count && currentBoxLine > linesPerBox[currentBoxIndex])

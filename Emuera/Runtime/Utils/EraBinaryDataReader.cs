@@ -174,8 +174,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 
 	public void Dispose()
 	{
-		if (reader != null)
-			reader.Close();
+		reader?.Close();
 		reader = null;
 	}
 

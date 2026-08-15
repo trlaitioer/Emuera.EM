@@ -1685,8 +1685,8 @@ internal static partial class FunctionMethodCreator
 			var key = arguments[0].GetStrValue(exm);
 			var dict = exm.VEvaluator.VariableData.DataDataTables;
 			if (!dict.TryGetValue(key, out DataTable dt)) return -1;
-			string filter = arguments.Count > 1 ? (arguments[1] != null ? arguments[1].GetStrValue(exm) : null) : null;
-			string sort = arguments.Count > 2 ? (arguments[2] != null ? arguments[2].GetStrValue(exm) : null) : null;
+			string filter = arguments.Count > 1 ? (arguments[1]?.GetStrValue(exm)) : null;
+			string sort = arguments.Count > 2 ? (arguments[2]?.GetStrValue(exm)) : null;
 			DataRow[] res;
 			if (sort != null) res = dt.Select(filter, sort);
 			else if (filter != null) res = dt.Select(filter);
@@ -3768,7 +3768,7 @@ internal static partial class FunctionMethodCreator
 		public GetnumBMethod()
 		{
 			ReturnType = typeof(Int64);
-			argumentTypeArray = new Type[] { typeof(string), typeof(string) };
+			argumentTypeArray = [typeof(string), typeof(string)];
 			CanRestructure = true;
 		}
 		/*
@@ -4695,7 +4695,7 @@ internal static partial class FunctionMethodCreator
 					ParserMediator.Warn(string.Format(trerror.InvalidUnicode.Text, Name, i), GlobalStatic.Process.scaningLine, 1, false, false, null);
 				return "";
 			}
-			string s = new(new char[] { (char)i });
+			string s = new([(char)i]);
 
 			return s;
 		}
@@ -6013,8 +6013,7 @@ internal static partial class FunctionMethodCreator
 			}
 			finally
 			{
-				if (bmp != null)
-					bmp.Dispose();
+				bmp?.Dispose();
 			}
 			//画像ファイルではなかった、などによる失敗
 			if (!g.IsCreated)
@@ -7170,8 +7169,7 @@ internal static partial class FunctionMethodCreator
 			}
 			finally
 			{
-				if (bmp != null)
-					bmp.Dispose();
+				bmp?.Dispose();
 			}
 			if (!g.IsCreated)
 				return 0;
@@ -7413,9 +7411,9 @@ internal static partial class FunctionMethodCreator
 		public FlowInputMethod()
 		{
 			ReturnType = typeof(long);
-			argumentTypeArrayEx = new ArgTypeList[] {
+			argumentTypeArrayEx = [
 					new() { ArgTypes = { ArgType.Int, ArgType.Int, ArgType.Int, ArgType.Int }, OmitStart = 1 },
-				};
+				];
 			CanRestructure = false;
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
@@ -7436,9 +7434,9 @@ internal static partial class FunctionMethodCreator
 		public FlowInputsMethod()
 		{
 			ReturnType = typeof(long);
-			argumentTypeArrayEx = new ArgTypeList[] {
+			argumentTypeArrayEx = [
 					new() { ArgTypes = { ArgType.Int, ArgType.String }, OmitStart = 1 },
-				};
+				];
 			CanRestructure = false;
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
@@ -7459,9 +7457,9 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(Int64);
 			// argumentTypeArray = null;
-			argumentTypeArrayEx = new ArgTypeList[] {
+			argumentTypeArrayEx = [
 					new ArgTypeList{ ArgTypes = { ArgType.String, ArgType.Int, ArgType.VariadicAny }, OmitStart = 1 },
-				};
+				];
 			CanRestructure = false;
 		}
 
@@ -7490,9 +7488,9 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(string);
 			// argumentTypeArray = null;
-			argumentTypeArrayEx = new ArgTypeList[] {
+			argumentTypeArrayEx = [
 					new ArgTypeList{ ArgTypes = { ArgType.String, ArgType.String, ArgType.VariadicAny }, OmitStart = 1 },
-				};
+				];
 			CanRestructure = false;
 		}
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
@@ -7519,7 +7517,7 @@ internal static partial class FunctionMethodCreator
 		public ExistMethMethod()
 		{
 			ReturnType = typeof(Int64);
-			argumentTypeArray = new Type[] { typeof(string) };
+			argumentTypeArray = [typeof(string)];
 			CanRestructure = true;
 		}
 

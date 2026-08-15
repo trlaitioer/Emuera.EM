@@ -2125,8 +2125,8 @@ internal sealed class VariableEvaluator : IDisposable
 				reader.Close();
 			else if (bReader != null)
 				bReader.Close();
-			else if (fs != null)
-				fs.Close();
+			else
+				fs?.Close();
 		}
 		return result;
 	}
@@ -2215,8 +2215,8 @@ internal sealed class VariableEvaluator : IDisposable
 		{
 			if (bWriter != null)
 				bWriter.Close();
-			else if (fs != null)
-				fs.Close();
+			else
+				fs?.Close();
 		}
 	}
 
@@ -2263,8 +2263,8 @@ internal sealed class VariableEvaluator : IDisposable
 		{
 			if (bReader != null)
 				bReader.Close();
-			else if (fs != null)
-				fs.Close();
+			else
+				fs?.Close();
 		}
 	}
 
@@ -2300,8 +2300,8 @@ internal sealed class VariableEvaluator : IDisposable
 		{
 			if (bWriter != null)
 				bWriter.Close();
-			else if (fs != null)
-				fs.Close();
+			else
+				fs?.Close();
 		}
 	}
 
@@ -2340,8 +2340,8 @@ internal sealed class VariableEvaluator : IDisposable
 		{
 			if (bReader != null)
 				bReader.Close();
-			else if (fs != null)
-				fs.Close();
+			else
+				fs?.Close();
 		}
 	}
 
@@ -2512,8 +2512,8 @@ internal sealed class VariableEvaluator : IDisposable
 				reader.Close();
 			else if (bReader != null)
 				bReader.Close();
-			else if (fs != null)
-				fs.Close();
+			else
+				fs?.Close();
 		}
 	}
 
@@ -2601,8 +2601,8 @@ internal sealed class VariableEvaluator : IDisposable
 				writer.Close();
 			else if (bWriter != null)
 				bWriter.Close();
-			else if (fs != null)
-				fs.Close();
+			else
+				fs?.Close();
 		}
 	}
 

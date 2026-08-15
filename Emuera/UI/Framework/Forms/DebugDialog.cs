@@ -258,8 +258,7 @@ namespace MinorShift.Emuera.Forms
 			}
 			finally
 			{
-				if (writer != null)
-					writer.Close();
+				writer?.Close();
 			}
 		}
 
@@ -280,8 +279,7 @@ namespace MinorShift.Emuera.Forms
 			}
 			finally
 			{
-				if (writer != null)
-					writer.Close();
+				writer?.Close();
 			}
 		}
 
@@ -307,8 +305,7 @@ namespace MinorShift.Emuera.Forms
 			}
 			finally
 			{
-				if (reader != null)
-					reader.Close();
+				reader?.Close();
 			}
 
 			listViewWatch.Items.Clear();

@@ -1404,9 +1404,11 @@ internal sealed partial class EmueraConsole : IDisposable
 						}
 						if (num.ToString() != "" && num.ToString() != null)
 						{
-							int.TryParse(num.ToString(), out res);
-							for (int i = 0; i < res; i++)
-								sb.Append(tstr);
+							if (int.TryParse(num.ToString(), out res))
+							{
+								for (int i = 0; i < res; i++)
+									sb.Append(tstr);
+							}
 							num.Remove(0, num.Length);
 						}
 					}
@@ -2836,8 +2838,7 @@ internal sealed partial class EmueraConsole : IDisposable
 
 	public void Dispose()
 	{
-		if (genericTimer != null)
-			genericTimer.Dispose();
+		genericTimer?.Dispose();
 		//timer = null;
 		//stringMeasure.Dispose();
 	}

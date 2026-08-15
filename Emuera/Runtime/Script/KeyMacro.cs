@@ -72,8 +72,7 @@ internal static class KeyMacro
 		}
 		finally
 		{
-			if (writer != null)
-				writer.Close();
+			writer?.Close();
 		}
 		return true;
 	}

@@ -896,8 +896,7 @@ internal static partial class ArgumentParser
 			if (args == null)
 				args = [];
 			for (int i = 0; i < subNames.Count; i++)
-				if (subNames != null)
-					subNames[i] = subNames[i].Restructure(exm);
+				subNames?[i] = subNames[i].Restructure(exm);
 			for (int i = 0; i < args.Count; i++)
 				if (args[i] != null)
 					args[i] = args[i].Restructure(exm);
@@ -962,8 +961,7 @@ internal static partial class ArgumentParser
 			if (args == null)
 				args = [];
 			for (int i = 0; i < subNames.Count; i++)
-				if (subNames != null)
-					subNames[i] = subNames[i].Restructure(exm);
+				subNames?[i] = subNames[i].Restructure(exm);
 			for (int i = 0; i < args.Count; i++)
 				if (args[i] != null)
 					args[i] = args[i].Restructure(exm);

@@ -157,7 +157,7 @@ static partial class Program
 		FunctionIdentifier.bgm.close();
 		for (int i = 0; i < FunctionIdentifier.sound.Length; i++)
 		{
-			if (FunctionIdentifier.sound[i] != null) FunctionIdentifier.sound[i].close();
+			FunctionIdentifier.sound[i]?.close();
 		}
 
 		#region EM_私家版_Emuera多言語化改造
@@ -165,7 +165,7 @@ static partial class Program
 		Lang.SetLanguage();
 		#endregion
 		#region EM_私家版_Icon指定機能
-		Icon icon = null;
+		Icon? icon = null;
 		{
 			var bmp = Utils.LoadImage(Utils.GetValidPath(Config.EmueraIcon));
 			if (bmp != null)
@@ -368,12 +368,12 @@ static partial class Program
 	public static string DebugDir { get; private set; }
 	public static string DatDir { get; private set; }
 	public static string ContentDir { get; private set; }
-	public static string ExeName { get; private set; }
+	public static string? ExeName { get; private set; }
 	#region EE_PLAYSOUND系
-	public static string SoundDir { get; private set; }
+	public static string? SoundDir { get; private set; }
 	#endregion
 	#region EE_フォントファイル対応
-	public static string FontDir { get; private set; }
+	public static string? FontDir { get; private set; }
 	#endregion
 
 
@@ -384,7 +384,7 @@ static partial class Program
 	//public static Point RebootLocation;
 
 	public static bool AnalysisMode;
-	public static List<string> AnalysisFiles;
+	public static List<string>? AnalysisFiles;
 
 	//public static bool debugMode = false;
 	//public static bool DebugMode { get { return debugMode; } }

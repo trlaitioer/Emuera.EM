@@ -78,7 +78,7 @@ internal sealed partial class Lang
 				[Managed] public static TranslatableString OpenDebugWindow { get; } = new TranslatableString("デバッグウインドウを開く");
 				[Managed] public static TranslatableString UpdateDebugInfo { get; } = new TranslatableString("デバッグ情報の更新");
 			}
-			
+
 			[Translate("ツール"), Managed]
 			public sealed class Tools
 			{
@@ -93,7 +93,7 @@ internal sealed partial class Lang
 				public static string Text { get { return trClass[typeof(Help)].Text; } }
 				[Managed] public static TranslatableString Config { get; } = new TranslatableString("設定(&C)");
 			}
-			
+
 			[Translate("言語 (&L)"), Managed]
 			public sealed class Language
 			{
@@ -1359,7 +1359,7 @@ internal sealed partial class Lang
 
 	[GeneratedRegex(@".*emuera.*\.xml")]
 	private static partial Regex LangFileRegex();
-	
+
 	private static void AddLanguageFile(string path)
 	{
 		XmlDocument xml = LoadXmlFile(path);
@@ -1368,7 +1368,7 @@ internal sealed partial class Lang
 		if (langName == null)
 			return;
 		langList.TryAdd(langName, path);
-		if(culture != null)
+		if (culture != null)
 			localeList.TryAdd(culture, langName);
 	}
 
@@ -1382,13 +1382,13 @@ internal sealed partial class Lang
 				AddLanguageFile(path);
 			}
 		}
-		
+
 		var assembly = Assembly.GetExecutingAssembly();
 		var resources = assembly.GetManifestResourceNames();
-		
+
 		foreach (var path in resources)
 		{
-			if(!LangFileRegex().IsMatch(path))
+			if (!LangFileRegex().IsMatch(path))
 				continue;
 			AddLanguageFile(path);
 		}
@@ -1399,7 +1399,7 @@ internal sealed partial class Lang
 	public static void SetLanguage()
 	{
 		if (Config.Config.EmueraLang == DefaultLanguage)
-        	return;
+			return;
 
 		if (CurrentCulture.Name.StartsWith(("ja-")))
 		{
@@ -1435,11 +1435,11 @@ internal sealed partial class Lang
 		for (int i = 0; i < nodes.Count; i++)
 		{
 			var attr = nodes[i].Attributes["id"];
-			if (attr != null && trItems.ContainsKey(attr.Value))
-				trItems[attr.Value].Set(nodes[i].InnerText);
+			if (attr != null && trItems.TryGetValue(attr.Value, out TranslatableString value))
+				value.Set(nodes[i].InnerText);
 		}
 	}
-	
+
 	public static void ReloadLang()
 	{
 		if (Config.Config.EmueraLang == DefaultLanguage)

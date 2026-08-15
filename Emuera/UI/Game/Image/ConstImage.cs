@@ -88,16 +88,10 @@ internal sealed class ConstImage : AbstractImage
 	{
 		if (RealBitmap == null || !RealIsCreated)
 			return;
-		if (g != null)
-		{
-			g.Dispose();
-			g = null;
-		}
-		if (RealBitmap != null)
-		{
-			RealBitmap.Dispose();
-			RealBitmap = null;
-		}
+		g?.Dispose();
+		g = null;
+		RealBitmap?.Dispose();
+		RealBitmap = null;
 	}
 
 	~ConstImage()

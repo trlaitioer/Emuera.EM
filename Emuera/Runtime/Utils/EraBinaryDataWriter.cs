@@ -487,8 +487,7 @@ internal sealed class EraBinaryDataWriter : IDisposable
 		}
 		fileWriter = null;
 		#endregion
-		if (writer != null)
-			writer.Close();
+		writer?.Close();
 		writer = null;
 	}
 

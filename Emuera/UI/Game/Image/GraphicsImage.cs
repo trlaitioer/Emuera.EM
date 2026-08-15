@@ -480,16 +480,14 @@ internal sealed class GraphicsImage : AbstractImage
 	// public void GSetFont(Font r)
 	public void GSetFont(Font r, FontStyle fs)
 	{
-		if (font != null)
-			font.Dispose();
+		font?.Dispose();
 		font = r;
 		style = fs;
 	}
 	#endregion
 	public void GSetBrush(Brush r)
 	{
-		if (brush != null)
-			brush.Dispose();
+		brush?.Dispose();
 		brush = r;
 	}
 	public void GSetPen(Pen r)
@@ -548,10 +546,8 @@ internal sealed class GraphicsImage : AbstractImage
 		if (RealBitmap == null)
 			return;
 
-		if (g != null)
-			g.Dispose();
-		if (RealBitmap != null)
-			RealBitmap.Dispose();
+		g?.Dispose();
+		RealBitmap?.Dispose();
 		g = null;
 		RealBitmap = null;
 	}
@@ -565,16 +561,11 @@ internal sealed class GraphicsImage : AbstractImage
 		drawImgList = null;
 		if (RealBitmap == null)
 			return;
-		if (g != null)
-			g.Dispose();
-		if (RealBitmap != null)
-			RealBitmap.Dispose();
-		if (brush != null)
-			brush.Dispose();
-		if (pen != null)
-			pen.Dispose();
-		if (font != null)
-			font.Dispose();
+		g?.Dispose();
+		RealBitmap?.Dispose();
+		brush?.Dispose();
+		pen?.Dispose();
+		font?.Dispose();
 		g = null;
 		RealBitmap = null;
 		brush = null;

@@ -275,7 +275,7 @@ namespace MinorShift.Emuera.Forms
 										doit = false;
 									}
 									if (fname.StartsWith(Program.ErbDir, StringComparison.OrdinalIgnoreCase))
-										filepath.Add(Program.ErbDir + fname.Substring(Program.ErbDir.Length));
+										filepath.Add(string.Concat(Program.ErbDir, fname.AsSpan(Program.ErbDir.Length)));
 									else
 										filepath.Add(fname);
 								}

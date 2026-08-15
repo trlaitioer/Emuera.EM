@@ -275,10 +275,7 @@ internal sealed partial class FunctionIdentifier
 			int count = func.dataList.Count;
 			int choice = (int)exm.VEvaluator.GetNextRand(count);
 			VariableTerm iTerm = ((PrintDataArgument)func.Argument).Var;
-			if (iTerm != null)
-			{
-				iTerm.SetValue(choice, exm);
-			}
+			iTerm?.SetValue(choice, exm);
 			List<InstructionLine> iList = func.dataList[choice];
 			int i = 0;
 			AExpression term;
@@ -424,8 +421,8 @@ internal sealed partial class FunctionIdentifier
 			var arg = (SpPrintImgArgument)func.Argument;
 			if (arg == null)
 				throw new CodeEE(trerror.InvalidArg.Text);
-			var strb = arg.Nameb != null ? arg.Nameb.GetStrValue(exm) : null;
-			var strm = arg.Namem != null ? arg.Namem.GetStrValue(exm) : null;
+			var strb = arg.Nameb?.GetStrValue(exm);
+			var strm = arg.Namem?.GetStrValue(exm);
 			if (strb == string.Empty) strb = null;
 			exm.Console.PrintImg(
 				arg.Name.GetStrValue(exm),

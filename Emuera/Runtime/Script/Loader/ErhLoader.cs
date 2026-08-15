@@ -244,7 +244,7 @@ internal sealed class ErhLoader
 				}
 				destWc.ShiftNext();
 			}
-			destWc.PointerReset();;
+			destWc.PointerReset(); ;
 		}
 		if (hasArg)//1808a3 関数型マクロの封印
 			throw new CodeEE(trerror.CanNotDeclaredFuncMacro.Text, position);
@@ -295,9 +295,8 @@ internal sealed class ErhLoader
 						if (data.Dimension == 1)
 						{
 							key = data.Name.ToUpper();
-							if (erdFileNames.ContainsKey(key))
+							if (erdFileNames.TryGetValue(key, out List<string> info))
 							{
-								var info = erdFileNames[key];
 								GlobalStatic.ConstantData.UserDefineLoadData(info, data.Name, data.Lengths[0], Config.Config.DisplayReport, dimline.SC);
 							}
 							System.Windows.Forms.Application.DoEvents();
@@ -307,9 +306,8 @@ internal sealed class ErhLoader
 							for (int dim = 1; dim < 3; dim++)
 							{
 								key = data.Name.ToUpper() + "@" + dim;
-								if (erdFileNames.ContainsKey(key))
+								if (erdFileNames.TryGetValue(key, out List<string> info))
 								{
-									var info = erdFileNames[key];
 									GlobalStatic.ConstantData.UserDefineLoadData(info, data.Name + "@" + dim, data.Lengths[dim - 1], Config.Config.DisplayReport, dimline.SC);
 								}
 								System.Windows.Forms.Application.DoEvents();
@@ -320,9 +318,8 @@ internal sealed class ErhLoader
 							for (int dim = 1; dim < 4; dim++)
 							{
 								key = data.Name.ToUpper() + "@" + dim;
-								if (erdFileNames.ContainsKey(key))
+								if (erdFileNames.TryGetValue(key, out List<string> info))
 								{
-									var info = erdFileNames[key];
 									GlobalStatic.ConstantData.UserDefineLoadData(info, data.Name + "@" + dim, data.Lengths[dim - 1], Config.Config.DisplayReport, dimline.SC);
 								}
 								System.Windows.Forms.Application.DoEvents();
@@ -337,7 +334,7 @@ internal sealed class ErhLoader
 					//繰り返すことで解決する見込みがあるならキューの最後に追加
 					if (tryAgain)
 					{
-						dimline.WC.PointerReset();;
+						dimline.WC.PointerReset(); ;
 						dimlines.Enqueue(dimline);
 					}
 					else
@@ -367,18 +364,18 @@ internal sealed class ErhLoader
 		foreach (var path in Directory.GetFiles(Program.ErbDir, "*.erd", SearchOption.AllDirectories))
 		{
 			var key = Path.GetFileNameWithoutExtension(path).ToUpper();
-			if (!erdFileNames.ContainsKey(key))
+			if (!erdFileNames.TryGetValue(key, out List<string> value))
 				erdFileNames[key] = [path];
 			else
-				erdFileNames[key].Add(path);
+				value.Add(path);
 		}
 		foreach (var path in Directory.GetFiles(Program.CsvDir, "*.csv", SearchOption.TopDirectoryOnly))
 		{
 			var key = Path.GetFileNameWithoutExtension(path).ToUpper();
-			if (!erdFileNames.ContainsKey(key))
+			if (!erdFileNames.TryGetValue(key, out List<string> value))
 				erdFileNames[key] = [path];
 			else
-				erdFileNames[key].Add(path);
+				value.Add(path);
 		}
 	}
 	#endregion

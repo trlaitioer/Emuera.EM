@@ -668,8 +668,7 @@ internal sealed class ConfigData
 		}
 		finally
 		{
-			if (writer != null)
-				writer.Close();
+			writer?.Close();
 		}
 		return true;
 	}
@@ -825,8 +824,7 @@ internal sealed class ConfigData
 				if (string.IsNullOrEmpty(tokens[1].Trim()))
 					continue;
 				AConfigItem item = GetReplaceItem(itemName);
-				if (item != null)
-					item.TryParse(tokens[1]);
+				item?.TryParse(tokens[1]);
 			}
 		}
 		catch (EmueraException ee)
@@ -870,8 +868,7 @@ internal sealed class ConfigData
 		}
 		finally
 		{
-			if (writer != null)
-				writer.Close();
+			writer?.Close();
 		}
 		return true;
 	}
@@ -896,10 +893,7 @@ internal sealed class ConfigData
 				if (tokens.Length < 2)
 					continue;
 				AConfigItem item = GetDebugItem(tokens[0].Trim());
-				if (item != null)
-				{
-					item.TryParse(tokens[1]);
-				}
+				item?.TryParse(tokens[1]);
 #if DEBUG
 				//else
 				//	throw new Exception("コンフィグファイルが変");

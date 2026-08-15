@@ -12,8 +12,7 @@ internal abstract class SubWord
 	public virtual void SetIsMacro()
 	{
 		IsMacro = true;
-		if (Words != null)
-			Words.SetIsMacro();
+		Words?.SetIsMacro();
 
 	}
 }

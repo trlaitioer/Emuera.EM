@@ -1,6 +1,7 @@
 ﻿using MinorShift.Emuera.Runtime.Config;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 namespace MinorShift.Emuera.UI;
 
@@ -43,43 +44,32 @@ internal class FontFactory
 		return fontDic[(fontname, Config.FontSize, style)];
 		*/
 
-		string fn = requestFontName;
 		if (string.IsNullOrEmpty(requestFontName))
-			fn = Config.FontName;
-		if (!fontDic.ContainsKey((fn, Config.FontSize, style)))
-		{
-			var font = new Font(fn, Config.FontSize, style, GraphicsUnit.Pixel);
-			if (font != null)
-				fontDic.Add((fn, Config.FontSize, style), font);
+			requestFontName = Config.FontName;
 
-		}
-		Dictionary<FontStyle, Font> fontStyleDic = [];
-		if (!fontStyleDic.ContainsKey(style))
+		var key = (requestFontName, Config.FontSize, style);
+
+		if (fontDic.TryGetValue(key, out var existingFont))
 		{
-			int fontsize = Config.FontSize;
-			Font styledFont;
-			try
-			{
-				#region EE_フォントファイル対応
-				foreach (FontFamily ff in GlobalStatic.Pfc.Families)
-				{
-					if (ff.Name == fn)
-					{
-						styledFont = new Font(ff, fontsize, style, GraphicsUnit.Pixel);
-						goto foundfont;
-					}
-				}
-				styledFont = new Font(fn, fontsize, style, GraphicsUnit.Pixel);
-			}
-			catch
-			{
-				return null;
-			}
-		foundfont:
-			#endregion
-			fontStyleDic.Add(style, styledFont);
+			return existingFont;
 		}
-		return fontStyleDic[style];
+
+		try
+		{
+			FontFamily ff = GlobalStatic.Pfc.Families.FirstOrDefault(ff => ff.Name == requestFontName, null);
+			if (ff != null)
+			{
+				return fontDic[key] = new Font(ff, Config.FontSize, style, GraphicsUnit.Pixel);
+			}
+			else
+			{
+				return fontDic[key] = new Font(requestFontName, Config.FontSize, style, GraphicsUnit.Pixel);
+			}
+		}
+		catch
+		{
+			return null;
+		}
 	}
 
 	public static void ClearFont()

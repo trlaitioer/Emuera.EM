@@ -21,17 +21,17 @@ namespace MinorShift.Emuera;
 //また、使用されている名前を記憶し衝突を検出する。
 internal partial class IdentifierDictionary
 {
-	private static readonly System.Buffers.SearchValues<char> badSymbolAsIdentifier = System.Buffers.SearchValues.Create(new char[]
-			{
+	private static readonly System.Buffers.SearchValues<char> badSymbolAsIdentifier = System.Buffers.SearchValues.Create(
+			[
 			'+', '-', '*', '/', '%', '=', '!', '<', '>', '|', '&', '^', '~',
 			' ', ' ', '\t' ,
 			'\"','(', ')', '{', '}', '[', ']', ',', '.', ':',
 			'\\', '@', '$', '#', '?', ';', '\'',
 				//'_'はOK
-			});
+			]);
 	#region EM_私家版_辞書獲得
 	public string[] VarKeys => varTokenDic.Keys.ToArray();
-	public string[] MacroKeys => macroDic.Values.Select(v=>v.Keyword).ToArray();
+	public string[] MacroKeys => macroDic.Values.Select(v => v.Keyword).ToArray();
 	#endregion
 	private enum DefinedNameType
 	{
