@@ -1,0 +1,114 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: windows-latest
+
+    env:
+      PROJECT: Emuera\Emuera.csproj
+      PUBLISH_ROOT: Emuera\artifacts\publish\Emuera
+      BIN_ROOT: Emuera\artifacts\bin\Emuera
+      STAGE_ROOT: staging
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Publish WMP (Release)
+        run: msbuild $env:PROJECT /t:Publish /p:Configuration=Release /p:Platform=x64 /p:RuntimeIdentifier=win-x64 /p:SelfContained=false /p:DebugSymbols=false /p:DebugType=none /nologo /v:minimal
+
+      - name: Publish NAudio (Release-NAudio)
+        run: msbuild $env:PROJECT /t:Publish /p:Configuration=Release-NAudio /p:Platform=x64 /p:RuntimeIdentifier=win-x64 /p:SelfContained=false /p:DebugSymbols=false /p:DebugType=none /nologo /v:minimal
+
+      - name: Package
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          [xml]$csproj = Get-Content $env:PROJECT
+          $info = $csproj.Project.PropertyGroup.InformationalVersion | Select-Object -First 1
+          if ([string]::IsNullOrWhiteSpace($info)) { throw 'InformationalVersion not found in csproj' }
+          $base = $info -replace '\.', ''
+          $full = "Emuera.NET$base"
+          if ($env:GITHUB_REF_TYPE -eq 'tag') {
+            if ($env:GITHUB_REF_NAME -notmatch '^v[0-9]') {
+              throw "Tag must start with v followed by a digit: $env:GITHUB_REF_NAME"
+            }
+            $full = "$full+$env:GITHUB_REF_NAME"
+          }
+          "FULL_VERSION=$full" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "BASE_TITLE=Emuera.NET$base" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+          $flavors = @(
+            @{ Name = 'wmp';    ConfigDir = 'release_win-x64' },
+            @{ Name = 'naudio'; ConfigDir = 'release-naudio_win-x64' }
+          )
+          foreach ($f in $flavors) {
+            $publishDir = Join-Path $env:PUBLISH_ROOT $f.ConfigDir
+            $binDir = Join-Path $env:BIN_ROOT $f.ConfigDir
+            $exe = Join-Path $publishDir 'Emuera.exe'
+            if (-not (Test-Path $exe)) { throw "Missing publish output: $exe" }
+
+            $exeName = "$full-$($f.Name).exe"
+            $stage = Join-Path $env:STAGE_ROOT $f.Name
+            New-Item -ItemType Directory -Force -Path $stage | Out-Null
+            Copy-Item $exe (Join-Path $stage $exeName)
+
+            foreach ($dll in @('libwebp.dll', 'libsharpyuv.dll')) {
+              $src = Join-Path $binDir $dll
+              if (-not (Test-Path $src)) { throw "Missing native dll: $src" }
+              Copy-Item $src (Join-Path $stage $dll)
+            }
+
+            Copy-Item -Path 'Readme' -Destination (Join-Path $stage 'Readme') -Recurse
+
+            $zipName = "$full-x64-$($f.Name).zip"
+            $zipPath = Join-Path (Get-Location) $zipName
+            Compress-Archive -Path (Join-Path $stage '*') -DestinationPath $zipPath -Force
+
+            $hash = (Get-FileHash $zipPath -Algorithm SHA256).Hash.ToLower()
+            "$hash  $zipName" | Out-File -FilePath "$zipPath.sha256" -Encoding ascii
+
+            Write-Host "Created $zipName"
+            Write-Host "Created $zipName.sha256"
+          }
+
+      - name: Create Release and upload assets
+        if: github.ref_type == 'tag'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="${{ github.ref_name }}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release already exists: $TAG"
+            exit 1
+          fi
+          gh release create "$TAG" \
+            "$FULL_VERSION-x64-wmp.zip" \
+            "$FULL_VERSION-x64-wmp.zip.sha256" \
+            "$FULL_VERSION-x64-naudio.zip" \
+            "$FULL_VERSION-x64-naudio.zip.sha256" \
+            --title "$BASE_TITLE $TAG" \
+            --generate-notes \
+            --verify-tag
