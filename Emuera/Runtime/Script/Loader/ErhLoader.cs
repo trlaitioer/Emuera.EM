@@ -343,7 +343,7 @@ internal sealed class ErhLoader
 					else
 					{
 						ParserMediator.Warn(e.Message, dimline.SC, 2);
-						noError = true;
+						noError = false;
 					}
 				}
 				catch (CodeEE e)

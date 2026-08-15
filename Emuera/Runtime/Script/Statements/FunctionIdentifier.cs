@@ -301,7 +301,7 @@ internal sealed partial class FunctionIdentifier
 		addFunction(FunctionCode.STOPCALLTRAIN, argb[FunctionArgType.VOID], EXTENDED | FLOW_CONTROL);
 		addFunction(FunctionCode.DOTRAIN, argb[FunctionArgType.INT_EXPRESSION], EXTENDED | FLOW_CONTROL);
 
-		addFunction(FunctionCode.DATA, argb[FunctionArgType.STR_NULLABLE], METHOD_SAFE | EXTENDED | PARTIAL | PARTIAL);
+		addFunction(FunctionCode.DATA, argb[FunctionArgType.STR_NULLABLE], METHOD_SAFE | EXTENDED | PARTIAL);
 		addFunction(FunctionCode.DATAFORM, argb[FunctionArgType.FORM_STR_NULLABLE], METHOD_SAFE | EXTENDED | PARTIAL);
 		addFunction(FunctionCode.ENDDATA, new DO_NOTHING_Instruction());
 		addFunction(FunctionCode.DATALIST, argb[FunctionArgType.VOID], METHOD_SAFE | EXTENDED | PARTIAL);
