@@ -222,7 +222,7 @@ Emuera的历史版本有效的内容变得无效等等现象而设置的。
     <tr id="Error.UseInstructionLikeFunc"><![CDATA[用函数的方式使用命令名"{0}"]]></tr>
     <tr id="Error.UseInstructionLikeVar"><![CDATA[用变量的方式使用命令名"{0}"]]></tr>
     <tr id="Error.CanNotInterpreted"><![CDATA[无法解析的标识符"{0}"]]></tr>
-    <tr id="Error.AbnormalFirstOperand"><![CDATA[三相运算符\@の第一运算数异常]]></tr>
+    <tr id="Error.AbnormalFirstOperand"><![CDATA[三元运算符\@的第一操作数异常]]></tr>
     <tr id="Error.EmptyBrace"><![CDATA[{{}}中没有表达式]]></tr>
     <tr id="Error.EmptyPer"><![CDATA[%%中没有表达式]]></tr>
     <tr id="Error.NotSpecifiedLR"><![CDATA[,'之后没有RIGHT或LEFT]]></tr>
@@ -256,7 +256,7 @@ Emuera的历史版本有效的内容变得无效等等现象而设置的。
     <tr id="Error.InvalidTo"><![CDATA[关键字TO不能在此处使用]]></tr>
     <tr id="Error.InvalidIs"><![CDATA[关键字IS不能在此处使用]]></tr>
     <tr id="Error.UnexpectedOpInVarArg"><![CDATA[读取变量的参数时遇到预料之外的运算符]]></tr>
-    <tr id="Error.EqualInExpression"><![CDATA[表达式中出现赋值运算符'='(相等性比较请使用'=='には)]]></tr>
+    <tr id="Error.EqualInExpression"><![CDATA[表达式中使用了赋值运算符'='（相等性比较请使用'=='）]]></tr>
     <tr id="Error.ComparisonOpContinuous"><![CDATA[（语法上的注意）比较运算符连续使用。]]></tr>
     <tr id="Error.MissingQuestion"><![CDATA[没有对应'?'的运算符'#']]></tr>
     <tr id="Error.NoContainExpressionInBrackets"><![CDATA[括号"("～")"中未包含表达式]]></tr>
@@ -265,7 +265,7 @@ Emuera的历史版本有效的内容变得无效等等现象而设置的。
     <tr id="Error.FailedSolveMacro"><![CDATA[宏运行失败]]></tr>
     <tr id="Error.UnrecognizedSyntax"><![CDATA[表达式异常]]></tr>
     <tr id="Error.MultipleUnaryOp"><![CDATA[连续使用的后置单相运算符]]></tr>
-    <tr id="Error.DuplicateIncrementDecrement"><![CDATA[同时以前置和后置的方式使用自增・自减运算符]]></tr>
+    <tr id="Error.DuplicateIncrementDecrement"><![CDATA[不能同时以前置和后置方式使用自增、自减运算符]]></tr>
     <tr id="Error.InsufficientExpression"><![CDATA[表达式的数量不足]]></tr>
     <tr id="Error.EmptyFramelist"><![CDATA[totaltime大于0而FrameList为空]]></tr>
     <tr id="Error.OoRLasframe"><![CDATA[SpriteAnime:最终帧超出范围]]></tr>
@@ -412,7 +412,7 @@ Emuera的历史版本有效的内容变得无效等等现象而设置的。
     <tr id="Error.DifferentVarSize"><![CDATA[{0}和"{1}"的元素数量不同(自动适用最大值)]]></tr>
     <tr id="Error.InappropriatePalamJuelPalamname"><![CDATA[PALAM和JUEL和PALAMNAME的元素数量不一致]]></tr>
     <tr id="Error.PalamnameSizeLessThanJuelSize"><![CDATA[PALAMNAME的元素数量比JUEL小(自动适用JUEL的大小)]]></tr>
-    <tr id="Error.DuplicateCharaDefine1"><![CDATA[编号为{0}的角色被多次定义(定义为SP角色请启用「SPキャラを使用する」设置项)]]></tr>
+    <tr id="Error.DuplicateCharaDefine1"><![CDATA[编号为{0}的角色被多次定义（若要定义为SP角色，请启用兼容性选项「使用SP角色」）]]></tr>
     <tr id="Error.DuplicateCharaDefine2"><![CDATA[编号为{0}的角色被多次定义]]></tr>
     <tr id="Error.StartedComma"><![CDATA[Token开头为","]]></tr>
     <tr id="Error.CharaNoDefinedTwice"><![CDATA[编号被定义了两次]]></tr>
@@ -518,7 +518,7 @@ Emuera的历史版本有效的内容变得无效等等现象而设置的。
     <tr id="Error.AbnormalPrintdata"><![CDATA[PRINTDATA异常]]></tr>
     <tr id="Error.InvalidArg"><![CDATA[参数无效]]></tr>
     <tr id="Error.NotDefinedFunc"><![CDATA[没有找到指定的函数"@{0}"]]></tr>
-    <tr id="Error.SPCharaConfigIsOff"><![CDATA[SP角色相关功能不可用(请启用兼容性设置「SPキャラを使用する」)]]></tr>
+    <tr id="Error.SPCharaConfigIsOff"><![CDATA[标准设置下无法使用SP角色相关功能（请启用兼容性选项「使用SP角色」）]]></tr>
     <tr id="Error.OoRCvarsetArg"><![CDATA[CVARSET命令的第{0}参数({1})超出角色范围]]></tr>
     <tr id="Error.CvarsetArgIsNotCharaVar"><![CDATA[CVARSET命令使用了一个非角色变量]]></tr>
     <tr id="Error.OoRSavecharaArg"><![CDATA[SAVECHARA第{0}参数的值超出角色登记编号的范围]]></tr>
@@ -581,7 +581,7 @@ Emuera的历史版本有效的内容变得无效等等现象而设置的。
     <tr id="Error.NotMatchTypeArgAndInitialValue"><![CDATA[参数类型与初始值类型不一致]]></tr>
     <tr id="Error.BeNotFuncCheckBecauseUseCallform"><![CDATA[由于使用了CALLFORM系列命令，不会对函数可用性进行检查(总是视为存在)]]></tr>
     <tr id="Error.FuncNeverCalled"><![CDATA[函数"@{0}"被定义后从未调用过]]></tr>
-    <tr id="Error.UndefinedFunctions"><![CDATA[・没有找到定义的函数：如果在其他文件中定义过，可以忽略这个警告]]></tr>
+    <tr id="Error.UndefinedFunctions"><![CDATA[·未找到定义的函数：如果在其他文件中定义过，可以忽略此警告]]></tr>
     <tr id="Error.GeneralFunc"><![CDATA[○一般函数:]]></tr>
     <tr id="Error.Occurrences"><![CDATA[事件]]></tr>
     <tr id="Error.SentenceFunc"><![CDATA[○行内函数:]]></tr>
@@ -594,7 +594,7 @@ Emuera的历史版本有效的内容变得无效等等现象而设置的。
     <tr id="Error.OverWriteSystemFuncWarn3"><![CDATA[使用上述函数的脚本可能不会按照预期运行]]></tr>
     <tr id="Error.OverWriteSystemFuncWarn4"><![CDATA[※这个警告是针对使用了行内函数的Emuera专用脚本的警告。]]></tr>
     <tr id="Error.OverWriteSystemFuncWarn5"><![CDATA[不会影响eramaker的运行。]]></tr>
-    <tr id="Error.OverWriteSystemFuncWarn6"><![CDATA[如果不需要这个警告, 请禁用「システム関数が上書きされたとき警告を表示する」配置项]]></tr>
+    <tr id="Error.OverWriteSystemFuncWarn6"><![CDATA[今后如果不需要此警告，请关闭配置项「系统函数被覆盖时发出警告」]]></tr>
     <tr id="Error.OverWriteSystemFuncWarn7"><![CDATA[＊＊＊＊＊＊＊＊＊＊＊＊]]></tr>
     <tr id="Error.FuncAnalysisError"><![CDATA[@{0}解析时发生错误:{1}]]></tr>
     <tr id="Error.CanNotUseInUserFunc"><![CDATA[{0}命令中不能使用#FUNCTION(S)]]></tr>
@@ -861,11 +861,11 @@ Emuera的历史版本有效的内容变得无效等等现象而设置的。
     <tr id="Error.OoRInt64"><![CDATA[{0}超出64位带符号整数的范围]]></tr>
     <tr id="Error.CanNotUseBinaryNotate"><![CDATA[使用了二进制数表达中不应该出现的字符]]></tr>
     <tr id="Error.LineBeginsIllegalCharacter"><![CDATA[使用不正确的文字作为行的开始]]></tr>
-    <tr id="Error.MacroOverLimit"><![CDATA[宏展开的次数超过单次展开上限值{0}(可能是因为自我调用・循环调用)]]></tr>
+    <tr id="Error.MacroOverLimit"><![CDATA[宏展开次数已超过单条语句的上限值{0}（可能存在自我引用、循环引用）]]></tr>
     <tr id="Error.MacroIsNotAvailable"><![CDATA[宏{0}不能在当前上下文中使用(仅运行使用替换1个单词的宏)]]></tr>
     <tr id="Error.UnexpectedFullWidthSpace"><![CDATA[发现意料之外的全角空格(此警告可以用系统配置「{0}」来无视)]]></tr>
     <tr id="Error.MissingCharacterAfterEscape"><![CDATA[转移符号\之后没有字符]]></tr>
-    <tr id="Error.UnexpectedEqual"><![CDATA[发现意料之外的赋值运算符'='(相等性比较请使用'=='には)]]></tr>
+    <tr id="Error.UnexpectedEqual"><![CDATA[发现意外的赋值运算符'='（相等性比较请使用'=='）]]></tr>
     <tr id="Error.CanNotRecognizedOp"><![CDATA[{0}'无法被解析为运算符]]></tr>
     <tr id="Error.CanNotRecognizedAssignOp"><![CDATA[{0}无法被解析为赋值运算符]]></tr>
     <tr id="Error.UnexpectedCharacter"><![CDATA[词法解析中出现意料之外的字符'{0}']]></tr>
@@ -1024,19 +1024,19 @@ Emuera的历史版本有效的内容变得无效等等现象而设置的。
     <tr id="KeyMacro.SetMacroGroup"><![CDATA[设置为按键宏组{0}]]></tr>
     <tr id="KeyMacro.MacroKeyF"><![CDATA[宏快捷键F{0}:]]></tr>
     <tr id="KeyMacro.GMacroKeyF"><![CDATA[G{0}:宏快捷键F{1}:]]></tr>
-    <tr id="SystemLine.LoadingFile"><![CDATA[{0}读取中・・・]]></tr>
+    <tr id="SystemLine.LoadingFile"><![CDATA[正在读取{0}……]]></tr>
     <tr id="SystemLine.Back"><![CDATA[[100] 返回]]></tr>
-    <tr id="SystemLine.ElapsedTimeLoad"><![CDATA[经过时间:{0}ms:{1}读取中・・・]]></tr>
+    <tr id="SystemLine.ElapsedTimeLoad"><![CDATA[经过时间:{0}ms:正在读取{1}……]]></tr>
     <tr id="SystemLine.ElapsedTime"><![CDATA[经过时间:{0}ms]]></tr>
-    <tr id="SystemLine.BuildingUserFunc"><![CDATA[正在构造用户定义函数列表・・・]]></tr>
-    <tr id="SystemLine.CheckingSyntax"><![CDATA[正在验证脚本语法・・・]]></tr>
+    <tr id="SystemLine.BuildingUserFunc"><![CDATA[正在构建用户定义函数列表……]]></tr>
+    <tr id="SystemLine.CheckingSyntax"><![CDATA[正在检查脚本语法……]]></tr>
     <tr id="SystemLine.LoadComplete"><![CDATA[读取完成]]></tr>
     <tr id="SystemLine.SelectExitConfigMB"><![CDATA[配置文件异常，由于用户选择终止而停止处理]]></tr>
     <tr id="SystemLine.ResourceReadError"><![CDATA[由于读取资源文件夹时发生异常而停止处理]]></tr>
-    <tr id="SystemLine.LoadingMacro"><![CDATA[读取macro.txt中・・・]]></tr>
-    <tr id="SystemLine.LoadingReplace"><![CDATA[读取_Replace.csv中・・・]]></tr>
+    <tr id="SystemLine.LoadingMacro"><![CDATA[正在读取macro.txt……]]></tr>
+    <tr id="SystemLine.LoadingReplace"><![CDATA[正在读取_Replace.csv……]]></tr>
     <tr id="SystemLine.SelectExitReplaceMB"><![CDATA[_Replace.csv异常，由于用户选择终止而停止处理]]></tr>
-    <tr id="SystemLine.LoadingRename"><![CDATA[读取_Rename.csv中・・・]]></tr>
+    <tr id="SystemLine.LoadingRename"><![CDATA[正在读取_Rename.csv……]]></tr>
     <tr id="SystemLine.MissingRename"><![CDATA[没有找到csv\_Rename.csv文件]]></tr>
     <tr id="SystemLine.GamebaseError"><![CDATA[由于读取GAMEBASE.CSV时发生异常而停止处理]]></tr>
     <tr id="SystemLine.ErhLoadingError"><![CDATA[由于读取ERH时发生错误而停止处理]]></tr>
@@ -1064,4 +1064,44 @@ Emuera的历史版本有效的内容变得无效等等现象而设置的。
     <tr id="SystemLine.ReloadCompleted"><![CDATA[重新载入完毕]]></tr>
     <tr id="SystemLine.LogFileHasBeenCreated"><![CDATA[※※※已创建Log文件{0}※※※]]></tr>
     <tr id="SystemLine.MinusWontWork"><![CDATA[对整型最小值({0})进行-操作其值也不对发生变化]]></tr>
+    <tr id="Error.AbnormalEncode"><![CDATA[文字编码异常。请确认文字编码（推荐SJIS、UTF-8）]]></tr>
+    <tr id="Error.CanNotParseStringToIntTooltipImg"><![CDATA[无法将"{0}"转换为数值类型（若要作为字符串类型使用，请关闭TOOLTIP_IMG）]]></tr>
+    <tr id="Error.CanNotUseDumprand"><![CDATA[新的随机数算法下DUMPRAND无法使用]]></tr>
+    <tr id="Error.CanNotUseInitrand"><![CDATA[新的随机数算法下INITRAND无法使用]]></tr>
+    <tr id="Error.CanNotUseVAR"><![CDATA[当前设置下无法使用{0}命令]]></tr>
+    <tr id="Error.DoNotInstallWMP"><![CDATA[可能未安装Windows Media Player。请安装Windows Media Player以确保正常运行]]></tr>
+    <tr id="Error.FileUsingOtherProcess"><![CDATA[文件:{0}正被其他进程占用（因无法检查文字编码，将按UTF-8 BOM读取）]]></tr>
+    <tr id="Error.IgnoreRandomize"><![CDATA[新的随机数算法下RANDOMIZE将被忽略]]></tr>
+    <tr id="Error.ImcompatibleSoundFile"><![CDATA[指定了不支持的声音文件]]></tr>
+    <tr id="Error.IsDefinedCsvVariable"><![CDATA[变量名"{0}"已被CSV变量定义使用，可能会导致意外的数组引用]]></tr>
+    <tr id="Error.IsDefinedErdVariable"><![CDATA[变量名"{0}"已被ERD变量"{1}"的定义使用，可能会导致意外的数组引用]]></tr>
+    <tr id="Error.MethodNotFound"><![CDATA[找不到"[0]"方法]]></tr>
+    <tr id="Error.NothingButtonBinput"><![CDATA[在没有默认值且没有任何按钮的状态下执行了{0}。将无法接受任何输入]]></tr>
+    <tr id="Error.OoRSumArray"><![CDATA[ARRAYSORT命令的第3参数({0})与第4变量({1})之和超出了数组"{2}"的范围]]></tr>
+    <tr id="Error.TimeLogFileLocked"><![CDATA[time.log文件正被其他进程占用，无法记录启动时间]]></tr>
+    <tr id="MessageBox.DoNotSupportWINAPI"><![CDATA[不支持WINAPI模式]]></tr>
+    <tr id="MessageBox.ReloadResource"><![CDATA[重新载入资源文件夹]]></tr>
+    <tr id="MessageBox.ReloadResourceAsk"><![CDATA[确定要重新载入资源文件夹吗？]]></tr>
+    <tr id="SystemLine.CreateFromCSV"><![CDATA[正在从文件“{0}”生成精灵“{1}”……]]></tr>
+    <tr id="SystemLine.DebugTraceCall2"><![CDATA[CALL :@{0}:{1}:第{2}行 Called :第{3}行]]></tr>
+    <tr id="SystemLine.DebugTraceJump2"><![CDATA[JUMP :@{0}:{1}:第{2}行 Jumped :第{3}行]]></tr>
+    <tr id="SystemLine.EnvironmentInformation"><![CDATA[# 环境信息]]></tr>
+    <tr id="SystemLine.Log"><![CDATA[# 日志]]></tr>
+    <tr id="SystemLine.NotDefinedGameBase"><![CDATA[未定义GameBase]]></tr>
+    <tr id="SystemLine.PatchVersion"><![CDATA[# 补丁版本]]></tr>
+    <tr id="SystemLine.PluginAvailable"><![CDATA[注意：外部插件功能已启用。因该功能产生的问题不在Emuera支持范围内]]></tr>
+    <tr id="SystemLine.ReloadResourceMessage"><![CDATA[已重新载入资源文件夹]]></tr>
+    <tr id="SystemLine.Variant"><![CDATA[# 变体]]></tr>
+    <tr id="UI.ConfigDialog.Debug.CheckDuplicateIdentifier"><![CDATA[检查ERD标识符与局部变量的重名]]></tr>
+    <tr id="UI.ConfigDialog.DotNet"><![CDATA[DotNet]]></tr>
+    <tr id="UI.ConfigDialog.DotNet.UseButtonFocusColor"><![CDATA[光标悬停在按钮上时更改按钮背景色]]></tr>
+    <tr id="UI.ConfigDialog.DotNet.UseNewRandom"><![CDATA[使用新的高速随机数算法]]></tr>
+    <tr id="UI.ConfigDialog.DotNet.UseVAR"><![CDATA[启用VAR系命令]]></tr>
+    <tr id="UI.ConfigDialog.Rikai"><![CDATA[Rikai]]></tr>
+    <tr id="UI.ConfigDialog.Rikai.OtherEDICT1"><![CDATA[也可以使用上述以外的EDICT1格式文件]]></tr>
+    <tr id="UI.ConfigDialog.Rikai.RikaiEnable"><![CDATA[启用弹窗翻译词典（日语→英语）]]></tr>
+    <tr id="UI.ConfigDialog.Rikai.RikaiFilename"><![CDATA[Dictionary文件路径（相对于Emuera本体的相对路径）]]></tr>
+    <tr id="UI.ConfigDialog.Rikai.RikaiLink"><![CDATA[可以从以下链接下载Dictionary文件]]></tr>
+    <tr id="UI.ConfigDialog.Rikai.RikaiSeparateBox"><![CDATA[高亮显示正在翻译的词句]]></tr>
+    <tr id="UI.MainWindow.File.ReloadResource"><![CDATA[重新载入资源文件夹(&R)]]></tr>
 </lang>
