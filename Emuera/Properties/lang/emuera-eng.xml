@@ -748,6 +748,8 @@ Settings apply only at start]]></tr>
     <tr id="Error.UnexpectedSaveError"><![CDATA[Unexpected error while saving has occurred]]></tr>
     <tr id="Error.NoData"><![CDATA[No data found]]></tr>
     <tr id="Error.UnexpectedScriptEnd"><![CDATA[Script execution terminated]]></tr>
+    <tr id="Error.StateAlreadySaved"><![CDATA[Attempted to save the current state while a saved state already exists]]></tr>
+    <tr id="Error.NoSavedState"><![CDATA[Attempted to restore the previous state, but no saved state exists]]></tr>
     <tr id="Error.CanNotSpecifiedKeyword"><![CDATA[{1} cannot be specified inside {0}]]></tr>
     <tr id="Error.NotIdentifierAfterKeyword"><![CDATA[A valid identifier has not been specified after {0}]]></tr>
     <tr id="Error.NotIdentifierArg"><![CDATA[No argument definition after identifier]]></tr>

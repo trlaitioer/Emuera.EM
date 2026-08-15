@@ -974,6 +974,8 @@ internal sealed partial class Lang
 		[Managed] public static TranslatableString UnexpectedSaveError { get; } = new TranslatableString("セーブ中に予期しないエラーが発生しました");
 		[Managed] public static TranslatableString NoData { get; } = new TranslatableString("データがありません");
 		[Managed] public static TranslatableString UnexpectedScriptEnd { get; } = new TranslatableString("予期しないスクリプト終端です");
+		[Managed] public static TranslatableString StateAlreadySaved { get; } = new TranslatableString("記憶している状態があるのに再度記憶しようとした");
+		[Managed] public static TranslatableString NoSavedState { get; } = new TranslatableString("記憶している状態がないのに呼び戻しされた");
 		[Managed] public static TranslatableString CanNotSpecifiedKeyword { get; } = new TranslatableString("{0}中では{1}キーワードは指定できません");
 		[Managed] public static TranslatableString NotIdentifierAfterKeyword { get; } = new TranslatableString("{0}の後に有効な識別子が指定されていません");
 		[Managed] public static TranslatableString NotIdentifierArg { get; } = new TranslatableString("識別子の後に引数定義がありません");

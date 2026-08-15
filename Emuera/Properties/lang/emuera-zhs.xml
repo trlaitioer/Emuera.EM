@@ -745,6 +745,8 @@ Emuera的历史版本有效的内容变得无效等等现象而设置的。
     <tr id="Error.UnexpectedSaveError"><![CDATA[存档时发生预期以外的错误]]></tr>
     <tr id="Error.NoData"><![CDATA[没有数据]]></tr>
     <tr id="Error.UnexpectedScriptEnd"><![CDATA[意料之外的脚本结尾]]></tr>
+    <tr id="Error.StateAlreadySaved"><![CDATA[在已有保存状态的情况下再次尝试保存状态]]></tr>
+    <tr id="Error.NoSavedState"><![CDATA[没有保存的状态却尝试恢复上一个状态]]></tr>
     <tr id="Error.CanNotSpecifiedKeyword"><![CDATA[{0}中不能指定关键字{1}]]></tr>
     <tr id="Error.NotIdentifierAfterKeyword"><![CDATA[{0}后没有指定有效的标识符]]></tr>
     <tr id="Error.NotIdentifierArg"><![CDATA[标识符之后没有参数定义]]></tr>

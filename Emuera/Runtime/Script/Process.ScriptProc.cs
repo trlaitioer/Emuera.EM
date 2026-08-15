@@ -958,9 +958,8 @@ internal sealed partial class Process
 	List<ProcessState> prevStateList = [];
 	public void saveCurrentState(bool single)
 	{
-		//怖いところだが、現状起こらない現象なので一旦消してみる
-		//if (single && (prevStateList.Count > 0))
-		//	throw new ExeEE("記憶している状態があるのに再度記憶しようとした");
+		if (single && prevStateList.Count > 0)
+			throw new ExeEE(trerror.StateAlreadySaved.Text);
 		if (state != null)
 		{
 			prevStateList.Add(state);
@@ -970,9 +969,8 @@ internal sealed partial class Process
 
 	public void loadPrevState()
 	{
-		//怖いところだが、現状起こらない現象なので一旦消してみる
-		//if (prevStateList.Count == 0)
-		//	throw new ExeEE("記憶している状態がないのに呼び戻しされた");
+		if (prevStateList.Count == 0)
+			throw new ExeEE(trerror.NoSavedState.Text);
 		if (state != null)
 		{
 			state.ClearFunctionList();
