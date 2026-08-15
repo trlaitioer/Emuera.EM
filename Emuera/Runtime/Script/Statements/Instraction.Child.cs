@@ -37,7 +37,7 @@ internal sealed partial class FunctionIdentifier
 		{
 			var arg = (IntAsignArgument)func.Argument;
 			var varName = arg.ConstStr;
-	
+
 			var privateVar = func.ParentLabelLine.GetPrivateVariable(varName);
 			privateVar.ScopeIn();
 			if (privateVar.GetLength(0) == 1)
@@ -3113,15 +3113,26 @@ internal sealed partial class FunctionIdentifier
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
 			SpForNextArgment forArg = (SpForNextArgment)func.Argument;
-			func.LoopCounter = forArg.Cnt;
 			//1.725 順序変更。REPEATにならう。
-			func.LoopCounter.SetValue(forArg.Start.GetIntValue(exm), exm);
-			func.LoopEnd = forArg.End.GetIntValue(exm);
-			func.LoopStep = forArg.Step.GetIntValue(exm);
-			if ((func.LoopStep > 0) && (func.LoopEnd > func.LoopCounter.GetIntValue(exm)))//まだ回数が残っているなら、
-				return;//そのまま次の行へ
-			else if ((func.LoopStep < 0) && (func.LoopEnd < func.LoopCounter.GetIntValue(exm)))//まだ回数が残っているなら、
-				return;//そのまま次の行へ
+
+			VariableTerm loopCounter = func.LoopCounter = forArg.Cnt;
+			long start = forArg.Start.GetIntValue(exm);
+			loopCounter.SetValue(start, exm);
+			long end = func.LoopEnd = forArg.End.GetIntValue(exm);
+			long step = func.LoopStep = forArg.Step.GetIntValue(exm);
+
+			if (loopCounter.isAllConst)
+			{
+				if ((step > 0 && end > start) || (step < 0 && end < start))
+					return;
+			}
+			else
+			{
+				if ((step > 0) && (end > loopCounter.GetIntValue(exm)))
+					return;
+				if ((step < 0) && (end < loopCounter.GetIntValue(exm)))
+					return;
+			}
 			state.JumpTo(func.JumpTo);
 		}
 	}
@@ -3480,14 +3491,15 @@ internal sealed partial class FunctionIdentifier
 					state.JumpTo(jumpTo.JumpTo);
 					return;
 				}
-				unchecked
-				{
-					jumpTo.LoopCounter.ChangeValue(jumpTo.LoopStep, exm);
-				}
-				long counter = jumpTo.LoopCounter.GetIntValue(exm);
+				VariableTerm loopCounter = jumpTo.LoopCounter;
+				long step = jumpTo.LoopStep;
+				long end = jumpTo.LoopEnd;
+				long counter;
+				unchecked { counter = loopCounter.ChangeValue(step, exm); }
+				if (!loopCounter.isAllConst)
+					counter = loopCounter.GetIntValue(exm);
 				//まだ回数が残っているなら、
-				if (((jumpTo.LoopStep > 0) && (jumpTo.LoopEnd > counter))
-					|| ((jumpTo.LoopStep < 0) && (jumpTo.LoopEnd < counter)))
+				if ((step > 0 && end > counter) || (step < 0 && end < counter))
 					state.JumpTo(func.JumpTo);
 				else
 					state.JumpTo(jumpTo.JumpTo);
@@ -3534,14 +3546,15 @@ internal sealed partial class FunctionIdentifier
 				state.JumpTo(jumpTo.JumpTo);
 				return;
 			}
-			unchecked
-			{
-				jumpTo.LoopCounter.ChangeValue(jumpTo.LoopStep, exm);
-			}
-			long counter = jumpTo.LoopCounter.GetIntValue(exm);
+			VariableTerm loopCounter = jumpTo.LoopCounter;
+			long step = jumpTo.LoopStep;
+			long end = jumpTo.LoopEnd;
+			long counter;
+			unchecked { counter = loopCounter.ChangeValue(step, exm); }
+			if (!loopCounter.isAllConst)
+				counter = loopCounter.GetIntValue(exm);
 			//まだ回数が残っているなら、
-			if (((jumpTo.LoopStep > 0) && (jumpTo.LoopEnd > counter))
-				|| ((jumpTo.LoopStep < 0) && (jumpTo.LoopEnd < counter)))
+			if ((step > 0 && end > counter) || (step < 0 && end < counter))
 				state.JumpTo(func.JumpTo);
 		}
 	}
