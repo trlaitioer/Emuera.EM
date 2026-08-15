@@ -11,3 +11,9 @@ Emuera/obj/*
 
 *.diff
 *.patch
+
+.codegraph
+CLAUDE.md
+AGENT.md
+.agents/*
+.claude/*
