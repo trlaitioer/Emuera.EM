@@ -77,8 +77,10 @@ internal sealed class ErbLoader
 						output.PrintSystemLine(string.Format(trsl.LoadingFile.Text, filename));
 #endif
 					await Task.Run(() => loadErb(file, filename, isOnlyEvent));
-				};
-			};
+				}
+				;
+			}
+			;
 			#endregion
 
 			foreach (var erb in erbFiles)
@@ -95,7 +97,8 @@ internal sealed class ErbLoader
 					output.PrintSystemLine(string.Format(trsl.LoadingFile.Text, filename));
 #endif
 				await Task.Run(() => loadErb(file, filename, isOnlyEvent));
-			};
+			}
+			;
 			ParserMediator.FlushWarningList();
 #if DEBUG
 			output.PrintSystemLine(string.Format(trsl.ElapsedTime.Text, (DateTime.Now - starttime).TotalMilliseconds));
@@ -162,7 +165,8 @@ internal sealed class ErbLoader
 					output.PrintSystemLine(string.Format(trsl.LoadingFile.Text, fname));
 				}
 				loadErb(fpath, fname, isOnlyEvent);
-			};
+			}
+			;
 		});
 		if (Program.AnalysisMode)
 			output.NewLine();
@@ -830,7 +834,7 @@ internal sealed class ErbLoader
 
 
 	public Dictionary<string, long> warningDic = [];
-	private void printFunctionNotFoundWarning(string str, LogicalLine line, int level, bool isError)
+	private void printFunctionNotFoundWarning(string str, InstructionLine line, int level, bool isError)
 	{
 		if (Program.AnalysisMode)
 		{
@@ -1038,8 +1042,7 @@ internal sealed class ErbLoader
 					break;
 				case FunctionCode.IF:
 					nestStack.Push(func);
-					func.IfCaseList = [];
-					func.IfCaseList.AddFirst(func);
+					func.IfCaseList = [func];
 					break;
 				case FunctionCode.SELECTCASE:
 					nestStack.Push(func);
@@ -1120,9 +1123,9 @@ internal sealed class ErbLoader
 							ParserMediator.Warn(string.Format(trerror.InvalidElse.Text, func.Function.Name), func, 2, true, false);
 							break;
 						}
-						if (ifLine.IfCaseList.Last.Value.FunctionCode == FunctionCode.ELSE)
+						if (ifLine.IfCaseList[^1].FunctionCode == FunctionCode.ELSE)
 							ParserMediator.Warn(string.Format(trerror.InvalidElseAfterElse.Text, func.Function.Name), func, 1, false, false);
-						ifLine.IfCaseList.AddLast(func);
+						ifLine.IfCaseList.Add(func);
 					}
 					break;
 				case FunctionCode.ENDIF:
@@ -1162,9 +1165,9 @@ internal sealed class ErbLoader
 							break;
 						}
 						if (selectLine.IfCaseList.Count > 0 &&
-							selectLine.IfCaseList.Last.Value.FunctionCode == FunctionCode.CASEELSE)
+							selectLine.IfCaseList[^1].FunctionCode == FunctionCode.CASEELSE)
 							ParserMediator.Warn(string.Format(trerror.InvalidCaseAfterCaseelse.Text, func.Function.Name), func, 1, false, false);
-						selectLine.IfCaseList.AddLast(func);
+						selectLine.IfCaseList.Add(func);
 					}
 					break;
 				case FunctionCode.ENDSELECT:
@@ -1490,7 +1493,7 @@ internal sealed class ErbLoader
 		while (true)
 		{
 			nextLine = nextLine.NextLine;
-			if (!(nextLine is InstructionLine func))
+			if (nextLine is not InstructionLine func)
 			{
 				if (nextLine is NullLine || nextLine is FunctionLabelLine)
 					break;

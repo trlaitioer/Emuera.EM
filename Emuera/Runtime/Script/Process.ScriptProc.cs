@@ -39,12 +39,6 @@ internal sealed partial class Process
 				{//非DebugモードでのDebug系命令。何もしない。（SIF文のためにコメント行扱いにはできない）
 					continue;
 				}
-				if (func.Argument == null)
-				{
-					ArgumentParser.SetArgumentTo(func);
-					if (func.IsError)
-						throw new CodeEE(func.ErrMes);
-				}
 				if (skipPrint && function.IsPrint())
 				{
 					if (userDefinedSkip && function.IsInput())
@@ -54,6 +48,12 @@ internal sealed partial class Process
 						throw new CodeEE(trerror.SkipdispInputError3.Text);
 					}
 					continue;
+				}
+				if (func.Argument == null)
+				{
+					ArgumentParser.SetArgumentTo(func);
+					if (func.IsError)
+						throw new CodeEE(func.ErrMes);
 				}
 				if (function.Instruction != null)
 					function.Instruction.DoInstruction(exm, func, state);
