@@ -147,35 +147,35 @@ internal sealed class VariableIdentifier
 			if ((code & VariableCode.__ARRAY_2D__) == VariableCode.__ARRAY_2D__)
 			{
 				if ((code & VariableCode.__ARRAY_1D__) == VariableCode.__ARRAY_1D__)
-					throw new ExeEE("ARRAY2DとARRAY1Dは排他");
+					throw new ExeEE(trerror.Array2DAndArray1DExclusive.Text);
 			}
 			if (((code & VariableCode.__INTEGER__) != VariableCode.__INTEGER__)
 				&& ((code & VariableCode.__STRING__) != VariableCode.__STRING__))
-				throw new ExeEE("INTEGERとSTRINGのどちらかは必須");
+				throw new ExeEE(trerror.IntegerOrStringRequired.Text);
 			if (((code & VariableCode.__INTEGER__) == VariableCode.__INTEGER__)
 				&& ((code & VariableCode.__STRING__) == VariableCode.__STRING__))
-				throw new ExeEE("INTEGERとSTRINGは排他");
+				throw new ExeEE(trerror.IntegerAndStringExclusive.Text);
 			if ((code & VariableCode.__EXTENDED__) != VariableCode.__EXTENDED__)
 			{
 				if ((code & VariableCode.__SAVE_EXTENDED__) == VariableCode.__SAVE_EXTENDED__)
-					throw new ExeEE("SAVE_EXTENDEDにはEXTENDEDフラグ必須");
+					throw new ExeEE(trerror.SaveExtendedRequiresExtended.Text);
 				if ((code & VariableCode.__LOCAL__) == VariableCode.__LOCAL__)
-					throw new ExeEE("LOCALにはEXTENDEDフラグ必須");
+					throw new ExeEE(trerror.LocalRequiresExtended.Text);
 				if ((code & VariableCode.__GLOBAL__) == VariableCode.__GLOBAL__)
-					throw new ExeEE("GLOBALにはEXTENDEDフラグ必須");
+					throw new ExeEE(trerror.GlobalRequiresExtended.Text);
 				if ((code & VariableCode.__ARRAY_2D__) == VariableCode.__ARRAY_2D__)
-					throw new ExeEE("ARRAY2DにはEXTENDEDフラグ必須");
+					throw new ExeEE(trerror.Array2DRequiresExtended.Text);
 			}
 			if (((code & VariableCode.__SAVE_EXTENDED__) == VariableCode.__SAVE_EXTENDED__)
 				&& ((code & VariableCode.__UNCHANGEABLE__) == VariableCode.__UNCHANGEABLE__))
-				throw new ExeEE("CALCとSAVE_EXTENDEDは排他");
+				throw new ExeEE(trerror.UnchangeableAndSaveExtendedExclusive.Text);
 			if (((code & VariableCode.__SAVE_EXTENDED__) == VariableCode.__SAVE_EXTENDED__)
 				&& ((code & VariableCode.__CALC__) == VariableCode.__CALC__))
-				throw new ExeEE("UNCHANGEABLEとSAVE_EXTENDEDは排他");
+				throw new ExeEE(trerror.CalcAndSaveExtendedExclusive.Text);
 			if (((code & VariableCode.__SAVE_EXTENDED__) == VariableCode.__SAVE_EXTENDED__)
 				&& ((code & VariableCode.__ARRAY_2D__) == VariableCode.__ARRAY_2D__)
 				&& ((code & VariableCode.__STRING__) == VariableCode.__STRING__))
-				throw new ExeEE("STRINGかつARRAY2DのSAVE_EXTENDEDは未実装");
+				throw new ExeEE(trerror.StringArray2DSaveExtendedNotImplemented.Text);
 #endif
 			nameDic.Add(key, code);
 			////セーブが必要な変数リストの作成

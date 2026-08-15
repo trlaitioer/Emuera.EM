@@ -2,6 +2,7 @@
 using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.Runtime.Utils;
 using MinorShift.Emuera.Runtime.Utils.EvilMask;
+using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -178,7 +179,7 @@ internal sealed class ConsoleButtonString
 			{
 				ConsoleStyledString oldcss = strArray[cssIndex] as ConsoleStyledString;
 				if (oldcss == null || !oldcss.CanDivide)
-					throw new ExeEE("文字列分割異常");
+					throw new ExeEE(trerror.StringSplitError.Text);
 				ConsoleStyledString newCss = oldcss.DivideAt(divIndex - index, sm);
 				cssListA.Add(oldcss);
 				if (newCss != null)

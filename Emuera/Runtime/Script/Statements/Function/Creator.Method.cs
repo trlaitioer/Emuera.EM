@@ -3804,7 +3804,7 @@ internal static partial class FunctionMethodCreator
 		{
 			VariableToken var = GlobalStatic.IdentifierDictionary.GetVariableToken(arguments[0].GetStrValue(exm), null, true);
 			if (var == null)
-				throw new CodeEE("GETNUMBの1番目の引数(\"" + arguments[0].GetStrValue(exm) + "\")が変数名ではありません");
+				throw new CodeEE(string.Format(trerror.NotVariableName.Text, Name, 1, arguments[0].GetStrValue(exm)));
 			string key = arguments[1].GetStrValue(exm);
 			#region EE_ERD
 			//GETNUMBは使ってないのでテストしていない
@@ -6804,7 +6804,7 @@ internal static partial class FunctionMethodCreator
 				case "GETKEY": return (s < 0) ? 1 : 0;
 				case "GETKEYTRIGGERED": return (s < 0) && (toggle != keytoggle[keycode]) ? 1 : 0;//初回はtrue、2回目以降はトグル状態が前回と違う場合のみ1
 			}
-			throw new ExeEE("異常な分岐");
+			throw new ExeEE(trerror.AbnormalBranch.Text);
 		}
 	}
 
@@ -6823,7 +6823,7 @@ internal static partial class FunctionMethodCreator
 				case "MOUSEX": return exm.Console.GetMousePosition().X;
 				case "MOUSEY": return exm.Console.GetMousePosition().Y;
 			}
-			throw new ExeEE("異常な名前");
+			throw new ExeEE(trerror.AbnormalName.Text);
 		}
 	}
 	#region EE_MOUSEB

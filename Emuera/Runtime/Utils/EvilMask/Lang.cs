@@ -984,6 +984,24 @@ internal sealed partial class Lang
 		[Managed] public static TranslatableString ExtraCharacterAfterDeclaration { get; } = new TranslatableString("宣言の後に余分な文字があります");
 		[Managed] public static TranslatableString UnexpectedToken { get; } = new TranslatableString("引数の解析中に予期しないトークン\"{0}\"を発見しました");
 		[Managed] public static TranslatableString ArgParsingError { get; } = new TranslatableString("引数の解析中にエラーが発生しました");
+		[Managed] public static TranslatableString NotImplementedOrCallError { get; } = new TranslatableString("未実装 or 呼び出しミス");
+		[Managed] public static TranslatableString NotImplemented { get; } = new TranslatableString("実装されていない");
+		[Managed] public static TranslatableString StringSplitError { get; } = new TranslatableString("文字列分割異常");
+		[Managed] public static TranslatableString StrFormUnexpected { get; } = new TranslatableString("何かおかしい");
+		[Managed] public static TranslatableString TypeCheckIsCallersResponsibility { get; } = new TranslatableString("型チェックは呼び出し元が行うこと");
+		[Managed] public static TranslatableString ReturnTypeMismatch { get; } = new TranslatableString("戻り値の型が違う");
+		[Managed] public static TranslatableString AbnormalBranch { get; } = new TranslatableString("異常な分岐");
+		[Managed] public static TranslatableString AbnormalName { get; } = new TranslatableString("異常な名前");
+		[Managed] public static TranslatableString Array2DAndArray1DExclusive { get; } = new TranslatableString("ARRAY2DとARRAY1Dは排他");
+		[Managed] public static TranslatableString IntegerOrStringRequired { get; } = new TranslatableString("INTEGERとSTRINGのどちらかは必須");
+		[Managed] public static TranslatableString IntegerAndStringExclusive { get; } = new TranslatableString("INTEGERとSTRINGは排他");
+		[Managed] public static TranslatableString SaveExtendedRequiresExtended { get; } = new TranslatableString("SAVE_EXTENDEDにはEXTENDEDフラグ必須");
+		[Managed] public static TranslatableString LocalRequiresExtended { get; } = new TranslatableString("LOCALにはEXTENDEDフラグ必須");
+		[Managed] public static TranslatableString GlobalRequiresExtended { get; } = new TranslatableString("GLOBALにはEXTENDEDフラグ必須");
+		[Managed] public static TranslatableString Array2DRequiresExtended { get; } = new TranslatableString("ARRAY2DにはEXTENDEDフラグ必須");
+		[Managed] public static TranslatableString UnchangeableAndSaveExtendedExclusive { get; } = new TranslatableString("UNCHANGEABLEとSAVE_EXTENDEDは排他");
+		[Managed] public static TranslatableString CalcAndSaveExtendedExclusive { get; } = new TranslatableString("CALCとSAVE_EXTENDEDは排他");
+		[Managed] public static TranslatableString StringArray2DSaveExtendedNotImplemented { get; } = new TranslatableString("STRINGかつARRAY2DのSAVE_EXTENDEDは未実装");
 		[Managed] public static TranslatableString CanNotSpecifiedWith { get; } = new TranslatableString("{0}と{1}キーワードは同時に指定できません");
 		[Managed] public static TranslatableString DuplicateKeyword { get; } = new TranslatableString("{0}キーワードが二重に指定されています");
 		[Managed] public static TranslatableString CanNotUseKeywordGlobalVar { get; } = new TranslatableString("広域変数の宣言に{0}キーワードは指定できません");
@@ -1258,6 +1276,10 @@ internal sealed partial class Lang
 		[Managed] public static TranslatableString ReloadResourceAsk { get; } = new TranslatableString("リソースフォルダを読み直します");
 		[Managed] public static TranslatableString ReloadResource { get; } = new TranslatableString("リソースフォルダを読み直します");
 		[Managed] public static TranslatableString DoNotSupportWINAPI { get; } = new TranslatableString("WINAPIモードはサポートされていません");
+		[Managed] public static TranslatableString ConsoleLogSaveFailed { get; } = new TranslatableString("コンソールログの保存に失敗しました");
+		[Managed] public static TranslatableString WatchListSaveFailed { get; } = new TranslatableString("変数ウォッチリストの保存に失敗しました");
+		[Managed] public static TranslatableString WatchListLoadFailed { get; } = new TranslatableString("変数ウォッチリストの読込に失敗しました");
+		[Managed] public static TranslatableString DebugWindow { get; } = new TranslatableString("デバッグウインドウ");
 		//[Managed] public static TranslatableString { get; } = new TranslatableString("");
 		//[Managed] public static TranslatableString { get; } = new TranslatableString("");
 		//[Managed] public static TranslatableString { get; } = new TranslatableString("");
@@ -1281,6 +1303,7 @@ internal sealed partial class Lang
 	public sealed class SystemLine
 	{
 		[Managed] public static TranslatableString LoadingFile { get; } = new TranslatableString("{0}読み込み中・・・");
+		[Managed] public static TranslatableString Back { get; } = new TranslatableString("[100] 戻る");
 		[Managed] public static TranslatableString ElapsedTimeLoad { get; } = new TranslatableString("経過時間:{0}ms:{1}読み込み中・・・");
 		[Managed] public static TranslatableString ElapsedTime { get; } = new TranslatableString("経過時間:{0}ms");
 		[Managed] public static TranslatableString BuildingUserFunc { get; } = new TranslatableString("ユーザー定義関数のリストを構築中・・・");

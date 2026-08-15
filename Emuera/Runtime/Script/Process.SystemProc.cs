@@ -892,7 +892,7 @@ internal sealed partial class Process
 		}
 		//console.RefreshStrings(false);
 		//描画全部終わり
-		//console.PrintSingleLine("[100] 戻る");
+		//console.PrintSingleLine(trsl.Back.Text);
 		setWaitInput();
 		if (state.SystemState == SystemStateCode.SaveGame_Begin)
 			state.SystemState = SystemStateCode.SaveGame_WaitInput;
@@ -951,7 +951,7 @@ internal sealed partial class Process
 		}
 		console.RefreshStrings(false);
 		//描画全部終わり
-		console.PrintSingleLine("[100] 戻る");
+		console.PrintSingleLine(trsl.Back.Text);
 		setWaitInput();
 		if (state.SystemState == SystemStateCode.SaveGame_Begin)
 			state.SystemState = SystemStateCode.SaveGame_WaitInput;

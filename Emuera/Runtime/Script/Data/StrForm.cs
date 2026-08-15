@@ -82,7 +82,7 @@ internal sealed class StrForm
 						termArray[i] = CallnameTarget;
 						continue;
 				}
-				throw new ExeEE("何かおかしい");
+				throw new ExeEE(trerror.StrFormUnexpected.Text);
 			}
 			WordCollection wc;
 			AExpression operand;
@@ -223,8 +223,8 @@ internal sealed class StrForm
 			ReturnType = typeof(string);
 			argumentTypeArray = null;
 		}
-		public override string CheckArgumentType(string name, List<AExpression> arguments) { throw new ExeEE("型チェックは呼び出し元が行うこと"); }
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments) { throw new ExeEE("戻り値の型が違う"); }
+		public override string CheckArgumentType(string name, List<AExpression> arguments) { throw new ExeEE(trerror.TypeCheckIsCallersResponsibility.Text); }
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments) { throw new ExeEE(trerror.ReturnTypeMismatch.Text); }
 		public override SingleTerm GetReturnValue(ExpressionMediator exm, List<AExpression> arguments) { return new SingleStrTerm(GetStrValue(exm, arguments)); }
 	}
 

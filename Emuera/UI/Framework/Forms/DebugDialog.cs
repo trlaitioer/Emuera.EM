@@ -5,6 +5,7 @@ using MinorShift.Emuera.Runtime.Script.Parser;
 using MinorShift.Emuera.Runtime.Script.Statements.Expression;
 using MinorShift.Emuera.Runtime.Utils;
 using MinorShift.Emuera.Runtime.Utils.EvilMask;
+using trmb = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.MessageBox;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -252,7 +253,7 @@ namespace MinorShift.Emuera.Forms
 			}
 			catch
 			{
-				MessageBox.Show("コンソールログの保存に失敗しました", "デバッグウインドウ");
+				MessageBox.Show(trmb.ConsoleLogSaveFailed.Text, trmb.DebugWindow.Text);
 				return;
 			}
 			finally
@@ -274,7 +275,7 @@ namespace MinorShift.Emuera.Forms
 			}
 			catch
 			{
-				MessageBox.Show("変数ウォッチリストの保存に失敗しました", "デバッグウインドウ");
+				MessageBox.Show(trmb.WatchListSaveFailed.Text, trmb.DebugWindow.Text);
 				return;
 			}
 			finally
@@ -301,7 +302,7 @@ namespace MinorShift.Emuera.Forms
 			}
 			catch
 			{
-				MessageBox.Show("変数ウォッチリストの読込に失敗しました", "デバッグウインドウ");
+				MessageBox.Show(trmb.WatchListLoadFailed.Text, trmb.DebugWindow.Text);
 				return;
 			}
 			finally
