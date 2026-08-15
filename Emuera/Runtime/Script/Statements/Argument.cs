@@ -295,7 +295,7 @@ internal sealed class SpCallSharpArgment : Argument
 	readonly public AExpression FuncnameTerm;
 	readonly public List<AExpression> SubNames;
 	readonly public List<AExpression> RowArgs;
-	public UserDefinedFunctionArgument UDFArgument;
+	// public UserDefinedFunctionArgument UDFArgument;
 	public IPluginMethod CallFunc;
 }
 

@@ -629,7 +629,7 @@ partial class MainWindow
 
 	#endregion
 
-	private System.Windows.Forms.Timer timer;
+	// private System.Windows.Forms.Timer timer;
 	private System.Windows.Forms.VScrollBar vScrollBar;
 	private System.Windows.Forms.MenuStrip menuStrip;
 	private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;

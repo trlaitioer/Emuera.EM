@@ -6,9 +6,9 @@ namespace MinorShift.Emuera.Runtime.Utils;
 
 public static class EncodingHandler
 {
-	public static Encoding UTF8Encoding = new UTF8Encoding(false, true);
-	public static Encoding shiftjisEncoding = GetEncoding(932);
-	public static Encoding UTF8BOMEncoding = new UTF8Encoding(true, true);
+	public readonly static Encoding UTF8Encoding = new UTF8Encoding(false, true);
+	public readonly static Encoding shiftjisEncoding = GetEncoding(932);
+	public readonly static Encoding UTF8BOMEncoding = new UTF8Encoding(true, true);
 
 
 	public static Encoding DetectEncoding(string filePath)
