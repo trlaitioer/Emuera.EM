@@ -34,10 +34,10 @@ jobs:
         uses: microsoft/setup-msbuild@v2
 
       - name: Publish WMP (Release)
-        run: msbuild $env:PROJECT /t:Publish /p:Configuration=Release /p:Platform=x64 /p:RuntimeIdentifier=win-x64 /p:SelfContained=false /p:DebugSymbols=false /p:DebugType=none /nologo /v:minimal
+        run: msbuild $env:PROJECT /restore /t:Publish /p:Configuration=Release /p:Platform=x64 /p:RuntimeIdentifier=win-x64 /p:SelfContained=false /p:DebugSymbols=false /p:DebugType=none /nologo /v:minimal
 
       - name: Publish NAudio (Release-NAudio)
-        run: msbuild $env:PROJECT /t:Publish /p:Configuration=Release-NAudio /p:Platform=x64 /p:RuntimeIdentifier=win-x64 /p:SelfContained=false /p:DebugSymbols=false /p:DebugType=none /nologo /v:minimal
+        run: msbuild $env:PROJECT /restore /t:Publish /p:Configuration=Release-NAudio /p:Platform=x64 /p:RuntimeIdentifier=win-x64 /p:SelfContained=false /p:DebugSymbols=false /p:DebugType=none /nologo /v:minimal
 
       - name: Package
         shell: pwsh
