@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
@@ -7,7 +7,7 @@
         <Platforms>x64;x86</Platforms>
         <UseWindowsForms>true</UseWindowsForms>
         <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
-        <Nullable>disable</Nullable>
+        <Nullable>annotations</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <Configurations>Debug;Release;Debug-NAudio;Release-NAudio</Configurations>
         <EnableNETAnalyzers>true</EnableNETAnalyzers>

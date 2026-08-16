@@ -1,4 +1,4 @@
-﻿using MinorShift.Emuera.GameView;
+using MinorShift.Emuera.GameView;
 using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.Runtime.Script;
 using MinorShift.Emuera.Runtime.Script.Data;
@@ -580,14 +580,14 @@ internal sealed partial class Process(EmueraConsole view)
 
 	public static string getRawTextFormFilewithLine(ScriptPosition? position)
 	{
-		string extents = position.Value.Filename[^4..].ToLower();
-		if (extents == ".erb")
+		var filename = position.Value.Filename.AsSpan();
+		if (filename.EndsWith(".erb", StringComparison.OrdinalIgnoreCase))
 		{
 			return File.Exists(Program.ErbDir + position.Value.Filename)
 				? position.Value.LineNo > 0 ? File.ReadLines(Program.ErbDir + position.Value.Filename, EncodingHandler.DetectEncoding(Program.ErbDir + position.Value.Filename)).Skip(position.Value.LineNo - 1).First() : ""
 				: "";
 		}
-		else if (extents == ".csv")
+		else if (filename.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
 		{
 			return File.Exists(Program.CsvDir + position.Value.Filename)
 				? position.Value.LineNo > 0 ? File.ReadLines(Program.CsvDir + position.Value.Filename, EncodingHandler.DetectEncoding(Program.CsvDir + position.Value.Filename)).Skip(position.Value.LineNo - 1).First() : ""

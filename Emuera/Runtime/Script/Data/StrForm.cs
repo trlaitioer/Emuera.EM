@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.GameData.Variable;
+#nullable enable
+using MinorShift.Emuera.GameData.Variable;
 using MinorShift.Emuera.Runtime.Script.Parser;
 using MinorShift.Emuera.Runtime.Script.Statements;
 using MinorShift.Emuera.Runtime.Script.Statements.Expression;
@@ -15,18 +16,18 @@ namespace MinorShift.Emuera.Runtime.Script.Data;
 internal sealed class StrForm
 {
 	private StrForm() { }
-	string[] strs;//terms.Count + 1
-	AExpression[] terms;
+	string[] strs = null!;//terms.Count + 1
+	AExpression[] terms = null!;
 
 	#region static
-	static FormattedStringMethod formatCurlyBrace;
-	static FormattedStringMethod formatPercent;
-	static FormattedStringMethod formatYenAt;
-	static FunctionMethodTerm NameTarget;// "***"
-	static FunctionMethodTerm CallnameMaster;// "+++"
-	static FunctionMethodTerm CallnamePlayer;// "==="
-	static FunctionMethodTerm NameAssi;// "///"
-	static FunctionMethodTerm CallnameTarget;// "$$$"
+	static FormattedStringMethod formatCurlyBrace = null!;
+	static FormattedStringMethod formatPercent = null!;
+	static FormattedStringMethod formatYenAt = null!;
+	static FunctionMethodTerm NameTarget = null!;// "***"
+	static FunctionMethodTerm CallnameMaster = null!;// "+++"
+	static FunctionMethodTerm CallnamePlayer = null!;// "==="
+	static FunctionMethodTerm NameAssi = null!;// "///"
+	static FunctionMethodTerm CallnameTarget = null!;// "$$$"
 	public static void Initialize()
 	{
 		formatCurlyBrace = new FormatCurlyBrace();
@@ -45,11 +46,11 @@ internal sealed class StrForm
 		VariableTerm callnameplayer = new(callnameID, [player]);
 		VariableTerm nameassi = new(nameID, [assi]);
 		VariableTerm callnametarget = new(callnameID, [target]);
-		NameTarget = new FunctionMethodTerm(formatPercent, [nametarget, null, null]);
-		CallnameMaster = new FunctionMethodTerm(formatPercent, [callnamemaster, null, null]);
-		CallnamePlayer = new FunctionMethodTerm(formatPercent, [callnameplayer, null, null]);
-		NameAssi = new FunctionMethodTerm(formatPercent, [nameassi, null, null]);
-		CallnameTarget = new FunctionMethodTerm(formatPercent, [callnametarget, null, null]);
+		NameTarget = new FunctionMethodTerm(formatPercent, [nametarget, null!, null!]);
+		CallnameMaster = new FunctionMethodTerm(formatPercent, [callnamemaster, null!, null!]);
+		CallnamePlayer = new FunctionMethodTerm(formatPercent, [callnameplayer, null!, null!]);
+		NameAssi = new FunctionMethodTerm(formatPercent, [nameassi, null!, null!]);
+		CallnameTarget = new FunctionMethodTerm(formatPercent, [callnametarget, null!, null!]);
 	}
 
 	public static StrForm FromWordToken(StrFormWord wt)
@@ -86,7 +87,7 @@ internal sealed class StrForm
 			}
 			WordCollection wc;
 			AExpression operand;
-			YenAtSubWord yenat = SWT as YenAtSubWord;
+			YenAtSubWord? yenat = SWT as YenAtSubWord;
 			if (yenat != null)
 			{
 				wc = yenat.Words;
@@ -116,8 +117,8 @@ internal sealed class StrForm
 				else
 					throw new CodeEE(trerror.EmptyPer.Text);
 			}
-			AExpression second = null;
-			SingleTerm third = null;
+			AExpression second = null!;
+			SingleTerm third = null!;
 			wc.ShiftNext();
 			if (!wc.EOL)
 			{
@@ -161,7 +162,7 @@ internal sealed class StrForm
 		}
 	}
 
-	public AExpression GetAExpression()
+	public AExpression? GetAExpression()
 	{
 		if (strs.Length == 2 && strs[0].Length == 0 && strs[1].Length == 0)
 			return terms[0];
@@ -221,7 +222,7 @@ internal sealed class StrForm
 		{
 			CanRestructure = true;
 			ReturnType = typeof(string);
-			argumentTypeArray = null;
+			argumentTypeArray = null!;
 		}
 		public override string CheckArgumentType(string name, List<AExpression> arguments) { throw new ExeEE(trerror.TypeCheckIsCallersResponsibility.Text); }
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments) { throw new ExeEE(trerror.ReturnTypeMismatch.Text); }
