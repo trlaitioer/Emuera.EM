@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      运行测试必须带 -c Debug-NAudio(见 README.md):
+      Emuera.csproj 中 NAudio 相关 PackageReference 是按配置条件声明的,
+      只有 NAudio 配置才引入包并排除 Sound.WMP.cs(默认配置引用 WMPLib COM,
+      dotnet build/test 无法解析)。-c Debug-NAudio 使还原与构建全局一致。
+    -->
+    <ProjectReference Include="..\Emuera\Emuera.csproj" />
+  </ItemGroup>
+
+</Project>
