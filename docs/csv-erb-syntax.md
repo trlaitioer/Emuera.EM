@@ -1,4 +1,4 @@
-# eraBasic 语法速查(csv / erb)
+# eraBasic 语法速查(csv / erb / erh)
 
 > 定位:阅读解释器代码、编写单元测试、编写翻译覆盖层(`.erbx`)时的语法参考。
 > 以当前代码为准,代码定位采用「文件 + 函数」;所有指令/式中函数的完整清单不在此复述,
@@ -7,7 +7,7 @@
 ## 1. 游戏数据构成
 
 - 游戏目录 = `csv/`(数据)+ `erb/`(脚本),由 `Program.SetDirPaths` 设定
-- `erb/` 下:`*.ERB` 函数脚本;`*.ERH` 头文件(`ErhLoader.LoadHeaderFiles`:`#DIM` 全局变量声明、`#DEFINE` 宏);`*.erd` 数据声明
+- `erb/` 下:`*.ERB` 函数脚本;`*.ERH` 头文件(`ErhLoader.LoadHeaderFiles`:`#DIM` 全局变量声明、`#DEFINE` 宏,详见 §9);`*.erd` 数据声明(§9 ERD)
 - `csv/` 清单见 §8
 
 ## 2. 行的通用规则(所有文件)
@@ -40,7 +40,7 @@
 
 - `@函数名` — 函数标签;事件函数(`EVENTFIRST` 等)自动标记 `IsEvent`/`IsSystem`
 - `$标签名` — 跳转标签(`GotoLabelLine`)
-- `#` 属性行(`ParseSharpLine`):`SINGLE`/`LATER`/`PRI`/`ONLY`(事件函数分桶)、`#FUNCTION`/`#FUNCTIONS`(函数可作式中函数调用,返回 long/string)、`LOCALSIZE n`/`LOCALSSIZE n`、`#DIM`/`#DIMS`(函数内私有变量声明)
+- `#` 属性行(`ParseSharpLine`):`SINGLE`/`LATER`/`PRI`/`ONLY`(事件函数分桶)、`#FUNCTION`/`#FUNCTIONS`(函数可作式中函数调用,返回 long/string)、`LOCALSIZE n`/`LOCALSSIZE n`、`#DIM`/`#DIMS`(函数内私有变量声明,语法见 §9)
 - 指令行:首标识符命中 `IdentifierDictionary.GetFunctionIdentifier` → `InstructionLine`
 - 代入行:`变量 = 表达式` → `SET` 指令;写 `==` 也被容忍为赋值(带互兼容警告);行首前置 `++`/`--` 同样归为 `SET`
 - `VARI`/`VARS` 指令(#DIM 的指令形态)仅在 `JSONConfig.Data.UseScopedVariableInstruction` 开启时注册
@@ -92,7 +92,27 @@
 - `_Rename.csv`:行格式 `替换文本,标识符`;脚本中写 `[[标识符]]`,读取层替换为「替换文本」(`ParserMediator.LoadEraExRenameFile`)
 - `_Replace.csv`:覆盖系统初值(PALAMLV/EXPLV/金钱标签等;`ConfigData.LoadReplaceFile` → `Config.SetReplace`——`VariableData.SetDefaultValue` 依赖其结果)
 
-## 9. 怪癖与陷阱(写测试/读代码时易踩)
+## 9. ERH 头文件与 ERD
+
+装载入口 `ErhLoader.LoadHeaderFiles`(收集 erb/ 下全部 `*.ERH`,逐文件 `loadHeaderFile` 解析)。
+
+- 行规则与 ERB 一致(`;` 注释、行连结、`_Rename.csv` 的 `[[标识符]]` 替换——`loadHeaderFile` 的 `EraStreamReader` 以 `useRename: true` 构造,对 ERH 同样生效);但**每个非空行必须以 `#` 开头**,否则报错
+- 支持的指令仅三种:`#DEFINE`、`#DIM`/`#DIMS`;`#FUNCTION`/`#FUNCTIONS` 解析处直接抛「未实现」(`analyzeSharpFunction` → `NotImplCodeEE`);其它 `#XXX` 报错。`#DEFINE`/`#DIM` 在 ERB 中**不可用**(ERB 的 `#` 属性行不含 DEFINE,`ParseSharpLine` 的 switch 会拒绝)
+- `#DEFINE 名 替换文本`(`analyzeSharpDefine`):替换文本缺省允许(空宏);宏名经 `CheckUserMacroName` 查重;**函数型宏(带参)已封禁**——解析代码仍在,但最终一律报错
+- `#DIM`/`#DIMS`(`UserDefinedVariableData.Create`,ERB 函数内 `#DIM` 走同一解析、`isPrivate: true`):
+
+  ```
+  #DIM  [关键字…] 变量名[,尺寸1[,尺寸2[,尺寸3]]][ = 初值1, 初值2, …]
+  ```
+
+  - 关键字按作用域区分:**ERH(全局)**可用 `GLOBAL`(全局、不进存档)、`SAVEDATA`(随存档)、`CHARADATA`(角色变量);**ERB 函数内**可用 `STATIC`(跨调用保持)、`DYNAMIC`(每次调用重建,默认)、`CONST`(常量,须先写 `STATIC`、必须有初值、仅一维);`REF`(引用型)解析处报「未实现」。跨作用域混用报错
+  - 尺寸为常量表达式(可引用 `#DEFINE` 宏;ERH 中 `#DIM` 统一入队延迟处理 `analyzeSharpDimLines`,靠重试解决跨文件定义顺序),取值 1~1000000,省略时为 1
+  - 初值列表仅一维可用、必须全为常量、个数不得超过尺寸(`CONST` 要求相等);省略尺寸但给初值时,尺寸 = 初值个数
+  - 维数上限 3(`CHARADATA` 上限 2;`CONST` 仅 1)
+- 作用域与可见性:ERH `#DIM` 经 `IdentifierDictionary.AddUseDefinedVariable` 注册为全局变量,全脚本可见;ERB 函数内 `#DIM` 是私有变量,跨函数引用写作 `变量@函数名`(§5)
+- ERD(EE 扩展,`Config.UseERD` 开启):`#DIM` 全局变量的初值数据文件。`ErhLoader.PrepareERDFileNames` 收集 erb/ 递归下 `*.erd` 与 csv/ 顶层 `*.csv`,按「文件主名 = 变量名」匹配(2D/3D 逐维命名 `变量名@维序号`),由 `ConstantData.UserDefineLoadData` 载入初值
+
+## 10. 怪癖与陷阱(写测试/读代码时易踩)
 
 1. `@`/`$`/`#` 行**不经** `LogicalLineParser.ParseLine`——由 `ErbLoader.loadErb` 路由到 `ParseLabelLine`/`ParseSharpLine`;对 `ParseLine` 直接传这些行会得到 `InvalidLine`
 2. 表达式三元分隔符是 `?` 与 `#`;`:` 永远是变量下标
@@ -100,3 +120,4 @@
 4. 指令名后必须跟空白/行尾/`;`;紧跟其它字符(含全角空格默认态)报错
 5. CP932 不可映射字符(如简体专用字)宽度按 1 计,做对齐类断言时选假名等可映射字符
 6. `IdentifierDictionary` 构造依赖 `VariableData`(→ `GameBase` + `ConstantData`),而 `FunctionIdentifier` 静态构造读取 `JSONConfig.Data`——单元测试的最小初始化序列见 `Emuera.Tests/TestBootstrap.cs` 及 `Emuera.Tests/README.md`
+7. `#DEFINE` 与全局 `#DIM` 只能写在 ERH;同名不同义:`#FUNCTION`(ERB,使函数可作式中调用)与 ERH 的 `#FUNCTION`/`#FUNCTIONS`(引用方法声明,**未实现**,写了就报错)不要混淆
