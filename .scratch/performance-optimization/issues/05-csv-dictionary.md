@@ -1,6 +1,6 @@
 # 性能:CSV 查询字典化
 
-Status: ready-for-human
+Status: 已完成(2026-08-29)
 Type: task
 
 ## 背景
@@ -30,3 +30,4 @@ Type: task
 - 评估完成:修正前提(线性扫描仅两个冷路径方法,`GetCharacterTemplate_UseSp` 已是二分);重新定位为等价性重构;重复项规则定为首个定义胜出,不复刻不可预测的旧行为。Status: needs-triage → ready-for-agent。
 - 实施完成(分支 `perf/csv-dictionary`):按方案新增 No/csvNo 双字典并在 `loadCharacterData` 末尾填充,三个 getter 改 `TryGetValue`;新增 `Emuera.Tests` 的 `ConstantDataTests`(4 例,经 `Preload.Load` + `LoadData` 真实加载路径覆盖按 No/csvNo 查找、SP 收录、`sp` 忽略、重复 No 先到先得);构建 0 错误,测试套件 81/81 通过。见验收一节,脚本冒烟(ADDCHARA 等)留待人工验收。Status: ready-for-agent → ready-for-human。
 - 按 review 收敛尾部循环并重跑构建与测试套件(仍 81/81),详见方案第 6 条。重复告警条数的收敛(每 No 一条)超出本票等价性范围,另立 issues/07-chara-duplicate-warning.md。
+- 人工冒烟验收通过(游戏正常加载、无报错),关闭。Status: ready-for-human → 已完成。

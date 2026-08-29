@@ -1,6 +1,6 @@
 # 告警:重复角色 No 收敛为每组一条
 
-Status: ready-for-agent
+Status: ready-for-human
 Type: task
 
 ## 背景
@@ -20,9 +20,15 @@ Type: task
    - 告警条数 N-1 → 1。
    - 关闭模式混合组(如 [普通, SP, 普通])现状会先后输出 Define1 与 Define2 两种提示,新规则只输出 Define1;"两种重复并存"细节不再可见。
 3. 实现为 05 告警块的就地改写(`group.Skip(1)` 循环 → `Count() > 1` 判断),不涉及其他方法。
+4. 告警文案追加定义次数:两条消息的源文案与内嵌翻译(eng/zhs)统一把"複数回/more than once/多次"改为 `{1}回` 占位,`{1}` 为该组定义总次数(≥2)。翻译按属性地址键控、整句替换,改源文案不影响既有翻译装载;译文缺 `{1}` 占位仅少显示次数(`string.Format` 多余实参无害)。
 
 ## 验收
 
 构建通过 + 代码 review。告警条数差异无法经现有单测断言(`ParserMediator.Warn` 在 console 为 null 时不落 warningList),仅能以重复 No 夹具人工观察;不做脚本冒烟。
 
 ## Comments
+
+### 2026-08-29
+
+- 实施完成(分支 `chore/chara-duplicate-warning`):按方案将 05 的 GroupBy 告警块改写为每组一条;构建 0 错误,测试套件 81/81 通过。告警条数差异按验收一节留待人工观察。Status: ready-for-agent → ready-for-human。
+- 按 review 追加文案携带定义次数(`{1}`,组内定义总次数),同步更新 Lang.cs 源文案与 eng/zhs 内嵌翻译;重跑构建与测试套件(仍 81/81)。
