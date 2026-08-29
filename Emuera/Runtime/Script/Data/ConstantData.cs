@@ -121,6 +121,8 @@ internal sealed class ConstantData
 	public long[] ItemPrice;
 
 	private readonly List<CharacterTemplate> CharacterTmplList;
+	private readonly Dictionary<long, CharacterTemplate> charaTmplByNo = [];
+	private readonly Dictionary<long, CharacterTemplate> charaTmplByCsvNo = [];
 	private EmueraConsole output;
 
 	public ConstantData()
@@ -1199,33 +1201,20 @@ internal sealed class ConstantData
 
 	public CharacterTemplate GetCharacterTemplate(long index)
 	{
-		foreach (CharacterTemplate chara in CharacterTmplList)
-		{
-			if (chara.No == index)
-				return chara;
-		}
-		return null;
+		charaTmplByNo.TryGetValue(index, out CharacterTemplate tmpl);
+		return tmpl;
 	}
 
 	public CharacterTemplate GetCharacterTemplate_UseSp(long index, bool sp)
 	{
-		var i = CharacterTmplList.BinarySearch(null, Comparer<CharacterTemplate>.Create((left, right) => (int)(left.No - index)));
-		if (i < 0)
-		{
-			return null;
-		}
-		return CharacterTmplList[i];
+		// sp 仅作签名兼容, 查询不区分 SP/普通角色
+		return GetCharacterTemplate(index);
 	}
 
 	public CharacterTemplate GetCharacterTemplateFromCsvNo(long index)
 	{
-		foreach (CharacterTemplate chara in CharacterTmplList)
-		{
-			if (chara.csvNo != index)
-				continue;
-			return chara;
-		}
-		return null;
+		charaTmplByCsvNo.TryGetValue(index, out CharacterTemplate tmpl);
+		return tmpl;
 	}
 
 	public CharacterTemplate GetPseudoChara()
@@ -1249,35 +1238,33 @@ internal sealed class ConstantData
 		for (int i = 0; i < csvPaths.Count; i++)
 			loadCharacterDataFile(csvPaths[i].Value, csvPaths[i].Key, disp);
 
-		if (useCompatiName)
+		// 模板收尾: Callname 兜底、SP 标记、查询字典(含 SP, 先到先得)
+		foreach (CharacterTemplate tmpl in CharacterTmplList)
 		{
-			foreach (CharacterTemplate tmpl in CharacterTmplList)
-				if (string.IsNullOrEmpty(tmpl.Callname))
-					tmpl.Callname = tmpl.Name;
+			if (useCompatiName && string.IsNullOrEmpty(tmpl.Callname))
+				tmpl.Callname = tmpl.Name;
+			tmpl.SetSpFlag();
+			charaTmplByNo.TryAdd(tmpl.No, tmpl);
+			charaTmplByCsvNo.TryAdd(tmpl.csvNo, tmpl);
 		}
 
-		foreach (CharacterTemplate tmpl in CharacterTmplList)
-			tmpl.SetSpFlag();
-
-		Dictionary<long, CharacterTemplate> nList = [];
-		Dictionary<long, CharacterTemplate> spList = [];
-		foreach (CharacterTemplate tmpl in CharacterTmplList)
+		// 重复 No 告警: CompatiSPChara 开启时普通/SP 分流各自检测(跨类同号不告警), 关闭时与组内首个比对
+		if (Config.Config.CompatiSPChara)
 		{
-			Dictionary<long, CharacterTemplate> targetList = nList;
-			if (Config.Config.CompatiSPChara && tmpl.IsSpchara)
-			{
-				targetList = spList;
-			}
-			if (targetList.TryGetValue(tmpl.No, out CharacterTemplate chara))
-			{
-
-				if (!Config.Config.CompatiSPChara && tmpl.IsSpchara != chara.IsSpchara)
-					ParserMediator.Warn(string.Format(trerror.DuplicateCharaDefine1.Text, tmpl.No.ToString()), null, 1);
-				else
+			foreach (var group in CharacterTmplList.GroupBy(tmpl => (tmpl.No, tmpl.IsSpchara)))
+				foreach (CharacterTemplate tmpl in group.Skip(1))
 					ParserMediator.Warn(string.Format(trerror.DuplicateCharaDefine2.Text, tmpl.No.ToString()), null, 1);
+		}
+		else
+		{
+			foreach (var group in CharacterTmplList.GroupBy(tmpl => tmpl.No))
+			{
+				CharacterTemplate first = group.First();
+				foreach (CharacterTemplate tmpl in group.Skip(1))
+					ParserMediator.Warn(string.Format(
+						tmpl.IsSpchara != first.IsSpchara ? trerror.DuplicateCharaDefine1.Text : trerror.DuplicateCharaDefine2.Text,
+						tmpl.No.ToString()), null, 1);
 			}
-			else
-				targetList.Add(tmpl.No, tmpl);
 		}
 	}
 
