@@ -641,8 +641,8 @@ internal sealed partial class Lang
 		[Managed] public static TranslatableString DifferentVarSize { get; } = new TranslatableString("\"{0}\"と\"{1}\"の要素数が異なります（大きい方に合わせます）");
 		[Managed] public static TranslatableString InappropriatePalamJuelPalamname { get; } = new TranslatableString("PALAMとJUELとPALAMNAMEの要素数が不適切です");
 		[Managed] public static TranslatableString PalamnameSizeLessThanJuelSize { get; } = new TranslatableString("PALAMNAMEの要素数がJUELより少なくなっています（JUELに合わせます）");
-		[Managed] public static TranslatableString DuplicateCharaDefine1 { get; } = new TranslatableString("番号{0}のキャラが複数回定義されています(SPキャラとして定義するには互換性オプション「SPキャラを使用する」をONにしてください)");
-		[Managed] public static TranslatableString DuplicateCharaDefine2 { get; } = new TranslatableString("番号{0}のキャラが複数回定義されています");
+		[Managed] public static TranslatableString DuplicateCharaDefine1 { get; } = new TranslatableString("番号{0}のキャラが{1}回定義されています(SPキャラとして定義するには互換性オプション「SPキャラを使用する」をONにしてください)");
+		[Managed] public static TranslatableString DuplicateCharaDefine2 { get; } = new TranslatableString("番号{0}のキャラが{1}回定義されています");
 		[Managed] public static TranslatableString StartedComma { get; } = new TranslatableString("\",\"で始まっています");
 		[Managed] public static TranslatableString CharaNoDefinedTwice { get; } = new TranslatableString("番号が二重に定義されました");
 		[Managed] public static TranslatableString CanNotConvertToInt { get; } = new TranslatableString("\"{0}\"を整数値に変換できません");

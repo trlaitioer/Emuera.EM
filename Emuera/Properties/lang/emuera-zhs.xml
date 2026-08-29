@@ -412,8 +412,8 @@ Emuera的历史版本有效的内容变得无效等等现象而设置的。
     <tr id="Error.DifferentVarSize"><![CDATA[{0}和"{1}"的元素数量不同(自动适用最大值)]]></tr>
     <tr id="Error.InappropriatePalamJuelPalamname"><![CDATA[PALAM和JUEL和PALAMNAME的元素数量不一致]]></tr>
     <tr id="Error.PalamnameSizeLessThanJuelSize"><![CDATA[PALAMNAME的元素数量比JUEL小(自动适用JUEL的大小)]]></tr>
-    <tr id="Error.DuplicateCharaDefine1"><![CDATA[编号为{0}的角色被多次定义（若要定义为SP角色，请启用兼容性选项「使用SP角色」）]]></tr>
-    <tr id="Error.DuplicateCharaDefine2"><![CDATA[编号为{0}的角色被多次定义]]></tr>
+    <tr id="Error.DuplicateCharaDefine1"><![CDATA[编号为{0}的角色被定义了{1}次（若要定义为SP角色，请启用兼容性选项「使用SP角色」）]]></tr>
+    <tr id="Error.DuplicateCharaDefine2"><![CDATA[编号为{0}的角色被定义了{1}次]]></tr>
     <tr id="Error.StartedComma"><![CDATA[Token开头为","]]></tr>
     <tr id="Error.CharaNoDefinedTwice"><![CDATA[编号被定义了两次]]></tr>
     <tr id="Error.CanNotConvertToInt"><![CDATA[{0}无法转换为整型数值]]></tr>

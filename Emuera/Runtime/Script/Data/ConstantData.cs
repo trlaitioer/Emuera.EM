@@ -1248,22 +1248,27 @@ internal sealed class ConstantData
 			charaTmplByCsvNo.TryAdd(tmpl.csvNo, tmpl);
 		}
 
-		// 重复 No 告警: CompatiSPChara 开启时普通/SP 分流各自检测(跨类同号不告警), 关闭时与组内首个比对
+		// 重复 No 告警每组一条并附定义次数: CompatiSPChara 开启时普通/SP 分流(跨类同号不告警), 关闭时组内 SP 属性混合则提示兼容选项
 		if (Config.Config.CompatiSPChara)
 		{
 			foreach (var group in CharacterTmplList.GroupBy(tmpl => (tmpl.No, tmpl.IsSpchara)))
-				foreach (CharacterTemplate tmpl in group.Skip(1))
-					ParserMediator.Warn(string.Format(trerror.DuplicateCharaDefine2.Text, tmpl.No.ToString()), null, 1);
+			{
+				int count = group.Count();
+				if (count > 1)
+					ParserMediator.Warn(string.Format(trerror.DuplicateCharaDefine2.Text, group.Key.No.ToString(), count.ToString()), null, 1);
+			}
 		}
 		else
 		{
 			foreach (var group in CharacterTmplList.GroupBy(tmpl => tmpl.No))
 			{
-				CharacterTemplate first = group.First();
-				foreach (CharacterTemplate tmpl in group.Skip(1))
-					ParserMediator.Warn(string.Format(
-						tmpl.IsSpchara != first.IsSpchara ? trerror.DuplicateCharaDefine1.Text : trerror.DuplicateCharaDefine2.Text,
-						tmpl.No.ToString()), null, 1);
+				int count = group.Count();
+				if (count <= 1)
+					continue;
+				bool spMixed = group.Any(tmpl => tmpl.IsSpchara) && group.Any(tmpl => !tmpl.IsSpchara);
+				ParserMediator.Warn(string.Format(
+					spMixed ? trerror.DuplicateCharaDefine1.Text : trerror.DuplicateCharaDefine2.Text,
+					group.Key.ToString(), count.ToString()), null, 1);
 			}
 		}
 	}

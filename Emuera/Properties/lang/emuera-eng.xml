@@ -415,8 +415,8 @@ Settings apply only at start]]></tr>
     <tr id="Error.DifferentVarSize"><![CDATA[Number of elements of "{0}" and "{1}" differs (Will adjust to the largest)]]></tr>
     <tr id="Error.InappropriatePalamJuelPalamname"><![CDATA[Inappropriate number of elements for PALAM, JUEL and PALAMNAME]]></tr>
     <tr id="Error.PalamnameSizeLessThanJuelSize"><![CDATA[Number of elements in PALAMNAME is less than JUEL (Will adjust to JUEL)]]></tr>
-    <tr id="Error.DuplicateCharaDefine1"><![CDATA[Character number {0} was defined more than once (To define it as an SP character use "Allow SP Characters" compatibility option)]]></tr>
-    <tr id="Error.DuplicateCharaDefine2"><![CDATA[Character number {0} was defined more than once]]></tr>
+    <tr id="Error.DuplicateCharaDefine1"><![CDATA[Character number {0} was defined {1} times (To define it as an SP character use "Allow SP Characters" compatibility option)]]></tr>
+    <tr id="Error.DuplicateCharaDefine2"><![CDATA[Character number {0} was defined {1} times]]></tr>
     <tr id="Error.StartedComma"><![CDATA[Token starts with ","]]></tr>
     <tr id="Error.CharaNoDefinedTwice"><![CDATA[Number was defined twice]]></tr>
     <tr id="Error.CanNotConvertToInt"><![CDATA[{0} cannot be converted to an integer value]]></tr>
