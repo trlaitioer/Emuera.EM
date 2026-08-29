@@ -5,7 +5,7 @@
 ## 仓库布局
 
 - 根目录 `Emuera.sln` = `Emuera/`(解释器本体)+ `EmueraPluginExample/`(插件 API 示例)。注意 `Emuera/` 目录下还有一份旧的 `Emuera.sln`(仅含 Emuera 项目、`Any CPU`、无 NAudio 配置),构建请用根目录的 `Emuera.sln`
-- `Emuera/` — C# WinForms 主程序,`net10.0-windows`,x64/x86;**无测试项目**,验证方式是编译 + 用真实 era 游戏(含 `csv/`、`erb/` 目录)启动运行
+- `Emuera/` — C# WinForms 主程序,`net10.0-windows`,x64/x86;`Emuera.Tests/` 为 xUnit 单元测试工程(不纳入根 `Emuera.sln`,运行方式见其 README);验证方式是测试 + 编译 + 用真实 era 游戏(含 `csv/`、`erb/` 目录)启动运行
 - `Readme/` — 各版本 readme(`EmueraEE_readme.txt`、`Emuera.EM_readme.txt`)与 changelog
 - `docs/agents/` — agent 操作约定(issue tracker / triage 标签 / 领域文档)
 - CI:`.github/workflows/dotnet-build.yaml`(tag 触发发布,windows-latest)
@@ -17,6 +17,8 @@
 ## 解释器核心(`Runtime/Script/`)
 
 脚本执行管线:**ERB 文件 → LexicalAnalyzer(词法)→ LogicalLineParser(句法)→ LogicalLine → Process.runScriptProc 主循环 → AInstruction 执行**
+
+> 脚本/数据文件的语法规则(行路由、表达式、FORM 字符串、CSV 格式与怪癖)另见 [`csv-erb-syntax.md`](csv-erb-syntax.md)。
 
 - `Parser/LexicalAnalyzer.cs` — `Analyse()` 将 `CharStream` 切成 `WordCollection`(token 流)
 - `Parser/LogicalLineParser.cs` — 生成 `LogicalLine` 子类:`InstructionLine`(带 `FunctionIdentifier`)、`FunctionLabelLine`(@标签)、`GotoLabelLine`($标签)、`NullLine`、`InvalidLine`
