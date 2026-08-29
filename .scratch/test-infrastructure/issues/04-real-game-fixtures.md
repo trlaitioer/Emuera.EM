@@ -1,6 +1,6 @@
 # 测试用例扩展:FORM 字符串 / 表达式 / 常用函数
 
-Status: needs-triage
+Status: 已完成(2026-08-29)
 Type: task
 
 ## 素材
@@ -27,3 +27,7 @@ fixture 采用内联字符串常量(行数 <10 内联、不加来源注释)。
 - 未做 Emuera/ 代码改动(遵守"不动代码,StrForm 推迟"决策)
 
 ## Comments
+
+### 2026-08-29
+
+- 关闭:17 个扩展用例全绿(总计 38 例);`LogicalLineParser` 与运行时初始化范畴用例移入 issues/03。

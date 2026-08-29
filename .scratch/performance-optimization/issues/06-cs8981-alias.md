@@ -1,6 +1,6 @@
 # CS8981:小写 alias 处理决策
 
-Status: needs-triage
+Status: wontfix
 Type: task
 
 ## 背景
@@ -17,3 +17,7 @@ Type: task
 本票本质为决策记录,可能最终采取 NoWarn 抑制(近似 wontfix)或维持现状。
 
 ## Comments
+
+### 2026-08-29
+
+- 关闭:按既定决策维持现状(不重命名,避免与 upstream 合并冲突);如警告成为干扰,再以 NoWarn 抑制。

@@ -1,6 +1,6 @@
 # Phase 1 测试用例
 
-Status: needs-triage
+Status: 已完成(2026-08-29)
 Type: task
 
 ## 现状(已完成,全绿确认)
@@ -29,3 +29,7 @@ Type: task
 - `LogicalLineParser` 延后至 Phase 2+:其 `ParseLine` 依赖 `EmueraConsole`(WinForms 控件)与 `GlobalStatic.IdentifierDictionary`,需 STA/初始化方案
 
 ## Comments
+
+### 2026-08-29
+
+- 关闭:21 个基础用例全绿;FORM/表达式扩展用例由 issues/04 承接完成。

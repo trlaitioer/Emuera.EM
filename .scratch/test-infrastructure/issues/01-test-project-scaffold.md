@@ -1,6 +1,6 @@
 # 测试工程搭建
 
-Status: needs-triage
+Status: 已完成(2026-08-29)
 Type: task
 
 ## 现状(已完成)
@@ -16,3 +16,7 @@ Type: task
 3. 定案:ProjectReference 不带元数据,调用方统一 `-c Debug-NAudio`(全局属性同时作用于 restore 与 build,与仓库构建约定一致)
 
 ## Comments
+
+### 2026-08-29
+
+- 关闭:工程已搭建并稳定运行(38/38 全绿),踩坑结论沉淀于 README 与本文件。
