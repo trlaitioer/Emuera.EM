@@ -9,7 +9,7 @@ namespace Emuera.Tests.Runtime.Script.Data;
 
 /// <summary>
 /// StrForm 测试:走生产链 LexicalAnalyzer.AnalyseFormattedString → StrFormWord → FromWordToken → 求值。
-/// 依赖 TestBootstrap 的运行时最小初始化(StrForm.Initialize 的三连符号绑定、系统变量、LangManager)。
+/// 依赖 TestBootstrap 的运行时最小初始化(static StrForm() 的三连符号绑定、系统变量、LangManager)。
 /// </summary>
 public class StrFormTests
 {
@@ -117,7 +117,7 @@ public class StrFormTests
 	public void TripleSymbols_BoundByInitialize()
 	{
 		// *** = NAME:TARGET、+++ = CALLNAME:MASTER、=== = CALLNAME:PLAYER、
-		// /// = NAME:ASSI、$$$ = CALLNAME:TARGET(StrForm.Initialize 绑定)
+		// /// = NAME:ASSI、$$$ = CALLNAME:TARGET(static StrForm() 绑定)
 		SetupCharacters();
 		Assert.Equal("ボブ", Eval("***"));
 		Assert.Equal("爱丽丝", Eval("+++"));

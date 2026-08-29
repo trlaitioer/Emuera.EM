@@ -179,7 +179,6 @@ internal sealed partial class Process(EmueraConsole view)
 			idDic = new IdentifierDictionary(vEvaluator.VariableData);
 			GlobalStatic.IdentifierDictionary = idDic;
 
-			StrForm.Initialize();
 			VariableParser.Initialize();
 
 			exm = new ExpressionMediator(this, vEvaluator, console);

@@ -51,7 +51,6 @@ internal static class TestBootstrap
 		var idDic = new IdentifierDictionary(vEvaluator.VariableData);
 		GlobalStatic.IdentifierDictionary = idDic;
 
-		StrForm.Initialize();
 		VariableParser.Initialize();
 
 		GlobalStatic.EMediator = new ExpressionMediator(null, vEvaluator, null);

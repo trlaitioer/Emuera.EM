@@ -15,20 +15,29 @@ namespace MinorShift.Emuera.Runtime.Script.Data;
 
 internal sealed class StrForm
 {
-	private StrForm() { }
-	string[] strs = null!;//terms.Count + 1
-	AExpression[] terms = null!;
+	private StrForm(string[] strs, AExpression[] terms)
+	{
+		this.strs = strs;
+		this.terms = terms;
+	}
+	string[] strs;//terms.Count + 1
+	AExpression[] terms;
 
 	#region static
-	static FormattedStringMethod formatCurlyBrace = null!;
-	static FormattedStringMethod formatPercent = null!;
-	static FormattedStringMethod formatYenAt = null!;
-	static FunctionMethodTerm NameTarget = null!;// "***"
-	static FunctionMethodTerm CallnameMaster = null!;// "+++"
-	static FunctionMethodTerm CallnamePlayer = null!;// "==="
-	static FunctionMethodTerm NameAssi = null!;// "///"
-	static FunctionMethodTerm CallnameTarget = null!;// "$$$"
-	public static void Initialize()
+	static FormattedStringMethod formatCurlyBrace;
+	static FormattedStringMethod formatPercent;
+	static FormattedStringMethod formatYenAt;
+	static FunctionMethodTerm NameTarget;// "***"
+	static FunctionMethodTerm CallnameMaster;// "+++"
+	static FunctionMethodTerm CallnamePlayer;// "==="
+	static FunctionMethodTerm NameAssi;// "///"
+	static FunctionMethodTerm CallnameTarget;// "$$$"
+
+	// Runs exactly once, before the first static member access or instance creation.
+	// The earliest access in this codebase is FromWordToken during ERH/ERB parsing,
+	// which runs after GlobalStatic.VariableData is created in Process.Initialize;
+	// touching this class earlier is an initialization-order bug (a static constructor never reruns).
+	static StrForm()
 	{
 		formatCurlyBrace = new FormatCurlyBrace();
 		formatPercent = new FormatPercent();
@@ -55,10 +64,6 @@ internal sealed class StrForm
 
 	public static StrForm FromWordToken(StrFormWord wt)
 	{
-		StrForm ret = new()
-		{
-			strs = wt.Strs
-		};
 		AExpression[] termArray = new AExpression[wt.SubWords.Length];
 		for (int i = 0; i < wt.SubWords.Length; i++)
 		{
@@ -149,8 +154,7 @@ internal sealed class StrForm
 				throw new CodeEE(trerror.IsNotStringPer.Text);
 			termArray[i] = new FunctionMethodTerm(formatPercent, [operand, second, third]);
 		}
-		ret.terms = termArray;
-		return ret;
+		return new StrForm(wt.Strs, termArray);
 	}
 	#endregion
 
@@ -222,7 +226,6 @@ internal sealed class StrForm
 		{
 			CanRestructure = true;
 			ReturnType = typeof(string);
-			argumentTypeArray = null!;
 		}
 		public override string CheckArgumentType(string name, List<AExpression> arguments) { throw new ExeEE(trerror.TypeCheckIsCallersResponsibility.Text); }
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments) { throw new ExeEE(trerror.ReturnTypeMismatch.Text); }

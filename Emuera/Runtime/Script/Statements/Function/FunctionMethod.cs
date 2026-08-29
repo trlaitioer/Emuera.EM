@@ -11,7 +11,7 @@ namespace MinorShift.Emuera.Runtime.Script.Statements.Function;
 internal abstract class FunctionMethod
 {
 	public Type ReturnType { get; protected set; }
-	protected Type[] argumentTypeArray;
+	protected Type[]? argumentTypeArray;
 	protected string Name { get; private set; }
 	#region EM_私家版_Emuera多言語化改造
 	protected enum ArgType

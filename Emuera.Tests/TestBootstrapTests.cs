@@ -19,7 +19,7 @@ public class TestBootstrapTests
 	[Fact]
 	public void SystemVariableTokens_AreRegistered()
 	{
-		// StrForm.Initialize 依赖的六个系统变量均已在 VariableData 构造时注册
+		// static StrForm() 依赖的六个系统变量均已在 VariableData 构造时注册
 		foreach (var name in new[] { "TARGET", "MASTER", "PLAYER", "ASSI", "NAME", "CALLNAME" })
 		{
 			var token = GlobalStatic.VariableData.GetSystemVariableToken(name);
