@@ -18,39 +18,46 @@ Type: task
 
 按 spec.md 的通用方法:文件顶部加 `#nullable enable` → 构建 → 清零该文件 CS86xx。修复原则:优先 `?` 与 `null!` 保持现有行为,少加运行时判断;待有测试后再将 `!` 替换为真检查。
 
-## StrForm.cs 迁移现状(已迁移,待完善)
+## StrForm.cs 修订(已完成,2026-08-29)
 
-已迁移文件 `Runtime/Script/Data/StrForm.cs`(`#nullable enable`)是当前唯一迁移样例,含 **18 处 `null!`**。按 spec.md 修复原则(“优先 `?`/`null!` 保持行为,等有测试后再把 `!` 替换为真检查”),这些 `null!` 需在相关模块迁移后进一步修订:
+`Runtime/Script/Data/StrForm.cs` 的 18 处 `null!` 中 11 处已替换,余 7 处为省略参数占位(5 处占位参数 + `second`/`third` 2 处局部变量),贯通票 issues/05 处理。修订要点:
 
-- **实例字段(2)**:`strs`、`terms` —— 私有构造 + `FromWordToken` 初始化,可考虑改为构造器注入
-- **静态字段(8)**:`formatCurlyBrace/formatPercent/formatYenAt`、`NameTarget/CallnameMaster/CallnamePlayer/NameAssi/CallnameTarget` —— 依赖 `StrForm.Initialize()`(`Process.cs` L182 调用)与系统变量 `TARGET/MASTER/PLAYER/ASSI/NAME/CALLNAME`(`GlobalStatic.VariableData.GetSystemVariableToken`)
-- **参数占位(5)**:`[nametarget, null!, null!]` 等 —— 语义为“省略参数”(`FormatPercent.GetStrValue` 运行时判 `arguments[1] == null`),宜改为显式可空参数
-- **局部变量(2)**:`second`、`third` —— 分支赋值后无条件入参,语义同“省略参数”
-- **继承类字段(1)**:`argumentTypeArray = null!`(`FormattedStringMethod` 构造;`FunctionMethod.argumentTypeArray` 运行时可为 null,`FunctionMethod.cs` L270 判空)
+- **实例字段 `strs`/`terms`**:改为构造器注入(`private StrForm(string[], AExpression[])`),`FromWordToken` 结尾直接构造返回
+- **静态成员初始化并入 static 构造器**:`Initialize()` 方法与 `Process.Initialize`、`TestBootstrap.Initialize` 中的显式调用点删除;8 个私有静态字段(3 个書式メソッド + 5 个 FunctionMethodTerm)恢复原始形态(去除 `= null!`),由 cctor 一次性赋值
+- **NameTarget 等 5 个 FunctionMethodTerm**:触发时点由 CLR 保证(首次静态成员访问前恰好执行一次,见 Microsoft Learn《Static constructors》);过早触发属初始化顺序 bug 且 cctor 不可重入,依赖(`GlobalStatic.VariableData` 于 `Process.Initialize` 的 CSV 読込后生成)已在 cctor 注释中标明;`Ready<T>()` 守卫与 `StrFormNotInitialized` 文案随之移除(未初始化访问不可达)
+- **省略参数占位(残留 `null!` ×7)**:基类 `FunctionMethod` 以 `arguments[i] == null` 表达省略,元素可空化需沿 FunctionMethodTerm → override 签名 → RowArgs/ReduceArguments 边界链整体贯通,已回退并归入 issues/05
+- **`FunctionMethod.argumentTypeArray`**:声明改为 `Type[]?`,`FormattedStringMethod` 构造器中的 `= null!` 删除
 
-### 关联模块/文件(修订时需联动)
+### 关联模块/文件(后续迁移联动)
 
 **调用方(StrForm 的消费者):**
-- `Runtime/Script/Statements/Instraction.Child.cs`(L208-209)— STRFORM/PRINT 指令执行时 `StrForm.FromWordToken`
-- `Runtime/Script/Statements/ArgumentBuilder.cs`(L584-585、689-690、859-860、1147-1148、1293-1294)— 参数解析 `ExpressionParser.ToStrFormTerm`
-- `Runtime/Script/Statements/Expression/ExpressionParser.cs`(L179-184、L402)— `ToStrFormTerm` → `FromWordToken`
-- `Runtime/Script/Statements/Function/Creator.Method.cs`(L4875-4919)— `StrFormMethod`(STRFORM 内建函数)
-- `Runtime/Script/Process.cs`(L182)— `StrForm.Initialize()` 静态字段初始化入口
+- `Runtime/Script/Statements/Instraction.Child.cs` — 各指令类 `DoInstruction` override 中执行 STRFORM/PRINT 指令时 `StrForm.FromWordToken`
+- `Runtime/Script/Statements/ArgumentBuilder.cs` — `FORM_STR_ANY`/`FORM_STR`/`SP_CALL`/`SP_SET`/`SP_INPUTS` 各嵌套 ArgumentBuilder 的 `CreateArgument`,经 `ExpressionParser.ToStrFormTerm` 解析参数
+- `Runtime/Script/Statements/Expression/ExpressionParser.cs` — `ToStrFormTerm` 与 `reduceTerm` 中调用 `FromWordToken`
+- `Runtime/Script/Statements/Function/Creator.Method.cs` — `StrFormMethod`(STRFORM 内建函数)
+- `Runtime/Script/Process.cs` — `Process.Initialize` 调用 `StrForm.Initialize()` 静态字段初始化入口
 
 **承载与输入:**
-- `Runtime/Script/Statements/Expression/Term.cs`(L112-121)— `StrFormTerm : AExpression` 持有 StrForm
-- `Runtime/Script/Parser/Word.cs`(L85-88)— `StrFormWord`(`FromWordToken` 输入类型)
-- `Runtime/Script/Parser/SubWord.cs`(L38-47)— `YenAtSubWord` 持有 StrFormWord
-- `Runtime/Script/Parser/LexicalAnalyzer.cs`(L989、1156、1270、1286、1296)— `AnalyseFormattedString` 产出 StrFormWord
+- `Runtime/Script/Statements/Expression/Term.cs` — `StrFormTerm : AExpression` 持有 StrForm(`Restructure` 中访问)
+- `Runtime/Script/Parser/Word.cs` — `StrFormWord`(`FromWordToken` 输入类型)
+- `Runtime/Script/Parser/SubWord.cs` — `YenAtSubWord` 构造器持有 StrFormWord
+- `Runtime/Script/Parser/LexicalAnalyzer.cs` — `AnalyseFormattedString` 产出 StrFormWord;`Analyse`、`AnalyseYenAt` 处理相关子词
 
 **依赖(StrForm 引用的类型):**
 - `Runtime/Script/Statements/Function/FunctionMethodTerm.cs` — `FunctionMethodTerm`(静态字段 NameTarget 等)
-- `Runtime/Script/Statements/Function/FunctionMethod.cs` — 基类字段 `argumentTypeArray`(L14,运行时可为 null,L270 判空)
+- `Runtime/Script/Statements/Function/FunctionMethod.cs` — 基类字段 `argumentTypeArray`(运行时可为 null,`CheckArgumentType` 判空)
 - `GlobalStatic.cs` — `VariableData.GetSystemVariableToken`(系统变量)
 - `Runtime/Utils/EvilMask/Lang.cs` — `trerror.StrFormUnexpected` 等错误文本
 
 ## 备注
 
-- 全量临时 `-p:Nullable=enable` 构建时 CS86xx 约 3,606 条,其中相当部分集中在本票范围
+- 临时 `-p:Nullable=enable` 全量构建(2026-08-29,Debug-NAudio)时,本票范围 8 个文件约 1,140 条 CS86xx(全库约 3,526 条、97 个文件);`ArgumentBuilder.cs`(528 条)与 `Creator.Method.cs`(336 条)为全库最大两处
 
 ## Comments
+
+### 2026-08-29
+
+- StrForm 修订:18 处 `null!` 中 11 处替换(实例字段构造器注入、静态成员 cctor 化、argumentTypeArray 可空化),余 7 处省略参数占位归 issues/05
+- `List<AExpression?>` 贯通试验后回退:链路深入 RowArgs/ReduceArguments 边界,整体执行归入 issues/05
+- 静态初始化并入 static StrForm():`Initialize` 方法与两处显式调用点删除,`Ready`/`StrFormNotInitialized` 移除,8 个静态成员以私有字段由 cctor 赋值(原始形态去除 `null!`;触发时机依据 Microsoft Learn《Static constructors》)
+- 行号定位改为 文件路径+函数 定位(遵循仓库文档约定);备注刷新实测警告统计
