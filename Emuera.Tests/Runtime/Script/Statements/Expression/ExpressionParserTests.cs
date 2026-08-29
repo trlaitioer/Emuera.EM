@@ -1,3 +1,4 @@
+using MinorShift.Emuera;
 using MinorShift.Emuera.Runtime.Script.Parser;
 using MinorShift.Emuera.Runtime.Script.Statements.Expression;
 using MinorShift.Emuera.Runtime.Utils;
@@ -7,7 +8,7 @@ namespace Emuera.Tests.Runtime.Script.Statements.Expression;
 
 /// <summary>
 /// 表达式解析(ExpressionParser.ReduceExpressionTerm)测试。
-/// 变量引用替换为常量(变量求值依赖运行时,归集成层)。
+/// 常量求值传 null mediator;变量/函数标识符用例依赖 TestBootstrap 的运行时最小初始化。
 /// </summary>
 public class ExpressionParserTests : IDisposable
 {
@@ -15,6 +16,7 @@ public class ExpressionParserTests : IDisposable
 
 	public ExpressionParserTests()
 	{
+		TestBootstrap.Initialize();
 		_prevUseMacro = LexicalAnalyzer.UseMacro;
 		LexicalAnalyzer.UseMacro = false;
 	}
@@ -58,7 +60,48 @@ public class ExpressionParserTests : IDisposable
 		Assert.Equal(0L, Reduce("3 >= 1 && 3 > 5").GetIntValue(null!));
 	}
 
-	// 注:含函数标识符的表达式(如 GETBIT(5,0)、INRANGE(3,1,5)、TOSTR(1+1))的解析
-	// 需要 GlobalStatic.IdentifierDictionary(其构造依赖 VariableData = GameBase+ConstantData,
-	// 属运行时初始化范畴,与 StrForm 一起推迟)。函数本身的纯计算覆盖见 FunctionMethodTests。
+	#region 需要运行时初始化(IdentifierDictionary/VEvaluator)
+
+	[Fact]
+	public void VariableReference_Integer()
+	{
+		// FLAG:0 默认 0;解析走 IdentifierDictionary,求值走 VEvaluator
+		Assert.Equal(0L, Reduce("FLAG:0").GetIntValue(GlobalStatic.EMediator));
+	}
+
+	[Fact]
+	public void VariableReference_String()
+	{
+		if (GlobalStatic.VariableData.CharacterList.Count == 0)
+			GlobalStatic.VEvaluator.AddPseudoCharacter();
+		GlobalStatic.VariableData.GetSystemVariableToken("CALLNAME")
+			.SetValue("CALLNAME测试", new long[] { 0 });
+		Assert.Equal("CALLNAME测试", Reduce("CALLNAME:MASTER").GetStrValue(GlobalStatic.EMediator));
+	}
+
+	[Fact]
+	public void MethodCall_InExpression()
+	{
+		// 函数方法经 IdentifierDictionary.methodDic 解析
+		Assert.Equal(1L, Reduce("GETBIT(5,0)").GetIntValue(GlobalStatic.EMediator));
+		Assert.Equal(3L, Reduce("MAX(2,3)").GetIntValue(GlobalStatic.EMediator));
+		Assert.Equal("123", Reduce("TOSTR(123)").GetStrValue(GlobalStatic.EMediator));
+	}
+
+	[Fact]
+	public void Ternary_InExpression()
+	{
+		// eraBasic 表达式三元分隔符为 ? 与 #(: 保留给变量下标)
+		Assert.Equal(10L, Reduce("1 > 0 ? 10 # 20").GetIntValue(GlobalStatic.EMediator));
+		Assert.Equal(20L, Reduce("0 > 1 ? 10 # 20").GetIntValue(GlobalStatic.EMediator));
+		Assert.Equal("甲", Reduce("1 > 0 ? \"甲\" # \"乙\"").GetStrValue(GlobalStatic.EMediator));
+	}
+
+	[Fact]
+	public void UnknownIdentifier_Throws()
+	{
+		Assert.Throws<IdentifierNotFoundCodeEE>(() => Reduce("__THIS_IS_NOT_DEFINED__"));
+	}
+
+	#endregion
 }

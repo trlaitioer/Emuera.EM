@@ -21,11 +21,19 @@ dotnet test Emuera.Tests/Emuera.Tests.csproj -c Debug-NAudio
 | `Runtime/Script/Parser/LexicalAnalyzerTests.cs`(19 例) | 词法分析(`Analyse`/`AnalyseFormattedString`):标识符/整数/运算符/字符串/注释/括号/FORM `%` 终止/错误用例 + FORM 字符串构造(`\@…?…#…\@` 三元、`%…%` 段、`{…}`、`%TEXTR(…)` 嵌套、全角空格) |
 | `Runtime/Utils/EncodingHandlerTests.cs`(4 例) | 编码检测:UTF-8 带/不带 BOM、Shift-JIS 回落、`GetEncoding(932)` |
 | `Runtime/Script/Statements/Function/FunctionMethodTests.cs`(11 例) | 内建函数纯函数(`TOUPPER`/`TOLOWER`/`ABS`/`MAX`/`MIN`/`SQRT`/`GETBIT`/`INRANGE`/`TOSTR`/`TOFULL`/`TOHALF`,经 `GetMethodList()` 取实例) |
-| `Runtime/Script/Statements/Expression/ExpressionParserTests.cs`(4 例) | 表达式解析与常量求值(变量替换为常量) |
+| `Runtime/Script/Statements/Expression/ExpressionParserTests.cs`(9 例) | 表达式解析与求值:常量四则/比较/逻辑(传 null mediator)+ 变量引用/方法调用/三元(`?` `#`)/未知标识符异常(需 TestBootstrap) |
+| `Runtime/Script/Statements/Variable/VariableParserTests.cs`(5 例) | 变量解析:`IsVariable`、`ZeroTerm`/`TARGET` 静态项、`ReduceVariable`(含下标/角色字符串变量) |
+| `Runtime/Script/Data/StrFormTests.cs`(14 例) | `StrForm`(`AnalyseFormattedString` → `FromWordToken` → 求值):字面量/`{}`/`%%`/对齐(语言字节宽)/三连符号绑定/`\@…\@` 三元/`GetAExpression`/`Restructure` 折叠/错误路径 |
+| `Runtime/Script/Parser/LogicalLineParserTests.cs`(11 例) | `LogicalLineParser`:空行/指令行/赋值行/前置自增/无效行/`@`/`$` 标签/`#FUNCTION`/`#DIM` + 脚本级冒烟(按 ErbLoader 路由逐行解析无错误) |
+| `TestBootstrapTests.cs`(4 例) | TestBootstrap 最小初始化夹具的 sanity 验证 |
 
-## 待办(Phase 2+)
+## 运行时初始化(TestBootstrap)
 
-- `StrForm`(覆盖已迁移文件的 `null!` 语义,需先探明 `GlobalStatic.VariableData`/`LangManager` 最小初始化)
-- `ExpressionParser` 的函数标识符表达式、`VariableParser`
-- `LogicalLineParser`(依赖 `EmueraConsole` WinForms 与 `IdentifierDictionary`,需 STA/初始化方案)
-- eraBasic 脚本级冒烟测试(复用 `-Debug` 语法分析模式)
+Phase 2 起的用例(变量求值/StrForm/LogicalLineParser)依赖 `TestBootstrap.Initialize()`——
+等价 `Process.Initialize` 的解析器子集,无 UI/ERB/ERH 依赖。关键点:
+
+- `ParserMediator.Initialize(null)` + `console` 传 null:`LogicalLineParser` 在非 AnalysisMode 下不参与解析,无需 STA/WinForms
+- `Config.SetReplace(ConfigData.Instance)`:填充 `PalamLvDef` 等 replace 系静态默认值(`VariableData.SetDefaultValue` 依赖)
+- `JSONConfig.Data = new JSONConfigData()`:`FunctionIdentifier` 静态构造读取;`Load()` 依赖 `Program.ExeDir`(测试中未设)
+- `LangManager.setEncode(932)`:`GetStrlenLang` 非 ASCII 路径不设必 NRE
+- `GlobalStatic.Process.scaningLine` 置占位行:`GetScaningLine` 在其为 null 时解引用仅 `Initialize` 创建的 `state`
