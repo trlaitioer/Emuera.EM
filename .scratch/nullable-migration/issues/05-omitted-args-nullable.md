@@ -18,13 +18,13 @@ StrForm 修订(issues/01)时确认:基类 `FunctionMethod` 以 `arguments[i] == 
 ## 方案
 
 1. 元素类型 `AExpression` → `AExpression?` 沿上述链路一次性贯通(签名与列表类型定义)
-2. 方法体适配随各文件迁移票进行,不提前
+2. 方法体适配随 issues/08/09 的文件启用进行,不提前
 3. 完成后 StrForm 的 7 处省略参数 `null!` 替换为 `null`
 
 ## 备注
 
 - 不阻塞 issues/03(占位 `null!` 不产生 CS86xx,收尾验收可达成)
-- 建议在 issues/01(Creator.Method 迁移)之前或一并考虑执行时机:若在其后翻转,已启用文件将集中出现方法体 CS8602
+- 第一优先执行(与 issues/06 横切契约票并列先行):Creator.Method 等最大 override 集中在 issues/08,若在其后翻转,已启用文件将集中出现方法体 CS8602
 - 与 `FunctionMethod.argumentTypeArray` 的 `Type[]?`(已在 issues/01 中完成)无关
 
 ## Comments
@@ -32,3 +32,4 @@ StrForm 修订(issues/01)时确认:基类 `FunctionMethod` 以 `arguments[i] == 
 ### 2026-08-29
 
 - 新建:StrForm 修订中试验性贯通基类签名后回退,链路调查结论与执行范围归入本票。
+- 差分按调用链重切:本票定为先行契约票(与 issues/06 并列),执行时机与 08/09 的关系在备注中更新。

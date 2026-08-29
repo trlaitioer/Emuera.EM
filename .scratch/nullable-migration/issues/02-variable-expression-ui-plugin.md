@@ -1,7 +1,15 @@
 # Nullable:变量/表达式 + UI/Plugin 迁移
 
-Status: needs-triage
+Status: wontfix
 Type: task
+
+## 关闭说明(2026-08-29)
+
+差分按调用链重切(见 spec.md 迁移方法),本票把互不相关的四个簇捆绑在一起的模式废止:
+
+- `Statements/Expression/` → issues/08(表达式与方法链)
+- `Statements/Variable/` → issues/10(变量与数据链)
+- `UI/`、`Runtime/Utils/PluginSystem/` → issues/12(UI 与外围;UI/Game/StringStyle.cs 早于本迁移即已启用的事实随迁该票)
 
 ## 背景
 
@@ -23,3 +31,7 @@ Type: task
 建议在 issues/01(核心运行时)之后进行。
 
 ## Comments
+
+### 2026-08-29
+
+- 关闭(superseded):差分按调用链重切,范围由 issues/08/10/12 承接;本票未执行,无警告量统计。

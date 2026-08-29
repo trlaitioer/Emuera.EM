@@ -1,7 +1,22 @@
 # Nullable:其余文件清尾
 
-Status: needs-triage
+Status: wontfix
 Type: task
+
+## 关闭说明(2026-08-29)
+
+差分按调用链重切(见 spec.md 迁移方法),本票"其余文件"收纳箱废止,文件按链簇重新归属:
+
+| 新票 | 承接文件 |
+| --- | --- |
+| issues/07 | Parser/(LexicalAnalyzer、LogicalLineParser、SubWord、WordCollection)、Statements/LogicalLine.cs、Utils/EraStreamReader.cs |
+| issues/08 | Statements/ExpressionMediator.cs、Statements/Function/(FunctionMethod、UserDefinedMethodTerm、UserDefinedRefMethod) |
+| issues/09 | Statements 顶层(Argument、ArgumentParser、Instruction、FunctionIdentifier、Instraction.Child、CaseExpression) |
+| issues/10 | Data/(ConstantData、IdentifierDictionary、UserDefinedVariable、UserDefinedFunction、ParserMediator、DefineMacro)、Utils/EraBinaryData* |
+| issues/11 | Data/(GameBase、LabelDictionary)、Loader/ErhLoader、GlobalStatic、Runtime/InputRequest.cs(暂) |
+| issues/12 | Runtime/Config/、Runtime/Script/KeyMacro.cs、Utils/(EvilMask/*、LangManager、Preload、SFMT、Sys、Sound.NAudio、Sound.WMP、WebPWrapper)、Statements/(CircularBuffer、Clipboard) |
+
+文件归属以各链簇票实测警告为准微调;横切契约决策见 issues/06。
 
 ## 背景
 
@@ -34,3 +49,4 @@ issues/01(核心运行时)与 issues/02(变量/表达式 + UI/Plugin)的范围�
 
 - 新建:覆盖 issues/01、issues/02 范围外的 48 个文件(约 1,822 条 CS86xx,实测口径见 spec.md)。
 - 更新:贯通试验回退后 `FunctionMethodTerm.cs` 移出范围;计数回到 48 文件/1,820 条(全库 3,526 条)。
+- 关闭(superseded):差分按调用链重切,48 文件按链簇重新归属(映射见正文关闭说明)。

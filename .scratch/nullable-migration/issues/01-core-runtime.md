@@ -1,7 +1,17 @@
 # Nullable:核心运行时迁移
 
-Status: needs-triage
+Status: wontfix
 Type: task
+
+## 关闭说明(2026-08-29)
+
+差分按调用链重切(见 spec.md 迁移方法),本票按文件目录分摊的模式废止:
+
+- Process*.cs、ErbLoader.cs → issues/11(进程与加载链)
+- Creator.Method.cs → issues/08(表达式与方法链);ArgumentBuilder.cs → issues/09(参数与指令链)
+- issues/05(方法调用链元素可空)提升为先行契约票
+
+StrForm 修订历史与"关联模块/文件"清单保留于本票,作为 issues/07~09 的输入。
 
 ## 背景
 
@@ -61,3 +71,4 @@ Type: task
 - `List<AExpression?>` 贯通试验后回退:链路深入 RowArgs/ReduceArguments 边界,整体执行归入 issues/05
 - 静态初始化并入 static StrForm():`Initialize` 方法与两处显式调用点删除,`Ready`/`StrFormNotInitialized` 移除,8 个静态成员以私有字段由 cctor 赋值(原始形态去除 `null!`;触发时机依据 Microsoft Learn《Static constructors》)
 - 行号定位改为 文件路径+函数 定位(遵循仓库文档约定);备注刷新实测警告统计
+- 关闭(superseded):差分按调用链重切,范围由 issues/08/09/11 承接;StrForm 修订历史与关联模块清单保留本票

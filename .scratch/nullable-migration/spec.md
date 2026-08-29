@@ -17,12 +17,19 @@
 
 计数口径:以上数字来自 `dotnet build Emuera/Emuera.csproj -c Debug-NAudio -p:Platform=x64 --no-incremental -p:Nullable=enable` 的输出原始行数(每条警告在输出中重复出现两次)。
 
-## 迁移方法(通用)
+## 迁移方法
 
-1. 给目标文件顶部加 `#nullable enable`
-2. 构建,清零该文件 CS86xx
-3. 建议顺序:核心运行时(issues/01)→ 变量/表达式 + UI/Plugin(issues/02)→ 其余文件清尾(issues/04)→ csproj 收尾(issues/03);issues/05(省略参数可空贯通)独立执行,建议在 issues/01 后择机,不阻塞收尾
-4. 全部清零后,把 csproj 的 `<Nullable>annotations</Nullable>` 改回 `<Nullable>enable</Nullable>`
+差分按调用链与契约划分(2026-08-29 重切;原按目录分摊文件的 issues/01/02/04 已关闭标 superseded):
+
+- **契约票**:只改签名、字段声明与列表元素类型;允许跨文件修改,不启用新文件、不以清零 CS86xx 为验收;决策与影响面记录在票内
+  - issues/05:方法调用链元素可空(`List<AExpression>` 贯通 FunctionMethod 签名 → override → `GetFunctionMethod` → RowArgs/ReduceArguments)
+  - issues/06:横切契约(ExpressionMediator exm、GlobalStatic 字段、Config/Lang 叶子)
+- **链簇票**:启用本链文件并清零该文件 CS86xx;为本链警告可修改票外文件的可空签名,但必须在票内 Comments 记录
+  - 核心规则:**签名跟链走,启用跟票走**
+  - 建议顺序:解析链(issues/07)→ 变量与数据链(issues/10)→ 表达式与方法链(issues/08)→ 参数与指令链(issues/09)→ 进程与加载链(issues/11)→ UI 与外围(issues/12)
+- **收尾**:issues/03 把 csproj 的 `<Nullable>annotations</Nullable>` 改回 `<Nullable>enable</Nullable>`
+
+单文件通用步骤:给目标文件顶部加 `#nullable enable` → 构建 → 清零该文件 CS86xx。
 
 ## 迁移期修复原则
 
