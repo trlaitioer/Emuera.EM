@@ -45,15 +45,9 @@ Type: task
 - `dotnet test Emuera.Tests/Emuera.Tests.csproj -c Debug-NAudio` 全绿(38 + 新增)
 - 主工程构建不受影响(零 Emuera/ 改动)
 - StrForm 部分全绿后,`../nullable-migration/issues/01-core-runtime.md` 的 StrForm 联动项解锁
+- 实际结果:77/77 全绿(原 38 + 新增 39:TestBootstrap sanity 4、StrForm 14、ExpressionParser 扩充 5、VariableParser 5、LogicalLineParser+冒烟 11),零 Emuera/ 改动
 
-## Comments
-
-### 2026-08-29
-
-- 方案评审通过定稿;前置调研结论(最小初始化序列/`console` 可传 null/AnalysisMode 行为)逐条源码核实后写入方案。
-- 完成:77/77 全绿(原 38 + 新增 39:TestBootstrap sanity 4、StrForm 14、ExpressionParser 扩充 5、VariableParser 5、LogicalLineParser+冒烟 11)。零 Emuera/ 改动。
-
-### 实测补充的踩坑(方案之外)
+## 踩坑记录(实测补充)
 
 1. `VariableData.SetDefaultValue` 依赖 `Config.PalamLvDef/ExpLvDef` → 夹具需先 `Config.SetReplace(ConfigData.Instance)`(取 ConfigData 内建默认值,不依赖配置文件)
 2. `FunctionIdentifier` 静态构造读取 `JSONConfig.Data.UseScopedVariableInstruction`,`JSONConfig.Load()` 依赖 `Program.ExeDir`(测试中未设,NRE 且被 `IdentifierDictionary` ctor 的 catch 换成误导性 WMP 文案)→ 直接 `JSONConfig.Data = new JSONConfigData()`(等价无 json 配置的首次启动)
@@ -61,3 +55,7 @@ Type: task
 4. 表达式三元分隔符是 `?` 与 `#`(`:` 保留给变量下标),非 `?:`
 5. CP932 不可映射汉字(如"测试")在 `GetStrlenLang` 宽度按 1 计;对齐用例应选假名等可映射字符
 6. xUnit `Assert.Throws<T>` 要求精确类型匹配,子类(如 `IdentifierNotFoundCodeEE` ⊂ `CodeEE`)需断言具体类型
+
+## Comments
+
+- 2026-08-29: 方案评审通过定稿,前置调研结论逐条源码核实后写入方案;完成 77/77 全绿,实测踩坑 6 条沉淀至正文踩坑记录。

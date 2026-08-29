@@ -209,25 +209,4 @@ eraBasic 游戏由 `csv/`（数据）与 `erb/`（脚本）构成，**文本是�
 
 ## Comments
 
-（后续评审与修订记录追加在此处。）
-
-### 2026-08-29 评审与修订（v1.1）
-
-- 评审核对：spec 引用的源码符号/机制断言与当前代码一致（`Config.getFiles` 的扩展名长度过滤、`ErbLoader.LoadErbDir/loadErb/nestCheck/setJumpTo`、`LabelDictionary.SortLabels`、`IdentifierDictionary.GetFunctionMethod` 与 `badSymbolAsIdentifier`、CALL 系指令的 `SetJumpTo`（`Instraction.Child.cs`）、`Process.CalledFunction.CallFunction`、`FunctionLabelLine.CompareTo` 排序首键 `FileIndex`、`ErhLoader.LoadHeaderFiles/PrepareERDFileNames`、`StrFormTerm`（`Term.cs`）、`StrForm.Restructure`、`VariableData` 的 `string[]` 系字段）。
-- 修正：`Program.ErbDir` 基于 `ExeDir` 而非 `WorkingDir`（旧版引用的 `WorkingDir` 拼接是 `Program.SetDirPaths` 内被注释掉的旧代码）。
-- 定位约定：全文改用「文件 + 函数/符号（必要时附代码片段）」定位，不写精确行号。
-- 决议：
-  1. 「扩展名长度 ≤4」过滤是 .NET Framework 通配符怪癖的防护（`.NET 5+` 扩展名精确匹配，MS 文档标注 ".NET Framework only"），.NET 10 下直接移除，现有收集行为不变；
-  2. 覆盖主机制 = 跳过原函数注册（对事件函数也必须生效），`SortLabels` 仅是非事件路径的附带兜底，`LabelDictionary` 无需改动；
-  3. 生成工具搁置（见 §3.5）；
-  4. 装载具体逻辑后续补充，已核实约束记入 §4.1；
-  5. 镜像映射定为 `tl/<lang>/erb/X.erbx ↔ erb/X.erb`；
-  6. 语言选择复用控制台既有按钮交互（`PRINTBUTTON` 系，可点击/输序号）；
-  7. 语言选择频率：`TranslationLang` 值域 = `未选择`（默认）/ `原版` / 语言目录名，目标行为「仅『未选择』时弹选择菜单」；配套的窗口「更换语言（重启生效）」菜单未实现前，v1 先每次启动弹菜单（预选上次选择、含「原版」选项）；配置只进配置文件，绝不进游戏存档；
-  8. `tl/` 为额外挂载、「存在才加载」，`.erbx` 缺失/为空是正常状态而非错误；允许定义原版不存在的函数作为翻译语言辅助函数（普通注册、不参与覆盖跳过）；
-  9. 语言元数据 v1 直接用目录名，后续可加 `.json`/`.toml`/`.ini`/`.config` 元数据文件；
-  10. 签名校验与覆盖裁决的管线定位：函数级并行装载采用「解析签名 → 确定 label（覆盖裁决、签名校验）→ 解析函数体（含 CALL 跳转处理）」三阶段，`tl/` 复用同一管线；label 去重收紧为不可重复定义（非事件函数），覆盖裁决与 `.erbx` 重复覆盖定义均不依赖加载顺序（后者报错）；
-  11. 原 `.erb` 侧同名裁决加同名函数兼容配置（`Compati*` 系惯例，如 `CompatiFuncDup`）：关闭 = 重复定义报错；启用 = 按文件列表序「先定义生效」（label 处理携带来源文件与文件列表顺序）；事件函数不受影响。默认值待定（见 `performance-optimization/issues/04-parse-parallel.md`）。
-- 签名一致性（§2.5）拍板：挂在函数级并行装载的「确定 label」阶段，`tl/` 复用同一管线；并行化落地前的 v1 等价实现为装载期解析被覆盖原函数头并比对（逻辑相同、串行执行）。
-- 文档结构：已解决项（覆盖作用域与裁决、翻译单元语义原则、签名校验）并入 §2 定稿；「后续（已定搁置项）」与「未决项」拆分并置于定稿方案之后（§3/§4），被否决与影响范围随其后；原「本期明确不做」表删除，条目由 §3 各项承载、§6.4 保留边界清单。
-- 已定搁置项见 §3，未决项见 §4。
+- 2026-08-29: 评审修订 v1.1——逐条核实源码断言；`Program.ErbDir` 定位修正（基于 `ExeDir` 而非 `WorkingDir`）；全文定位改为「文件 + 函数/符号」；11 条决议并入正文（§2 定稿、§3 搁置、§4 未决、§6 影响范围）；原 `.erb` 侧同名裁决具体语义在 `performance-optimization/issues/04-parse-parallel.md` 正文。

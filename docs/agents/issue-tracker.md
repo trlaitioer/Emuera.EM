@@ -8,7 +8,8 @@
 - 规格文件为 `.scratch/<feature-slug>/spec.md`
 - 实现议题每个一张文件：`.scratch/<feature-slug>/issues/<NN>-<slug>.md`，从 `01` 开始编号——绝不要合并成单一的 tickets 文件
 - 分流（triage）状态记录在每个议题文件顶部附近的 `Status:` 行（角色字符串见 `triage-labels.md`）
-- 评论与对话历史追加到文件底部的 `## Comments` 标题下
+- 评估、方案等内容直接写在议题正文，更新时修改正文
+- 文件底部的 `## Comments` 仅追加带日期的更新摘要（`### YYYY-MM-DD` 或行首 `- YYYY-MM-DD:`），只说明改了什么并指向正文；内容本体必须存在于正文，不得仅记录在 Comments
 
 ## 当技能要求“发布到 issue tracker”
 
