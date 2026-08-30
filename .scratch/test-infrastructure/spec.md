@@ -9,7 +9,7 @@
 
 ## 已确认决策
 
-- 新增 `Emuera.Tests/` 目录(仓库根,xUnit)——已获用户放行;**不纳入根 `Emuera.sln`**
+- 新增 `Emuera.Tests/` 目录(仓库根,xUnit);**不纳入根 `Emuera.sln`**
 - 唯一 `Emuera/` 内改动:`Emuera.csproj` 添加 `<InternalsVisibleTo Include="Emuera.Tests" />`(核心类多为 internal)
 - 分阶段:Phase 1 轻初始化组件 → Phase 2 需初始化序列(`StrForm` 等)→ Phase 3 脚本级冒烟
 
