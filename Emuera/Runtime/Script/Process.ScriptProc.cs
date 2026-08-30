@@ -849,54 +849,44 @@ internal sealed partial class Process
 					return false;
 				}
 
-			case FunctionCode.TRYCALLLIST:
-			case FunctionCode.TRYJUMPLIST:
-				{
-					//if (!sequential)//RETURNで帰ってきた
-					//{
-					//	state.JumpTo(func.JumpTo);
-					//	break;
-					//}
-					string funcName = "";
-					CalledFunction callto = null;
-					SpCallArgment cfa = null;
-					foreach (InstructionLine iLine in func.callList)
+				case FunctionCode.TRYCALLLIST:
+				case FunctionCode.TRYJUMPLIST:
 					{
-
-						cfa = (SpCallArgment)iLine.Argument;
-						funcName = cfa.FuncnameTerm.GetStrValue(exm);
-						callto = CalledFunction.CallFunction(this, funcName, func.JumpTo);
-						if (callto == null)
-							continue;
-						callto.IsJump = func.Function.IsJump();
-						UserDefinedFunctionArgument args = callto.ConvertArg(cfa.RowArgs, out string errMes);
-						if (args == null)
-							throw new CodeEE(errMes);
-						state.IntoFunction(callto, args, exm);
-						return true;
-					}
-					state.JumpTo(func.JumpTo);
-				}
-				break;
-			case FunctionCode.TRYGOTOLIST:
-				{
-					string funcName = "";
-					LogicalLine jumpto = null;
-					foreach (InstructionLine iLine in func.callList)
-					{
-						if (iLine.Argument == null)
-							ArgumentParser.SetArgumentTo(iLine);
-						funcName = ((SpCallArgment)iLine.Argument).FuncnameTerm.GetStrValue(exm);
-						jumpto = state.CurrentCalled.CallLabel(this, funcName);
-						if (jumpto != null)
-							break;
-					}
-					if (jumpto == null)
+						//if (!sequential)//RETURNで帰ってきた
+						//{
+						//	state.JumpTo(func.JumpTo);
+						//	break;
+						//}
+						foreach (InstructionLine iLine in func.callList)
+						{
+							SpCallArgment cfa = (SpCallArgment)iLine.Argument;
+							CalledFunction callto = CallformCache.ResolveCall(this, exm, cfa, func.JumpTo, out _, out UserDefinedFunctionArgument args);
+							if (callto == null)
+								continue;
+							callto.IsJump = func.Function.IsJump();
+							state.IntoFunction(callto, args, exm);
+							return true;
+						}
 						state.JumpTo(func.JumpTo);
-					else
-						state.JumpTo(jumpto);
-				}
-				break;
+					}
+					break;
+				case FunctionCode.TRYGOTOLIST:
+					{
+						LogicalLine jumpto = null;
+						foreach (InstructionLine iLine in func.callList)
+						{
+							if (iLine.Argument == null)
+								ArgumentParser.SetArgumentTo(iLine);
+							jumpto = CallformCache.ResolveGotoForm(this, state, exm, (SpCallArgment)iLine.Argument, out _);
+							if (jumpto != null)
+								break;
+						}
+						if (jumpto == null)
+							state.JumpTo(func.JumpTo);
+						else
+							state.JumpTo(jumpto);
+					}
+					break;
 			case FunctionCode.CALLTRAIN:
 				{
 					ExpressionArgument intExpArg = (ExpressionArgument)func.Argument;

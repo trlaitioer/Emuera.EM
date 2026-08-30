@@ -23,6 +23,28 @@ internal sealed class StrForm
 	string[] strs;//terms.Count + 1
 	AExpression[] terms;
 
+	/// <summary>
+	/// Returns the int operand of the single {…} interpolation when funcnameTerm is fixed
+	/// literals plus exactly one {int-expr} ("PREFIX_{I}" or a bare "{I}"); null otherwise.
+	/// The operand value fully determines the built name, so a cache can key on it without
+	/// building any string. Alignment specifiers ({I,4,LEFT}) keep the name deterministic
+	/// and are included in this form.
+	/// </summary>
+	internal static AExpression SingleIntFormTerm(AExpression funcnameTerm)
+	{
+		if (funcnameTerm is StrFormTerm formTerm)
+		{
+			if (formTerm.StrForm.terms.Length != 1)
+				return null;
+			funcnameTerm = formTerm.StrForm.terms[0];
+		}
+		if (funcnameTerm is FunctionMethodTerm fmt
+			&& ReferenceEquals(fmt.Method, formatCurlyBrace)
+			&& fmt.Arguments[0].GetOperandType() == typeof(long))
+			return fmt.Arguments[0];
+		return null;
+	}
+
 	#region static
 	static FormattedStringMethod formatCurlyBrace;
 	static FormattedStringMethod formatPercent;

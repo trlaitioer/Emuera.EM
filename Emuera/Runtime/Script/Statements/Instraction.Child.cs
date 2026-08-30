@@ -1192,8 +1192,7 @@ internal sealed partial class FunctionIdentifier
 			if ((!func.Argument.IsConst) || exm.Console.RunERBFromMemory)
 			{
 				SpCallFArgment spCallformArg = (SpCallFArgment)func.Argument;
-				labelName = spCallformArg.FuncnameTerm.GetStrValue(exm);
-				mToken = GlobalStatic.IdentifierDictionary.GetFunctionMethod(GlobalStatic.LabelDictionary, labelName, spCallformArg.RowArgs, true);
+				mToken = CallformCache.ResolveCallF(exm, spCallformArg, out labelName);
 			}
 			else
 			{
@@ -1320,8 +1319,7 @@ internal sealed partial class FunctionIdentifier
 			if ((!func.Argument.IsConst) || exm.Console.RunERBFromMemory)
 			{
 				SpCallFArgment spCallformArg = (SpCallFArgment)func.Argument;
-				labelName = spCallformArg.FuncnameTerm.GetStrValue(exm);
-				mToken = GlobalStatic.IdentifierDictionary.GetFunctionMethod(GlobalStatic.LabelDictionary, labelName, spCallformArg.RowArgs, true);
+				mToken = CallformCache.ResolveCallF(exm, spCallformArg, out labelName);
 			}
 			else
 			{
@@ -3702,8 +3700,7 @@ internal sealed partial class FunctionIdentifier
 			}
 			else
 			{
-				labelName = spCallArg.FuncnameTerm.GetStrValue(exm);
-				call = CalledFunction.CallFunction(GlobalStatic.Process, labelName, func);
+				call = CallformCache.ResolveCall(GlobalStatic.Process, exm, spCallArg, func, out labelName, out arg);
 			}
 			if (call == null)
 			{
@@ -3807,8 +3804,7 @@ internal sealed partial class FunctionIdentifier
 			}
 			else
 			{
-				label = ((SpCallArgment)func.Argument).FuncnameTerm.GetStrValue(exm);
-				jumpto = state.CurrentCalled.CallLabel(GlobalStatic.Process, label);
+				jumpto = CallformCache.ResolveGotoForm(GlobalStatic.Process, state, exm, (SpCallArgment)func.Argument, out label);
 			}
 			if (jumpto == null)
 			{

@@ -1,7 +1,10 @@
 ﻿using MinorShift.Emuera.GameData.Variable;
+using MinorShift.Emuera.GameProc;
+using MinorShift.Emuera.Runtime.Script.Data;
 using MinorShift.Emuera.Runtime.Script.Statements.Expression;
 using MinorShift.Emuera.Runtime.Script.Statements.Function;
 using MinorShift.Emuera.Runtime.Script.Statements.Variable;
+using MinorShift.Emuera.Runtime.Utils;
 using MinorShift.Emuera.Runtime.Utils.PluginSystem;
 using System;
 using System.Collections.Generic;
@@ -267,6 +270,8 @@ internal sealed class SpCallFArgment : Argument
 	readonly public List<AExpression> SubNames;
 	readonly public List<AExpression> RowArgs;
 	public AExpression FuncTerm;
+	// Lazily created per-callsite cache for dynamic CALLFORMF name resolution
+	public CallformCache Cache;
 }
 
 internal sealed class SpCallArgment : Argument
@@ -282,6 +287,8 @@ internal sealed class SpCallArgment : Argument
 	readonly public List<AExpression> RowArgs;
 	public UserDefinedFunctionArgument UDFArgument;
 	public CalledFunction CallFunc;
+	// Lazily created per-callsite cache for dynamic CALLFORM/GOTOFORM name resolution
+	public CallformCache Cache;
 }
 
 internal sealed class SpCallSharpArgment : Argument
@@ -297,6 +304,149 @@ internal sealed class SpCallSharpArgment : Argument
 	readonly public List<AExpression> RowArgs;
 	// public UserDefinedFunctionArgument UDFArgument;
 	public IPluginMethod CallFunc;
+}
+
+/// <summary>
+/// Cached result of one dynamic name resolution (CALLFORM / GOTOFORM / CALLFORMF family).
+/// A null target field is a negative (not-found) result; resolution exceptions are never cached.
+/// Only the fields of the owning instruction family are meaningful per callsite.
+/// </summary>
+internal sealed class CallformEntry
+{
+	// Built function/label name, retained so error paths on cache hits can report it
+	// without rebuilding the name in long-key mode
+	public string LabelName;
+	public CalledFunction Call;                 // CALL_Instruction
+	public UserDefinedFunctionArgument Arg;     // CALL_Instruction
+	public LogicalLine JumpTo;                  // GOTO_Instruction
+	public AExpression FuncTerm;                // CALLF_Instruction family
+}
+
+/// <summary>
+/// Per-callsite cache of dynamic function/label name resolution.
+/// When the name is a single int interpolation ("PREFIX_{I}") the cache is keyed by the
+/// evaluated term so no name string is built at all; otherwise by the built name with the
+/// same comparer as LabelDictionary. Both found and not-found results are cached;
+/// exceptions are not. Entries die with the InstructionLine when ERB files are reloaded,
+/// and the cache is bypassed entirely while RunERBFromMemory is active (the function
+/// table may then be swapped under a running game).
+/// </summary>
+internal sealed class CallformCache
+{
+	public CallformCache(AExpression funcnameTerm)
+	{
+		nameTerm = funcnameTerm;
+		longTerm = StrForm.SingleIntFormTerm(funcnameTerm);
+		if (longTerm != null)
+			longDic = [];
+		else
+			strDic = new Dictionary<string, CallformEntry>(Config.Config.StrComper);
+	}
+
+	readonly AExpression nameTerm;
+	readonly AExpression longTerm;
+	readonly Dictionary<long, CallformEntry> longDic;
+	readonly Dictionary<string, CallformEntry> strDic;
+
+	/// <summary>Probe the cache; null means miss. The out params carry the probe key for a later Store.</summary>
+	public CallformEntry Lookup(ExpressionMediator exm, out long longKey, out string strKey)
+	{
+		if (longTerm != null)
+		{
+			longKey = longTerm.GetIntValue(exm);
+			strKey = null;
+			return longDic.TryGetValue(longKey, out CallformEntry entry) ? entry : null;
+		}
+		longKey = 0;
+		strKey = nameTerm.GetStrValue(exm);
+		return strDic.TryGetValue(strKey, out CallformEntry entry2) ? entry2 : null;
+	}
+
+	public void Store(long longKey, string strKey, CallformEntry entry)
+	{
+		if (longTerm != null)
+			longDic[longKey] = entry;
+		else
+			strDic[strKey] = entry;
+	}
+
+	/// <summary>
+	/// Resolve a CALLFORM-family target through the per-callsite cache.
+	/// retAddress is the return line recorded in the resulting CalledFunction
+	/// (the call site itself for CALL, the list line for TRYCALLLIST).
+	/// Not-found results are cached as null; resolution exceptions are not.
+	/// </summary>
+	public static CalledFunction ResolveCall(Process process, ExpressionMediator exm, SpCallArgment spCallArg, LogicalLine retAddress, out string labelName, out UserDefinedFunctionArgument arg)
+	{
+		arg = null;
+		if (exm.Console.RunERBFromMemory)
+		{
+			// ERB hot reload: the function table may be swapped under us, do not cache
+			labelName = spCallArg.FuncnameTerm.GetStrValue(exm);
+			return CalledFunction.CallFunction(process, labelName, retAddress);
+		}
+		CallformCache cache = spCallArg.Cache ??= new CallformCache(spCallArg.FuncnameTerm);
+		CallformEntry entry = cache.Lookup(exm, out long longKey, out string strKey);
+		if (entry != null)
+		{
+			labelName = entry.LabelName;
+			arg = entry.Arg;
+			return entry.Call;
+		}
+		labelName = strKey ?? spCallArg.FuncnameTerm.GetStrValue(exm);
+		CalledFunction call = CalledFunction.CallFunction(process, labelName, retAddress);
+		if (call != null)
+		{
+			string errMes;
+			arg = call.ConvertArg(spCallArg.RowArgs, out errMes);
+			if (arg == null)
+				throw new CodeEE(errMes);
+		}
+		cache.Store(longKey, strKey, new CallformEntry { LabelName = labelName, Call = call, Arg = arg });
+		return call;
+	}
+
+	/// <summary>Resolve a GOTOFORM-family $label through the per-callsite cache (see ResolveCall).</summary>
+	public static LogicalLine ResolveGotoForm(Process process, ProcessState state, ExpressionMediator exm, SpCallArgment spCallArg, out string labelName)
+	{
+		if (exm.Console.RunERBFromMemory)
+		{
+			labelName = spCallArg.FuncnameTerm.GetStrValue(exm);
+			return state.CurrentCalled.CallLabel(process, labelName);
+		}
+		CallformCache cache = spCallArg.Cache ??= new CallformCache(spCallArg.FuncnameTerm);
+		CallformEntry entry = cache.Lookup(exm, out long longKey, out string strKey);
+		if (entry != null)
+		{
+			labelName = entry.LabelName;
+			return entry.JumpTo;
+		}
+		labelName = strKey ?? spCallArg.FuncnameTerm.GetStrValue(exm);
+		LogicalLine jumpTo = state.CurrentCalled.CallLabel(process, labelName);
+		cache.Store(longKey, strKey, new CallformEntry { LabelName = labelName, JumpTo = jumpTo });
+		return jumpTo;
+	}
+
+	/// <summary>Resolve a CALLFORMF-family #FUNCTION target through the per-callsite cache (see ResolveCall).</summary>
+	public static AExpression ResolveCallF(ExpressionMediator exm, SpCallFArgment spCallArg, out string labelName)
+	{
+		if (exm.Console.RunERBFromMemory)
+		{
+			labelName = spCallArg.FuncnameTerm.GetStrValue(exm);
+			return GlobalStatic.IdentifierDictionary.GetFunctionMethod(GlobalStatic.LabelDictionary, labelName, spCallArg.RowArgs, true);
+		}
+		CallformCache cache = spCallArg.Cache ??= new CallformCache(spCallArg.FuncnameTerm);
+		CallformEntry entry = cache.Lookup(exm, out long longKey, out string strKey);
+		if (entry != null)
+		{
+			labelName = entry.LabelName;
+			return entry.FuncTerm;
+		}
+		labelName = strKey ?? spCallArg.FuncnameTerm.GetStrValue(exm);
+		AExpression funcTerm = GlobalStatic.IdentifierDictionary.GetFunctionMethod(GlobalStatic.LabelDictionary, labelName, spCallArg.RowArgs, true);
+		cache.Store(longKey, strKey, new CallformEntry { LabelName = labelName, FuncTerm = funcTerm });
+		return funcTerm;
+	}
 }
 
 internal sealed class SpForNextArgment : Argument

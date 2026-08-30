@@ -8,43 +8,43 @@ internal sealed class FunctionMethodTerm : AExpression
 	public FunctionMethodTerm(FunctionMethod meth, List<AExpression> args)
 		: base(meth.ReturnType)
 	{
-		method = meth;
-		arguments = args;
+		Method = meth;
+		Arguments = args;
 	}
 
-	private FunctionMethod method;
-	private List<AExpression> arguments;
+	internal FunctionMethod Method { get; }
+	internal List<AExpression> Arguments { get; }
 
 	public override long GetIntValue(ExpressionMediator exm)
 	{
-		return method.GetIntValue(exm, arguments);
+		return Method.GetIntValue(exm, Arguments);
 	}
 	public override string GetStrValue(ExpressionMediator exm)
 	{
-		return method.GetStrValue(exm, arguments);
+		return Method.GetStrValue(exm, Arguments);
 	}
 	public override SingleTerm GetValue(ExpressionMediator exm)
 	{
-		return method.GetReturnValue(exm, arguments);
+		return Method.GetReturnValue(exm, Arguments);
 	}
 
 	public override AExpression Restructure(ExpressionMediator exm)
 	{
-		if (method.HasUniqueRestructure)
+		if (Method.HasUniqueRestructure)
 		{
-			if (method.UniqueRestructure(exm, [.. arguments]) && method.CanRestructure)
+			if (Method.UniqueRestructure(exm, [.. Arguments]) && Method.CanRestructure)
 				return GetValue(exm);
 			return this;
 		}
 		bool argIsConst = true;
-		for (int i = 0; i < arguments.Count; i++)
+		for (int i = 0; i < Arguments.Count; i++)
 		{
-			if (arguments[i] == null)
+			if (Arguments[i] == null)
 				continue;
-			arguments[i] = arguments[i].Restructure(exm);
-			argIsConst &= arguments[i] is SingleTerm;
+			Arguments[i] = Arguments[i].Restructure(exm);
+			argIsConst &= Arguments[i] is SingleTerm;
 		}
-		if (method.CanRestructure && argIsConst)
+		if (Method.CanRestructure && argIsConst)
 			return GetValue(exm);
 		return this;
 
