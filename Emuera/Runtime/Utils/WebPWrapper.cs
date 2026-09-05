@@ -1159,11 +1159,11 @@ internal sealed partial class UnsafeNativeMethods
 		switch (nint.Size)
 		{
 			case 4:
-				if (WebPDecodeBGRInto_x86(data, (nuint)data_size, output_buffer, output_buffer_size, output_stride) == null)
+				if (WebPDecodeBGRInto_x86(data, (nuint)data_size, output_buffer, output_buffer_size, output_stride) == nint.Zero)
 					throw new InvalidOperationException("Can not decode WebP");
 				break;
 			case 8:
-				if (WebPDecodeBGRInto_x64(data, (nuint)data_size, output_buffer, output_buffer_size, output_stride) == null)
+				if (WebPDecodeBGRInto_x64(data, (nuint)data_size, output_buffer, output_buffer_size, output_stride) == nint.Zero)
 					throw new InvalidOperationException("Can not decode WebP");
 				break;
 			default:
@@ -1186,11 +1186,11 @@ internal sealed partial class UnsafeNativeMethods
 		switch (nint.Size)
 		{
 			case 4:
-				if (WebPDecodeBGRAInto_x86(data, (nuint)data_size, output_buffer, output_buffer_size, output_stride) == null)
+				if (WebPDecodeBGRAInto_x86(data, (nuint)data_size, output_buffer, output_buffer_size, output_stride) == nint.Zero)
 					throw new InvalidOperationException("Can not decode WebP");
 				break;
 			case 8:
-				if (WebPDecodeBGRAInto_x64(data, (nuint)data_size, output_buffer, output_buffer_size, output_stride) == null)
+				if (WebPDecodeBGRAInto_x64(data, (nuint)data_size, output_buffer, output_buffer_size, output_stride) == nint.Zero)
 					throw new InvalidOperationException("Can not decode WebP");
 				break;
 			default:
@@ -1213,11 +1213,11 @@ internal sealed partial class UnsafeNativeMethods
 		switch (nint.Size)
 		{
 			case 4:
-				if (WebPDecodeARGBInto_x86(data, (nuint)data_size, output_buffer, output_buffer_size, output_stride) == null)
+				if (WebPDecodeARGBInto_x86(data, (nuint)data_size, output_buffer, output_buffer_size, output_stride) == nint.Zero)
 					throw new InvalidOperationException("Can not decode WebP");
 				break;
 			case 8:
-				if (WebPDecodeARGBInto_x64(data, (nuint)data_size, output_buffer, output_buffer_size, output_stride) == null)
+				if (WebPDecodeARGBInto_x64(data, (nuint)data_size, output_buffer, output_buffer_size, output_stride) == nint.Zero)
 					throw new InvalidOperationException("Can not decode WebP");
 				break;
 			default:
