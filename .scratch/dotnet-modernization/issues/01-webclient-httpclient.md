@@ -1,6 +1,6 @@
 # UPDATECHECK 换用 HttpClient
 
-Status: needs-triage
+Status: implemented
 
 ## 任务
 
@@ -14,10 +14,15 @@ Status: needs-triage
 
 ## 方案
 
-- 换 `HttpClient`:静态共享实例(避免每次调用新建连接池),`using`/try-finally 保证释放;
+- 换 `HttpClient`:每次调用新建,`using` 保证释放(与原 WebClient 生命周期一致,URL 为空的提前返回路径不创建任何对象);
 - 保持指令同步语义不变(阻塞等待与现状等价);async 化需指令层配合,超出本票范围;
-- 行为保持:仅取前两行非空文本,RESULT 码与确认弹窗逻辑不变。
+- 行为保持:仅读取响应的前两行文本,任一为空/缺失则 RESULT=3(不跳过空行);RESULT 码与确认弹窗逻辑不变;
+- HttpClient 不像 WebClient.OpenRead 那样对非 2xx 响应抛异常,需显式 `EnsureSuccessStatusCode()`,否则错误页正文会被当作版本号读入并可能误弹"新版本"确认框。
+
+## 曾考虑的替代方案
+
+1. 静态共享 `HttpClient` 实例(含 `field ??=` 惰性初始化变体):UPDATECHECK 低频且各次调用间隔远超空闲连接存活时间(约 1 分钟自动关闭),连接复用无实际收益;共享实例所防御的 socket 耗尽仅在高频请求下成立,低频且及时释放的场景不存在,反而引入常驻状态与"脚本单线程、指令不重入"的隐含前提。
 
 ## 影响
 
-UPDATECHECK 指令外部行为不变;网络栈从 WebClient 切至共享静态 `HttpClient`。
+UPDATECHECK 指令外部行为不变;网络栈从 WebClient 切至按次创建的 `HttpClient`。

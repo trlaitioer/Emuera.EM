@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Windows.Forms;
 using static MinorShift.Emuera.Runtime.Utils.EvilMask.Utils;
@@ -2847,7 +2847,6 @@ internal sealed partial class FunctionIdentifier
 			}
 
 			string url = GlobalStatic.GameBaseData.UpdateCheckURL;
-			WebClient wc = new();
 			if (url == null || url == "")
 			{
 				exm.VEvaluator.RESULT = 3;
@@ -2855,64 +2854,54 @@ internal sealed partial class FunctionIdentifier
 			}
 			try
 			{
-				Stream st = wc.OpenRead(url);
-				StreamReader sr = new(st);
-				try
+				using HttpClient httpClient = new();
+				using HttpResponseMessage response = httpClient
+					.GetAsync(url, HttpCompletionOption.ResponseHeadersRead)
+					.GetAwaiter()
+					.GetResult();
+				response.EnsureSuccessStatusCode();
+				using Stream st = response.Content.ReadAsStream();
+				using StreamReader sr = new(st);
+				var version = sr.ReadLine();
+				var link = sr.ReadLine();
+				if (version == null || version == "")
 				{
-					var version = sr.ReadLine();
-					var link = sr.ReadLine();
-					if (version == null || version == "")
+					exm.VEvaluator.RESULT = 3;
+					return;
+				}
+				if (link == null || link == "")
+				{
+					exm.VEvaluator.RESULT = 3;
+					return;
+				}
+				if (version != GlobalStatic.GameBaseData.VersionName)
+				{
+					DialogResult result = MessageBox.Show(string.Format(trmb.NewVersionAvailable.Text, version, link),
+						trmb.UpdateCheck.Text,
+						MessageBoxButtons.YesNo,
+						MessageBoxIcon.None,
+						MessageBoxDefaultButton.Button2
+						);
+					if (result == DialogResult.Yes)
 					{
-						exm.VEvaluator.RESULT = 3;
-						return;
-					}
-					if (link == null || link == "")
-					{
-						exm.VEvaluator.RESULT = 3;
-						return;
-					}
-					if (version != GlobalStatic.GameBaseData.VersionName)
-					{
-						DialogResult result = MessageBox.Show(string.Format(trmb.NewVersionAvailable.Text, version, link),
-							trmb.UpdateCheck.Text,
-							MessageBoxButtons.YesNo,
-							MessageBoxIcon.None,
-							MessageBoxDefaultButton.Button2
-							);
-						if (result == DialogResult.Yes)
+						exm.VEvaluator.RESULT = 2;
+						System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
 						{
-							exm.VEvaluator.RESULT = 2;
-							System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-							{
-								UseShellExecute = true,
-								FileName = link,
-							});
-							//System.Diagnostics.Process.Start(link);
-							st.Close();
-							wc.Dispose();
-							return;
-						}
-						else
-						{
-							exm.VEvaluator.RESULT = 1;
-							st.Close();
-							wc.Dispose();
-							return;
-						}
+							UseShellExecute = true,
+							FileName = link,
+						});
+						//System.Diagnostics.Process.Start(link);
+						return;
 					}
 					else
 					{
-						exm.VEvaluator.RESULT = 0;
-						st.Close();
-						wc.Dispose();
+						exm.VEvaluator.RESULT = 1;
 						return;
 					}
 				}
-				catch
+				else
 				{
-					exm.VEvaluator.RESULT = 3;
-					st.Close();
-					wc.Dispose();
+					exm.VEvaluator.RESULT = 0;
 					return;
 				}
 			}
