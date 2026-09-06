@@ -1,34 +1,25 @@
 # Nullable:核心运行时迁移
 
-Status: wontfix
-Type: task
+Status: superseded
 
-## 关闭说明(2026-08-29)
+## 任务
 
-差分按调用链重切(见 spec.md 迁移方法),本票按文件目录分摊的模式废止:
-
-- Process*.cs、ErbLoader.cs → issues/11(进程与加载链)
-- Creator.Method.cs → issues/08(表达式与方法链);ArgumentBuilder.cs → issues/09(参数与指令链)
-- issues/05(方法调用链元素可空)提升为先行契约票
-
-StrForm 修订历史与"关联模块/文件"清单保留于本票,作为 issues/07~09 的输入。
-
-## 背景
-
-项目级 `<Nullable>annotations</Nullable>` 已开启(注解全局生效、流分析警告逐文件开启)。本票覆盖核心运行时文件。
-
-## 范围
+项目级 `<Nullable>annotations</Nullable>` 已开启(注解全局生效、流分析警告逐文件开启)。本票原覆盖核心运行时文件:
 
 - `Process*.cs`(`Process.cs` 及 `Process.ScriptProc.cs` / `Process.State.cs` / `Process.CalledFunction.cs` / `Process.SystemProc.cs`)
 - `ErbLoader.cs`
 - `Creator.Method.cs`
 - `ArgumentBuilder.cs`
 
+原方案:按 spec.md 的通用方法,文件顶部加 `#nullable enable` → 构建 → 清零该文件 CS86xx。修复原则:优先 `?` 与 `null!` 保持现有行为,少加运行时判断;待有测试后再将 `!` 替换为真检查。
+
+临时 `-p:Nullable=enable` 全量构建(2026-08-29,Debug-NAudio)时,本票范围 8 个文件约 1,140 条 CS86xx(全库约 3,526 条、97 个文件);`ArgumentBuilder.cs`(528 条)与 `Creator.Method.cs`(336 条)为全库最大两处。
+
 ## 方案
 
-按 spec.md 的通用方法:文件顶部加 `#nullable enable` → 构建 → 清零该文件 CS86xx。修复原则:优先 `?` 与 `null!` 保持现有行为,少加运行时判断;待有测试后再将 `!` 替换为真检查。
+本票已执行部分的结论保留如下,作为 issues/07~09 的输入。
 
-## StrForm.cs 修订(已完成,2026-08-29)
+### StrForm.cs 修订
 
 `Runtime/Script/Data/StrForm.cs` 的 18 处 `null!` 中 11 处已替换,余 7 处为省略参数占位(5 处占位参数 + `second`/`third` 2 处局部变量),贯通票 issues/05 处理。修订要点:
 
@@ -59,16 +50,12 @@ StrForm 修订历史与"关联模块/文件"清单保留于本票,作为 issues/
 - `GlobalStatic.cs` — `VariableData.GetSystemVariableToken`(系统变量)
 - `Runtime/Utils/EvilMask/Lang.cs` — `trerror.StrFormUnexpected` 等错误文本
 
-## 备注
+## 影响
 
-- 临时 `-p:Nullable=enable` 全量构建(2026-08-29,Debug-NAudio)时,本票范围 8 个文件约 1,140 条 CS86xx(全库约 3,526 条、97 个文件);`ArgumentBuilder.cs`(528 条)与 `Creator.Method.cs`(336 条)为全库最大两处
+差分按调用链重切(见 spec.md 迁移方法),本票按文件目录分摊的模式废止,范围由以下票承接:
 
-## Comments
+- Process*.cs、ErbLoader.cs → issues/11(进程与加载链)
+- Creator.Method.cs → issues/08(表达式与方法链);ArgumentBuilder.cs → issues/09(参数与指令链)
+- issues/05(方法调用链元素可空)提升为先行契约票
 
-### 2026-08-29
-
-- StrForm 修订:18 处 `null!` 中 11 处替换(实例字段构造器注入、静态成员 cctor 化、argumentTypeArray 可空化),余 7 处省略参数占位归 issues/05
-- `List<AExpression?>` 贯通试验后回退:链路深入 RowArgs/ReduceArguments 边界,整体执行归入 issues/05
-- 静态初始化并入 static StrForm():`Initialize` 方法与两处显式调用点删除,`Ready`/`StrFormNotInitialized` 移除,8 个静态成员以私有字段由 cctor 赋值(原始形态去除 `null!`;触发时机依据 Microsoft Learn《Static constructors》)
-- 行号定位改为 文件路径+函数 定位(遵循仓库文档约定);备注刷新实测警告统计
-- 关闭(superseded):差分按调用链重切,范围由 issues/08/09/11 承接;StrForm 修订历史与关联模块清单保留本票
+StrForm 修订历史与「关联模块/文件」清单保留于本文,作为 issues/07~09 的输入。

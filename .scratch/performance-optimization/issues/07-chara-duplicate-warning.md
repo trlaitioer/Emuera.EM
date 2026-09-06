@@ -1,15 +1,12 @@
 # 告警:重复角色 No 收敛为每组一条
 
 Status: ready-for-human
-Type: task
 
-## 背景
+## 任务
 
 角色模板重复定义告警为每处多余定义各告警一次:同 No 出现 N 次输出 N-1 条(05 字典化重构后的 GroupBy 实现:CompatiSPChara 开启按 `(No, IsSpchara)` 分组、关闭按 `No` 分组)。告警文案仅两种——`DuplicateCharaDefine2`(番号{0}のキャラが複数回定義されています)与 `DuplicateCharaDefine1`(同句附加"SP 角色需开启兼容选项"提示),同一 No 的多条告警在绝大多数情况下逐字相同,无增量信息。`DisplayWarningLevel` 默认 1,这些告警默认可见。
 
-评估来源:05 实施过程中的讨论。同 loader 其余逐次告警惯例(文件内第二个 `NO` 的 `CharaNoDefinedTwice`、`loadDataTo` 的 `VarKeyAreadyDefined`)不在本议题范围,保持现状。
-
-本票是有意的行为变更,与 upstream 行为分叉一处(告警条数);实施基于 05 合入后的 develop。
+评估来源:05 实施过程中的讨论。完成标准:构建通过 + 代码 review;告警条数差异无法经现有单测断言(`ParserMediator.Warn` 在 console 为 null 时不落 warningList),以重复 No 夹具人工观察;不做脚本冒烟。
 
 ## 方案
 
@@ -22,13 +19,11 @@ Type: task
 3. 实现为 05 告警块的就地改写(`group.Skip(1)` 循环 → `Count() > 1` 判断),不涉及其他方法。
 4. 告警文案追加定义次数:两条消息的源文案与内嵌翻译(eng/zhs)统一把"複数回/more than once/多次"改为 `{1}回` 占位,`{1}` 为该组定义总次数(≥2)。翻译按属性地址键控、整句替换,改源文案不影响既有翻译装载;译文缺 `{1}` 占位仅少显示次数(`string.Format` 多余实参无害)。
 
-## 验收
+### 实施现状
 
-构建通过 + 代码 review。告警条数差异无法经现有单测断言(`ParserMediator.Warn` 在 console 为 null 时不落 warningList),仅能以重复 No 夹具人工观察;不做脚本冒烟。
+- 05 告警块已按方案就地改写,构建 0 错误,测试套件 81/81 通过。
+- 文案已携带定义次数(`{1}` 占位,方案第 4 条),`Lang.cs` 源文案与 eng/zhs 内嵌翻译同步更新;告警条数差异留待人工观察验收。
 
-## Comments
+## 影响
 
-### 2026-08-29
-
-- 实施完成(分支 `chore/chara-duplicate-warning`):按方案将 05 的 GroupBy 告警块改写为每组一条;构建 0 错误,测试套件 81/81 通过。告警条数差异按验收一节留待人工观察。Status: ready-for-agent → ready-for-human。
-- 按 review 追加文案携带定义次数(`{1}`,组内定义总次数),同步更新 Lang.cs 源文案与 eng/zhs 内嵌翻译;重跑构建与测试套件(仍 81/81)。
+本票是有意的行为变更,与 upstream 行为分叉一处(告警条数);实施基于 05 合入后的 develop。同 loader 其余逐次告警惯例(文件内第二个 `NO` 的 `CharaNoDefinedTwice`、`loadDataTo` 的 `VarKeyAreadyDefined`)不在本议题范围,保持现状。

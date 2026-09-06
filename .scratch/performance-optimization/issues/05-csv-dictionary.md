@@ -1,13 +1,12 @@
 # 性能:CSV 查询字典化
 
-Status: 已完成(2026-08-29)
-Type: task
+Status: implemented
 
-## 背景
+## 任务
 
-角色模板 CSV 查询为线性扫描(已评估、未实施)。
+角色模板 CSV 查询优化。评估修正:`ConstantData` 三个查询方法中,仅 `GetCharacterTemplate`(按 No)与 `GetCharacterTemplateFromCsvNo`(按 csvNo)是线性扫描,且均为冷路径(调用方分别为 `ADDCHARA`、`ADDCOPYCHARA` 与启动时 gamebase 默认角色);可能被脚本高频调用的 `GetCharacterTemplate_UseSp` 已是二分 O(log n),但实现靠 `List.BinarySearch(null, comparer)` 技巧,隐式依赖"列表已按 No 排序"且无保护,comparer 存在 long 差值强转 int 的溢出隐患,`sp` 参数被完全忽略。模板总量为 chara*.csv 条目数(典型几十到几百),字典化无可测量的性能收益。本票定位为**等价性重构**(消除上述坏味道),O(1) 为顺带收益。
 
-评估修正:`ConstantData` 三个查询方法中,仅 `GetCharacterTemplate`(按 No)与 `GetCharacterTemplateFromCsvNo`(按 csvNo)是线性扫描,且均为冷路径(调用方分别为 `ADDCHARA`、`ADDCOPYCHARA` 与启动时 gamebase 默认角色);可能被脚本高频调用的 `GetCharacterTemplate_UseSp` 已是二分 O(log n),但实现靠 `List.BinarySearch(null, comparer)` 技巧,隐式依赖"列表已按 No 排序"且无保护,comparer 存在 long 差值强转 int 的溢出隐患,`sp` 参数被完全忽略。模板总量为 chara*.csv 条目数(典型几十到几百),字典化无可测量的性能收益。本 ticket 定位为等价性重构(消除上述坏味道),O(1) 为顺带收益。
+完成标准:构建通过 + `ADDCHARA`/`ADDCOPYCHARA`/`CSVNAME`/`EXISTCSV` 冒烟回归;不做基准测试(目标为行为等价)。
 
 ## 方案
 
@@ -19,15 +18,11 @@ Type: task
 5. 调用方零改动。
 6. 按 review 调整尾部循环:Callname 兜底/SetSpFlag/字典填充合并为单个收尾循环;重复 No 告警循环改写为 GroupBy(nList/spList 消除)——CompatiSPChara 开启按 `(No, IsSpchara)` 分组、关闭按 `No` 分组与组内首个比对。告警条数与触发条件不变,唯一微差是多个不同 No 均有重复时告警顺序按组首个出现序而非严格列表序(仅异常重复场景可感)。
 
-## 验收
+### 实施补充
 
-构建通过 + `ADDCHARA`/`ADDCOPYCHARA`/`CSVNAME`/`EXISTCSV` 冒烟回归;不做基准测试(目标为行为等价)。
+- 新增 `Emuera.Tests` 的 `ConstantDataTests`(4 例,经 `Preload.Load` + `LoadData` 真实加载路径覆盖按 No/csvNo 查找、SP 收录、`sp` 忽略、重复 No 先到先得)。
 
-## Comments
+## 影响
 
-### 2026-08-29
-
-- 评估完成:修正前提(线性扫描仅两个冷路径方法,`GetCharacterTemplate_UseSp` 已是二分);重新定位为等价性重构;重复项规则定为首个定义胜出,不复刻不可预测的旧行为。Status: needs-triage → ready-for-agent。
-- 实施完成(分支 `perf/csv-dictionary`):按方案新增 No/csvNo 双字典并在 `loadCharacterData` 末尾填充,三个 getter 改 `TryGetValue`;新增 `Emuera.Tests` 的 `ConstantDataTests`(4 例,经 `Preload.Load` + `LoadData` 真实加载路径覆盖按 No/csvNo 查找、SP 收录、`sp` 忽略、重复 No 先到先得);构建 0 错误,测试套件 81/81 通过。见验收一节,脚本冒烟(ADDCHARA 等)留待人工验收。Status: ready-for-agent → ready-for-human。
-- 按 review 收敛尾部循环并重跑构建与测试套件(仍 81/81),详见方案第 6 条。重复告警条数的收敛(每 No 一条)超出本票等价性范围,另立 issues/07-chara-duplicate-warning.md。
-- 人工冒烟验收通过(游戏正常加载、无报错),关闭。Status: ready-for-human → 已完成。
+- 查询语义统一为首个定义胜出(原 `GetCharacterTemplate_UseSp` 二分实现下重复项结果不可预测);`GetCharacterTemplate_UseSp` 签名保留、`sp` 继续忽略。
+- 每 No 一条的告警收敛超出本票等价性范围,另立 issues/07。

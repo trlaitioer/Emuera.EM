@@ -1,11 +1,12 @@
 # 性能:解析期 Span 化
 
 Status: wontfix
-Type: task
 
-## 背景
+## 任务
 
-原方案:解析期 `st.Substring()`(当时清点约 12 处)与 `ReadSingleIdentifier` 调用点逐步换 ROS,`st.Substring().Split(',')` 配套 span 辅助(已评估、未实施)。
+原方案:解析期 `st.Substring()`(当时清点约 12 处)与 `ReadSingleIdentifier` 调用点逐步换 ROS,`st.Substring().Split(',')` 配套 span 辅助(已评估、未实施)。本票评估后定案:原方案前提不成立,不做。
+
+## 方案
 
 评估结论(2026-08-29):原方案前提不成立,原样实施无可测收益。当前 `CharStream` 上的 `st.Substring` 调用点全部清点如下:
 
@@ -17,17 +18,10 @@ Type: task
 
 约束(若未来做任何 ROS 改造):`CharStream.Replace` / `AppendString` 会替换底层字符串,span 视图跨这两个调用失效,不得持有。
 
-## 唯一有实际空间的方向
+### 唯一有实际空间的方向
 
 标识符/常量串驻留(interning):`IdentifierWord` 等词元以 `readonly string` 在 AST 中终身持有,ERB 语料中标识符高度重复(命令名、变量名等)。以 span 键查重(`Dictionary` 的 `AlternateLookup<ReadOnlySpan<char>>`)复用既有实例,可同时省分配并加速下游相等比较。这是与"Substring→ROS"不同的独立优化,收益需先以大型 ERB 语料的加载基准(耗时 + 分配计数)证实;且并行装载(issues/04)落地后驻留查重需并发安全设计(并发字典或分片合并)。
 
-## 处置(triage 定案 2026-08-29)
+## 影响
 
-原方案(Substring→ROS)不做,本票关闭。「唯一有实际空间的方向」的标识符驻留不在本票实施,延至 issues/04 实施时一并评估,已在 04 正文互链。
-
-## Comments
-
-### 2026-08-29
-
-- 评估完成:逐点核实 `st.Substring` 调用点与 ROS 现状,原方案无可测收益(热路径已 Span 化,其余为错误路径/AST 持久化/一次性 CSV/运行期显示),详见背景;唯一实际方向为标识符驻留。处理方式(关闭 or 转向)待 triage,Status 保持 needs-triage。
-- Triage 定案:原方案不做,本票以 wontfix 关闭;标识符驻留的评估延至 issues/04 实施时(04 正文已互链)。Status: needs-triage → wontfix。
+无代码改动;标识符驻留不在本票实施,延至 issues/04 实施时一并评估(04 正文已互链)。

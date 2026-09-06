@@ -1,15 +1,19 @@
 # 决策:C# 语言特性现代化策略
 
 Status: needs-triage
-Type: task
 
-## 背景
+## 任务
 
-- 项目 `LangVersion` 未显式设置,net10.0-windows 默认即 C# 14,全部源码已在 C# 14 下编译——不存在"升版本"动作,本票只评估新语法采纳(2026-08-30 全库 grep 扫描,136 个 .cs)。
+评估 C# 新语法采纳策略。项目 `LangVersion` 未显式设置,net10.0-windows 默认即 C# 14,全部源码已在 C# 14 下编译——不存在"升版本"动作,本票只评估新语法采纳(2026-08-30 全库 grep 扫描,136 个 .cs)。
+
 - EM 迁移过程中已顺带完成部分现代化:含 namespace 的 134 个文件中 112 个已是 file-scoped;collection expressions(`[.. _args, "-Debug"]` 形态)与 target-typed `new()` 已零星使用;匿名方法(`delegate { }` 表达式)已无残留,余下 `delegate` 均为类型声明。
 - NRT 属 OPT-IN,由 `.scratch/nullable-migration/` 独立承接,不在本票范围。
 
-## 扫描结果(触发点计数)
+完成标准:策略决策记录于本文,提交 triage 定案。
+
+## 方案
+
+### 扫描结果(触发点计数)
 
 | 候选变换 | 触点 | 判断 |
 |---|---|---|
@@ -24,18 +28,11 @@ Type: task
 
 Phase 0(C# 编译器破坏性变更)为空:无 LangVersion 变更,现有代码已编译通过。editorconfig 现有风格规则多为 `silent`/`suggestion`,无分析器强制现代化路径。
 
-## 决策建议
+### 决策建议
 
 - 整体不立项全量语法现代化(wontfix);采纳 on-touch 策略:改动某文件时顺手使用现代写法,不做专门扫描。
 - `LangVersion` 维持不显式设置,随 TFM 默认(当前 C# 14)。
-- 待拍板的不一致:`Emuera/.editorconfig` 声明 `csharp_style_namespace_declarations = block_scoped`,与现状(80% file-scoped)矛盾。若要统一需另立票,余下 22 个块作用域文件集中在 `UI/Framework/Forms`(含 Designer)、`Runtime/Utils/PluginSystem` 与 NAudio 后端;不统一则现状维持。
 
-## 验收
+## 影响
 
-无需验收(决策记录)。
-
-## Comments
-
-### 2026-08-30
-
-- 评估完成:全库 grep 扫描、触点计数与策略建议写入正文。Status: needs-triage。
+待拍板的不一致:`Emuera/.editorconfig` 声明 `csharp_style_namespace_declarations = block_scoped`,与现状(80% file-scoped)矛盾。若要统一需另立票,余下 22 个块作用域文件集中在 `UI/Framework/Forms`(含 Designer)、`Runtime/Utils/PluginSystem` 与 NAudio 后端;不统一则现状维持。

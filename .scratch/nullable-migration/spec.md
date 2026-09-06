@@ -1,14 +1,13 @@
 # 迁移方案:C# 可空注解(Nullable)
 
-状态:进行中(方案 C)。
+Date: 2026-08-22
+Status: in-progress
 
-## 目标
+## 问题/背景
 
-- 项目所有源码文件启用可空注解并消除 CS86xx 警告
-- 最终把 `Emuera/Emuera.csproj` 的 `<Nullable>annotations</Nullable>` 改回 `<Nullable>enable</Nullable>`
-- 迁移期间保持现有运行行为不变
+目标:项目所有源码文件启用可空注解并消除 CS86xx 警告,最终把 `Emuera/Emuera.csproj` 的 `<Nullable>annotations</Nullable>` 改回 `<Nullable>enable</Nullable>`,迁移期间保持现有运行行为不变。
 
-## 现状
+现状:
 
 - 项目级已改为 `<Nullable>annotations</Nullable>`(注解全局生效、流分析警告逐文件开启)
 - 已启用 `#nullable enable` 且无 CS86xx 警告:`Runtime/Script/Data/StrForm.cs`(本迁移样例,18 处 `null!` 中 11 处已替换;余 7 处为省略参数占位,贯通见 issues/05)、`Program.cs`、`UI/Game/StringStyle.cs`(后两者早于本迁移即已启用,见 git 历史)
@@ -17,27 +16,32 @@
 
 计数口径:以上数字来自 `dotnet build Emuera/Emuera.csproj -c Debug-NAudio -p:Platform=x64 --no-incremental -p:Nullable=enable` 的输出原始行数(每条警告在输出中重复出现两次)。
 
-## 迁移方法
+## 整体方案
 
-差分按调用链与契约划分(2026-08-29 重切;原按目录分摊文件的 issues/01/02/04 已关闭标 superseded):
+差分按调用链与契约划分(2026-08-29 重切;原按目录分摊文件的 issues/01/02/04 废止,范围由链簇票承接):
 
 - **契约票**:只改签名、字段声明与列表元素类型;允许跨文件修改,不启用新文件、不以清零 CS86xx 为验收;决策与影响面记录在票内
   - issues/05:方法调用链元素可空(`List<AExpression>` 贯通 FunctionMethod 签名 → override → `GetFunctionMethod` → RowArgs/ReduceArguments)
   - issues/06:横切契约(ExpressionMediator exm、GlobalStatic 字段、Config/Lang 叶子)
-- **链簇票**:启用本链文件并清零该文件 CS86xx;为本链警告可修改票外文件的可空签名,但必须在票内 Comments 记录
+- **链簇票**:启用本链文件并清零该文件 CS86xx;为本链警告可修改票外文件的可空签名,但必须记录在票内正文
   - 核心规则:**签名跟链走,启用跟票走**
   - 建议顺序:解析链(issues/07)→ 变量与数据链(issues/10)→ 表达式与方法链(issues/08)→ 参数与指令链(issues/09)→ 进程与加载链(issues/11)→ UI 与外围(issues/12)
 - **收尾**:issues/03 把 csproj 的 `<Nullable>annotations</Nullable>` 改回 `<Nullable>enable</Nullable>`
 
 单文件通用步骤:给目标文件顶部加 `#nullable enable` → 构建 → 清零该文件 CS86xx。
 
-## 迁移期修复原则
+迁移期修复原则:
 
 - 优先用 `?` 注解与 `null!` 保持现有运行行为,少加运行时判断
 - `Emuera.Tests` 已就绪(见 `.scratch/test-infrastructure/spec.md`);StrForm 的 `null!` 已替换 11/18(余 7 处省略参数占位,见 issues/05),后续文件迁移时同样以真检查或构造点保证替换 `!`
 
-## 验收
+完成标准:
 
 - 全量构建(`-p:Nullable=enable`)CS86xx 警告为 0
-- csproj 恢复 `<Nullable>enable</Nullable>` 后构建通过(CS8981 等非 CS86xx 既有警告不在消除目标内,见 `## 现状`)
+- csproj 恢复 `<Nullable>enable</Nullable>` 后构建通过(CS8981 等非 CS86xx 既有警告不在消除目标内,见现状)
 - 迁移前后运行行为一致(用真实 era 游戏目录验证)
+
+## 影响
+
+- 全库 97 个文件启用可空注解与流分析,csproj 恢复全量 enable
+- 迁移期不改变运行行为;`Emuera.Tests` 测试套件作为回归安全网
