@@ -1,7 +1,7 @@
 # 迁移方案:.NET 10 现代化收尾
 
 Date: 2026-08-30
-Status: draft
+Status: in-progress
 
 ## 问题/背景
 
