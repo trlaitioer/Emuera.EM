@@ -20,11 +20,7 @@ internal sealed class StringMeasure : IDisposable
 	}
 
 	readonly TextDrawingMode textDrawingMode;
-	readonly StringFormat sf = new(StringFormatFlags.MeasureTrailingSpaces);
-	readonly CharacterRange[] ranges = [new(0, 1)];
 	private Size layoutSize;
-	private RectangleF layoutRect;
-	private float fontDisplaySize;
 
 	/// <summary>
 	/// Updates the measuring size after Config.FontSize/LineHeight/WindowX changed.
@@ -32,8 +28,6 @@ internal sealed class StringMeasure : IDisposable
 	public void RefreshLayout()
 	{
 		layoutSize = new Size(Config.WindowX * 2, Config.LineHeight);
-		layoutRect = new RectangleF(0, 0, Config.WindowX * 2, Config.LineHeight);
-		fontDisplaySize = Config.DefaultFont.Size / 2 * 1.04f;//実際には指定したフォントより若干幅をとる？
 	}
 
 	readonly Graphics graph;
@@ -41,14 +35,23 @@ internal sealed class StringMeasure : IDisposable
 
 	public int GetDisplayLength(ReadOnlySpan<char> chars, Font f)
 	{
+		// The string overload answers empty text before it looks at the mode, so nothing here rejects it either
+		if (chars.IsEmpty)
+			return 0;
 		if (textDrawingMode == TextDrawingMode.TEXTRENDERER)
 		{
 			var size = TextRenderer.MeasureText(graph, chars, f, layoutSize, TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix);
 			return size.Width;
 		}
-		else
+		else if (textDrawingMode == TextDrawingMode.GRAPHICS)
 		{
-			return GetDisplayLength(chars.ToString(), f);
+			// The span goes straight to the helper, so this path does not copy the text into a string first.
+			// Tab expansion stays with the string overload, which is the one the print paths use
+			return GraphicsTextRenderer.MeasureAdvance(graph, chars, f, layoutSize);
+		}
+		else// if (StaticConfig.TextDrawingMode == TextDrawingMode.WINAPI)
+		{
+			throw new Exception("WIN32APIモードはサポートされていません");
 		}
 	}
 
@@ -60,13 +63,10 @@ internal sealed class StringMeasure : IDisposable
 		{
 			if (s.Contains('\t'))
 				s = s.Replace("\t", "        ");
-			ranges[0].Length = s.Length;
-			//CharacterRange[] ranges = new CharacterRange[] { new CharacterRange(0, s.Length) };
-			sf.SetMeasurableCharacterRanges(ranges);
-			Region[] regions = graph.MeasureCharacterRanges(s, font, layoutRect, sf);
-			RectangleF rectF = regions[0].GetBounds(graph);
-			//return (int)rectF.Width;//プロポーショナルでなくても数ピクセルずれる
-			return (int)((int)((rectF.Width - 1) / fontDisplaySize + 0.95f) * fontDisplaySize);
+			// The advance width of the text, which is the quantity the layout is built on. Drawing uses GDI+
+			// without padding, so the pen it starts from is the same one the layout computed
+			// (see .scratch/ui-modernization/issues/04).
+			return GraphicsTextRenderer.MeasureAdvance(graph, s, font, layoutSize);
 		}
 		else if (textDrawingMode == TextDrawingMode.TEXTRENDERER)
 		{
@@ -92,6 +92,5 @@ internal sealed class StringMeasure : IDisposable
 		disposed = true;
 		graph.Dispose();
 		bmp.Dispose();
-		sf.Dispose();
 	}
 }

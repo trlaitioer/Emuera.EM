@@ -118,6 +118,7 @@ internal sealed class ConsoleStyledString : AConsoleColoredPart
 		if (Error)
 			return;
 		Color color = Color;
+		// backdrop drawn behind the glyphs of the focused button (the GDI+ variant of DrawText's backColor)
 		Color? backcolor = null;
 		if (isFocus)
 		{
@@ -139,41 +140,32 @@ internal sealed class ConsoleStyledString : AConsoleColoredPart
 		}
 
 		#region EM_私家版_描画拡張
-		// GDI ignores the Graphics transform, so the zoom preview draws text with GDI+
+		// The focused button paints a backdrop behind its glyphs; GDI+ mode has no DrawText backColor
+		// variant, so it fills the backdrop first.
+		if (isButton && !isBackLog && backcolor.HasValue)
+		{
+			using var backBrush = new SolidBrush(backcolor.Value);
+			graph.FillRectangle(backBrush, PointX, pointY, Width, Config.FontSize);
+		}
+		// GDI ignores the Graphics transform, so the zoom preview and GRAPHICS mode draw text with GDI+
 		if (mode == TextDrawingMode.GRAPHICS || scalePreview)
 		{
-			using var brush = new SolidBrush(color);
-			graph.DrawString(Text, Font, brush, new Point(PointX, pointY));
+			GraphicsTextRenderer.Draw(graph, Text, Font, color, PointX, XsubPixel, pointY);
 		}
 		else
 		// TextRenderer.DrawText(graph, Text, Font, new Point(PointX, pointY), color, TextFormatFlags.NoPrefix);
 		{
-			if (JSONConfig.Data.UseButtonFocusBackgroundColor)
-			{
-				if (isButton && !isBackLog)
-				{
-					if (!backcolor.HasValue)
-					{
-						backcolor = Color.FromArgb(50, 50, 50);
-					}
-					TextRenderer.DrawText(graph, Text.AsSpan(), Font, new Point(PointX, pointY), color, backColor: backcolor.Value, TextFormatFlags.NoPrefix);
-				}
-				else
-				{
-					TextRenderer.DrawText(graph, Text.AsSpan(), Font, new Point(PointX, pointY), color, TextFormatFlags.NoPrefix);
-				}
-			}
-			else
-			{
-				TextRenderer.DrawText(graph, Text.AsSpan(), Font, new Point(PointX, pointY), color, TextFormatFlags.NoPrefix | TextFormatFlags.PreserveGraphicsClipping);
-			}
+			TextFormatFlags flags = TextFormatFlags.NoPrefix;
+			if (!JSONConfig.Data.UseButtonFocusBackgroundColor)
+				flags |= TextFormatFlags.PreserveGraphicsClipping;
+			TextRenderer.DrawText(graph, Text.AsSpan(), Font, new Point(PointX, pointY), color, flags);
 		}
 
 		#endregion
 	}
 
 	//Bitmap Cache
-	public void DrawToBitmap(Graphics graph, bool isSelecting, bool isBackLog, TextDrawingMode mode, int xOffset)
+	public void DrawToBitmap(Graphics graph, bool isSelecting, bool isBackLog, TextDrawingMode mode, int xOffset, float subPixel)
 	{
 		if (Error)
 			return;
@@ -185,7 +177,7 @@ internal sealed class ConsoleStyledString : AConsoleColoredPart
 
 		#region EM_私家版_描画拡張
 		if (mode == TextDrawingMode.GRAPHICS)
-			graph.DrawString(Text, Font, new SolidBrush(color), new Point(xOffset, 0));
+			GraphicsTextRenderer.Draw(graph, Text, Font, color, xOffset, subPixel, 0);
 		else
 			// TextRenderer.DrawText(graph, Text, Font, new Point(PointX, pointY), color, TextFormatFlags.NoPrefix);
 			TextRenderer.DrawText(graph, Text.AsSpan(), Font, new Point(xOffset, 0), color, TextFormatFlags.NoPrefix | TextFormatFlags.PreserveGraphicsClipping);

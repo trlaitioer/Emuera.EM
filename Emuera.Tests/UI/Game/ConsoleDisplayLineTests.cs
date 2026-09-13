@@ -114,22 +114,52 @@ public class ConsoleDisplayLineTests
 	{
 		WithDefaultGeometry(() =>
 		{
-			Assert.Equal(WindowX - FontSize / 6, Config.DrawableWidth);
+			TextDrawingMode original = Config.TextDrawingMode;
+			try
+			{
+				//GRAPHICS mode draws text with GDI+ as well, so nothing has to be compensated
+				SetTextDrawingMode(TextDrawingMode.GRAPHICS);
+				Config.ApplyWindowGeometry(WindowX, 480, FontSize, LineHeight);
+				Assert.Equal(0, Config.DrawingParam_ShapePositionShift);
+				Assert.Equal(WindowX, Config.DrawableWidth);
 
-			Config.ApplyWindowGeometry(1520, 600, 36, 20);
-			Assert.Equal(1520 - 36 / 6, Config.DrawableWidth);
-			//the line height never goes below the font size
-			Assert.Equal(36, Config.LineHeight);
+				//the shift between the GDI text origin and the GDI+ shape origin exists for the default mode only
+				SetTextDrawingMode(TextDrawingMode.TEXTRENDERER);
+				Config.ApplyWindowGeometry(WindowX, 480, FontSize, LineHeight);
+				Assert.Equal(WindowX - FontSize / 6, Config.DrawableWidth);
 
-			Config.ApplyWindowGeometry(1520, 600, 30, 40);
-			Assert.Equal(40, Config.LineHeight);
+				Config.ApplyWindowGeometry(1520, 600, 36, 20);
+				Assert.Equal(1520 - 36 / 6, Config.DrawableWidth);
+				//the line height never goes below the font size
+				Assert.Equal(36, Config.LineHeight);
 
-			//the font size has a lower bound of 8px
-			Config.ApplyWindowGeometry(200, 100, 4, 3);
-			Assert.Equal(8, Config.FontSize);
-			Assert.Equal(8, Config.LineHeight);
-			Assert.Equal(200 - 2, Config.DrawableWidth);
+				Config.ApplyWindowGeometry(1520, 600, 30, 40);
+				Assert.Equal(40, Config.LineHeight);
+
+				//the font size has a lower bound of 8px
+				Config.ApplyWindowGeometry(200, 100, 4, 3);
+				Assert.Equal(8, Config.FontSize);
+				Assert.Equal(8, Config.LineHeight);
+				Assert.Equal(200 - 2, Config.DrawableWidth);
+			}
+			finally
+			{
+				SetTextDrawingMode(original);
+				Config.ApplyWindowGeometry(WindowX, 480, FontSize, LineHeight);
+			}
 		});
+	}
+
+	/// <summary>
+	/// Assigns the drawing mode, which only the configuration file does in the product. Applying the window
+	/// geometry afterwards recomputes the values derived from the mode, as loading a configuration would.
+	/// </summary>
+	private static void SetTextDrawingMode(TextDrawingMode mode)
+	{
+		System.Reflection.PropertyInfo property = typeof(Config)
+			.GetProperty(nameof(Config.TextDrawingMode), System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
+			?? throw new InvalidOperationException("Config.TextDrawingMode not found");
+		property.SetValue(null, mode);
 	}
 
 	private static void AssertUnchanged(Func<ConsoleDisplayLine> build)

@@ -1862,7 +1862,7 @@ internal sealed partial class EmueraConsole : IDisposable
 		}
 		#region EmuEra-Rikaichan
 		if (Config.RikaiEnabled)
-			rikaichan.OnPaint(graph, stringMeasure, canvasWidth);
+			rikaichan.OnPaint(graph, stringMeasure, canvasWidth, scalePreview);
 		#endregion
 
 		//真のHTML描画

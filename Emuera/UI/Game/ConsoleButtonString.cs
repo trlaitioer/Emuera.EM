@@ -316,7 +316,8 @@ internal sealed class ConsoleButtonString
 				int width = Width + 1;
 				//^ Without +1, some things get cropped. I don't know why, probably a bug somewhere.
 				//TODO
-				int height = Config.FontSize;
+				//the line box, not the font size: GDI+ glyphs reach below the em box that FontSize describes
+				int height = Config.LineHeight;
 				bitmapCache = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 				Graphics g = Graphics.FromImage(bitmapCache);
 
@@ -325,7 +326,7 @@ internal sealed class ConsoleButtonString
 				{
 					if (css is not ConsoleStyledString) continue;
 					ConsoleStyledString willDrawHere = css as ConsoleStyledString;
-					willDrawHere.DrawToBitmap(g, isSelecting, isBackLog, mode, xOffset);
+					willDrawHere.DrawToBitmap(g, isSelecting, isBackLog, mode, xOffset, css.XsubPixel);
 					xOffset += css.Width;
 				}
 

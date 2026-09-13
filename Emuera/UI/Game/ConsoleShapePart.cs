@@ -229,7 +229,7 @@ internal sealed class ConsoleErrorShapePart : ConsoleShapePart
 	public override void DrawTo(Graphics graph, int pointY, bool isSelecting, bool isFocus, bool isBackLog, TextDrawingMode mode, bool isButton = false, bool scalePreview = false)
 	{
 		if (mode == TextDrawingMode.GRAPHICS || scalePreview)
-			graph.DrawString(Text, Config.DefaultFont, new SolidBrush(Config.ForeColor), new Point(PointX, pointY));
+			GraphicsTextRenderer.Draw(graph, Text, Config.DefaultFont, Config.ForeColor, PointX, XsubPixel, pointY);
 		else
 			System.Windows.Forms.TextRenderer.DrawText(graph, Text.AsSpan(), Config.DefaultFont, new Point(PointX, pointY), Config.ForeColor, System.Windows.Forms.TextFormatFlags.NoPrefix);
 	}

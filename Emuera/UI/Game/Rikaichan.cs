@@ -643,7 +643,7 @@ partial class Rikaichan
 		return s.Length * 16;
 	}
 
-	public void OnPaint(Graphics graph, StringMeasure stringMeasure, int screenWidth)
+	public void OnPaint(Graphics graph, StringMeasure stringMeasure, int screenWidth, bool scalePreview = false)
 	{
 		if (!enabled) return;
 
@@ -894,7 +894,11 @@ partial class Rikaichan
 			while (j != 0)
 			{
 				var line = outputList2[firstlineind + j - 1];
-				TextRenderer.DrawText(graph, line, Config.DefaultFont, new Point(x_offset, y), Config.RikaiColorText, TextFormatFlags.NoPrefix);
+				// GDI ignores the Graphics transform, so the zoom preview and GRAPHICS mode draw with GDI+
+				if (scalePreview || Config.TextDrawingMode == TextDrawingMode.GRAPHICS)
+					GraphicsTextRenderer.Draw(graph, line, Config.DefaultFont, Config.RikaiColorText, x_offset, 0, y);
+				else
+					TextRenderer.DrawText(graph, line, Config.DefaultFont, new Point(x_offset, y), Config.RikaiColorText, TextFormatFlags.NoPrefix);
 				j--;
 				i++;
 				y -= 20;

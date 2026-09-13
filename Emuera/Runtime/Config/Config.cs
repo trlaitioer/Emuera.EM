@@ -242,7 +242,10 @@ internal static class Config
 	private static void recomputeGeometry()
 	{
 		DrawingParam_ShapePositionShift = 0;
-		if (TextDrawingMode != TextDrawingMode.WINAPI)
+		// The shift compensates the horizontal difference between the GDI text origin and the GDI+ shape
+		// origin. In GRAPHICS mode both come from GDI+ with the same origin, so nothing has to be
+		// compensated (see .scratch/ui-modernization/issues/04).
+		if (TextDrawingMode == TextDrawingMode.TEXTRENDERER)
 			DrawingParam_ShapePositionShift = Math.Max(2, FontSize / 6);
 		DrawableWidth = WindowX - DrawingParam_ShapePositionShift;
 	}
@@ -474,7 +477,9 @@ internal static class Config
 	public const StringComparison SCExpression = StringComparison.Ordinal;
 
 	/// <summary>
-	/// GDI+利用時に発生する文字列と図形・画像間の位置ずれ補正
+	/// Horizontal shift applied to shapes and images to compensate the difference between the GDI text
+	/// origin (TextRenderer with NoPadding, used by TextDrawingMode.TEXTRENDERER) and the GDI+ origin used
+	/// by shapes and images. Zero in other modes, where text is drawn by GDI+ with the same origin.
 	/// </summary>
 	public static int DrawingParam_ShapePositionShift { get; private set; }
 

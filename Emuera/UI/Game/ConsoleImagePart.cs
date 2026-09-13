@@ -232,7 +232,7 @@ sealed class ConsoleImagePart : AConsoleDisplayNode
 		else
 		{
 			if (mode == TextDrawingMode.GRAPHICS)
-				graph.DrawString(AltText, Config.DefaultFont, new SolidBrush(Config.ForeColor), new Point(PointX, pointY));
+				GraphicsTextRenderer.Draw(graph, AltText, Config.DefaultFont, Config.ForeColor, PointX, XsubPixel, pointY);
 			else
 				System.Windows.Forms.TextRenderer.DrawText(graph, AltText.AsSpan(), Config.DefaultFont, new Point(PointX, pointY), Config.ForeColor, System.Windows.Forms.TextFormatFlags.NoPrefix);
 		}
