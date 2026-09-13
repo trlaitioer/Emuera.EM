@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Text;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using trmb = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.MessageBox;
 
@@ -989,34 +988,8 @@ namespace MinorShift.Emuera.Forms
 
 		private void rikaiNote2_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			var url = "https://wiki.eragames.rip/index.php/Emuera-Rikaichan";
-			try
-			{
-				Process.Start(url);
-			}
-			catch
-			{
-				// https://stackoverflow.com/questions/4580263/how-to-open-in-default-browser-in-c-sharp
-				// linux makes life easier once again...
-				// hack because of this: https://github.com/dotnet/corefx/issues/10361
-				if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-				{
-					url = url.Replace("&", "^&");
-					Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
-				}
-				else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-				{
-					Process.Start("xdg-open", url);
-				}
-				else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-				{
-					Process.Start("open", url);
-				}
-				else
-				{
-					throw;
-				}
-			}
+			// UseShellExecute defaults to false on .NET, so the URL has to be opened through the shell
+			Process.Start(new ProcessStartInfo("https://wiki.eragames.rip/index.php/Emuera-Rikaichan") { UseShellExecute = true });
 		}
 		private void UseButtonFocusColor_CheckedChanged(object sender, EventArgs e)
 		{
