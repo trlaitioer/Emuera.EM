@@ -31,7 +31,7 @@ eraBasic 游戏由 `csv/`（数据）与 `erb/`（脚本）构成，**文本是�
 - 片段级覆盖（后续）使用**另一种扩展名**，与 `.erbx` 区分（见 §3.1）。
 - `.erbx` 内容为普通 eraBasic，直接 `@FUNCTION_NAME` 定义同名函数来覆盖。
 
-**装载改造点（大方向；具体装载逻辑后续补充，已核实的约束记入 §4.1）：**
+**装载改造点（大方向；具体装载逻辑后续补充，已核实的约束记入 §3.8.1）：**
 - `Config.getFiles`（`Emuera/Runtime/Config/Config.cs`，私有静态方法；过滤即其中的 `if (Path.GetExtension(filepaths[i]).Length <= 4)` 判断）：**移除该过滤**。它是 .NET Framework 通配符怪癖的防护（Framework 下 `*.xls` 会连 `book.xlsx` 一起命中；MS 文档明确标注该行为 ".NET Framework only"，.NET 5+ 已改为扩展名精确匹配）。本项目已是 .NET 10，`*.ERB`/`CHARA*.CSV`/`*.ERH` 等现有调用方行为不变；`.erbx` 用显式 `*.erbx` 模式收集。（另一条 8.3 短名怪癖仅影响含中置通配符的模式，本项目模式均为尾置通配符，不受影响。）
 - `tl/` 根目录与 `erb/` 同级：`Program.SetDirPaths` 内 `ErbDir = Path.Combine(ExeDir, "erb")`（`Program.cs`），tl 根同理取 `ExeDir + "tl\\"`。
 - 在 ERB 装载流程（`ErbLoader.LoadErbDir`，`ErbLoader.cs`）中加入 `tl/<语言>/erb/` 的扫描、`.erbx` 解析与原 `.erb` 加载时的覆盖跳过；`.ERH`/`.erd`/`.csv` 加载器（`ErhLoader.LoadHeaderFiles` / `ErhLoader.PrepareERDFileNames`，`ErhLoader.cs`）本期不动。
@@ -118,9 +118,9 @@ eraBasic 游戏由 `csv/`（数据）与 `erb/`（脚本）构成，**文本是�
 
 - 菜单落地后，语言选择回到目标行为：仅配置为「未选择」时弹选择菜单（见 §2.3）。
 
-### 4. 未决项（开放问题）
+#### 3.8 未决项（开放问题）
 
-#### 4.1 装载细节（待补充）
+##### 3.8.1 装载细节（待补充）
 
 具体装载逻辑后续补充。已从源码核实、设计时必须满足的约束：
 - `LoadErbDir` 在装载任何文件之前会 `labelDic.RemoveAll()`（`ErbLoader.cs`）：任何「一次性预载 `.erbx` 标签」的方案都会被运行期重载清空，`tl/` 装载必须放在 `LoadErbDir` 流程内部。
@@ -129,15 +129,15 @@ eraBasic 游戏由 `csv/`（数据）与 `erb/`（脚本）构成，**文本是�
 - 语言选择须先于 ERB 装载完成。
 - 覆盖裁决按名跳过、不依赖加载顺序（见 §2.2），天然兼容并行装载；`tl/` 树届时同样并行装载并复用函数级管线（见 §2.5 与 `performance-optimization/issues/04-parse-parallel.md`）。原 `.erb` 内同名函数在并行装载下的裁决（同名兼容配置）属该 issue 范围，与覆盖机制无关。
 
-#### 4.2 片段级 hash 键基准（3.1 启动时定）
+##### 3.8.2 片段级 hash 键基准（3.1 启动时定）
 
 哈希算「原始源码行（读入那一瞬、宏展开前）+ 去空白」还是「引擎解析后逻辑行」：倾向前者——译者照抄即可得 hash，生成工具可显示每行 hash；待 3.1 启动时拍板。
 
-#### 4.3 字符串模板层的作用边界（3.2 启动时定）
+##### 3.8.3 字符串模板层的作用边界（3.2 启动时定）
 
 模板层是否只处理「未被覆盖的函数」里的模板：一个函数一旦被覆盖，内部字符串是否全交给覆盖版、模板层不再管。未拍板。
 
-#### 4.4 调用原版逃逸口的实现方式（3.3 启动时定）
+##### 3.8.4 调用原版逃逸口的实现方式（3.3 启动时定）
 
 备选：①`CALL ORIGINAL:F` 之类特殊语法；②`#DIM` 特殊标记（复用原解析逻辑）；③在函数作用域直接暴露一个特殊名称。未拍板。
 
@@ -157,39 +157,39 @@ eraBasic 游戏由 `csv/`（数据）与 `erb/`（脚本）构成，**文本是�
 
 ## 影响
 
-### 6.1 需要改动的文件（改造点清单）
+### 影响 6.1 需要改动的文件（改造点清单）
 
 | 文件 | 改动 | 风险 |
 |---|---|---|
 | `Emuera/Runtime/Config/Config.cs`（`getFiles`） | 移除「扩展名长度 ≤4」过滤（.NET 10 下对现有模式无行为差异） | 低 |
 | `Emuera/Runtime/Config/ConfigCode.cs` / `ConfigData.cs` / `Config.cs` | 新增 `TranslationLang` 配置键（解析/保存/默认值 `未选择`；只进配置文件、绝不进游戏存档） | 低 |
-| `Emuera/Runtime/Script/Loader/ErbLoader.cs`（`LoadErbDir`/`loadErb`） | `tl/<语言>/erb/` 扫描、`.erbx` 函数加载、`loadErb`（per-file）内跳过被覆盖函数；需覆盖运行期重载路径（`Process.ReloadErb`/`Process.ReloadPartialErb`，经 `ErbLoader.LoadErbList`）与 `Preload.Load` 的启动/重载两处调用（`EmueraConsole`/`Process`）——细节见 §4.1 | 中 |
+| `Emuera/Runtime/Script/Loader/ErbLoader.cs`（`LoadErbDir`/`loadErb`） | `tl/<语言>/erb/` 扫描、`.erbx` 函数加载、`loadErb`（per-file）内跳过被覆盖函数；需覆盖运行期重载路径（`Process.ReloadErb`/`Process.ReloadPartialErb`，经 `ErbLoader.LoadErbList`）与 `Preload.Load` 的启动/重载两处调用（`EmueraConsole`/`Process`）——细节见 §3.8.1 | 中 |
 | `Emuera/Runtime/Script/Data/LabelDictionary.cs` | **无需改动**（跳过机制足够，见 §2.2） | — |
 | 新增 `Emuera/Runtime/.../Translation.cs`（或类似） | 覆盖表、语言选择、签名校验（§2.5）、`.erbx` 校验与回退逻辑 | 中 |
 | `Emuera/Program.cs` 启动流程 | 语言选择、装载覆盖文件 | 低 |
 
 新增界面文案（语言选择、覆盖警告）需补 `trsl`/`trerror` 资源。
 
-### 6.2 兼容性影响面
+### 影响 6.2 兼容性影响面
 
 - **对现有游戏**：`tl/` 目录不存在 → **零影响**，完全按原版运行。只需旁挂 `tl/<language>/*.erbx` 才会生效。
 - **对原 `.erb`/`.csv`**：完全不变。
 - 风险缓解：任何 `.erbx` 的语法错误 / 引用不存在的函数 / 空文件，一律**回退原版**，不影响游戏启动。
 
-### 6.3 性能影响
+### 影响 6.3 性能影响
 
 - 覆盖表在**装载期**构建（一次）。
 - 被覆盖的函数**完全不解析**，节省 parse 时间（且避免原函数潜在问题）。
 - 运行期无额外开销（CALL/跳转走原有 `noneventLabelDic` 查找，只是键指向覆盖标签）。
 
-### 6.4 不涉及的范围（边界）
+### 影响 6.4 不涉及的范围（边界）
 
 - 除装载流程外不改动解释器核心（含 `LabelDictionary`、跳转解析）。
 - 不处理 CSV 数据字段翻译（见 §3.4）。
 - 不做字符串模板层（见 §3.2）。
 - 不做片段级覆盖、逃逸口、hash 算法落地（见 §3.1/§3.3）。
 
-### 6.5 安全与数据风险
+### 影响 6.5 安全与数据风险
 
 - 翻译覆盖层是**旁挂**，不会写入或改动任何游戏源文件。
 - 唯一需要小心的是 `.erbx` 语法校验与回退逻辑，确保「翻译文件损坏 → 回退原版而非崩溃」。

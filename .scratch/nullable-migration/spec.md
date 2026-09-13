@@ -28,6 +28,8 @@ Status: in-progress
   - 建议顺序:解析链(issues/07)→ 变量与数据链(issues/10)→ 表达式与方法链(issues/08)→ 参数与指令链(issues/09)→ 进程与加载链(issues/11)→ UI 与外围(issues/12)
 - **收尾**:issues/03 把 csproj 的 `<Nullable>annotations</Nullable>` 改回 `<Nullable>enable</Nullable>`
 
+链簇票的 `Blocked by:` 由上述顺序落成:每个上游链簇票为下游提供可空签名契约,故 10 阻塞于 07、11 阻塞于 07/10、12 阻塞于 06/07/10;08 的入边为 05/06/10,09 为 05/06/08。顺序本身是建议而非机制约束,阻塞边只表达「先有契约再清警告」。
+
 单文件通用步骤:给目标文件顶部加 `#nullable enable` → 构建 → 清零该文件 CS86xx。
 
 迁移期修复原则:

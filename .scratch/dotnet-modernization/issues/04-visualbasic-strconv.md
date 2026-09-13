@@ -1,6 +1,6 @@
 # 决策:保留 Microsoft.VisualBasic 的 StrConv 依赖
 
-Status: needs-triage
+Status: ready-for-human
 
 ## 任务
 

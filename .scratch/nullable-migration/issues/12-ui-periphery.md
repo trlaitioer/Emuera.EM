@@ -2,6 +2,8 @@
 
 Status: needs-triage
 
+Blocked by: 06, 07, 10
+
 ## 任务
 
 UI 与外围是最后一批,双向依赖(UI 既被 Process/指令调用,又主动调 Process、Config、Lang,甚至解析器,经 GlobalStatic 打通)。UI 直接复用解析簇(EmueraConsole/HtmlManager/ButtonStringCreator/DebugDialog 调用 LexicalAnalyzer);PluginSystem 直连 VariableData。Config(76 个文件引用)、Lang(57 个文件引用)作为普适叶子,契约已由 issues/06 先定。

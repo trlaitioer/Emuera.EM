@@ -2,6 +2,8 @@
 
 Status: needs-triage
 
+Blocked by: 07, 10
+
 ## 任务
 
 进程与加载是总装层:Process 5 个 partial 文件经 GlobalStatic 调度 ErbLoader/ErhLoader 的解析产物(LogicalLine 家族)与符号表(LabelDictionary/IdentifierDictionary),运行期消费全部上游簇产物。相对自洽:不直接依赖 UI(经 GlobalStatic.Console),链内可解决大部分警告。

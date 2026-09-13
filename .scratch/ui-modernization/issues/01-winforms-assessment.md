@@ -1,6 +1,6 @@
 # 决策:WinForms 层升级需求评估
 
-Status: needs-triage
+Status: ready-for-human
 
 ## 任务
 

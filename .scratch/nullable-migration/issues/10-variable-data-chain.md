@@ -2,6 +2,8 @@
 
 Status: needs-triage
 
+Blocked by: 07
+
 ## 任务
 
 变量簇自耦合度高:VariableToken.cs 单文件约 2,900 行,含 6 层 token 抽象(VariableToken/CharaVariableToken/UserDefinedVariableToken/UserDefinedCharaVariableToken/ReferenceToken/LocalVariableToken)与约 40 个具体 token,文件尾部还是 partial `VariableData` 的工厂部分;存档读写分居 VariableData.cs 与 CharacterData.cs。PluginSystem 从外部直连 VariableData(PluginManager 引用 70 次),是隐性强边(适配归 issues/12)。

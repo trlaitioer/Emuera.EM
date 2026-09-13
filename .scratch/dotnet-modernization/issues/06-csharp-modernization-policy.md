@@ -1,6 +1,6 @@
 # 决策:C# 语言特性现代化策略
 
-Status: needs-triage
+Status: ready-for-human
 
 ## 任务
 

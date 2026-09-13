@@ -1,6 +1,6 @@
 # URL 打开:移除依赖 Framework 默认值的死路径
 
-Status: needs-triage
+Status: ready-for-agent
 
 ## 任务
 

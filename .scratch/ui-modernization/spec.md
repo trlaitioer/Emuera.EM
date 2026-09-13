@@ -1,7 +1,7 @@
 # 方案:UI 层现代化(WinForms / 显示)
 
 Date: 2026-08-30
-Status: draft
+Status: in-progress
 
 ## 问题/背景
 
