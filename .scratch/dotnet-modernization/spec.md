@@ -11,7 +11,8 @@ Status: in-progress
 
 1. UPDATECHECK 换 HttpClient(issues/01):WebClient 已弃用(SYSLIB0014)、同步阻塞 UI 线程、部分路径未释放
 2. 存档读取加固(issues/02):net9 起 `BinaryReader.ReadString()` 畸形序列静默返回 U+FFFD,损坏存档文本检出弱化
-3. URL 打开死路径清理(issues/03):`Process.Start(url)` 依赖 Framework 时代 `UseShellExecute` 默认值,首跳必败靠 catch 回退
+3. URL 打开死路径清理(issues/03):`Process.Start(url)` 依赖 Framework 时代 `UseShellExecute` 默认值,首跳必败靠 catch 回退;同型不可达平台分支一并清理
+   - 全仓平台判断共 6 处,`ConfigDialog.rikaiNote2_LinkClicked` 的 3 处归本票,其余 4 处(同文件 `ConfigDialog.button2_Click`、`Instraction.Child.cs` 的 `FONTBOLD`/`FONTITALIC`/`FONTREGULAR` 指令)见 issues/07
 4. Microsoft.VisualBasic 依赖决策(issues/04):`StrConv` 假名/全半角转换,当前目标框架可用,建议保留
 5. DllImport → LibraryImport 决策(issues/05):无 AOT 需求,维持现状
 6. C# 语言特性现代化策略决策(issues/06):C# 14 已随 TFM 默认生效,建议整体不立项、按需(on-touch)采纳
