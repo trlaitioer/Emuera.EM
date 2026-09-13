@@ -48,7 +48,7 @@ partial class MainWindow
 		デバッグウインドウを開くToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 		デバッグ情報の更新ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 		ツールToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-		ウィンドウ幅のロックToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+		ウィンドウズームをリセットToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 		クリップボードにコピーToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 		ヘルプHToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 		コンフィグCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -225,18 +225,18 @@ partial class MainWindow
 		// 
 		// ツールToolStripMenuItem
 		// 
-		ツールToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { ウィンドウ幅のロックToolStripMenuItem, クリップボードにコピーToolStripMenuItem });
+		ツールToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { ウィンドウズームをリセットToolStripMenuItem, クリップボードにコピーToolStripMenuItem });
 		ツールToolStripMenuItem.ForeColor = System.Drawing.SystemColors.MenuText;
 		ツールToolStripMenuItem.Name = "ツールToolStripMenuItem";
 		ツールToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
 		ツールToolStripMenuItem.Text = "ツール";
 		// 
-		// ウィンドウ幅のロックToolStripMenuItem
+		// ウィンドウズームをリセットToolStripMenuItem
 		// 
-		ウィンドウ幅のロックToolStripMenuItem.Name = "ウィンドウ幅のロックToolStripMenuItem";
-		ウィンドウ幅のロックToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
-		ウィンドウ幅のロックToolStripMenuItem.Text = "ウィンドウ幅のロック変更";
-		ウィンドウ幅のロックToolStripMenuItem.Click += ウィンドウ幅のロック変更ToolStripMenuItem_Click;
+		ウィンドウズームをリセットToolStripMenuItem.Name = "ウィンドウズームをリセットToolStripMenuItem";
+		ウィンドウズームをリセットToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
+		ウィンドウズームをリセットToolStripMenuItem.Text = "ウィンドウズームをリセット";
+		ウィンドウズームをリセットToolStripMenuItem.Click += ウィンドウズームをリセットToolStripMenuItem_Click;
 		// 
 		// クリップボードにコピーToolStripMenuItem
 		// 
@@ -618,6 +618,9 @@ partial class MainWindow
 		SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
 		Text = "Emuera";
 		FormClosing += MainWindow_FormClosing;
+		ResizeBegin += MainWindow_ResizeBegin;
+		ResizeEnd += MainWindow_ResizeEnd;
+		Resize += MainWindow_Resize;
 		Shown += Init;
 		menuStrip.ResumeLayout(false);
 		menuStrip.PerformLayout();
@@ -689,7 +692,7 @@ partial class MainWindow
 	private System.Windows.Forms.ToolStripTextBox EmuVerToolStripTextBox;
 	private System.Windows.Forms.ToolStripMenuItem リソースフォルダを読み直すToolStripMenuItem;
 	private System.Windows.Forms.ToolStripMenuItem ツールToolStripMenuItem;
-	private System.Windows.Forms.ToolStripMenuItem ウィンドウ幅のロックToolStripMenuItem;
+	private System.Windows.Forms.ToolStripMenuItem ウィンドウズームをリセットToolStripMenuItem;
 	private System.Windows.Forms.ToolStripMenuItem デバッグモードで再起動ToolStripMenuItem;
 	private System.Windows.Forms.ToolStripMenuItem クリップボードにコピーToolStripMenuItem;
 	private System.Windows.Forms.ToolStripMenuItem LanguageToolStripMenuItem;

@@ -18,7 +18,7 @@
     <tr id="UI.MainWindow.Debug.OpenDebugWindow"><![CDATA[Open Debug widow]]></tr>
     <tr id="UI.MainWindow.Debug.UpdateDebugInfo"><![CDATA[Update Debug Info]]></tr>
     <tr id="UI.MainWindow.Tools"><![CDATA[Tools]]></tr>
-    <tr id="UI.MainWindow.Tools.LockWindowWidth"><![CDATA[Lock window width]]></tr>
+    <tr id="UI.MainWindow.Tools.ResetZoom"><![CDATA[Reset window zoom]]></tr>
     <tr id="UI.MainWindow.Tools.CopyToClipboard"><![CDATA[Copy Text to Clipboard]]></tr>
     <tr id="UI.MainWindow.Help"><![CDATA[Help(&H)]]></tr>
     <tr id="UI.MainWindow.Help.Config"><![CDATA[Setting(&C)]]></tr>

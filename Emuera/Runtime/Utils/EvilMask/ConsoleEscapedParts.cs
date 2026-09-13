@@ -1,4 +1,5 @@
 ﻿using MinorShift.Emuera.UI.Game;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -47,14 +48,18 @@ internal sealed class ConsoleEscapedParts
 		parts.Clear();
 		Changed = false;
 	}
-	public static void Add(AConsoleDisplayNode part, int line, int depth, int top, int bottom)
+	/// <summary>
+	/// Converting to line counts depends on the line height, so top/bottom are stored in pixels and converted on lookup.
+	/// topOffset/bottomOffset are pixel offsets from the start of the owning line.
+	/// </summary>
+	public static void Add(AConsoleDisplayNode part, int line, int depth, int topOffset, int bottomOffset)
 	{
 		var id = Utils.TimePoint();
 		var row = dt.NewRow();
 		row[ROW_LINE] = line;
 		row[ROW_DEPTH] = depth;
-		row[ROW_TOP] = top;
-		row[ROW_BOTTOM] = bottom;
+		row[ROW_TOP] = topOffset;
+		row[ROW_BOTTOM] = bottomOffset;
 		row[ROW_ID] = id;
 		if (part is ConsoleDivPart div)
 			row[ROW_DIVTYPE] = (!div.IsRelative ? 2 : 0) | 1; // bit1 : divであるなら1　bit2 : divがdisplay:absoluteなら1
@@ -62,6 +67,14 @@ internal sealed class ConsoleEscapedParts
 			row[ROW_DIVTYPE] = 0;
 		dt.Rows.Add(row);
 		parts.Add(id, part);
+		Changed = true;
+	}
+
+	/// <summary>
+	/// Forces the stored ranges to be recomputed after the line height changed.
+	/// </summary>
+	public static void MarkChanged()
+	{
 		Changed = true;
 	}
 	/// <summary>
@@ -102,20 +115,26 @@ internal sealed class ConsoleEscapedParts
 		}
 		if (rmap == null) return;
 		rmap.Clear();
+		int lineHeight = Math.Max(1, Config.Config.LineHeight);
 		// すべてのdisplay:absoluteのdiv
 		// とtop行からbottom行までの範囲内表示内容があったdiv
 		// と所在行がtop行からbottom行までの範囲内のdiv
 		// に対し
-		foreach (var row in dt.AsEnumerable()
-			.Where(r => ((sbyte)r[ROW_DIVTYPE] & 2) != 0 || (int)r[ROW_TOP] <= bottom + 1 && (int)r[ROW_BOTTOM] >= top && r[ROW_LINE] is int line
-			&& ((sbyte)r[ROW_DIVTYPE] != 0 || top > line || line > bottom + 1)))
+		foreach (DataRow row in dt.Rows)
 		{
-			List<AConsoleDisplayNode> list = null;
-			rmap.TryGetValue((int)row[ROW_DEPTH], out list);
-			if (list == null)
+			int line = (int)row[ROW_LINE];
+			int rowTop = line + (int)Math.Ceiling((float)(int)row[ROW_TOP] / lineHeight);
+			int rowBottom = line + (int)Math.Floor((float)Math.Max(0, (int)row[ROW_BOTTOM] - 1) / lineHeight);
+			sbyte divType = (sbyte)row[ROW_DIVTYPE];
+			if ((divType & 2) == 0
+				&& !(rowTop <= bottom + 1 && rowBottom >= top
+					&& (divType != 0 || top > line || line > bottom + 1)))
+				continue;
+			int depth = (int)row[ROW_DEPTH];
+			if (!rmap.TryGetValue(depth, out List<AConsoleDisplayNode> list))
 			{
 				list = [];
-				rmap.Add((int)row[ROW_DEPTH], list);
+				rmap.Add(depth, list);
 			}
 			list.Add(parts[(long)row[ROW_ID]]);
 		}

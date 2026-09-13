@@ -83,7 +83,7 @@ internal sealed partial class Lang
 			public sealed class Tools
 			{
 				public static string Text { get { return trClass[typeof(Tools)].Text; } }
-				[Managed] public static TranslatableString LockWindowWidth { get; } = new TranslatableString("ウィンドウ幅のロック変更");
+				[Managed] public static TranslatableString ResetZoom { get; } = new TranslatableString("ウィンドウズームをリセット");
 				[Managed] public static TranslatableString CopyToClipboard { get; } = new TranslatableString("クリップボードにコピー");
 			}
 

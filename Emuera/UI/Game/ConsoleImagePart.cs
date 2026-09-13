@@ -1,4 +1,4 @@
-﻿using MinorShift.Emuera.Runtime.Config;
+using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.UI.Game.Image;
 using System;
 using System.Drawing;
@@ -19,6 +19,9 @@ sealed class ConsoleImagePart : AConsoleDisplayNode
 		ResourceName = resName ?? "";
 		ButtonResourceName = resNameb;
 		MappingGraphName = resNamem;
+		rawHeight = raw_height;
+		rawWidth = raw_width;
+		rawYPos = raw_ypos;
 		StringBuilder sb = new();
 		sb.Append("<img src='").Append(ResourceName).Append('\'');
 		if (ButtonResourceName != null)
@@ -68,53 +71,7 @@ sealed class ConsoleImagePart : AConsoleDisplayNode
 			Text = AltText;
 			return;
 		}
-		int height;
-		//if (raw_height == 0)//HTMLで高さが指定されていない又は0が指定された場合、フォントサイズをそのまま高さ(px単位)として使用する。
-		if (raw_height == null || raw_height.num == 0)//HTMLで高さが指定されていない又は0が指定された場合、フォントサイズをそのまま高さ(px単位)として使用する。
-			height = Config.FontSize;
-		// else//HTMLで高さが指定された場合、フォントサイズの100分率と解釈する。
-		//	height = Config.Config.FontSize * raw_height / 100;
-		else if (raw_height.isPx)//HTMLで高さがpx指定された場合、そのまま使う。
-			height = raw_height.num;
-		else // フォントサイズの100分率と解釈する。
-			height = Config.FontSize * raw_height.num / 100;
-		//幅が指定されていない又は0が指定された場合、元画像の縦横比を維持するように幅(px単位)を設定する。1未満は端数としてXsubpixelに記録。
-		//負の値が指定される可能性があるが、最終的なWidthは正の値になるようにあとで調整する。
-		//if (raw_width == 0)
-		if (raw_width == null || raw_width.num == 0)
-		{
-			Width = cImage.DestBaseSize.Width * height / cImage.DestBaseSize.Height;
-			XsubPixel = (float)cImage.DestBaseSize.Width * height / cImage.DestBaseSize.Height - Width;
-		}
-		else if (raw_width.isPx)
-		{
-			Width = raw_width.num;
-		}
-		else
-		{
-			// Width = Config.Config.FontSize * raw_width / 100;
-			// XsubPixel = ((float)Config.Config.FontSize * raw_width / 100f) - Width;
-			Width = Config.FontSize * raw_width.num / 100;
-			XsubPixel = (float)Config.FontSize * raw_width.num / 100f - Width;
-		}
-		//top = raw_ypos * Config.Config.FontSize / 100;
-		top = raw_ypos != null ? raw_ypos.isPx ? raw_ypos.num : raw_ypos.num * Config.FontSize / 100 : 0;
-		destRect = new Rectangle(0, top, Width, height);
-		if (destRect.Width < 0)
-		{
-			destRect.X = -destRect.Width;
-			Width = -destRect.Width;
-		}
-		if (destRect.Height < 0)
-		{
-			destRect.Y = destRect.Y - destRect.Height;
-			height = -destRect.Height;
-		}
-		bottom = top + height;
-		//if(top > 0)
-		//	top = 0;
-		//if(bottom < Config.Config.FontSize)
-		//	bottom = Config.Config.FontSize;
+		computeGeometry();
 		if (ButtonResourceName != null)
 		{
 			cImageB = AppContents.GetSprite(ButtonResourceName);
@@ -131,9 +88,11 @@ sealed class ConsoleImagePart : AConsoleDisplayNode
 	#endregion
 	private readonly ASprite cImage;
 	private readonly ASprite cImageB;
-	private readonly int top;
-	private readonly int bottom;
-	private readonly Rectangle destRect;
+	private int top;
+	private int bottom;
+	private Rectangle destRect;
+	// Raw tag values are kept so that the geometry can be recomputed when the font size changes
+	private readonly MixedNum rawHeight, rawWidth, rawYPos;
 	//#pragma warning disable CS0649 // フィールド 'ConsoleImagePart.ia' は割り当てられません。常に既定値 null を使用します。
 	//		private readonly ImageAttributes ia;
 	//#pragma warning restore CS0649 // フィールド 'ConsoleImagePart.ia' は割り当てられません。常に既定値 null を使用します。
@@ -143,6 +102,68 @@ sealed class ConsoleImagePart : AConsoleDisplayNode
 	public override int Bottom { get { return bottom; } }
 
 	public override bool CanDivide { get { return false; } }
+
+	/// <summary>
+	/// Resolves the tag values into pixels again. Sizes given without a unit are relative to the font size and
+	/// follow it, while px sizes stay absolute.
+	/// </summary>
+	private void computeGeometry()
+	{
+		int height;
+		if (rawHeight == null || rawHeight.num == 0)//no height: the font size itself is the height in px
+			height = Config.FontSize;
+		else if (rawHeight.isPx)
+			height = rawHeight.num;
+		else //the height is a percentage of the font size
+			height = Config.FontSize * rawHeight.num / 100;
+		//without a width the aspect ratio of the image is kept; the fraction is recorded as the sub pixel
+		if (rawWidth == null || rawWidth.num == 0)
+		{
+			Width = cImage.DestBaseSize.Width * height / cImage.DestBaseSize.Height;
+			XsubPixel = (float)cImage.DestBaseSize.Width * height / cImage.DestBaseSize.Height - Width;
+		}
+		else if (rawWidth.isPx)
+		{
+			Width = rawWidth.num;
+		}
+		else
+		{
+			Width = Config.FontSize * rawWidth.num / 100;
+			XsubPixel = (float)Config.FontSize * rawWidth.num / 100f - Width;
+		}
+		top = rawYPos != null ? rawYPos.isPx ? rawYPos.num : rawYPos.num * Config.FontSize / 100 : 0;
+		destRect = new Rectangle(0, top, Width, height);
+		//a negative size was specified: the rectangle is moved instead
+		if (destRect.Width < 0)
+		{
+			destRect.X = -destRect.Width;
+			Width = -destRect.Width;
+		}
+		if (destRect.Height < 0)
+		{
+			destRect.Y = destRect.Y - destRect.Height;
+			height = -destRect.Height;
+		}
+		bottom = top + height;
+	}
+
+	/// <summary>
+	/// Recomputes the image geometry for the new font size. px sizes stay absolute by design, sizes without a
+	/// unit follow the font size.
+	/// </summary>
+	public override void ResetLayout(StringMeasure sm)
+	{
+		if (cImage == null)
+		{
+			//the fallback text is drawn with the current font
+			Width = -1;
+			top = 0;
+			bottom = Config.FontSize;
+			return;
+		}
+		computeGeometry();
+	}
+
 	public override void SetWidth(StringMeasure sm, float subPixel)
 	{
 		if (Error)
@@ -192,7 +213,7 @@ sealed class ConsoleImagePart : AConsoleDisplayNode
 		return 0;
 	}
 	#endregion
-	public override void DrawTo(Graphics graph, int pointY, bool isSelecting, bool isFocus, bool isBackLog, TextDrawingMode mode, bool isButton = false)
+	public override void DrawTo(Graphics graph, int pointY, bool isSelecting, bool isFocus, bool isBackLog, TextDrawingMode mode, bool isButton = false, bool scalePreview = false)
 	{
 		if (Error)
 			return;

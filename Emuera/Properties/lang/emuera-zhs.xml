@@ -18,7 +18,7 @@
     <tr id="UI.MainWindow.Debug.OpenDebugWindow"><![CDATA[打开调试窗口]]></tr>
     <tr id="UI.MainWindow.Debug.UpdateDebugInfo"><![CDATA[更新调试信息]]></tr>
     <tr id="UI.MainWindow.Tools"><![CDATA[工具]]></tr>
-    <tr id="UI.MainWindow.Tools.LockWindowWidth"><![CDATA[锁定窗口宽度]]></tr>
+    <tr id="UI.MainWindow.Tools.ResetZoom"><![CDATA[重置窗口缩放]]></tr>
     <tr id="UI.MainWindow.Tools.CopyToClipboard"><![CDATA[复制到剪贴板]]></tr>
     <tr id="UI.MainWindow.Help"><![CDATA[帮助(&H)]]></tr>
     <tr id="UI.MainWindow.Help.Config"><![CDATA[设置(&C)]]></tr>

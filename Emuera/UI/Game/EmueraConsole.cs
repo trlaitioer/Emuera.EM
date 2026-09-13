@@ -1,4 +1,4 @@
-﻿//using System.Drawing.Imaging;
+//using System.Drawing.Imaging;
 using MinorShift.Emuera.Forms;
 //using MinorShift.Emuera.GameData;
 using MinorShift.Emuera.GameProc.Function;
@@ -14,6 +14,7 @@ using MinorShift.Emuera.Runtime.Script.Statements;
 using MinorShift.Emuera.Runtime.Script.Statements.Expression;
 using MinorShift.Emuera.Runtime.Utils;
 using MinorShift.Emuera.Runtime.Utils.EvilMask;
+using MinorShift.Emuera.UI;
 using MinorShift.Emuera.UI.Game;
 using MinorShift.Emuera.UI.Game.Image;
 using System;
@@ -86,6 +87,8 @@ internal sealed partial class EmueraConsole : IDisposable
 	public EmueraConsole(MainWindow parent)
 	{
 		window = parent;
+		baseCanvasWidth = parent.MainPicBox.Width;
+		baseCanvasHeight = parent.MainPicBox.Height;
 		#region EE_AnchorのCB機能移植
 		CBProc = new ClipboardProcessor(parent);
 		#endregion
@@ -290,6 +293,70 @@ internal sealed partial class EmueraConsole : IDisposable
 	}
 	#endregion
 	public bool Enabled { get { return window.Created; } }
+
+	#region Runtime window zoom
+	/// <summary>Version of the last measurement. Compared against ConsoleDisplayLine.LayoutVersion.</summary>
+	private int layoutVersion;
+	/// <summary>Preview scale while dragging. 1.0 means normal rendering.</summary>
+	private float resizePreviewScale = 1.0f;
+	/// <summary>Canvas size of the committed layout. The transform of the preview is based on it.</summary>
+	private int baseCanvasWidth, baseCanvasHeight;
+
+	/// <summary>
+	/// Canvas height used for drawing, in the coordinates the transform is based on.
+	/// While previewing the physical canvas is divided by the preview scale, so that the bottom of the canvas
+	/// always shows the bottom row instead of running past it or leaving a blank band.
+	/// </summary>
+	public int LayoutCanvasHeight
+	{
+		get
+		{
+			if (resizePreviewScale == 1.0f)
+				return window.MainPicBox.Height;
+			return Math.Max(1, (int)Math.Round(window.MainPicBox.Height / resizePreviewScale));
+		}
+	}
+
+	/// <summary>
+	/// While the window is dragged, the committed layout is scaled through the Graphics transform.
+	/// newCanvasWidth is the canvas width the drag is heading for, so the scale is relative to the committed
+	/// layout and not to the startup geometry.
+	/// </summary>
+	public void UpdateResizePreview(int newCanvasWidth)
+	{
+		resizePreviewScale = WindowZoom.PreviewScale(newCanvasWidth, baseCanvasWidth);
+	}
+
+	/// <summary>
+	/// Leaves the preview and draws the committed coordinates again.
+	/// </summary>
+	public void ClearResizePreview()
+	{
+		resizePreviewScale = 1.0f;
+	}
+
+	/// <summary>
+	/// Invalidates measured widths and derived values after the zoom was committed. Each line is rebuilt when it is drawn next.
+	/// </summary>
+	public void InvalidateLayout()
+	{
+		layoutVersion++;
+		stringMeasure.RefreshLayout();
+		printCWidth = -1;
+		printCWidthL = -1;
+		printCWidthL2 = -1;
+		ConsoleEscapedParts.MarkChanged();
+	}
+
+	/// <summary>Rebuilds a line that was not measured yet with the current font size, right before it is drawn or hit tested.</summary>
+	private void ensureLineLayout(ConsoleDisplayLine line)
+	{
+		if (line.LayoutVersion == layoutVersion)
+			return;
+		line.ReLayout(stringMeasure);
+		line.LayoutVersion = layoutVersion;
+	}
+	#endregion
 
 	/// <summary>
 	/// 現在、Emueraがアクティブかどうか
@@ -1642,7 +1709,7 @@ internal sealed partial class EmueraConsole : IDisposable
 	#region EM_私家版_imgマースク
 	public int GetLinePointY(int lineNo)
 	{
-		int pointY = window.MainPicBox.Height - Config.LineHeight;
+		int pointY = LayoutCanvasHeight - Config.LineHeight;
 		int bottomLineNo = window.ScrollBar.Value - 1;
 		if (displayLineList.Count - 1 < bottomLineNo)
 			bottomLineNo = displayLineList.Count - 1;//1820 この処理不要な気がするけどエラー報告があったので入れとく
@@ -1671,8 +1738,27 @@ internal sealed partial class EmueraConsole : IDisposable
 		//1824 アニメスプライト用・現在フレームの時間を決定
 		_frameDeltaTimer.Restart();
 
+		float previewScale = resizePreviewScale;
+		bool scalePreview = previewScale != 1.0f;
+		int canvasWidth, canvasHeight;
+		if (scalePreview)
+		{
+			//the transform is based on the committed layout; the canvas width matches it by construction,
+			//while the height follows the current input box, which is what the visible rows are computed from
+			graph.ScaleTransform(previewScale, previewScale);
+			canvasWidth = baseCanvasWidth;
+			canvasHeight = LayoutCanvasHeight;
+		}
+		else
+		{
+			canvasWidth = window.MainPicBox.Width;
+			canvasHeight = window.MainPicBox.Height;
+			baseCanvasWidth = canvasWidth;
+			baseCanvasHeight = canvasHeight;
+		}
+
 		bool isBackLog = window.ScrollBar.Value != window.ScrollBar.Maximum;
-		int pointY = window.MainPicBox.Height - Config.LineHeight;
+		int pointY = canvasHeight - Config.LineHeight;
 
 
 		int bottomLineNo = window.ScrollBar.Value - 1;
@@ -1685,11 +1771,13 @@ internal sealed partial class EmueraConsole : IDisposable
 		}
 		else
 		{
-			ValidateBackground((int)graph.ClipBounds.Width, (int)graph.ClipBounds.Height);
+			//the baked background is kept at the committed size while previewing and stretched below,
+			//so that dragging does not rebuild it on every size change
+			ValidateBackground(scalePreview ? baseCanvasWidth : canvasWidth, scalePreview ? baseCanvasHeight : canvasHeight);
 			graph.Clear(bgColor);
 			if (bakedBackground != null)
 			{
-				graph.DrawImage(bakedBackground, 0, 0);
+				graph.DrawImage(bakedBackground, 0, 0, canvasWidth, canvasHeight);
 			}
 
 			//1823 cbg追加
@@ -1712,7 +1800,7 @@ internal sealed partial class EmueraConsole : IDisposable
 					if (cbgList[cidx].isButton && cbgList[cidx].buttonValue == selectingCBGButtonInt)
 						img = cbgList[cidx].ImgB;
 					if (img != null && img.IsCreated)
-						img.GraphicsDraw(graph, new Point(cbgList[cidx].x, cbgList[cidx].y + window.MainPicBox.Height - img.DestBaseSize.Height));
+						img.GraphicsDraw(graph, new Point(cbgList[cidx].x, cbgList[cidx].y + canvasHeight - img.DestBaseSize.Height));
 					cidx++;
 				}
 				if (depth == 0)
@@ -1723,7 +1811,8 @@ internal sealed partial class EmueraConsole : IDisposable
 					i < displayLineList.Count;//何処かで非同期にDisplayLineListを触ってるやつがいる気がする...
 					i++)
 					{
-						displayLineList[i].DrawTo(graph, pointY, isBackLog, true, Config.TextDrawingMode);
+						ensureLineLayout(displayLineList[i]);
+						displayLineList[i].DrawTo(graph, pointY, isBackLog, true, Config.TextDrawingMode, scalePreview);
 						pointY += Config.LineHeight;
 					}
 				}
@@ -1732,13 +1821,15 @@ internal sealed partial class EmueraConsole : IDisposable
 					// 行範囲を超えたパーツを描画
 					foreach (var p in escapedParts[edepth[eidx]])
 					{
+						if (p.Parent?.ParentLine != null)
+							ensureLineLayout(p.Parent.ParentLine);
 						var baseLineNo = p.Parent.ParentLine.LineNo;
 						if (GlobalStatic.Console?.GetLineNo > Config.MaxLog)
 						{
 							var correction = GlobalStatic.Console.GetLineNo - Config.MaxLog;
 							baseLineNo -= correction;
 						}
-						p.Parent.DrawPartTo(graph, p, topPointY + (baseLineNo - topLineNo) * Config.LineHeight, isBackLog, Config.TextDrawingMode);
+						p.Parent.DrawPartTo(graph, p, topPointY + (baseLineNo - topLineNo) * Config.LineHeight, isBackLog, Config.TextDrawingMode, scalePreview);
 					}
 					eidx++;
 				}
@@ -1771,14 +1862,15 @@ internal sealed partial class EmueraConsole : IDisposable
 		}
 		#region EmuEra-Rikaichan
 		if (Config.RikaiEnabled)
-			rikaichan.OnPaint(graph, stringMeasure, window.MainPicBox.Width);
+			rikaichan.OnPaint(graph, stringMeasure, canvasWidth);
 		#endregion
 
 		//真のHTML描画
 		var y = 0;
 		foreach (var element in _htmlElementList)
 		{
-			element.DrawTo(graph, y, false, false, Config.TextDrawingMode);
+			ensureLineLayout(element);
+			element.DrawTo(graph, y, false, false, Config.TextDrawingMode, scalePreview);
 			y += Config.LineHeight;
 		}
 
@@ -1873,6 +1965,9 @@ internal sealed partial class EmueraConsole : IDisposable
 			need_settimer = false;
 			setTimer();
 		}
+		//the Graphics may be reused by the next paint
+		if (scalePreview)
+			graph.ResetTransform();
 	}
 
 	private void ToolTip_Draw(object sender, DrawToolTipEventArgs e)
@@ -2220,6 +2315,10 @@ internal sealed partial class EmueraConsole : IDisposable
 	/// <returns>この後でRefreshStringsが必要かどうか</returns>
 	public bool MoveMouse(Point point)
 	{
+		if (resizePreviewScale != 1.0f)
+		{//convert back to the coordinates the transform is based on before hit testing
+			point = new Point((int)(point.X / resizePreviewScale), (int)(point.Y / resizePreviewScale));
+		}
 		#region EmuEra-Rikaichan
 		int curLineY = -1;
 		#endregion
@@ -2287,10 +2386,10 @@ internal sealed partial class EmueraConsole : IDisposable
 		int bottomLineNo = window.ScrollBar.Value - 1;
 		if (displayLineList.Count - 1 < bottomLineNo)
 			bottomLineNo = displayLineList.Count - 1;//1820 この処理不要な気がするけどエラー報告があったので入れとく
-		int topLineNo = bottomLineNo - (window.MainPicBox.Height / Config.LineHeight);
+		int topLineNo = bottomLineNo - (LayoutCanvasHeight / Config.LineHeight);
 		if (topLineNo < 0)
 			topLineNo = 0;
-		int relPointY = pointY - window.MainPicBox.Height;
+		int relPointY = pointY - LayoutCanvasHeight;
 		//下から上へ探索し発見次第打ち切り
 		#region EM_私家版_描画拡張
 		if (ConsoleEscapedParts.Changed || !ConsoleEscapedParts.TestedInRange(topLineNo, bottomLineNo, lastButtonGeneration))
@@ -2302,7 +2401,7 @@ internal sealed partial class EmueraConsole : IDisposable
 		Array.Sort(edepth);
 		int eidx = 0;
 		bool zeroTested = false;
-		var bottomLineBase = window.MainPicBox.Height - Config.LineHeight;
+		var bottomLineBase = LayoutCanvasHeight - Config.LineHeight;
 		while (eidx < edepth.Length)
 		{
 			var depth = edepth[eidx];
@@ -2315,6 +2414,7 @@ internal sealed partial class EmueraConsole : IDisposable
 				{
 					relPointY += Config.LineHeight;
 					curLine = displayLineList[i];
+					ensureLineLayout(curLine);
 
 					for (int b = 0; b < curLine.Buttons.Length; b++)
 					{
@@ -2336,7 +2436,7 @@ internal sealed partial class EmueraConsole : IDisposable
 								if ((part.PointX <= pointX) && (part.PointX + part.Width >= pointX)
 									&& (relPointY >= part.Top) && (relPointY <= part.Bottom))
 								{
-									curLineY = window.MainPicBox.Height - Config.LineHeight * (bottomLineNo - i + 1);
+									curLineY = LayoutCanvasHeight - Config.LineHeight * (bottomLineNo - i + 1);
 									if (!firstPointngSelected)
 										pointing = button;
 									if (button.IsButton)
@@ -2366,6 +2466,8 @@ internal sealed partial class EmueraConsole : IDisposable
 				if (depth != 0 || escapedParts.ContainsKey(depth))
 					foreach (var part in escapedParts[depth])
 					{
+						if (part.Parent?.ParentLine != null)
+							ensureLineLayout(part.Parent.ParentLine);
 						if (part is ConsoleDivPart div)
 						{
 							var lineY = bottomLineBase + (div.Parent.ParentLine.LineNo - bottomLineNo - correction) * Config.LineHeight;

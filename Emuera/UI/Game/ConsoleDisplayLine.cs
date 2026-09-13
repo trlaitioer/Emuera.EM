@@ -1,4 +1,6 @@
 ﻿using MinorShift.Emuera.Runtime.Config;
+using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
 
@@ -18,6 +20,28 @@ internal enum DisplayLineAlignment
 	CENTER = 1,
 	RIGHT = 2,
 }
+
+/// <summary>
+/// Unit of alignment. A line consists of several fragments because lines are joined when PRINT does not end the line.
+/// </summary>
+internal readonly struct LineFragment
+{
+	public LineFragment(int start, int count, DisplayLineAlignment align, int customWidth, bool noShift)
+	{
+		Start = start;
+		Count = count;
+		Align = align;
+		CustomWidth = customWidth;
+		NoShift = noShift;
+	}
+	public readonly int Start;
+	public readonly int Count;
+	public readonly DisplayLineAlignment Align;
+	public readonly int CustomWidth;
+	/// <summary>True when SetAlignment did not move the fragment (LEFT alignment on a logical line).</summary>
+	public readonly bool NoShift;
+}
+
 /// <summary>
 /// 表示行。1つ以上のボタン（ConsoleButtonString）からなる
 /// </summary>
@@ -53,6 +77,11 @@ internal sealed class ConsoleDisplayLine
 	public ConsoleButtonString[] Buttons { get { return buttons; } }
 	public DisplayLineAlignment Align { get { return align; } }
 	bool aligned;
+	readonly List<LineFragment> fragments = [];
+	/// <summary>
+	/// Version of the last width measurement. A line whose value differs from EmueraConsole.layoutVersion was not measured again yet.
+	/// </summary>
+	public int LayoutVersion;
 	//Bitmap Cache
 	public bool bitmapCacheEnabled;
 	public void SetAlignment(DisplayLineAlignment align, int customWidth = -1/*, int xOffset = 0*/)
@@ -61,6 +90,7 @@ internal sealed class ConsoleDisplayLine
 			return;
 		aligned = true;
 		this.align = align;
+		fragments.Add(new LineFragment(0, buttons.Length, align, customWidth, align == DisplayLineAlignment.LEFT && IsLogicalLine));
 		if (buttons.Length == 0)
 			return;
 		//DisplayLineの幅
@@ -107,6 +137,75 @@ internal sealed class ConsoleDisplayLine
 			button.ShiftPositionX(shiftX);
 	}
 
+	/// <summary>
+	/// Re-measures the width and rebuilds positions and alignment after the font size changed. Line breaks are kept.
+	/// Alignment is applied per fragment, so the fragment list is rebuilt as well.
+	/// </summary>
+	internal void ReLayout(StringMeasure sm)
+	{
+		if (buttons == null || buttons.Length == 0)
+			return;
+		float subPixel = 0.0f;
+		int pointX = 0;
+		foreach (ConsoleButtonString button in buttons)
+		{
+			if (button == null)
+			{//forced line break flag
+				pointX = 0;
+				continue;
+			}
+			button.ResetLayout(sm);
+			button.CalcWidth(sm, subPixel);
+			button.CalcPointX(pointX);
+			pointX = button.PointX + button.Width;
+			if (button.PointXisLocked)
+				subPixel = 0;
+			subPixel = button.XsubPixel;
+		}
+		int end = 0;
+		foreach (LineFragment fragment in fragments)
+		{
+			int last = Math.Min(fragment.Start + fragment.Count, buttons.Length);
+			if (fragment.Start >= last)
+				continue;
+			int width = 0;
+			for (int i = fragment.Start; i < last; i++)
+				if (buttons[i] != null)
+					width += buttons[i].Width;
+			int movetoX = 0;
+			if (!fragment.NoShift)
+			{
+				#region EM_私家版_HTML_divタグ
+				int customWidth = fragment.CustomWidth > 0 ? fragment.CustomWidth : Config.DrawableWidth;
+				#endregion
+				if (fragment.Align == DisplayLineAlignment.CENTER)
+					movetoX = customWidth / 2 - width / 2;
+				else if (fragment.Align == DisplayLineAlignment.RIGHT)
+					movetoX = customWidth - width;
+			}
+			int shiftX = movetoX + end - buttons[fragment.Start].PointX;
+			if (shiftX != 0)
+				for (int i = fragment.Start; i < last; i++)
+					if (buttons[i] != null)
+						buttons[i].ShiftPositionX(shiftX);
+			end = movetoX + end + width;
+		}
+	}
+
+	/// <summary>
+	/// Joins the previous line that was continued (PRINT without a line end) and takes its fragments over.
+	/// </summary>
+	internal void PrependButtons(ConsoleDisplayLine prev)
+	{
+		int offset = prev.buttons.Length;
+		List<LineFragment> merged = [.. prev.fragments];
+		foreach (LineFragment fragment in fragments)
+			merged.Add(new LineFragment(fragment.Start + offset, fragment.Count, fragment.Align, fragment.CustomWidth, fragment.NoShift));
+		fragments.Clear();
+		fragments.AddRange(merged);
+		ChangeStr([.. prev.Buttons, .. buttons]);
+	}
+
 	public void ChangeStr(ConsoleButtonString[] newButtons)
 	{
 		buttons = null;
@@ -139,10 +238,10 @@ internal sealed class ConsoleDisplayLine
 	//	return null;
 	//}
 
-	public void DrawTo(Graphics graph, int pointY, bool isBackLog, bool force, TextDrawingMode mode)
+	public void DrawTo(Graphics graph, int pointY, bool isBackLog, bool force, TextDrawingMode mode, bool scalePreview = false)
 	{
 		foreach (ConsoleButtonString button in buttons)
-			button.DrawTo(graph, pointY, isBackLog, mode);
+			button.DrawTo(graph, pointY, isBackLog, mode, scalePreview);
 	}
 
 	readonly static StringBuilder builder = new();

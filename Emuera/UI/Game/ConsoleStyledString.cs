@@ -71,6 +71,22 @@ internal sealed class ConsoleStyledString : AConsoleColoredPart
 		return ret;
 	}
 
+	public override void ResetLayout(StringMeasure sm)
+	{
+		Font = FontFactory.GetFont(StringStyle.Fontname, StringStyle.FontStyle);
+		if (Font == null)
+		{
+			Error = true;
+			Width = -1;
+			return;
+		}
+		Width = -1;
+		#region EmuEra-Rikaichan
+		rikaichaned = false;
+		Ends = null;
+		#endregion
+	}
+
 	public override void SetWidth(StringMeasure sm, float subPixel)
 	{
 		if (Error)
@@ -97,7 +113,7 @@ internal sealed class ConsoleStyledString : AConsoleColoredPart
 		#endregion
 	}
 
-	public override void DrawTo(Graphics graph, int pointY, bool isSelecting, bool isFocus, bool isBackLog, TextDrawingMode mode, bool isButton = false)
+	public override void DrawTo(Graphics graph, int pointY, bool isSelecting, bool isFocus, bool isBackLog, TextDrawingMode mode, bool isButton = false, bool scalePreview = false)
 	{
 		if (Error)
 			return;
@@ -123,9 +139,11 @@ internal sealed class ConsoleStyledString : AConsoleColoredPart
 		}
 
 		#region EM_私家版_描画拡張
-		if (mode == TextDrawingMode.GRAPHICS)
+		// GDI ignores the Graphics transform, so the zoom preview draws text with GDI+
+		if (mode == TextDrawingMode.GRAPHICS || scalePreview)
 		{
-			graph.DrawString(Text, Font, new SolidBrush(color), new Point(PointX, pointY));
+			using var brush = new SolidBrush(color);
+			graph.DrawString(Text, Font, brush, new Point(PointX, pointY));
 		}
 		else
 		// TextRenderer.DrawText(graph, Text, Font, new Point(PointX, pointY), color, TextFormatFlags.NoPrefix);

@@ -222,10 +222,7 @@ internal static class Config
 			TextDrawingMode = TextDrawingMode.TEXTRENDERER;
 		}
 
-		DrawingParam_ShapePositionShift = 0;
-		if (TextDrawingMode != TextDrawingMode.WINAPI)
-			DrawingParam_ShapePositionShift = Math.Max(2, FontSize / 6);
-		DrawableWidth = WindowX - DrawingParam_ShapePositionShift;
+		recomputeGeometry();
 		#region eee_カレントディレクトリー
 		// ForceSavDir = Program.ExeDir + "sav\\";
 		ForceSavDir = Program.ExeDir + "sav" + Path.DirectorySeparatorChar;
@@ -239,6 +236,40 @@ internal static class Config
 		if (UseSaveFolder && !Directory.Exists(SavDir))
 			createSavDirAndMoveFiles();
 	}
+	/// <summary>
+	/// Recomputes the geometry derived from FontSize/WindowX (DrawableWidth and the shape position shift).
+	/// </summary>
+	private static void recomputeGeometry()
+	{
+		DrawingParam_ShapePositionShift = 0;
+		if (TextDrawingMode != TextDrawingMode.WINAPI)
+			DrawingParam_ShapePositionShift = Math.Max(2, FontSize / 6);
+		DrawableWidth = WindowX - DrawingParam_ShapePositionShift;
+	}
+
+	/// <summary>
+	/// Updates the geometry while the window is being zoomed at runtime.
+	/// Bypasses ConfigData so that fixed.config cannot block it and no validation dialog is shown.
+	/// </summary>
+	public static void ApplyWindowGeometry(int windowX, int windowY, int fontSize, int lineHeight)
+	{
+		WindowX = Math.Max(1, windowX);
+		WindowY = Math.Max(1, windowY);
+		FontSize = Math.Max(8, fontSize);
+		LineHeight = Math.Max(FontSize, lineHeight);
+		recomputeGeometry();
+	}
+
+	/// <summary>
+	/// Re-reads only the clipboard related setting instead of the whole ConfigData.
+	/// SetConfig would overwrite the WindowX/FontSize updated by the runtime zoom, so
+	/// setting changes during a session use this method instead.
+	/// </summary>
+	public static void UpdateClipboardSetting(ConfigData instance)
+	{
+		CBUseClipboard = instance.GetConfigValue<bool>(ConfigCode.CBUseClipboard);
+	}
+
 	#region EM_私家版_Emuera多言語化改造
 	public static void UpdateLangSetting(ConfigData instance)
 	{

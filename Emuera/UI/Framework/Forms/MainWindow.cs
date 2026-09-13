@@ -1,4 +1,4 @@
-﻿using MinorShift.Emuera.GameView;
+using MinorShift.Emuera.GameView;
 using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.Runtime.Script;
 using MinorShift.Emuera.Runtime.Script.Statements;
@@ -86,7 +86,7 @@ namespace MinorShift.Emuera.Forms
 
 			#region EM_私家版_Emuera多言語化改造
 			labelMacroGroupChanged.Font = new Font(Lang.MFont, 24F, FontStyle.Regular, GraphicsUnit.Point, 128);
-			richTextBox1.Font = new Font(Config.DefaultFont.FontFamily, Config.FontSize, FontStyle.Regular, GraphicsUnit.Pixel);
+			SetInputFont(Config.FontSize);
 			#endregion
 
 			#region EM_textbox位置指定拡張
@@ -133,7 +133,7 @@ namespace MinorShift.Emuera.Forms
 			デバッグ情報の更新ToolStripMenuItem.Text = Lang.UI.MainWindow.Debug.UpdateDebugInfo.Text;
 
 			ツールToolStripMenuItem.Text = Lang.UI.MainWindow.Tools.Text;
-			ウィンドウ幅のロックToolStripMenuItem.Text = Lang.UI.MainWindow.Tools.LockWindowWidth.Text;
+			ウィンドウズームをリセットToolStripMenuItem.Text = Lang.UI.MainWindow.Tools.ResetZoom.Text;
 			クリップボードにコピーToolStripMenuItem.Text = Lang.UI.MainWindow.Tools.CopyToClipboard.Text;
 
 			ヘルプHToolStripMenuItem.Text = Lang.UI.MainWindow.Help.Text;
@@ -208,6 +208,7 @@ namespace MinorShift.Emuera.Forms
 			richTextBox1.Left = info.Left;
 			richTextBox1.Top = info.Top;
 			richTextBox1.Size = info.Size;
+			textBoxBottomOffset = ClientSize.Height - info.Top - info.Size.Height;
 		}
 		#endregion
 
@@ -433,21 +434,7 @@ namespace MinorShift.Emuera.Forms
 								//	return;
 								break;
 							case SC_MAXIMIZE:
-								if (Screen.AllScreens.Length == 1)
-								{
-									MaximizedBounds = new Rectangle(Left, 0, Config.WindowX, Screen.PrimaryScreen!.WorkingArea.Height);
-								}
-								else
-								{
-									for (int i = 0; i < Screen.AllScreens.Length; i++)
-									{
-										if (Left >= Screen.AllScreens[i].Bounds.Left && Left < Screen.AllScreens[i].Bounds.Right)
-										{
-											MaximizedBounds = new Rectangle(Left - Screen.AllScreens[i].Bounds.Left, Screen.AllScreens[i].Bounds.Top, Config.WindowX, Screen.AllScreens[i].WorkingArea.Height);
-											break;
-										}
-									}
-								}
+								SetMaximizedBounds();
 								break;
 						}
 						break;
@@ -512,7 +499,6 @@ namespace MinorShift.Emuera.Forms
 				MaximizeBox = false;
 			}
 
-			int menuHeight;
 			if (Config.UseMenu)
 			{
 				menuStrip.Enabled = true;
@@ -540,27 +526,183 @@ namespace MinorShift.Emuera.Forms
 
 			//EmuVerToolStripTextBox.Location = new Point(Config.WindowX - vScrollBar.Width - EmuVerToolStripTextBox.Width, 3);
 
-			mainPicBox.Location = new Point(0, menuHeight);
-			mainPicBox.Size = new Size(Config.WindowX, winHeight - menuHeight - Config.LineHeight);
+			//every zoom step is computed from these sizes
+			baseCanvasWidth = Config.WindowX;
+			baseFontSize = Config.FontSize;
+			baseLineHeight = Config.LineHeight;
+			baseScrollBarWidth = vScrollBar.Width;
 
-			richTextBox1.Location = new Point(0, winHeight - Config.LineHeight);
-			richTextBox1.Size = new Size(Config.WindowX, Config.LineHeight);
-			vScrollBar.Location = new Point(winWidth - vScrollBar.Size.Width, menuHeight);
-			vScrollBar.Size = new Size(vScrollBar.Size.Width, winHeight - menuHeight);
-
-			int minimamY = 100;
+			minimamY = 100;
 			if (minimamY < menuHeight + Config.LineHeight * 2)
 				minimamY = menuHeight + Config.LineHeight * 2;
 			if (minimamY > Height)
 				minimamY = Height;
-			int maximamY = 2560;
 			if (maximamY < Height)
 				maximamY = Height;
-			MinimumSize = new Size(Width, minimamY);
-			MaximumSize = new Size(Width, maximamY);
+
+			layoutControls(Config.LineHeight, baseScrollBarWidth);
+
+			if (Config.SizableWindow)
+			{
+				MinimumSize = new Size(MinWindowWidth(), minimamY);
+				MaximumSize = new Size(int.MaxValue, maximamY);
+			}
+			else
+			{
+				MinimumSize = Size;
+				MaximumSize = Size;
+			}
 			if (winMaximize)
+			{
+				SetMaximizedBounds();
 				WindowState = FormWindowState.Maximized;
+			}
 		}
+
+		#region Runtime window zoom
+		/// <summary>Layout at startup. Every zoom step is computed from this size.</summary>
+		private int baseCanvasWidth;
+		private int baseFontSize;
+		private int baseLineHeight;
+		private int baseScrollBarWidth;
+		/// <summary>Height of the menu (0 when Config.UseMenu is false)</summary>
+		private int menuHeight;
+		private int minimamY;
+		private int maximamY = 2560;
+		/// <summary>While dragging, the commit is deferred and a preview is shown</summary>
+		private bool resizing;
+		private Font inputPreviewFont;
+		/// <summary>Distance of the input box from the bottom edge, also kept when a script sets the position</summary>
+		private int textBoxBottomOffset;
+
+		/// <summary>
+		/// Lays out the controls from the current ClientSize, line height and scroll bar width.
+		/// </summary>
+		private void layoutControls(int lineHeight, int scrollBarWidth)
+		{
+			int canvasWidth = Math.Max(1, ClientSize.Width - scrollBarWidth);
+			int canvasHeight = Math.Max(1, ClientSize.Height - menuHeight - lineHeight);
+			mainPicBox.Location = new Point(0, menuHeight);
+			mainPicBox.Size = new Size(canvasWidth, canvasHeight);
+
+			int textBoxLeft = Math.Clamp(richTextBox1.Left, 0, Math.Max(0, canvasWidth - 50));
+			int textBoxTop = ClientSize.Height - textBoxBottomOffset - lineHeight;
+			richTextBox1.SetBounds(textBoxLeft, textBoxTop, Math.Max(50, canvasWidth - textBoxLeft), lineHeight);
+
+			vScrollBar.Location = new Point(ClientSize.Width - scrollBarWidth, menuHeight);
+			vScrollBar.Size = new Size(scrollBarWidth, Math.Max(1, ClientSize.Height - menuHeight));
+		}
+
+		/// <summary>
+		/// Minimum window width that keeps the font size at or above the lower bound (8px), including the frame.
+		/// </summary>
+		private int MinWindowWidth()
+		{
+			return WindowZoom.MinCanvasWidth(baseCanvasWidth, baseFontSize) + baseScrollBarWidth + (Width - ClientSize.Width);
+		}
+
+		/// <summary>
+		/// Replaces the font of the input box and disposes the previously created one.
+		/// </summary>
+		private void SetInputFont(int fontSize)
+		{
+			Font font = new(Config.DefaultFont.FontFamily, fontSize, FontStyle.Regular, GraphicsUnit.Pixel);
+			Font old = inputPreviewFont;
+			inputPreviewFont = font;
+			richTextBox1.Font = font;
+			old?.Dispose();
+		}
+
+		private void MainWindow_ResizeBegin(object sender, EventArgs e)
+		{
+			if (!Config.SizableWindow)
+				return;
+			resizing = true;
+		}
+
+		private void MainWindow_ResizeEnd(object sender, EventArgs e)
+		{
+			if (!resizing)
+				return;
+			resizing = false;
+			CommitZoom();
+		}
+
+		private void MainWindow_Resize(object sender, EventArgs e)
+		{
+			if (!Config.SizableWindow || WindowState == FormWindowState.Minimized)
+				return;
+			if (resizing)
+				UpdateZoomPreview();
+			else
+				CommitZoom();
+		}
+
+		/// <summary>
+		/// Zoom geometry for the current client size. Used by the drag preview and by the commit alike, so that
+		/// what is previewed is exactly the geometry that gets committed.
+		/// </summary>
+		private void computeZoomGeometry(out float scale, out int scrollBarWidth, out int fontSize, out int lineHeight)
+		{
+			WindowZoom.Compute(ClientSize.Width, baseCanvasWidth, baseScrollBarWidth, baseFontSize, baseLineHeight,
+				out scale, out scrollBarWidth, out fontSize, out lineHeight);
+		}
+
+		/// <summary>
+		/// While dragging, shows the committed layout scaled through the Graphics transform.
+		/// </summary>
+		private void UpdateZoomPreview()
+		{
+			computeZoomGeometry(out _, out int scrollBarWidth, out int fontSize, out int lineHeight);
+			int canvasWidth = Math.Max(1, ClientSize.Width - scrollBarWidth);
+			layoutControls(lineHeight, scrollBarWidth);
+			SetInputFont(fontSize);
+			console?.UpdateResizePreview(canvasWidth);
+			mainPicBox.Invalidate();
+		}
+
+		/// <summary>
+		/// Commits the font size and the layout for the current window size. The startup size is the base, so no error accumulates.
+		/// </summary>
+		private void CommitZoom()
+		{
+			if (console == null || baseCanvasWidth <= 0)
+				return;
+			computeZoomGeometry(out _, out int scrollBarWidth, out int fontSize, out int lineHeight);
+			int canvasWidth = Math.Max(1, ClientSize.Width - scrollBarWidth);
+
+			console.ClearResizePreview();
+
+			layoutControls(lineHeight, scrollBarWidth);
+			bool fontChanged = fontSize != Config.FontSize || lineHeight != Config.LineHeight;
+			SetInputFont(fontSize);
+			Config.ApplyWindowGeometry(canvasWidth, ClientSize.Height - menuHeight, fontSize, lineHeight);
+			if (fontChanged)
+				console.InvalidateLayout();
+			mainPicBox.Invalidate();
+		}
+
+		/// <summary>
+		/// Sets the maximized bounds so that the aspect ratio is kept when maximizing.
+		/// </summary>
+		private void SetMaximizedBounds()
+		{
+			Screen screen = Screen.FromControl(this) ?? Screen.PrimaryScreen;
+			MaximizedBounds = WindowZoom.MaximizedBounds(Size, screen.WorkingArea, maximamY);
+		}
+
+		/// <summary>
+		/// Resets the zoom to the state at startup.
+		/// </summary>
+		private void ウィンドウズームをリセットToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			if (!Config.SizableWindow || console == null)
+				return;
+			if (WindowState != FormWindowState.Normal)
+				WindowState = FormWindowState.Normal;
+			ClientSize = new Size(baseCanvasWidth + baseScrollBarWidth, ClientSize.Height);
+		}
+		#endregion
 
 		private void mainPicBox_MouseMove(object sender, MouseEventArgs e)
 		{
@@ -1030,6 +1172,7 @@ namespace MinorShift.Emuera.Forms
 
 		private void MainWindow_FormClosing(object sender, FormClosingEventArgs e)
 		{
+			SaveWindowGeometry();
 			if (Config.UseKeyMacro)
 				KeyMacro.SaveMacro();
 			if (console != null)
@@ -1040,6 +1183,33 @@ namespace MinorShift.Emuera.Forms
 				console.Dispose();
 				console = null;
 			}
+		}
+
+		/// <summary>
+		/// Writes the current window size and font size back to the configuration file.
+		/// Nothing is written when the values are unchanged. SetValue is ignored for items fixed by fixed.config.
+		/// </summary>
+		private void SaveWindowGeometry()
+		{
+			if (!Config.SizableWindow)
+				return;
+			CommitZoom();
+			var instance = ConfigData.Instance;
+			bool changed = false;
+			changed |= setConfigValue(instance, ConfigCode.WindowX, mainPicBox.Width);
+			changed |= setConfigValue(instance, ConfigCode.WindowY, mainPicBox.Height + Config.LineHeight);
+			changed |= setConfigValue(instance, ConfigCode.FontSize, Config.FontSize);
+			changed |= setConfigValue(instance, ConfigCode.LineHeight, Config.LineHeight);
+			if (changed)
+				instance.SaveConfig();
+		}
+
+		private static bool setConfigValue(ConfigData instance, ConfigCode code, int value)
+		{
+			if (instance.GetConfigValue<int>(code) == value)
+				return false;
+			instance.GetConfigItem(code).SetValue(value);
+			return true;
 		}
 
 		private async void フォルダを読み直すFToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1467,42 +1637,6 @@ namespace MinorShift.Emuera.Forms
 		}
 		*/
 
-		bool _isWidthLocked = true;
-		private void ウィンドウ幅のロック変更ToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-			if (_isWidthLocked)
-			{
-				_isWidthLocked = false;
-				MinimumSize = new Size(0, 0);
-				MaximumSize = new Size(int.MaxValue,
-										int.MaxValue);
-			}
-			else
-			{
-				_isWidthLocked = true;
-
-				if (Config.SizableWindow)
-				{
-					MinimumSize = Size with
-					{
-						Height = 0
-					};
-					MaximumSize = Size with
-					{
-						Height = int.MaxValue
-					};
-				}
-				else
-				{
-					MinimumSize = Size;
-					MaximumSize = Size;
-				}
-
-				ConfigData.Instance.GetConfigItem(ConfigCode.WindowX).SetValue(mainPicBox.Width);
-				ConfigData.Instance.GetConfigItem(ConfigCode.WindowY).SetValue(mainPicBox.Height + Config.LineHeight);
-				ConfigData.Instance.SaveConfig();
-			}
-		}
 		private void デバッグモードで再起動ToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			//新たにアプリケーションを起動する
@@ -1520,7 +1654,7 @@ namespace MinorShift.Emuera.Forms
 			else
 				GlobalStatic.Console.CBProc.Reset();
 			ConfigData.Instance.GetConfigItem(ConfigCode.CBUseClipboard).SetValue(クリップボードにコピーToolStripMenuItem.Checked);
-			Config.SetConfig(ConfigData.Instance);
+			Config.UpdateClipboardSetting(ConfigData.Instance);
 			ConfigData.Instance.SaveConfig();
 		}
 		#region EM_私家版_多言語化改造

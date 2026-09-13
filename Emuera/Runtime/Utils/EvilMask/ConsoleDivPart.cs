@@ -26,13 +26,9 @@ class ConsoleDivPart : AConsoleDisplayNode
 		if (box != null)
 		{
 			AddTagMixedParam(sb, "margin", box.margin);
-			MixedNum4ToInt4(box.margin, ref margin);
 			AddTagMixedParam(sb, "padding", box.padding);
-			MixedNum4ToInt4(box.padding, ref padding);
 			AddTagMixedParam(sb, "border", box.border);
-			MixedNum4ToInt4(box.border, ref border);
 			AddTagMixedParam(sb, "radius", box.radius);
-			MixedNum4ToInt4(box.radius, ref radius);
 			if (box.color != null)
 			{
 				borderColors = new Color[4];
@@ -44,28 +40,73 @@ class ConsoleDivPart : AConsoleDisplayNode
 		sb.Append('>');
 		altHeadTag = sb.ToString();
 		Text = string.Empty;
-		xOffset = MixedNum.ToPixel(xPos, 0);
-		#region EE_div各要素の修正
-		if (margin != null) divXOffset += margin[Direction.Left];
-		if (padding != null) divXOffset += padding[Direction.Left];
-		if (border != null) divXOffset += border[Direction.Left];
-		#endregion
-		PointY = MixedNum.ToPixel(yPos, 0);
+		this.xPos = xPos;
+		this.yPos = yPos;
+		this.rawWidth = width;
+		this.rawHeight = height;
+		this.box = box;
+		computeGeometry();
 
-		#region EE_div各要素の修正
-		if (margin != null) yOffset += margin[Direction.Top];
-		if (padding != null) yOffset += padding[Direction.Top];
-		if (border != null) yOffset += border[Direction.Top];
-		#endregion
-
-		this.width = MixedNum.ToPixel(width, 0);
-		Height = MixedNum.ToPixel(height, 0);
 		children = childs;
 		Depth = depth;
 		IsRelative = isRelative;
 
 		ShiftChildrenX(PointX + xOffset + divXOffset);
 	}
+
+	// Raw tag values are kept so that the geometry can be recomputed when the font size changes
+	readonly MixedNum xPos, yPos, rawWidth, rawHeight;
+	readonly StyledBoxModel box;
+
+	/// <summary>
+	/// Recomputes position and size, including the units that depend on the font size, from the tag values.
+	/// </summary>
+	private void computeGeometry()
+	{
+		xOffset = MixedNum.ToPixel(xPos, 0);
+		divXOffset = 0;
+		#region EE_div各要素の修正
+		margin = null; padding = null; border = null; radius = null;
+		if (box != null)
+		{
+			MixedNum4ToInt4(box.margin, ref margin);
+			MixedNum4ToInt4(box.padding, ref padding);
+			MixedNum4ToInt4(box.border, ref border);
+			MixedNum4ToInt4(box.radius, ref radius);
+		}
+		if (margin != null) divXOffset += margin[Direction.Left];
+		if (padding != null) divXOffset += padding[Direction.Left];
+		if (border != null) divXOffset += border[Direction.Left];
+		#endregion
+		PointY = MixedNum.ToPixel(yPos, 0);
+
+		yOffset = 0;
+		#region EE_div各要素の修正
+		if (margin != null) yOffset += margin[Direction.Top];
+		if (padding != null) yOffset += padding[Direction.Top];
+		if (border != null) yOffset += border[Direction.Top];
+		#endregion
+
+		width = MixedNum.ToPixel(rawWidth, 0);
+		Height = MixedNum.ToPixel(rawHeight, 0);
+	}
+
+	/// <summary>
+	/// Rebuilds the own geometry and the child lines for the new font size.
+	/// Child lines are rebuilt from zero and then shifted to this div's absolute position.
+	/// </summary>
+	public override void ResetLayout(StringMeasure sm)
+	{
+		computeGeometry();
+		if (children == null)
+			return;
+		foreach (var child in children)
+		{
+			child.ReLayout(sm);
+			child.ShiftPositionX(PointX + xOffset + divXOffset);
+		}
+	}
+
 	int pointX;
 	int xOffset;
 	#region EE_div各要素の修正
@@ -142,11 +183,11 @@ class ConsoleDivPart : AConsoleDisplayNode
 		}
 		return pointing;
 	}
-	public override void DrawTo(Graphics graph, int pointY, bool isSelecting, bool isBackLog, bool isFocus, TextDrawingMode mode, bool isButton = false)
+	public override void DrawTo(Graphics graph, int pointY, bool isSelecting, bool isBackLog, bool isFocus, TextDrawingMode mode, bool isButton = false, bool scalePreview = false)
 	{
 		if (GlobalStatic.EMediator.Console.Window == null) return;
 		var rect = IsRelative ? new Rectangle(PointX + xOffset, pointY + PointY, width + 2, Height)
-			: new Rectangle(xOffset, GlobalStatic.EMediator.Console.Window.MainPicBox.Height - PointY - Height, width + 2, Height); // 何故か+2pxが必要，なぞ
+			: new Rectangle(xOffset, GlobalStatic.EMediator.Console.LayoutCanvasHeight - PointY - Height, width + 2, Height); // 何故か+2pxが必要，なぞ
 
 		if (margin != null)
 			rect = new Rectangle(rect.X + margin[Direction.Left], rect.Y + margin[Direction.Top],
@@ -171,7 +212,7 @@ class ConsoleDivPart : AConsoleDisplayNode
 		pointY = rect.Y;
 		foreach (var child in children)
 		{
-			child.DrawTo(graph, pointY, isBackLog, true, mode);
+			child.DrawTo(graph, pointY, isBackLog, true, mode, scalePreview);
 			pointY += Config.Config.LineHeight;
 		}
 		graph.ResetClip();

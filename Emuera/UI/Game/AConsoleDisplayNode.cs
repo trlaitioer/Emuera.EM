@@ -24,7 +24,12 @@ abstract class AConsoleDisplayNode
 	public virtual int Bottom { get { return Config.FontSize; } }
 	public abstract bool CanDivide { get; }
 
-	public abstract void DrawTo(Graphics graph, int pointY, bool isSelecting, bool isFocus, bool isBackLog, TextDrawingMode mode, bool isButton = false);
+	public abstract void DrawTo(Graphics graph, int pointY, bool isSelecting, bool isFocus, bool isBackLog, TextDrawingMode mode, bool isButton = false, bool scalePreview = false);
+
+	/// <summary>
+	/// Discards cached measurements when the conditions they were taken under, such as the font size, changed.
+	/// </summary>
+	public virtual void ResetLayout(StringMeasure sm) { }
 
 	public abstract void SetWidth(StringMeasure sm, float subPixel);
 	public override string ToString()

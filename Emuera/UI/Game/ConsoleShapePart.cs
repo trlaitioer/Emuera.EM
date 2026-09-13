@@ -1,4 +1,4 @@
-﻿using MinorShift.Emuera.Runtime.Config;
+using MinorShift.Emuera.Runtime.Config;
 using System;
 using System.Drawing;
 using System.Text;
@@ -41,13 +41,6 @@ abstract class ConsoleShapePart : AConsoleColoredPart
 		}
 		sb.Append('>');
 		ConsoleShapePart ret = null;
-		int lineHeight = Config.FontSize;
-		//float[] paramPixel = new float[param.Length];
-		//for (int i = 0; i < param.Length; i++)
-		//{
-		//	paramPixel[i] = ((float)param[i] * lineHeight) / 100f;
-		//}
-		//RectangleF rectF;
 
 		switch (type)
 		{
@@ -56,20 +49,12 @@ abstract class ConsoleShapePart : AConsoleColoredPart
 				// if (paramPixel.Length == 1 && paramPixel[0] >= 0)
 				#endregion
 				if (param.Length == 1)
-				{
-					//rectF = new RectangleF(0, 0, paramPixel[0], lineHeight);
-					var rectF = new RectangleF(0, 0, param[0].isPx ? param[0].num : (float)param[0].num * lineHeight / 100f, lineHeight);
-					ret = new ConsoleSpacePart(rectF);
-				}
+					ret = new ConsoleSpacePart(param[0]);
 				break;
 			case "rect":
 				// if (paramPixel.Length == 1 && paramPixel[0] >= 0)
 				if (param.Length == 1 && param[0].num > 0)
-				{
-					//rectF = new RectangleF(0, 0, paramPixel[0], lineHeight);
-					var rectF = new RectangleF(0, 0, param[0].isPx ? param[0].num : (float)param[0].num * lineHeight / 100f, lineHeight);
-					ret = new ConsoleRectangleShapePart(rectF);
-				}
+					ret = new ConsoleRectangleShapePart(param[0]);
 				// else if (paramPixel.Length == 4)
 				else if (param.Length == 4)
 				{
@@ -79,7 +64,7 @@ abstract class ConsoleShapePart : AConsoleColoredPart
 					if (rectF.X >= 0 && rectF.Width > 0 && rectF.Height > 0)
 					//	rectF.Y >= 0 && (rectF.Y + rectF.Height) <= lineHeight)
 					{
-						ret = new ConsoleRectangleShapePart(rectF);
+						ret = new ConsoleRectangleShapePart(param);
 					}
 				}
 				break;
@@ -120,9 +105,34 @@ abstract class ConsoleShapePart : AConsoleColoredPart
 
 internal sealed class ConsoleRectangleShapePart : ConsoleShapePart
 {
-	public ConsoleRectangleShapePart(RectangleF theRect)
+	/// <summary>One element: width of a rectangle that spans one line. Four elements: xpos, ypos, width, height.</summary>
+	public ConsoleRectangleShapePart(MixedNum rawWidth)
 	{
 		Text = "";
+		rawParam = [rawWidth];
+		computeGeometry();
+	}
+
+	public ConsoleRectangleShapePart(MixedNum[] rawParam)
+	{
+		Text = "";
+		this.rawParam = rawParam;
+		computeGeometry();
+	}
+
+	// Raw tag values are kept so that the geometry can be recomputed when the font size changes
+	private readonly MixedNum[] rawParam;
+
+	/// <summary>
+	/// Resolves the tag values into a rectangle again. Values given without a unit are relative to the font size
+	/// and follow it, while px values stay absolute.
+	/// </summary>
+	private void computeGeometry()
+	{
+		int lineHeight = Config.FontSize;
+		RectangleF theRect = rawParam.Length == 1
+			? new RectangleF(0, 0, rawParam[0].isPx ? rawParam[0].num : (float)rawParam[0].num * lineHeight / 100f, lineHeight)
+			: new RectangleF(MixedNum.ToPixelf(rawParam[0]), MixedNum.ToPixelf(rawParam[1]), MixedNum.ToPixelf(rawParam[2]), MixedNum.ToPixelf(rawParam[3]));
 		originalRectF = theRect;
 		WidthF = theRect.X + theRect.Width;
 		rect.Y = (int)theRect.Y;
@@ -134,14 +144,21 @@ internal sealed class ConsoleRectangleShapePart : ConsoleShapePart
 		top = Math.Min(0, rect.Y);
 		bottom = Math.Max(Config.FontSize, rect.Y + rect.Height);
 	}
-	private readonly int top;
-	private readonly int bottom;
+
+	public override void ResetLayout(StringMeasure sm)
+	{
+		computeGeometry();
+		Width = -1;
+	}
+
+	private int top;
+	private int bottom;
 	public override int Top { get { return top; } }
 	public override int Bottom { get { return bottom; } }
-	readonly RectangleF originalRectF;
+	RectangleF originalRectF;
 	bool visible;
 	Rectangle rect;
-	public override void DrawTo(Graphics graph, int pointY, bool isSelecting, bool isFocus, bool isBackLog, TextDrawingMode mode, bool isButton = false)
+	public override void DrawTo(Graphics graph, int pointY, bool isSelecting, bool isFocus, bool isBackLog, TextDrawingMode mode, bool isButton = false, bool scalePreview = false)
 	{
 		if (!visible)
 			return;
@@ -166,14 +183,32 @@ internal sealed class ConsoleRectangleShapePart : ConsoleShapePart
 
 internal sealed class ConsoleSpacePart : ConsoleShapePart
 {
-	public ConsoleSpacePart(RectangleF theRect)
+	public ConsoleSpacePart(MixedNum rawWidth)
 	{
 		Text = "";
-		WidthF = theRect.Width;
-		//Width = width;
+		this.rawWidth = rawWidth;
+		computeGeometry();
 	}
 
-	public override void DrawTo(Graphics graph, int pointY, bool isSelecting, bool isFocus, bool isBackLog, TextDrawingMode mode, bool isButton = false) { }
+	// Raw tag value is kept so that the width can be recomputed when the font size changes
+	private readonly MixedNum rawWidth;
+
+	/// <summary>
+	/// Resolves the tag value again. A value given without a unit is relative to the font size and follows it,
+	/// while a px value stays absolute.
+	/// </summary>
+	private void computeGeometry()
+	{
+		WidthF = rawWidth.isPx ? rawWidth.num : (float)rawWidth.num * Config.FontSize / 100f;
+	}
+
+	public override void ResetLayout(StringMeasure sm)
+	{
+		computeGeometry();
+		Width = -1;
+	}
+
+	public override void DrawTo(Graphics graph, int pointY, bool isSelecting, bool isFocus, bool isBackLog, TextDrawingMode mode, bool isButton = false, bool scalePreview = false) { }
 
 	public override void SetWidth(StringMeasure sm, float subPixel)
 	{
@@ -191,12 +226,16 @@ internal sealed class ConsoleErrorShapePart : ConsoleShapePart
 		AltText = errMes;
 	}
 
-	public override void DrawTo(Graphics graph, int pointY, bool isSelecting, bool isFocus, bool isBackLog, TextDrawingMode mode, bool isButton = false)
+	public override void DrawTo(Graphics graph, int pointY, bool isSelecting, bool isFocus, bool isBackLog, TextDrawingMode mode, bool isButton = false, bool scalePreview = false)
 	{
-		if (mode == TextDrawingMode.GRAPHICS)
+		if (mode == TextDrawingMode.GRAPHICS || scalePreview)
 			graph.DrawString(Text, Config.DefaultFont, new SolidBrush(Config.ForeColor), new Point(PointX, pointY));
 		else
 			System.Windows.Forms.TextRenderer.DrawText(graph, Text.AsSpan(), Config.DefaultFont, new Point(PointX, pointY), Config.ForeColor, System.Windows.Forms.TextFormatFlags.NoPrefix);
+	}
+	public override void ResetLayout(StringMeasure sm)
+	{
+		Width = -1;
 	}
 	public override void SetWidth(StringMeasure sm, float subPixel)
 	{

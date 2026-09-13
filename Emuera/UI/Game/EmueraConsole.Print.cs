@@ -135,7 +135,10 @@ internal sealed partial class EmueraConsole : IDisposable
 	//完全に独立したHTML
 	public void PrintHTMLIsland(string html)
 	{
-		_htmlElementList.AddRange(HtmlManager.Html2DisplayLine(html, stringMeasure, this));
+		var lines = HtmlManager.Html2DisplayLine(html, stringMeasure, this);
+		foreach (var line in lines)
+			line.LayoutVersion = layoutVersion;
+		_htmlElementList.AddRange(lines);
 	}
 	public void ClearHTMLIsland()
 	{
@@ -192,9 +195,8 @@ internal sealed partial class EmueraConsole : IDisposable
 					foreach (var p in button.EscapedParts)
 					{
 						p.Parent = button;
-						ConsoleEscapedParts.Add(p, lineNo, p.Depth,
-							(int)Math.Ceiling((float)p.Top / Config.LineHeight) + lineNo,
-							(int)Math.Floor((float)Math.Max(0, p.Bottom - 1) / Config.LineHeight) + lineNo);
+						//stored in pixels so that it follows a change of the line height
+						ConsoleEscapedParts.Add(p, lineNo, p.Depth, p.Top, p.Bottom);
 					}
 				}
 			}
@@ -212,6 +214,7 @@ internal sealed partial class EmueraConsole : IDisposable
 		else
 			line.SetAlignment(alignment);
 		line.LineNo = lineNo;
+		line.LayoutVersion = layoutVersion;
 		//Bitmap Cache
 		line.bitmapCacheEnabled = GlobalStatic.Console.bitmapCacheEnabledForNextLine;
 		if (displayLineList.Count != 0 &&
@@ -220,7 +223,10 @@ internal sealed partial class EmueraConsole : IDisposable
 			var lastline = displayLineList[^1];
 			deleteLine(1);
 			line.ShiftPositionX(lastline.Buttons[^1].PointX + lastline.Buttons[^1].Width);
-			line.ChangeStr([.. lastline.Buttons, .. line.Buttons]);
+			line.PrependButtons(lastline);
+			//if the joined line was not measured yet, measure this line again when it is drawn
+			if (lastline.LayoutVersion != layoutVersion)
+				line.LayoutVersion = -1;
 		}
 		displayLineList.Add(line);
 		lineNo++;

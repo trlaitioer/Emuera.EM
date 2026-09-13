@@ -14,10 +14,7 @@ internal sealed class StringMeasure : IDisposable
 	public StringMeasure()
 	{
 		textDrawingMode = Config.TextDrawingMode;
-		layoutSize = new Size(Config.WindowX * 2, Config.LineHeight);
-		layoutRect = new RectangleF(0, 0, Config.WindowX * 2, Config.LineHeight);
-		fontDisplaySize = Config.DefaultFont.Size / 2 * 1.04f;//実際には指定したフォントより若干幅をとる？
-															  //bmp = new Bitmap(Config.WindowX, Config.LineHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+		RefreshLayout();
 		bmp = new Bitmap(16, 16, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 		graph = Graphics.FromImage(bmp);
 	}
@@ -25,9 +22,19 @@ internal sealed class StringMeasure : IDisposable
 	readonly TextDrawingMode textDrawingMode;
 	readonly StringFormat sf = new(StringFormatFlags.MeasureTrailingSpaces);
 	readonly CharacterRange[] ranges = [new(0, 1)];
-	readonly Size layoutSize;
-	readonly RectangleF layoutRect;
-	readonly float fontDisplaySize;
+	private Size layoutSize;
+	private RectangleF layoutRect;
+	private float fontDisplaySize;
+
+	/// <summary>
+	/// Updates the measuring size after Config.FontSize/LineHeight/WindowX changed.
+	/// </summary>
+	public void RefreshLayout()
+	{
+		layoutSize = new Size(Config.WindowX * 2, Config.LineHeight);
+		layoutRect = new RectangleF(0, 0, Config.WindowX * 2, Config.LineHeight);
+		fontDisplaySize = Config.DefaultFont.Size / 2 * 1.04f;//実際には指定したフォントより若干幅をとる？
+	}
 
 	readonly Graphics graph;
 	readonly Bitmap bmp;

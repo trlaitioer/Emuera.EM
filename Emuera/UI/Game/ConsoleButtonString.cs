@@ -220,6 +220,32 @@ internal sealed class ConsoleButtonString
 		return ret;
 	}
 
+	/// <summary>
+	/// Discards the measured width and the bitmap cache after the font size changed.
+	/// Buttons whose position is locked are recomputed for the new font size.
+	/// </summary>
+	public void ResetLayout(StringMeasure sm)
+	{
+		if (strArray != null)
+		{
+			foreach (AConsoleDisplayNode css in strArray)
+			{
+				if (css == null)
+					continue;
+				css.ResetLayout(sm);
+			}
+		}
+		if (PointXisLocked)
+			LockPointX(RelativePointX);
+		Width = -1;
+		XsubPixel = 0;
+		if (bitmapCache != null)
+		{
+			bitmapCache.Dispose();
+			bitmapCache = null;
+		}
+	}
+
 	public void CalcWidth(StringMeasure sm, float subpixel)
 	{
 		Width = -1;
@@ -274,7 +300,7 @@ internal sealed class ConsoleButtonString
 			css.PointX += shiftX;
 	}
 
-	public void DrawTo(Graphics graph, int pointY, bool isBackLog, TextDrawingMode mode)
+	public void DrawTo(Graphics graph, int pointY, bool isBackLog, TextDrawingMode mode, bool scalePreview = false)
 	{
 		bool isFocus = IsButton && parent.ButtonIsSelected(this);
 		bool isSelecting = IsButton && parent.ButtonIsPointing(this);
@@ -305,7 +331,7 @@ internal sealed class ConsoleButtonString
 
 				nint index = GlobalStatic.Console.bitmapCacheArrayIndex;
 				ConsoleButtonString last = GlobalStatic.Console.bitmapCacheArray[index];
-				if (last != null)
+				if (last?.bitmapCache != null)
 				{
 					last.bitmapCache.Dispose();
 					last.bitmapCache = null;
@@ -323,17 +349,17 @@ internal sealed class ConsoleButtonString
 		foreach (AConsoleDisplayNode css in strArray)
 		{
 			if (css is ConsoleDivPart div) continue;
-			css.DrawTo(graph, pointY, isSelecting, isFocus, isBackLog, mode, IsButton);
+			css.DrawTo(graph, pointY, isSelecting, isFocus, isBackLog, mode, IsButton, scalePreview);
 		}
 		#endregion
 	}
 
 	#region EM_私家版_描画拡張
-	public void DrawPartTo(Graphics graph, AConsoleDisplayNode css, int pointY, bool isBackLog, TextDrawingMode mode)
+	public void DrawPartTo(Graphics graph, AConsoleDisplayNode css, int pointY, bool isBackLog, TextDrawingMode mode, bool scalePreview = false)
 	{
 		bool isFocus = IsButton && parent.ButtonIsSelected(this);
 		bool isSelecting = IsButton && parent.ButtonIsPointing(this);
-		css.DrawTo(graph, pointY, isSelecting, isFocus, isBackLog, mode);
+		css.DrawTo(graph, pointY, isSelecting, isFocus, isBackLog, mode, false, scalePreview);
 	}
 	#endregion
 
