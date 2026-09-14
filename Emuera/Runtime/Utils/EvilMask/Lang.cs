@@ -211,7 +211,7 @@ internal sealed partial class Lang
 				[Managed] public static TranslatableString LogHistoryColor { get; } = new TranslatableString("履歴文字色");
 				[Managed] public static TranslatableString FontName { get; } = new TranslatableString("フォント名");
 				[Managed] public static TranslatableString GetFontNames { get; } = new TranslatableString("フォント名一覧を取得");
-				[Managed] public static TranslatableString FontSize { get; } = new TranslatableString("フォントサイズ");
+				[Managed] public static TranslatableString FontSize { get; } = new TranslatableString("フォントサイズ(px)");
 				[Managed] public static TranslatableString LineHeight { get; } = new TranslatableString("一行の高さ");
 			}
 

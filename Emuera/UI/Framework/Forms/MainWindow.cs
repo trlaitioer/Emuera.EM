@@ -602,11 +602,14 @@ namespace MinorShift.Emuera.Forms
 		}
 
 		/// <summary>
-		/// Replaces the font of the input box and disposes the previously created one.
+		/// Replaces the font of the input box and disposes the previously created one. The size handed in is the
+		/// configured one; the input box follows the console, so it is built at the derived render size instead
+		/// (see .scratch/ui-modernization/issues/03).
 		/// </summary>
 		private void SetInputFont(int fontSize)
 		{
-			Font font = new(Config.DefaultFont.FontFamily, fontSize, FontStyle.Regular, GraphicsUnit.Pixel);
+			int renderFontSize = FontMetrics.FindRenderSizePx(Config.FontName, fontSize);
+			Font font = new(Config.DefaultFont.FontFamily, renderFontSize, FontStyle.Regular, GraphicsUnit.Pixel);
 			Font old = inputPreviewFont;
 			inputPreviewFont = font;
 			richTextBox1.Font = font;

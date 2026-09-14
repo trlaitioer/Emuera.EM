@@ -150,6 +150,21 @@ static partial class Program
 		ProfileOptimization.SetProfileRoot(exeDir ?? ExeDir);
 		ProfileOptimization.StartProfile("profile");
 
+		//Font files are registered before the configuration is loaded: loading it derives the render font size
+		//by measuring the configured font, and FontFactory gives the private font collection priority over the
+		//installed families.
+		#region EE_フォントファイル対応
+		//フォントファイルを読み込む
+		if (Directory.Exists(FontDir))
+		{
+			foreach (string fontFile in Directory.GetFiles(FontDir, "*.ttf", SearchOption.AllDirectories))
+				GlobalStatic.Pfc.AddFontFile(fontFile);
+
+			foreach (string fontFile in Directory.GetFiles(FontDir, "*.otf", SearchOption.AllDirectories))
+				GlobalStatic.Pfc.AddFontFile(fontFile);
+		}
+		#endregion
+
 		ConfigData.Instance.LoadConfig();
 		JSONConfig.Load();
 
@@ -195,18 +210,6 @@ static partial class Program
 			Dialog.Show(Lang.UI.MainWindow.MsgBox.FolderNotFound.Text, Lang.UI.MainWindow.MsgBox.NoErbFolder.Text);
 			return;
 		}
-		#region EE_フォントファイル対応
-		//フォントファイルを読み込む
-		if (Directory.Exists(FontDir))
-		{
-			foreach (string fontFile in Directory.GetFiles(FontDir, "*.ttf", SearchOption.AllDirectories))
-				GlobalStatic.Pfc.AddFontFile(fontFile);
-
-			foreach (string fontFile in Directory.GetFiles(FontDir, "*.otf", SearchOption.AllDirectories))
-				GlobalStatic.Pfc.AddFontFile(fontFile);
-		}
-		#endregion
-
 		if (DebugMode)
 		{
 			ConfigData.Instance.LoadDebugConfig();

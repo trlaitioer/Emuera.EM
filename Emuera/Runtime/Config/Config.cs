@@ -248,6 +248,17 @@ internal static class Config
 		if (TextDrawingMode == TextDrawingMode.TEXTRENDERER)
 			DrawingParam_ShapePositionShift = Math.Max(2, FontSize / 6);
 		DrawableWidth = WindowX - DrawingParam_ShapePositionShift;
+		recomputeRenderFontSize();
+	}
+
+	/// <summary>
+	/// Derives the size the fonts are built at. The em baseline stays FontSize, so the cells of a font whose
+	/// full width advance is not FontSize have to be brought back onto the baseline font's cell by the font
+	/// size alone (see .scratch/ui-modernization/issues/03).
+	/// </summary>
+	private static void recomputeRenderFontSize()
+	{
+		renderFontSizePx = FontMetrics.FindRenderSizePx(FontName, FontSize);
 	}
 
 	/// <summary>
@@ -514,6 +525,12 @@ internal static class Config
 	public static int FontSize { get; private set; }
 	public static string FontName { get; private set; }
 	public static int LineHeight { get; private set; }
+	/// <summary>
+	/// The size the fonts are built at, derived from the configured font and size so that one full width cell
+	/// lands on the baseline font's cell. Falls back to the configured size until the geometry is recomputed.
+	/// </summary>
+	public static int RenderFontSizePx { get { return renderFontSizePx > 0 ? renderFontSizePx : FontSize; } }
+	private static int renderFontSizePx;
 	public static int FPS { get; private set; }
 	//public static int SkipFrame { get; private set; }
 	public static int ScrollHeight { get; private set; }

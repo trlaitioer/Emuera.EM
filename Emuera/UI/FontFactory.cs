@@ -47,23 +47,45 @@ internal class FontFactory
 		if (string.IsNullOrEmpty(requestFontName))
 			requestFontName = Config.FontName;
 
-		var key = (requestFontName, Config.FontSize, style);
+		//The configured font is built at the size the derived geometry was recomputed with. A font a script
+		//named explicitly is a different face, so it is not built at the derived size of the configured font:
+		//it gets a lookup of its own, which is what lands it on the baseline cell as well.
+		int fontSize = requestFontName == Config.FontName
+			? Config.RenderFontSizePx
+			: FontMetrics.FindRenderSizePx(requestFontName, Config.FontSize);
+
+		var key = (requestFontName, fontSize, style);
 
 		if (fontDic.TryGetValue(key, out var existingFont))
 		{
 			return existingFont;
 		}
 
+		Font createdFont = CreateFont(requestFontName, fontSize, style);
+		if (createdFont == null)
+		{
+			return null;
+		}
+		return fontDic[key] = createdFont;
+	}
+
+	/// <summary>
+	/// Builds a font without caching it. The metrics probe builds fonts through this method, so that the font
+	/// that gets measured is the font that gets drawn: families of the private font collection take priority,
+	/// the family name is the fallback. Returns null when the font cannot be created.
+	/// </summary>
+	public static Font CreateFont(string requestFontName, int fontSize, FontStyle style)
+	{
 		try
 		{
 			FontFamily ff = GlobalStatic.Pfc.Families.FirstOrDefault(ff => ff.Name == requestFontName, null);
 			if (ff != null)
 			{
-				return fontDic[key] = new Font(ff, Config.FontSize, style, GraphicsUnit.Pixel);
+				return new Font(ff, fontSize, style, GraphicsUnit.Pixel);
 			}
 			else
 			{
-				return fontDic[key] = new Font(requestFontName, Config.FontSize, style, GraphicsUnit.Pixel);
+				return new Font(requestFontName, fontSize, style, GraphicsUnit.Pixel);
 			}
 		}
 		catch

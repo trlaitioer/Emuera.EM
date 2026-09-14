@@ -86,7 +86,7 @@
     <tr id="UI.ConfigDialog.Font.LogHistoryColor"><![CDATA[历史日志颜色]]></tr>
     <tr id="UI.ConfigDialog.Font.FontName"><![CDATA[字体名称]]></tr>
     <tr id="UI.ConfigDialog.Font.GetFontNames"><![CDATA[获取字体名称列表]]></tr>
-    <tr id="UI.ConfigDialog.Font.FontSize"><![CDATA[字体大小]]></tr>
+    <tr id="UI.ConfigDialog.Font.FontSize"><![CDATA[字体大小(px)]]></tr>
     <tr id="UI.ConfigDialog.Font.LineHeight"><![CDATA[一行的高度]]></tr>
     <tr id="UI.ConfigDialog.System"><![CDATA[系统]]></tr>
     <tr id="UI.ConfigDialog.System.Warning"><![CDATA[※若更改系统标签页的设置项目，

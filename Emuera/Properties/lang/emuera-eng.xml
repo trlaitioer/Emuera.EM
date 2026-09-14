@@ -86,7 +86,7 @@
     <tr id="UI.ConfigDialog.Font.LogHistoryColor"><![CDATA[History Letter]]></tr>
     <tr id="UI.ConfigDialog.Font.FontName"><![CDATA[Font Name]]></tr>
     <tr id="UI.ConfigDialog.Font.GetFontNames"><![CDATA[Acquire more fonts]]></tr>
-    <tr id="UI.ConfigDialog.Font.FontSize"><![CDATA[Font size]]></tr>
+    <tr id="UI.ConfigDialog.Font.FontSize"><![CDATA[Font size (px)]]></tr>
     <tr id="UI.ConfigDialog.Font.LineHeight"><![CDATA[Distance between lines]]></tr>
     <tr id="UI.ConfigDialog.System"><![CDATA[System]]></tr>
     <tr id="UI.ConfigDialog.System.Warning"><![CDATA[※If you change system settings,

@@ -2057,7 +2057,8 @@ internal sealed partial class EmueraConsole : IDisposable
 
 	int tooltip_duration;
 	string tooltip_fontname = Config.FontName;
-	long tooltip_fontsize = Config.FontSize;
+	//The tooltip follows the console, which draws at the derived render size (see .scratch/ui-modernization/issues/03).
+	long tooltip_fontsize = Config.RenderFontSizePx;
 	TextFormatFlags tooltip_format;
 	bool tooltip_img;
 	public void SetToolTipDuration(int duration)
