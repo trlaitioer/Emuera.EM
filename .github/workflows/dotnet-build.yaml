@@ -3,7 +3,7 @@ name: Build and Release
 on:
   push:
     tags:
-      - 'v*'
+      - '**'
   workflow_dispatch:
 
 permissions:
@@ -33,13 +33,10 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      - name: Publish WMP (Release)
-        run: msbuild $env:PROJECT /restore /t:Publish /p:Configuration=Release /p:Platform=x64 /p:RuntimeIdentifier=win-x64 /p:SelfContained=false /p:DebugSymbols=false /p:DebugType=none /nologo /v:minimal
-
-      - name: Publish NAudio (Release-NAudio)
-        run: msbuild $env:PROJECT /restore /t:Publish /p:Configuration=Release-NAudio /p:Platform=x64 /p:RuntimeIdentifier=win-x64 /p:SelfContained=false /p:DebugSymbols=false /p:DebugType=none /nologo /v:minimal
-
-      - name: Package
+      # VERSION is derived from InformationalVersion in the csproj: the dot in the
+      # leading 1.824 is dropped, every other dot is kept. A tag push must carry
+      # exactly that string, so a release can never ship a version it does not name.
+      - name: Resolve version
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
@@ -47,16 +44,33 @@ jobs:
           [xml]$csproj = Get-Content $env:PROJECT
           $info = $csproj.Project.PropertyGroup.InformationalVersion | Select-Object -First 1
           if ([string]::IsNullOrWhiteSpace($info)) { throw 'InformationalVersion not found in csproj' }
-          $base = $info -replace '\.', ''
-          $full = "Emuera.NET$base"
-          if ($env:GITHUB_REF_TYPE -eq 'tag') {
-            if ($env:GITHUB_REF_NAME -notmatch '^v[0-9]') {
-              throw "Tag must start with v followed by a digit: $env:GITHUB_REF_NAME"
+          $info = $info.Trim()
+          if ($info -notmatch '^(\d+)\.(\d+)') { throw "InformationalVersion must start with <major>.<minor>: $info" }
+          $version = $info -replace '^(\d+)\.(\d+)', '$1$2'
+          if ($version -notmatch '^\d{4}\+') { throw "Unexpected version form: $version" }
+
+          if ('${{ github.ref_type }}' -eq 'tag') {
+            if ($version -ne '${{ github.ref_name }}') {
+              throw "Tag '${{ github.ref_name }}' does not match InformationalVersion in ${env:PROJECT}: expected '$version'"
             }
-            $full = "$full+$env:GITHUB_REF_NAME"
           }
-          "FULL_VERSION=$full" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          "BASE_TITLE=Emuera.NET$base" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+          "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "VERSION=$version"
+
+      - name: Publish WMP (Release)
+        run: msbuild $env:PROJECT /restore /t:Publish /p:Configuration=Release /p:Platform=x64 /p:RuntimeIdentifier=win-x64 /p:SelfContained=false /p:DebugSymbols=false /p:DebugType=none /nologo /v:minimal
+
+      - name: Publish NAudio (Release-NAudio)
+        run: msbuild $env:PROJECT /restore /t:Publish /p:Configuration=Release-NAudio /p:Platform=x64 /p:RuntimeIdentifier=win-x64 /p:SelfContained=false /p:DebugSymbols=false /p:DebugType=none /nologo /v:minimal
+
+      - name: Package
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          $title = "Emuera.NET $env:VERSION"
 
           $flavors = @(
             @{ Name = 'wmp';    ConfigDir = 'release_win-x64' },
@@ -68,7 +82,7 @@ jobs:
             $exe = Join-Path $publishDir 'Emuera.exe'
             if (-not (Test-Path $exe)) { throw "Missing publish output: $exe" }
 
-            $exeName = "$full-$($f.Name).exe"
+            $exeName = "$title-$($f.Name).exe"
             $stage = Join-Path $env:STAGE_ROOT $f.Name
             New-Item -ItemType Directory -Force -Path $stage | Out-Null
             Copy-Item $exe (Join-Path $stage $exeName)
@@ -81,7 +95,7 @@ jobs:
 
             Copy-Item -Path 'Readme' -Destination (Join-Path $stage 'Readme') -Recurse
 
-            $zipName = "$full-x64-$($f.Name).zip"
+            $zipName = "$title-x64-$($f.Name).zip"
             $zipPath = Join-Path (Get-Location) $zipName
             Compress-Archive -Path (Join-Path $stage '*') -DestinationPath $zipPath -Force
 
@@ -99,16 +113,17 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          TAG="${{ github.ref_name }}"
+          TAG="${GITHUB_REF_NAME}"
+          TITLE="Emuera.NET ${VERSION}"
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "Release already exists: $TAG"
             exit 1
           fi
           gh release create "$TAG" \
-            "$FULL_VERSION-x64-wmp.zip" \
-            "$FULL_VERSION-x64-wmp.zip.sha256" \
-            "$FULL_VERSION-x64-naudio.zip" \
-            "$FULL_VERSION-x64-naudio.zip.sha256" \
-            --title "$BASE_TITLE $TAG" \
+            "$TITLE-x64-wmp.zip" \
+            "$TITLE-x64-wmp.zip.sha256" \
+            "$TITLE-x64-naudio.zip" \
+            "$TITLE-x64-naudio.zip.sha256" \
+            --title "$TITLE" \
             --generate-notes \
             --verify-tag
