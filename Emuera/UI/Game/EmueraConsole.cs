@@ -1,4 +1,4 @@
-//using System.Drawing.Imaging;
+﻿//using System.Drawing.Imaging;
 using MinorShift.Emuera.Forms;
 //using MinorShift.Emuera.GameData;
 using MinorShift.Emuera.GameProc.Function;
@@ -490,52 +490,62 @@ internal sealed partial class EmueraConsole : IDisposable
 	public async Task Initialize()
 	{
 		var boottimeDebugStopwatch = Stopwatch.StartNew();
+		FileStream fs = null;
 		StreamWriter logWriter = null;
 		try
 		{
-			if (Config.DisplayReport)
+			try
 			{
-				using var fs = new FileStream(Program.ExeDir + "time.log", FileMode.OpenOrCreate);
-				logWriter = new StreamWriter(fs);
+				if (Config.DisplayReport)
+				{
+					fs = new FileStream(Program.ExeDir + "time.log", FileMode.Create);
+					logWriter = new StreamWriter(fs) { AutoFlush = true };
+				}
 			}
-		}
-		catch
-		{
-			ParserMediator.Warn(trerror.TimeLogFileLocked.Text, null, 0);
-		}
-		logWriter?.WriteLine("Init:Start");
-		logWriter?.WriteLine("File:Preload:Start");
-		//必要なソースファイルを事前にメモリに一気に読み込む
-		_genericTimerStopwatch.Restart();
+			catch
+			{
+				ParserMediator.Warn(trerror.TimeLogFileLocked.Text, null, 0);
+			}
+			logWriter?.WriteLine("Init:Start");
+			logWriter?.WriteLine("File:Preload:Start");
+			//必要なソースファイルを事前にメモリに一気に読み込む
+			_genericTimerStopwatch.Restart();
 
-		Preload.Clear();
-		await Preload.Load(Program.ErbDir);
-		await Preload.Load(Program.CsvDir);
+			Preload.Clear();
+			await Preload.Load(Program.ErbDir);
+			await Preload.Load(Program.CsvDir);
 
-		logWriter?.WriteLine("File:Preload:End " + boottimeDebugStopwatch.ElapsedMilliseconds + "ms");
+			logWriter?.WriteLine("File:Preload:End " + boottimeDebugStopwatch.ElapsedMilliseconds + "ms");
 
-		GlobalStatic.Console = this;
-		// GlobalStatic.MainWindow = window;
-		process = new GameProc.Process(this);
-		GlobalStatic.Process = process;
-		if (Program.DebugMode && Config.DebugShowWindow)
-		{
-			OpenDebugDialog();
-			window.Focus();
-		}
-		ClearDisplay();
-		if (!await process.Initialize(logWriter))
-		{
-			state = ConsoleState.Error;
-			OutputLog(null, false);
-			PrintFlush(false);
+			GlobalStatic.Console = this;
+			// GlobalStatic.MainWindow = window;
+			process = new GameProc.Process(this);
+			GlobalStatic.Process = process;
+			if (Program.DebugMode && Config.DebugShowWindow)
+			{
+				OpenDebugDialog();
+				window.Focus();
+			}
+			ClearDisplay();
+			if (!await process.Initialize(logWriter))
+			{
+				state = ConsoleState.Error;
+				OutputLog(null, false);
+				PrintFlush(false);
+				RefreshStrings(true);
+				return;
+			}
+			RunEmueraProgram("");
 			RefreshStrings(true);
-			return;
-		}
-		RunEmueraProgram("");
-		RefreshStrings(true);
 
-		logWriter?.WriteLine("Init:End " + boottimeDebugStopwatch.ElapsedMilliseconds + "ms");
+			logWriter?.WriteLine("Init:End " + boottimeDebugStopwatch.ElapsedMilliseconds + "ms");
+		}
+		finally
+		{
+			logWriter?.Flush();
+			logWriter?.Dispose();
+			fs?.Dispose();
+		}
 	}
 
 
