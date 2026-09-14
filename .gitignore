@@ -20,3 +20,4 @@ AGENTS.md
 bin/
 obj/
 *.user
+.temp
