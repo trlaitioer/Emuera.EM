@@ -9,8 +9,9 @@ Blocked by: 05, 06
 参数解析与指令执行是全库耦合最强的区域:
 
 - `ArgumentParser` 是 partial class,两半分居 ArgumentBuilder.cs 与 ArgumentParser.cs,必须同票处理(旧差分曾拆在 01/04 两票)
-- Instraction.Child.cs(约 104 条)是全库最大耦合枢纽:InstructionLine ×141、ExpressionMediator ×117,并直接使用 UI 打印类型(ConsoleDisplayLine/ConsoleButtonString)、Sound、Config、Lang
-- Argument.cs 约 45 个子类字段大量"按构造路径可能为 null 但未标注"(SpColorArgument.RGB、SpTInputsArgument、SpBarArgument 等);`ArgumentBuilder.CreateArgument` 以 `warn + return null` 表达失败
+- ArgumentBuilder.cs 是全库单文件警告最多的文件(本票工作量主要在此,来源是 issues/05 的 `List<AExpression?>` 元素解引用适配;开工时按 spec.md 的计数口径重新实测)
+- Instraction.Child.cs 是全库最大耦合枢纽:文件内 InstructionLine 出现 133 次、ExpressionMediator 117 次,并直接使用 UI 打印类型(ConsoleDisplayLine/ConsoleButtonString)、Sound、Config、Lang
+- Argument.cs 约 47 个子类字段大量"按构造路径可能为 null 但未标注"(SpColorArgument.RGB、SpTInputsArgument、SpBarArgument 等);`ArgumentBuilder.CreateArgument` 以 `warn + return null` 表达失败
 
 范围(启用 + 清零 CS86xx):
 

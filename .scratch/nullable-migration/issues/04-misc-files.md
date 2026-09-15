@@ -32,6 +32,6 @@ issues/01(核心运行时)与 issues/02 的范围之外,仍有大量文件存在
 | issues/09 | Statements 顶层(Argument、ArgumentParser、Instruction、FunctionIdentifier、Instraction.Child、CaseExpression) |
 | issues/10 | Data/(ConstantData、IdentifierDictionary、UserDefinedVariable、UserDefinedFunction、ParserMediator、DefineMacro)、Utils/EraBinaryData* |
 | issues/11 | Data/(GameBase、LabelDictionary)、Loader/ErhLoader、GlobalStatic、Runtime/InputRequest.cs(暂) |
-| issues/12 | Runtime/Config/、Runtime/Script/KeyMacro.cs、Utils/(EvilMask/*、LangManager、Preload、SFMT、Sys、Sound.NAudio、Sound.WMP、WebPWrapper)、Statements/(CircularBuffer、Clipboard) |
+| issues/12 | Runtime/Config/、Runtime/Script/KeyMacro.cs、Utils/ 其余全部(EvilMask/*、LangManager、Preload、SFMT、Sys、Sound.NAudio、Sound.WMP、WebPWrapper、CharStream、CtrlZ、EmueraException、EncodingHandler、RegexFactory、WinInput、WinmmTimer、NAudio_LoopStream)、Statements/(CircularBuffer、Clipboard) |
 
 文件归属以各链簇票实测警告为准微调;横切契约决策见 issues/06。

@@ -10,7 +10,8 @@ Blocked by: 07, 10
 
 范围(启用 + 清零 CS86xx):
 
-- `Runtime/Script/`:Process.cs、Process.ScriptProc.cs、Process.State.cs、Process.CalledFunction.cs、Process.SystemProc.cs、GlobalStatic.cs
+- `Runtime/Script/`:Process.cs、Process.ScriptProc.cs、Process.State.cs、Process.CalledFunction.cs、Process.SystemProc.cs
+- `GlobalStatic.cs`:位于项目根 `Emuera/`,不在 `Runtime/Script/` 下
 - `Runtime/Script/Loader/`:ErbLoader.cs、ErhLoader.cs
 - `Runtime/Script/Data/`:LabelDictionary.cs、GameBase.cs
 - `Runtime/InputRequest.cs`(输入请求,Process 与 UI 的边界对象;归属以实测警告为准)
