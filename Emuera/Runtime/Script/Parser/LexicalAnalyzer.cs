@@ -1127,6 +1127,7 @@ internal static partial class LexicalAnalyzer
 		while (macroEnd == wc.Pointer)
 		{
 			wc.Pointer = wc.Pointer!.Next;
+			// macroEnd was captured above as an existing node, so neither dereference can reach the chain end here.
 			wc.Collection.Remove(wc.Pointer!.Previous!);
 		}
 		while (!macroWC.EOL)

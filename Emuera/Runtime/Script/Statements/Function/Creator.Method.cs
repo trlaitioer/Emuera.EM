@@ -4556,6 +4556,7 @@ internal static partial class FunctionMethodCreator
 			string str = arguments[0]!.GetStrValue(exm);
 			if (str == null || string.IsNullOrEmpty(str))
 				return "";
+			// TODO: Strings.StrConv may return null for an unsupported conversion; consider handling that instead of asserting a non-null result.
 			switch (strType)
 			{
 				case StrFormType.Upper:
