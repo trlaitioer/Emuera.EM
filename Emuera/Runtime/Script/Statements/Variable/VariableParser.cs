@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.GameData.Variable;
+﻿#nullable enable
+using MinorShift.Emuera.GameData.Variable;
 using MinorShift.Emuera.Runtime.Script.Parser;
 using MinorShift.Emuera.Runtime.Script.Statements.Expression;
 using MinorShift.Emuera.Runtime.Utils;
@@ -15,8 +16,9 @@ internal static class VariableParser
 		TARGET = new VariableTerm(GlobalStatic.VariableData.GetSystemVariableToken("TARGET"), zeroArgs);
 	}
 
-	public static SingleTerm ZeroTerm { get; private set; }
-	public static VariableTerm TARGET { get; private set; }
+	// Assigned by Initialize before any parse
+	public static SingleTerm ZeroTerm { get; private set; } = null!;
+	public static VariableTerm TARGET { get; private set; } = null!;
 
 	public static bool IsVariable(string ids)
 	{
@@ -24,7 +26,7 @@ internal static class VariableParser
 			return false;
 		string[] idlist = ids.Split(':');
 		//idlist = synonym.ApplySynonym(idlist);
-		VariableToken id = GlobalStatic.IdentifierDictionary.GetVariableToken(idlist[0], null, false);
+		VariableToken? id = GlobalStatic.IdentifierDictionary.GetVariableToken(idlist[0], null, false);
 		return id != null;
 	}
 
@@ -53,9 +55,9 @@ internal static class VariableParser
 	public static VariableTerm ReduceVariable(VariableToken id, WordCollection wc)
 	{
 		AExpression operand;
-		AExpression op1 = null;
-		AExpression op2 = null;
-		AExpression op3 = null;
+		AExpression? op1 = null;
+		AExpression? op2 = null;
+		AExpression? op3 = null;
 		int i = 0;
 		while (true)
 		{
@@ -82,12 +84,12 @@ internal static class VariableParser
 
 
 
-	public static VariableTerm ReduceVariable(VariableToken id, AExpression p1, AExpression p2, AExpression p3)
+	public static VariableTerm ReduceVariable(VariableToken id, AExpression? p1, AExpression? p2, AExpression? p3)
 	{
 		AExpression[] terms;
-		AExpression op1 = p1;
-		AExpression op2 = p2;
-		AExpression op3 = p3;
+		AExpression? op1 = p1;
+		AExpression? op2 = p2;
+		AExpression? op3 = p3;
 		//引数の推測
 		if (id.IsCharacterData)
 		{
@@ -115,7 +117,8 @@ internal static class VariableParser
 						op2 = op1;
 					op1 = TARGET;
 				}
-				terms = [op1, op2];
+				// op2 is only set after op1, so a set op2 implies a non-null op1
+				terms = [op1!, op2];
 			}
 			else
 			{

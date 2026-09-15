@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Script.Statements.Expression;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Script.Statements.Expression;
 using MinorShift.Emuera.Runtime.Utils;
 using System.Collections.Generic;
 using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
@@ -28,8 +29,8 @@ internal sealed class VariableStrArgTerm : AExpression
 	#region EE_ERD
 	readonly string varname;
 	#endregion
-	Dictionary<string, int> dic;
-	string errPos;
+	Dictionary<string, int>? dic;
+	string? errPos;
 
 	public override long GetIntValue(ExpressionMediator exm)
 	{
@@ -46,7 +47,8 @@ internal sealed class VariableStrArgTerm : AExpression
 			throw new CodeEE(string.Format(trerror.NotDefinedErdKey.Text, parentCode.ToString(), key));
 		#endregion
 
-		if (!dic.TryGetValue(key, out int i))
+		// key is non-empty past the check above, so dic is non-null past the guard below
+		if (!dic!.TryGetValue(key, out int i))
 		{
 			if (errPos == null)
 				throw new CodeEE(string.Format(trerror.CanNotSpecifiedByString.Text, parentCode.ToString()));

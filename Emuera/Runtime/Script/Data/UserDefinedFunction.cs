@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Script.Parser;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Script.Parser;
 using MinorShift.Emuera.Runtime.Utils;
 using System.Collections.Generic;
 using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
@@ -26,9 +27,10 @@ internal sealed class UserDefinedFunctionData
 	private UserDefinedFunctionData()
 	{
 	}
-	public string Name;
+	// Assigned by Create; never read before that point
+	public string Name = null!;
 	public bool TypeIsStr;
-	public UserDifinedFunctionDataArgType[] ArgList;
+	public UserDifinedFunctionDataArgType[] ArgList = null!;
 
 	public static UserDefinedFunctionData Create(WordCollection wc, bool dims, ScriptPosition? sc)
 	{
@@ -37,7 +39,7 @@ internal sealed class UserDefinedFunctionData
 		{
 			TypeIsStr = dims
 		};
-		IdentifierWord idw;
+		IdentifierWord? idw;
 		string keyword = dimtype;
 		while (!wc.EOL && (idw = wc.Current as IdentifierWord) != null)
 		{

@@ -1,4 +1,5 @@
-﻿namespace MinorShift.Emuera.Runtime.Script.Statements.Variable;
+﻿#nullable enable
+namespace MinorShift.Emuera.Runtime.Script.Statements.Variable;
 
 internal enum VariableCode
 {

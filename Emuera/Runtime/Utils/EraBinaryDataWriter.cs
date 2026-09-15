@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -39,7 +40,8 @@ internal sealed class EraBinaryDataWriter : IDisposable
 
 	#region EM_私家版_セーブ圧縮
 	BinaryWriter fileWriter;
-	MemoryStream ms;
+	// Only allocated when the save data is zipped
+	MemoryStream? ms;
 	#endregion
 
 	public void WriteHeader()
@@ -103,7 +105,7 @@ internal sealed class EraBinaryDataWriter : IDisposable
 		writer.Write((byte)EraSaveDataType.EOF);
 	}
 
-	public void WriteWithKey(string key, object v)
+	public void WriteWithKey(string key, object? v)
 	{
 		if (v is long)
 		{
@@ -478,17 +480,17 @@ internal sealed class EraBinaryDataWriter : IDisposable
 		{
 			var st = writer.BaseStream;
 			st.Seek(0, SeekOrigin.Begin);
-			writer.Close(); writer = null;
+			writer.Close(); writer = null!;
 			var compressor = new GZipStream(fileWriter.BaseStream, CompressionMode.Compress);
 			st.CopyTo(compressor);
 			fileWriter.Close();
 			compressor.Close();
 			st.Close();
 		}
-		fileWriter = null;
+		fileWriter = null!;
 		#endregion
 		writer?.Close();
-		writer = null;
+		writer = null!;
 	}
 
 	#endregion

@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.GameData.Variable;
+﻿#nullable enable
+using MinorShift.Emuera.GameData.Variable;
 using MinorShift.Emuera.Runtime.Script.Statements.Expression;
 using MinorShift.Emuera.Runtime.Utils;
 using System;
@@ -29,9 +30,10 @@ internal class VariableTerm : AExpression
 			}
 		}
 	}
-	public VariableToken Identifier;
-	private readonly AExpression[] arguments;
-	protected long[] transporter;
+	// Assigned by the public constructor, or by the subclasses that use the protected one
+	public VariableToken Identifier = null!;
+	private readonly AExpression[] arguments = null!;
+	protected long[] transporter = null!;
 	protected bool allArgIsConst;
 
 	public long GetElementInt(int i, ExpressionMediator exm)
@@ -67,7 +69,7 @@ internal class VariableTerm : AExpression
 			if (!allArgIsConst)
 				for (int i = 0; i < arguments.Length; i++)
 					transporter[i] = arguments[i].GetIntValue(exm);
-			string ret = Identifier.GetStrValue(exm, transporter);
+			string? ret = Identifier.GetStrValue(exm, transporter);
 			if (ret == null)
 				return "";
 			return ret;
@@ -332,7 +334,7 @@ internal sealed class FixedVariableTerm : VariableTerm
 	{
 		try
 		{
-			string ret = Identifier.GetStrValue(exm, transporter);
+			string? ret = Identifier.GetStrValue(exm, transporter);
 			if (ret == null)
 				return "";
 			return ret;

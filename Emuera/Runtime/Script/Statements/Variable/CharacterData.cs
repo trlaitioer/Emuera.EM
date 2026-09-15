@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.GameData.Variable;
+﻿#nullable enable
+using MinorShift.Emuera.GameData.Variable;
 using MinorShift.Emuera.Runtime.Script.Data;
 using MinorShift.Emuera.Runtime.Utils;
 using System;
@@ -10,17 +11,17 @@ namespace MinorShift.Emuera.Runtime.Script.Statements.Variable;
 internal sealed class CharacterData : IDisposable
 {
 	readonly long[] dataInteger;
-	readonly string[] dataString;
+	readonly string?[] dataString;
 	readonly long[][] dataIntegerArray;
-	readonly string[][] dataStringArray;
+	readonly string?[][] dataStringArray;
 	readonly long[][,] dataIntegerArray2D;
-	readonly string[][,] dataStringArray2D;
+	readonly string?[][,] dataStringArray2D;
 	public long[] DataInteger { get { return dataInteger; } }
-	public string[] DataString { get { return dataString; } }
+	public string?[] DataString { get { return dataString; } }
 	public long[][] DataIntegerArray { get { return dataIntegerArray; } }
-	public string[][] DataStringArray { get { return dataStringArray; } }
+	public string?[][] DataStringArray { get { return dataStringArray; } }
 	public long[][,] DataIntegerArray2D { get { return dataIntegerArray2D; } }
-	public string[][,] DataStringArray2D { get { return dataStringArray2D; } }
+	public string?[][,] DataStringArray2D { get { return dataStringArray2D; } }
 
 	public List<object> UserDefCVarDataList { get; set; }
 
@@ -54,7 +55,7 @@ internal sealed class CharacterData : IDisposable
 		for (int i = 0; i < varData.UserDefinedCharaVarList.Count; i++)
 		{
 			UserDefinedVariableData d = varData.UserDefinedCharaVarList[i].DimData;
-			object array = null;
+			object? array = null;
 			if (d.TypeIsStr)
 			{
 				switch (d.Dimension)
@@ -135,7 +136,7 @@ internal sealed class CharacterData : IDisposable
 		array = dataIntegerArray[(int)VariableCode.__LOWERCASE__ & (int)VariableCode.JUEL];
 		foreach (KeyValuePair<int, long> pair in tmpl.Juel)
 			array[pair.Key] = pair.Value;
-		string[] arrays = dataStringArray[(int)VariableCode.__LOWERCASE__ & (int)VariableCode.CSTR];
+		string?[] arrays = dataStringArray[(int)VariableCode.__LOWERCASE__ & (int)VariableCode.CSTR];
 		foreach (KeyValuePair<int, string> pair in tmpl.CStr)
 			arrays[pair.Key] = pair.Value;
 		/*
@@ -165,9 +166,9 @@ internal sealed class CharacterData : IDisposable
 		*/
 	}
 
-	public static int[] CharacterVarLength(VariableCode code, ConstantData constant)
+	public static int[]? CharacterVarLength(VariableCode code, ConstantData constant)
 	{
-		int[] ret = null;
+		int[]? ret = null;
 		VariableCode type = code & (VariableCode.__ARRAY_1D__ | VariableCode.__ARRAY_2D__ |
 			VariableCode.__ARRAY_3D__ | VariableCode.__INTEGER__ | VariableCode.__STRING__);
 		int i = (int)(code & VariableCode.__LOWERCASE__);
@@ -491,9 +492,9 @@ internal sealed class CharacterData : IDisposable
 		bool userDefineData = false;
 		while (true)
 		{
-			KeyValuePair<string, EraSaveDataType> nameAndType = reader.ReadVariableCode();
-			VariableToken vToken = null;
-			object array = null;
+			KeyValuePair<string?, EraSaveDataType> nameAndType = reader.ReadVariableCode();
+			VariableToken? vToken = null;
+			object? array = null;
 			if (nameAndType.Key != null)
 			{
 				if (!GlobalStatic.IdentifierDictionary.getVarTokenIsForbid(nameAndType.Key))
@@ -585,16 +586,13 @@ internal sealed class CharacterData : IDisposable
 	}
 
 
-	private static void copyListToArray<T>(List<T> srcList, T[] destArray)
+	private static void copyListToArray<T>(IReadOnlyList<T> srcList, T[] destArray)
 	{
 		int count = Math.Min(srcList.Count, destArray.Length);
-		srcList.CopyTo(0, destArray, 0, count);
-		//for (int i = 0; i < count; i++)
-		//{
-		//    destArray[i] = srcList[i];
-		//}
+		for (int i = 0; i < count; i++)
+			destArray[i] = srcList[i];
 	}
-	private static void copyListToArray2D<T>(List<T[]> srcList, T[,] destArray)
+	private static void copyListToArray2D<T>(IReadOnlyList<T[]> srcList, T[,] destArray)
 	{
 		int countX = Math.Min(srcList.Count, destArray.GetLength(0));
 		int dLength = destArray.GetLength(1);
@@ -628,7 +626,7 @@ internal sealed class CharacterData : IDisposable
 
 	public void setValueAll1D(int varInt, string value, int start, int end)
 	{
-		string[] array = dataStringArray[varInt];
+		string?[] array = dataStringArray[varInt];
 		for (int i = start; i < end; i++)
 			array[i] = value;
 	}
@@ -645,7 +643,7 @@ internal sealed class CharacterData : IDisposable
 
 	public void setValueAll2D(int varInt, string value)
 	{
-		string[,] array = dataStringArray2D[varInt];
+		string?[,] array = dataStringArray2D[varInt];
 		int a1 = array.GetLength(0);
 		int a2 = array.GetLength(1);
 		for (int i = 0; i < a1; i++)
@@ -658,11 +656,11 @@ internal sealed class CharacterData : IDisposable
 	public void Dispose()
 	{
 		for (int i = 0; i < dataIntegerArray.Length; i++)
-			dataIntegerArray[i] = null;
+			dataIntegerArray[i] = null!;
 		for (int i = 0; i < dataStringArray.Length; i++)
-			dataStringArray[i] = null;
+			dataStringArray[i] = null!;
 		for (int i = 0; i < dataIntegerArray2D.Length; i++)
-			dataIntegerArray2D[i] = null;
+			dataIntegerArray2D[i] = null!;
 	}
 
 	#endregion
@@ -676,7 +674,8 @@ internal sealed class CharacterData : IDisposable
 	}
 
 	#region sort
-	public IComparable temp_SortKey;
+	// Set by the sort key extractor before List.Sort compares entries
+	public IComparable temp_SortKey = null!;
 	public int temp_CurrentOrder;
 	//Comparison<CharacterData>
 	public static int AscCharacterComparison(CharacterData x, CharacterData y)
@@ -703,32 +702,35 @@ internal sealed class CharacterData : IDisposable
 		{
 			if (sortkey.IsArray2D)
 			{
-				string[,] array = sortkey is UserDefinedCharaVariableToken token
+				string?[,] array = sortkey is UserDefinedCharaVariableToken token
 					? (string[,])UserDefCVarDataList[token.ArrayIndex]
 					: dataStringArray2D[sortkey.CodeInt];
 				int elem1 = (int)(elem64 >> 32);
 				int elem2 = (int)(elem64 & 0x7FFFFFFF);
 				if (elem1 < 0 || elem1 >= array.GetLength(0) || elem2 < 0 || elem2 >= array.GetLength(1))
 					throw new CodeEE(trerror.OoRSortKey.Text);
-				temp_SortKey = array[elem1, elem2];
+				// An unset entry stays null here, as before
+				temp_SortKey = array[elem1, elem2]!;
 			}
 			else if (sortkey.IsArray1D)
 			{
-				string[] array = sortkey is UserDefinedCharaVariableToken token
+				string?[] array = sortkey is UserDefinedCharaVariableToken token
 					? (string[])UserDefCVarDataList[token.ArrayIndex]
 					: dataStringArray[sortkey.CodeInt];
 				if (elem64 < 0 || elem64 >= array.Length)
 					throw new CodeEE(trerror.OoRSortKey.Text);
-				if (array[(int)elem64] != null)
-					temp_SortKey = array[(int)elem64];
+				string? key = array[(int)elem64];
+				if (key != null)
+					temp_SortKey = key;
 				else
 					temp_SortKey = "";
 			}
 			else
 			{
 				//ユーザー定義キャラ変数は非配列がない
-				if (dataString[sortkey.CodeInt] != null)
-					temp_SortKey = dataString[sortkey.CodeInt];
+				string? key = dataString[sortkey.CodeInt];
+				if (key != null)
+					temp_SortKey = key;
 				else
 					temp_SortKey = "";
 			}

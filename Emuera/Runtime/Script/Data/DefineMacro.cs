@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Script.Parser;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Script.Parser;
 
 namespace MinorShift.Emuera.Runtime.Script.Data;
 
@@ -18,7 +19,8 @@ internal sealed class DefineMacro
 	public readonly string Keyword;
 	public readonly int ArgCount;
 	public readonly WordCollection Statement;
-	public readonly IdentifierWord IDWord;
+	// Null unless the macro body is a single identifier word
+	public readonly IdentifierWord? IDWord;
 	public readonly bool HasArguments;
 	public readonly bool IsNull;
 

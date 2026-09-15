@@ -1,10 +1,12 @@
-﻿using MinorShift.Emuera.GameView;
+﻿#nullable enable
+using MinorShift.Emuera.GameView;
 using MinorShift.Emuera.Runtime.Script.Parser;
 using MinorShift.Emuera.Runtime.Script.Statements.Variable;
 using MinorShift.Emuera.Runtime.Utils;
 using MinorShift.Emuera.Sub;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -107,23 +109,24 @@ internal sealed class ConstantData
 	//private readonly string[][] names = new string[(int)VariableCode.__COUNT_CSV_STsRING_ARRAY_1D__][];
 	#region EE_ERD
 	private const int ERD_NAMES_INDEX = (int)VariableCode.__COUNT_CSV_STRING_ARRAY_1D__;
-	private readonly string[][] names = new string[(int)VariableCode.__COUNT_CSV_STRING_ARRAY_1D__ + 1][]; // 元より1増やす
+	// Slots stay null until LoadData fills them; elements stay null where the CSV has no entry
+	private readonly string?[]?[] names = new string?[(int)VariableCode.__COUNT_CSV_STRING_ARRAY_1D__ + 1][]; // 元より1増やす
 	private readonly Dictionary<string, int>[] aliases = new Dictionary<string, int>[(int)VariableCode.__COUNT_CSV_STRING_ARRAY_1D__ + 1];
 	private readonly Dictionary<string, Dictionary<string, int>> erdNameToIntDics = [];
 	#endregion
 	private readonly Dictionary<string, int>[] nameToIntDics = new Dictionary<string, int>[(int)VariableCode.__COUNT_CSV_STRING_ARRAY_1D__];
 	private readonly Dictionary<string, int> relationDic = [];
-	public string[] GetCsvNameList(VariableCode code)
+	public string?[] GetCsvNameList(VariableCode code)
 	{
-		return names[(int)(code & VariableCode.__LOWERCASE__)];
+		return names[(int)(code & VariableCode.__LOWERCASE__)]!;
 	}
 
-	public long[] ItemPrice;
+	public long[] ItemPrice = null!;
 
 	private readonly List<CharacterTemplate> CharacterTmplList;
 	private readonly Dictionary<long, CharacterTemplate> charaTmplByNo = [];
 	private readonly Dictionary<long, CharacterTemplate> charaTmplByCsvNo = [];
-	private EmueraConsole output;
+	private EmueraConsole output = null!;
 
 	public ConstantData()
 	{
@@ -136,6 +139,12 @@ internal sealed class ConstantData
 
 	readonly bool useCompatiName;
 
+	// Initialized by LoadData through this method before any use
+	[MemberNotNull(nameof(VariableIntArrayLength), nameof(VariableStrArrayLength),
+		nameof(VariableIntArray2DLength), nameof(VariableStrArray2DLength),
+		nameof(VariableIntArray3DLength), nameof(VariableStrArray3DLength),
+		nameof(CharacterIntArrayLength), nameof(CharacterStrArrayLength),
+		nameof(CharacterIntArray2DLength), nameof(CharacterStrArray2DLength))]
 	private void setDefaultArrayLength()
 	{
 		MaxDataList[ablIndex] = 100;
@@ -233,7 +242,7 @@ internal sealed class ConstantData
 			output.PrintSystemLine(string.Format(trsl.LoadingFile.Text, eReader.Filename));
 		try
 		{
-			CharStream st = null;
+			CharStream? st = null;
 			while ((st = eReader.ReadEnabledLine()) != null)
 			{
 				position = new ScriptPosition(eReader.Filename, eReader.LineNo);
@@ -267,7 +276,7 @@ internal sealed class ConstantData
 			return;
 		}
 		string idtoken = tokens[0].Trim();
-		VariableIdentifier id = VariableIdentifier.GetVariableId(idtoken);
+		VariableIdentifier? id = VariableIdentifier.GetVariableId(idtoken);
 		if (id == null)
 		{
 			ParserMediator.Warn(string.Format(trerror.CanNotInterpretVarName.Text, "1"), position, 1);
@@ -676,11 +685,12 @@ internal sealed class ConstantData
 				continue;
 			#endregion
 			//Add CSV Names
-			string[] nameArray = names[i];
+			string?[] nameArray = names[i]!;
 			for (int j = 0; j < nameArray.Length; j++)
 			{
-				if (!string.IsNullOrEmpty(nameArray[j]) && !nameToIntDics[i].ContainsKey(nameArray[j]))
-					nameToIntDics[i].Add(nameArray[j], j);
+				string? name = nameArray[j];
+				if (!string.IsNullOrEmpty(name) && !nameToIntDics[i].ContainsKey(name))
+					nameToIntDics[i].Add(name, j);
 			}
 			//Add CSV Aliases
 			Dictionary<string, int> aliasDict = aliases[i];
@@ -777,7 +787,7 @@ internal sealed class ConstantData
 	{
 		if (string.IsNullOrEmpty(str))
 			return false;
-		Dictionary<string, int> dic;
+		Dictionary<string, int>? dic;
 		if (varCode == VariableCode.CDFLAG)
 		{
 			// dic = GetKeywordDictionary(out _, VariableCode.CDFLAGNAME1, -1);
@@ -837,7 +847,7 @@ internal sealed class ConstantData
 
 		{
 			//ここで見つからなかったら下の処理でも通す
-			Dictionary<string, int> dic = GetKeywordDictionary(out string errPos, code, index, null);
+			Dictionary<string, int>? dic = GetKeywordDictionary(out string? errPos, code, index, null);
 			if (dic != null)
 			{
 				var found = dic.TryGetValue(key, out ret);
@@ -850,9 +860,10 @@ internal sealed class ConstantData
 			{
 				return false;
 			}
-			bool found = erdNameToIntDics.TryGetValue(varname, out Dictionary<string, int> dic);
+			bool found = erdNameToIntDics.TryGetValue(varname, out Dictionary<string, int>? dic);
 			if (!found) return false;
-			return dic.TryGetValue(key, out ret);
+			// found implies a non-null dictionary
+			return dic!.TryGetValue(key, out ret);
 		}
 	}
 	#endregion
@@ -865,7 +876,7 @@ internal sealed class ConstantData
 		if (string.IsNullOrEmpty(varname))
 			return false;
 
-		if (!erdNameToIntDics.TryGetValue(varname, out Dictionary<string, int> dic))
+		if (!erdNameToIntDics.TryGetValue(varname, out Dictionary<string, int>? dic))
 			return false;
 
 		var keyValuePair = dic.FirstOrDefault(x => x.Value == value);
@@ -882,9 +893,10 @@ internal sealed class ConstantData
 			throw new CodeEE(trerror.KeywordsCannotBeEmpty.Text);
 		#region EE_ERD
 		// Dictionary<string, int> dic = GetKeywordDictionary(out string errPos, code, index);
-		Dictionary<string, int> dic = GetKeywordDictionary(out string errPos, code, index, null);
+		Dictionary<string, int>? dic = GetKeywordDictionary(out string? errPos, code, index, null);
 		#endregion
-		if (dic.TryGetValue(key, out int ret))
+		// Callers pass keyword-backed codes, for which GetKeywordDictionary returns a dictionary
+		if (dic!.TryGetValue(key, out int ret))
 			return ret;
 		if (errPos == null)
 			throw new CodeEE(string.Format(trerror.CanNotSpecifiedByString.Text, code.ToString()));
@@ -894,12 +906,12 @@ internal sealed class ConstantData
 
 	#region EE_ERD
 	//public Dictionary<string, int> GetKeywordDictionary(out string errPos, VariableCode code, int index)
-	public Dictionary<string, int> GetKeywordDictionary(out string errPos, VariableCode code, int index, string varname)
+	public Dictionary<string, int>? GetKeywordDictionary(out string? errPos, VariableCode code, int index, string? varname)
 	#endregion
 	{
 		errPos = null;
 		int allowIndex = -1;
-		Dictionary<string, int> ret = null;
+		Dictionary<string, int>? ret = null;
 		switch (code)
 		{
 			case VariableCode.ABL:
@@ -1113,7 +1125,7 @@ internal sealed class ConstantData
 					case VariableCode.VARS:
 					case VariableCode.CVAR:
 					case VariableCode.CVARS:
-						if (erdNameToIntDics.TryGetValue(varname, out Dictionary<string, int> value))
+						if (erdNameToIntDics.TryGetValue(varname, out Dictionary<string, int>? value))
 							ret = value;
 						else
 							return ret;
@@ -1130,7 +1142,7 @@ internal sealed class ConstantData
 							if ((code == VariableCode.VAR2D || code == VariableCode.VARS2D) && index == 0)
 							{
 								string varnamed = varname + "@1";
-								if (erdNameToIntDics.TryGetValue(varnamed, out Dictionary<string, int> value1))
+								if (erdNameToIntDics.TryGetValue(varnamed, out Dictionary<string, int>? value1))
 									ret = value1;
 								else
 									return ret;
@@ -1144,7 +1156,7 @@ internal sealed class ConstantData
 							else
 							{
 								string varnamed = varname + "@2";
-								if (erdNameToIntDics.TryGetValue(varnamed, out Dictionary<string, int> value1))
+								if (erdNameToIntDics.TryGetValue(varnamed, out Dictionary<string, int>? value1))
 									ret = value1;
 								else
 									return ret;
@@ -1159,7 +1171,7 @@ internal sealed class ConstantData
 					case VariableCode.VAR3D:
 					case VariableCode.VARS3D:
 						string varname3d = varname + "@" + (index + 1);
-						if (erdNameToIntDics.TryGetValue(varname3d, out Dictionary<string, int> value2))
+						if (erdNameToIntDics.TryGetValue(varname3d, out Dictionary<string, int>? value2))
 							ret = value2;
 						else
 							return ret;
@@ -1199,21 +1211,21 @@ internal sealed class ConstantData
 	}
 	#endregion
 
-	public CharacterTemplate GetCharacterTemplate(long index)
+	public CharacterTemplate? GetCharacterTemplate(long index)
 	{
-		charaTmplByNo.TryGetValue(index, out CharacterTemplate tmpl);
+		charaTmplByNo.TryGetValue(index, out CharacterTemplate? tmpl);
 		return tmpl;
 	}
 
-	public CharacterTemplate GetCharacterTemplate_UseSp(long index, bool sp)
+	public CharacterTemplate? GetCharacterTemplate_UseSp(long index, bool sp)
 	{
 		// sp 仅作签名兼容, 查询不区分 SP/普通角色
 		return GetCharacterTemplate(index);
 	}
 
-	public CharacterTemplate GetCharacterTemplateFromCsvNo(long index)
+	public CharacterTemplate? GetCharacterTemplateFromCsvNo(long index)
 	{
-		charaTmplByCsvNo.TryGetValue(index, out CharacterTemplate tmpl);
+		charaTmplByCsvNo.TryGetValue(index, out CharacterTemplate? tmpl);
 		return tmpl;
 	}
 
@@ -1295,7 +1307,7 @@ internal sealed class ConstantData
 				output.PrintSystemLine(string.Format(trsl.LoadingFile.Text, eReader.Filename));
 			try
 			{
-				CharStream st = null;
+				CharStream? st = null;
 				while ((st = eReader.ReadEnabledLine()) != null)
 				{
 					position = new ScriptPosition(eReader.Filename, eReader.LineNo);
@@ -1384,7 +1396,7 @@ internal sealed class ConstantData
 	#endregion
 	private void loadCharacterDataFile(string csvPath, string csvName, bool disp)
 	{
-		CharacterTemplate tmpl = null;
+		CharacterTemplate? tmpl = null;
 		using var eReader = new EraStreamReader(false);
 		if (!eReader.OpenOnCache(csvPath, csvName))
 		{
@@ -1397,7 +1409,7 @@ internal sealed class ConstantData
 		try
 		{
 			long index = -1;
-			CharStream st = null;
+			CharStream? st = null;
 			while ((st = eReader.ReadEnabledLine()) != null)
 			{
 				position = new ScriptPosition(eReader.Filename, eReader.LineNo);
@@ -1519,11 +1531,11 @@ internal sealed class ConstantData
 		if (chara == null)
 			return;
 		int length;
-		Dictionary<int, long> intArray = null;
-		Dictionary<int, string> strArray = null;
-		Dictionary<string, int> namearray;
+		Dictionary<int, long>? intArray = null;
+		Dictionary<int, string>? strArray = null;
+		Dictionary<string, int>? namearray;
 
-		string errPos = null;
+		string? errPos = null;
 		Span<char> chars = stackalloc char[tokens[0].Length];
 		var varname = tokens[0].AsSpan().ToUpper(chars, CultureInfo.InvariantCulture);
 		switch (chars)
@@ -1673,18 +1685,20 @@ internal sealed class ConstantData
 		{
 			if (tokens.Length < 3 || !tryToInt64(tokens[2], out long p2))
 				p2 = 1;
-			if (intArray.ContainsKey(index))
+			// The switch above assigns intArray exactly when it leaves strArray unset
+			if (intArray!.ContainsKey(index))
 				ParserMediator.Warn(string.Format(trerror.VarKeyAreadyDefined.Text, varname, index.ToString()), position, 1);
 			intArray[index] = p2;
 		}
 	}
 
-	private void loadDataTo(string csvPath, int targetIndex, long[] targetI, bool disp)
+	private void loadDataTo(string csvPath, int targetIndex, long[]? targetI, bool disp)
 	{
 
 		if (!File.Exists(csvPath))
 			return;
-		string[] target = names[targetIndex];
+		// Every caller fills the slot right before the call
+		string?[] target = names[targetIndex]!;
 		HashSet<int> defined = [];
 		using var eReader = new EraStreamReader(false);
 		#region EE_ERD
@@ -1705,7 +1719,7 @@ internal sealed class ConstantData
 			output.PrintSystemLine(string.Format(trsl.LoadingFile.Text, eReader.Filename));
 		try
 		{
-			CharStream st = null;
+			CharStream? st = null;
 			Span<Range> dest = stackalloc Range[5];
 			while ((st = eReader.ReadEnabledLine()) != null)
 			{
@@ -1754,7 +1768,7 @@ internal sealed class ConstantData
 			if (position != null)
 				ParserMediator.Warn(trerror.UnexpectedError.Text, position, 3);
 			else
-				output.PrintError(trerror.UnexpectedError.Text);
+				output!.PrintError(trerror.UnexpectedError.Text);
 			return;
 		}
 		finally
@@ -1789,7 +1803,7 @@ internal sealed class ConstantData
 		ScriptPosition? position = null;
 		try
 		{
-			CharStream st = null;
+			CharStream? st = null;
 			while ((st = eReader.ReadEnabledLine()) != null)
 			{
 				position = new ScriptPosition(eReader.Filename, eReader.LineNo);
@@ -1815,7 +1829,7 @@ internal sealed class ConstantData
 			if (position != null)
 				ParserMediator.Warn(trerror.UnexpectedError.Text, position, 3);
 			else
-				output.PrintError(trerror.UnexpectedError.Text);
+				output!.PrintError(trerror.UnexpectedError.Text);
 			return;
 		}
 		finally
@@ -1832,10 +1846,11 @@ internal sealed class CharacterTemplate
 	readonly int[] arraySize;
 	readonly int cstrSize;
 
-	public string Name;
-	public string Callname;
-	public string Nickname;
-	public string Mastername;
+	// Unset columns leave these null; readers either check them or copy them into string data
+	public string? Name;
+	public string? Callname;
+	public string? Nickname;
+	public string? Mastername;
 	public readonly long No = -1;
 	public readonly Dictionary<int, long> Maxbase = [];
 	public readonly Dictionary<int, long> Mark = [];

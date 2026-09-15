@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Script.Parser;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Script.Parser;
 using MinorShift.Emuera.Runtime.Script.Statements.Expression;
 using MinorShift.Emuera.Runtime.Utils;
 using System;
@@ -9,13 +10,14 @@ namespace MinorShift.Emuera.Runtime.Script.Data;
 
 internal sealed class UserDefinedVariableData
 {
-	public string Name;
+	// Assigned by Create before any read
+	public string Name = null!;
 	public bool TypeIsStr;
 	public bool Reference;
 	public int Dimension = 1;
-	public int[] Lengths;
-	public long[] DefaultInt;
-	public string[] DefaultStr;
+	public int[] Lengths = null!;
+	public long[] DefaultInt = null!;
+	public string[] DefaultStr = null!;
 	public bool Global;
 	public bool Save;
 	public bool Static = true;
@@ -37,7 +39,7 @@ internal sealed class UserDefinedVariableData
 			TypeIsStr = dims
 		};
 
-		IdentifierWord idw;
+		IdentifierWord? idw;
 		bool staticDefined = false;
 		ret.Const = false;
 		string keyword = dimtype;
@@ -215,7 +217,7 @@ internal sealed class UserDefinedVariableData
 				if (wc.EOL)
 					throw new CodeEE(trerror.HasNotExpressionAfterComma.Text, sc);
 				AExpression arg = ExpressionParser.ReduceIntegerTerm(wc, TermEndWith.Comma_Assignment);
-				if (arg.Restructure(null) is not SingleLongTerm sizeTerm)
+				if (arg.Restructure(null!) is not SingleLongTerm sizeTerm)
 					throw new CodeEE(trerror.HasNotExpressionAfterComma.Text, sc);
 				if (ret.Reference)//参照型には要素数指定不可(0にするか書かないかどっちか
 				{
@@ -267,10 +269,11 @@ internal sealed class UserDefinedVariableData
 
 			for (int i = 0; i < terms.Count; i++)
 			{
-				if (terms[i] == null)
+				AExpression? term = terms[i];
+				if (term == null)
 					throw new CodeEE(trerror.ArrayVarCanNotOmitInitialValue.Text);
-				terms[i] = terms[i].Restructure(GlobalStatic.EMediator);
-				if (terms[i] is not SingleTerm sTerm)
+				term = term.Restructure(GlobalStatic.EMediator);
+				if (term is not SingleTerm sTerm)
 					throw new CodeEE(trerror.InitialValueOnlyConst.Text);
 				if (dims != sTerm.IsString)
 					throw new CodeEE(trerror.NotMatchVarTypeAndInitialValue.Text);

@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.GameView;
+﻿#nullable enable
+using MinorShift.Emuera.GameView;
 using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.Runtime.Script;
 using MinorShift.Emuera.Runtime.Script.Statements;
@@ -24,15 +25,15 @@ internal partial class ParserMediator
 	/// </summary>
 	/// <param name="str"></param>
 	/// <param name="?"></param>
-	public static void ConfigWarn(string str, ScriptPosition? pos, int level, string stack)
+	public static void ConfigWarn(string str, ScriptPosition? pos, int level, string? stack)
 	{
 		if (level <Config.DisplayWarningLevel && !Program.AnalysisMode)
 			return;
 		warningList.Add(new ParserWarning(str, pos, level, stack));
 	}
 
-	static EmueraConsole console;
-	public static void Initialize(EmueraConsole console)
+	static EmueraConsole? console;
+	public static void Initialize(EmueraConsole? console)
 	{
 		ParserMediator.console = console;
 	}
@@ -77,8 +78,9 @@ internal partial class ParserMediator
 	/// parser decided it when the callee came first. The resolved call and the call argument travel
 	/// with the edge because deciding it again re-runs the argument conversion.
 	/// </summary>
+	// Installed only for the duration of ErbLoader.ParseScript; absent the rest of the time
 	public static System.Collections.Concurrent.ConcurrentBag<
-		(InstructionLine Line, SpCallArgment Arg, CalledFunction Callee)> CallEdgeRecorder { get; set; }
+		(InstructionLine Line, SpCallArgment Arg, CalledFunction Callee)>? CallEdgeRecorder { get; set; }
 
 	/// <summary>
 	/// Reports a resolved static CALL edge to <see cref="CallEdgeRecorder"/> when one is installed.
@@ -136,7 +138,7 @@ internal partial class ParserMediator
 		Warn(str, pos, level, null);
 	}
 
-	public static void Warn(string str, ScriptPosition? pos, int level, string stack)
+	public static void Warn(string str, ScriptPosition? pos, int level, string? stack)
 	{
 		if (level < Config.DisplayWarningLevel && !Program.AnalysisMode)
 			return;
@@ -160,7 +162,7 @@ internal partial class ParserMediator
 		Warn(str, line, level, isError, isBackComp, null);
 	}
 
-	public static void Warn(string str, LogicalLine line, int level, bool isError, bool isBackComp, string stack)
+	public static void Warn(string str, LogicalLine line, int level, bool isError, bool isBackComp, string? stack)
 	{
 		if (isError)
 		{
@@ -217,13 +219,14 @@ internal partial class ParserMediator
 		for (int i = 0; i < pending.Length; i++)
 		{
 			ParserWarning warning = pending[i];
-			console.PrintWarning(warning.WarningMes, warning.WarningPos, warning.WarningLevel);
+			// console is non-null whenever warnings reached the list, and the dereference is kept as-is
+			console!.PrintWarning(warning.WarningMes, warning.WarningPos, warning.WarningLevel);
 			if (warning.StackTrace != null)
 			{
 				string[] stacks = warning.StackTrace.Split('\n');
 				for (int j = 0; j < stacks.Length; j++)
 				{
-					console.PrintSystemLine(stacks[j]);
+					console!.PrintSystemLine(stacks[j]);
 				}
 			}
 		}
@@ -231,7 +234,7 @@ internal partial class ParserMediator
 
 	private sealed class ParserWarning
 	{
-		public ParserWarning(string mes, ScriptPosition? pos, int level, string stackTrace)
+		public ParserWarning(string mes, ScriptPosition? pos, int level, string? stackTrace)
 		{
 			WarningMes = mes;
 			WarningPos = pos;
@@ -241,7 +244,7 @@ internal partial class ParserMediator
 		public string WarningMes;
 		public ScriptPosition? WarningPos;
 		public int WarningLevel;
-		public string StackTrace;
+		public string? StackTrace;
 	}
 
 	[GeneratedRegex(@"(?<!\\),")]
@@ -249,7 +252,8 @@ internal partial class ParserMediator
 
 	public static void SingleLine(string str)
 	{
-		console.PrintSingleLine(str);
+		// Same as above: the console is present whenever this is called
+		console!.PrintSingleLine(str);
 	}
 
 }

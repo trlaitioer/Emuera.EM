@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Utils;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Utils;
 using System;
 using System.Collections.Generic;
 using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
@@ -17,10 +18,10 @@ internal sealed class VariableIdentifier
 	private VariableIdentifier(VariableCode code, string scope)
 	{ this.code = code; this.scope = scope; }
 	readonly VariableCode code;
-	readonly string scope;
+	readonly string? scope;
 	public VariableCode Code
 	{ get { return code; } }
-	public string Scope
+	public string? Scope
 	{ get { return scope; } }
 	public int CodeInt
 	{ get { return (int)(code & VariableCode.__LOWERCASE__); } }
@@ -133,9 +134,10 @@ internal sealed class VariableIdentifier
 	{
 		var array = Enum.GetValues<VariableCode>();
 
-		nameDic.Add(Enum.GetName(VariableCode.__FILE__), VariableCode.__FILE__);
-		nameDic.Add(Enum.GetName(VariableCode.__LINE__), VariableCode.__LINE__);
-		nameDic.Add(Enum.GetName(VariableCode.__FUNCTION__), VariableCode.__FUNCTION__);
+		// The three pseudo variables are declared explicitly, their enum names are fixed
+		nameDic.Add(Enum.GetName(VariableCode.__FILE__)!, VariableCode.__FILE__);
+		nameDic.Add(Enum.GetName(VariableCode.__LINE__)!, VariableCode.__LINE__);
+		nameDic.Add(Enum.GetName(VariableCode.__FUNCTION__)!, VariableCode.__FUNCTION__);
 		foreach (var code in array)
 		{
 			var key = Enum.GetName(code);
@@ -252,7 +254,7 @@ internal sealed class VariableIdentifier
 	{
 		VariableCode gFlag = flag &
 			(VariableCode.__ARRAY_1D__ | VariableCode.__ARRAY_2D__ | VariableCode.__ARRAY_3D__ | VariableCode.__CHARACTER_DATA__ | VariableCode.__STRING__ | VariableCode.__INTEGER__);
-		if (!extSaveListDic.TryGetValue(gFlag, out List<VariableCode> value))
+		if (!extSaveListDic.TryGetValue(gFlag, out List<VariableCode>? value))
 			return [];
 		return value;
 	}
@@ -262,11 +264,11 @@ internal sealed class VariableIdentifier
 		return new VariableIdentifier(code);
 	}
 
-	public static VariableIdentifier GetVariableId(string key)
+	public static VariableIdentifier? GetVariableId(string key)
 	{
 		return GetVariableId(key, null);
 	}
-	public static VariableIdentifier GetVariableId(string key, string subStr)
+	public static VariableIdentifier? GetVariableId(string key, string? subStr)
 	{
 		VariableCode ret;
 		if (string.IsNullOrEmpty(key))

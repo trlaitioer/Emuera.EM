@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Config;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.Runtime.Script.Data;
 using MinorShift.Emuera.Runtime.Script.Statements.Variable;
 using MinorShift.Emuera.Runtime.Utils;
@@ -21,26 +22,26 @@ internal sealed partial class VariableData : IDisposable
 	public Dictionary<string, DataTable> DataDataTables { get; set; } = [];
 	#endregion
 	readonly long[] dataInteger;
-	readonly string[] dataString;
+	readonly string?[] dataString;
 	readonly long[][] dataIntegerArray;
-	readonly string[][] dataStringArray;
+	readonly string?[][] dataStringArray;
 	readonly long[][,] dataIntegerArray2D;
-	readonly string[][,] dataStringArray2D;
+	readonly string?[][,] dataStringArray2D;
 	readonly long[][,,] dataIntegerArray3D;
-	readonly string[][,,] dataStringArray3D;
+	readonly string?[][,,] dataStringArray3D;
 	//readonly VariableLocal<Int64, Int64Calculator> localVars;
 	//readonly VariableLocal<string, StringCalculator> localString;
 	//readonly VariableLocal<Int64, Int64Calculator> argVars;
 	//readonly VariableLocal<string, StringCalculator> argString;
 	readonly List<CharacterData> characterList;
 	public long[] DataInteger { get { return dataInteger; } }
-	public string[] DataString { get { return dataString; } }
+	public string?[] DataString { get { return dataString; } }
 	public long[][] DataIntegerArray { get { return dataIntegerArray; } }
-	public string[][] DataStringArray { get { return dataStringArray; } }
+	public string?[][] DataStringArray { get { return dataStringArray; } }
 	public long[][,] DataIntegerArray2D { get { return dataIntegerArray2D; } }
-	public string[][,] DataStringArray2D { get { return dataStringArray2D; } }
+	public string?[][,] DataStringArray2D { get { return dataStringArray2D; } }
 	public long[][,,] DataIntegerArray3D { get { return dataIntegerArray3D; } }
-	public string[][,,] DataStringArray3D { get { return dataStringArray3D; } }
+	public string?[][,,] DataStringArray3D { get { return dataStringArray3D; } }
 	//public VariableLocal<Int64, Int64Calculator> LocalVars { get { return localVars; } }
 	//public VariableLocal<string, StringCalculator> LocalString { get { return localString; } }
 	//public VariableLocal<Int64, Int64Calculator> ArgVars { get { return argVars; } }
@@ -307,7 +308,7 @@ internal sealed partial class VariableData : IDisposable
 		varTokenDic.Add("GAMEBASE_DEFAULTCHARA", new IntConstantToken(VariableCode.GAMEBASE_DEFAULTCHARA, this, gamebase.DefaultCharacter));
 		varTokenDic.Add("GAMEBASE_NOITEM", new IntConstantToken(VariableCode.GAMEBASE_NOITEM, this, gamebase.DefaultNoItem));
 
-		VariableToken rand = null;
+		VariableToken? rand = null;
 		if (Config.CompatiRAND)
 			rand = new CompatiRandToken(VariableCode.RAND, this);
 		else
@@ -377,7 +378,7 @@ internal sealed partial class VariableData : IDisposable
 
 	public UserDefinedCharaVariableToken CreateUserDefCharaVariable(UserDefinedVariableData data, DimLineWC dimline)
 	{
-		UserDefinedCharaVariableToken ret = null;
+		UserDefinedCharaVariableToken? ret = null;
 		if (data.CharaData)
 		{
 			int index = UserDefinedCharaVarList.Count;
@@ -399,8 +400,9 @@ internal sealed partial class VariableData : IDisposable
 		if (constant.IsDefinedCsvVar(data.Name))
 			ParserMediator.Warn(string.Format(trerror.IsDefinedCsvVariable.Text, data.Name), dimline.SC, 1);
 
-		UserDefinedCharaVarList.Add(ret);
-		return ret;
+		// The only caller passes CHARADATA declarations, so ret is set here
+		UserDefinedCharaVarList.Add(ret!);
+		return ret!;
 	}
 	public UserDefinedVariableToken CreateUserDefVariable(UserDefinedVariableData data, DimLineWC dimline)
 	{
@@ -520,7 +522,7 @@ internal sealed partial class VariableData : IDisposable
 	{
 
 		long[] globalInt = dataIntegerArray[(int)VariableCode.__LOWERCASE__ & (int)VariableCode.GLOBAL];
-		string[] globalStr = dataStringArray[(int)VariableCode.__LOWERCASE__ & (int)VariableCode.GLOBALS];
+		string?[] globalStr = dataStringArray[(int)VariableCode.__LOWERCASE__ & (int)VariableCode.GLOBALS];
 		for (int i = 0; i < globalInt.Length; i++)
 			globalInt[i] = 0;
 		for (int i = 0; i < globalStr.Length; i++)
@@ -581,7 +583,7 @@ internal sealed partial class VariableData : IDisposable
 					break;
 				case (int)(VariableCode.__LOWERCASE__ & VariableCode.STR):
 					{
-						string[] csvStrData = constant.GetCsvNameList(VariableCode.__DUMMY_STR__);
+						string?[] csvStrData = constant.GetCsvNameList(VariableCode.__DUMMY_STR__);
 						csvStrData.CopyTo(dataStringArray[i], 0);
 						break;
 					}
@@ -602,7 +604,7 @@ internal sealed partial class VariableData : IDisposable
 		}
 		for (int i = 0; i < dataStringArray2D.Length; i++)
 		{
-			string[,] array2D = dataStringArray2D[i];
+			string?[,] array2D = dataStringArray2D[i];
 			int length0 = array2D.GetLength(0);
 			int length1 = array2D.GetLength(1);
 			for (int x = 0; x < length0; x++)
@@ -622,7 +624,7 @@ internal sealed partial class VariableData : IDisposable
 		}
 		for (int i = 0; i < dataStringArray3D.Length; i++)
 		{
-			string[,,] array3D = dataStringArray3D[i];
+			string?[,,] array3D = dataStringArray3D[i];
 			int length0 = array3D.GetLength(0);
 			int length1 = array3D.GetLength(1);
 			int length2 = array3D.GetLength(2);
@@ -845,36 +847,36 @@ internal sealed partial class VariableData : IDisposable
 		int i = 0;
 		varList = userDefinedSaveVarList[i]; i++;
 		foreach (UserDefinedVariableToken var in varList)
-			if (strListDic.TryGetValue(var.Name, out List<string> value))
+			if (strListDic.TryGetValue(var.Name, out List<string>? value))
 				copyListToArray(value, (string[])var.GetArray());
 
 		varList = userDefinedSaveVarList[i]; i++;
 		foreach (UserDefinedVariableToken var in varList)
-			if (intListDic.TryGetValue(var.Name, out List<long> value))
+			if (intListDic.TryGetValue(var.Name, out List<long>? value))
 				copyListToArray(value, (long[])var.GetArray());
 
 		varList = userDefinedSaveVarList[i]; i++;
 		foreach (UserDefinedVariableToken var in varList)
-			if (str2DListDic.TryGetValue(var.Name, out List<string[]> value))
+			if (str2DListDic.TryGetValue(var.Name, out List<string[]>? value))
 				copyListToArray2D(value, (string[,])var.GetArray());
 
 		varList = userDefinedSaveVarList[i]; i++;
 		foreach (UserDefinedVariableToken var in varList)
-			if (int2DListDic.TryGetValue(var.Name, out List<long[]> value))
+			if (int2DListDic.TryGetValue(var.Name, out List<long[]>? value))
 				copyListToArray2D(value, (long[,])var.GetArray());
 
 		varList = userDefinedSaveVarList[i]; i++;
 		foreach (UserDefinedVariableToken var in varList)
-			if (str3DListDic.TryGetValue(var.Name, out List<List<string[]>> value))
+			if (str3DListDic.TryGetValue(var.Name, out List<List<string[]>>? value))
 				copyListToArray3D(value, (string[,,])var.GetArray());
 
 		varList = userDefinedSaveVarList[i];// i++;
 		foreach (UserDefinedVariableToken var in varList)
-			if (int3DListDic.TryGetValue(var.Name, out List<List<long[]>> value))
+			if (int3DListDic.TryGetValue(var.Name, out List<List<long[]>>? value))
 				copyListToArray3D(value, (long[,,])var.GetArray());
 	}
 
-	private static void copyListToArray<T>(List<T> srcList, T[] destArray)
+	private static void copyListToArray<T>(IReadOnlyList<T> srcList, T[] destArray)
 	{
 		int count = Math.Min(srcList.Count, destArray.Length);
 		for (int i = 0; i < count; i++)
@@ -883,7 +885,7 @@ internal sealed partial class VariableData : IDisposable
 		}
 	}
 
-	private static void copyListToArray2D<T>(List<T[]> srcList, T[,] destArray)
+	private static void copyListToArray2D<T>(IReadOnlyList<T[]> srcList, T[,] destArray)
 	{
 		int countX = Math.Min(srcList.Count, destArray.GetLength(0));
 		int dLength = destArray.GetLength(1);
@@ -897,14 +899,14 @@ internal sealed partial class VariableData : IDisposable
 			}
 		}
 	}
-	private static void copyListToArray3D<T>(List<List<T[]>> srcList, T[,,] destArray)
+	private static void copyListToArray3D<T>(IReadOnlyList<IReadOnlyList<T[]>> srcList, T[,,] destArray)
 	{
 		int countX = Math.Min(srcList.Count, destArray.GetLength(0));
 		int dLength1 = destArray.GetLength(1);
 		int dLength2 = destArray.GetLength(2);
 		for (int x = 0; x < countX; x++)
 		{
-			List<T[]> srcArray = srcList[x];
+			IReadOnlyList<T[]> srcArray = srcList[x];
 			int countY = Math.Min(srcArray.Count, dLength1);
 			for (int y = 0; y < countY; y++)
 			{
@@ -966,32 +968,32 @@ internal sealed partial class VariableData : IDisposable
 		int i = 0;
 		varList = userDefinedGlobalSaveVarList[i]; i++;
 		foreach (UserDefinedVariableToken var in varList)
-			if (strListDic.TryGetValue(var.Name, out List<string> value))
+			if (strListDic.TryGetValue(var.Name, out List<string>? value))
 				copyListToArray(value, (string[])var.GetArray());
 
 		varList = userDefinedGlobalSaveVarList[i]; i++;
 		foreach (UserDefinedVariableToken var in varList)
-			if (intListDic.TryGetValue(var.Name, out List<long> value))
+			if (intListDic.TryGetValue(var.Name, out List<long>? value))
 				copyListToArray(value, (long[])var.GetArray());
 
 		varList = userDefinedGlobalSaveVarList[i]; i++;
 		foreach (UserDefinedVariableToken var in varList)
-			if (str2DListDic.TryGetValue(var.Name, out List<string[]> value))
+			if (str2DListDic.TryGetValue(var.Name, out List<string[]>? value))
 				copyListToArray2D(value, (string[,])var.GetArray());
 
 		varList = userDefinedGlobalSaveVarList[i]; i++;
 		foreach (UserDefinedVariableToken var in varList)
-			if (int2DListDic.TryGetValue(var.Name, out List<long[]> value))
+			if (int2DListDic.TryGetValue(var.Name, out List<long[]>? value))
 				copyListToArray2D(value, (long[,])var.GetArray());
 
 		varList = userDefinedGlobalSaveVarList[i]; i++;
 		foreach (UserDefinedVariableToken var in varList)
-			if (str3DListDic.TryGetValue(var.Name, out List<List<string[]>> value))
+			if (str3DListDic.TryGetValue(var.Name, out List<List<string[]>>? value))
 				copyListToArray3D(value, (string[,,])var.GetArray());
 
 		varList = userDefinedGlobalSaveVarList[i];// i++;
 		foreach (UserDefinedVariableToken var in varList)
-			if (int3DListDic.TryGetValue(var.Name, out List<List<long[]>> value))
+			if (int3DListDic.TryGetValue(var.Name, out List<List<long[]>>? value))
 				copyListToArray3D(value, (long[,,])var.GetArray());
 	}
 
@@ -1000,21 +1002,21 @@ internal sealed partial class VariableData : IDisposable
 	{
 		foreach (var key in GlobalStatic.ConstantData.GlobalSaveMaps)
 		{
-			if (DataStringMaps.TryGetValue(key, out Dictionary<string, string> value))
+			if (DataStringMaps.TryGetValue(key, out Dictionary<string, string>? value))
 			{
 				writer.WriteWithKey(key, value);
 			}
 		}
 		foreach (var key in GlobalStatic.ConstantData.GlobalSaveXmls)
 		{
-			if (DataXmlDocument.TryGetValue(key, out XmlDocument value))
+			if (DataXmlDocument.TryGetValue(key, out XmlDocument? value))
 			{
 				writer.WriteWithKey(key, value);
 			}
 		}
 		foreach (var key in GlobalStatic.ConstantData.GlobalSaveDTs)
 		{
-			if (DataDataTables.TryGetValue(key, out DataTable value))
+			if (DataDataTables.TryGetValue(key, out DataTable? value))
 			{
 				writer.WriteWithKey(key, value);
 			}
@@ -1024,21 +1026,21 @@ internal sealed partial class VariableData : IDisposable
 	{
 		foreach (var key in GlobalStatic.ConstantData.SaveMaps)
 		{
-			if (DataStringMaps.TryGetValue(key, out Dictionary<string, string> value))
+			if (DataStringMaps.TryGetValue(key, out Dictionary<string, string>? value))
 			{
 				writer.WriteWithKey(key, value);
 			}
 		}
 		foreach (var key in GlobalStatic.ConstantData.SaveXmls)
 		{
-			if (DataXmlDocument.TryGetValue(key, out XmlDocument value))
+			if (DataXmlDocument.TryGetValue(key, out XmlDocument? value))
 			{
 				writer.WriteWithKey(key, value);
 			}
 		}
 		foreach (var key in GlobalStatic.ConstantData.SaveDTs)
 		{
-			if (DataDataTables.TryGetValue(key, out DataTable value))
+			if (DataDataTables.TryGetValue(key, out DataTable? value))
 			{
 				writer.WriteWithKey(key, value);
 			}
@@ -1090,7 +1092,7 @@ internal sealed partial class VariableData : IDisposable
 	{
 		foreach (var key in GlobalStatic.ConstantData.SaveMaps)
 		{
-			if (DataStringMaps.TryGetValue(key, out Dictionary<string, string> value))
+			if (DataStringMaps.TryGetValue(key, out Dictionary<string, string>? value))
 			{
 				value.Clear();
 			}
@@ -1101,7 +1103,7 @@ internal sealed partial class VariableData : IDisposable
 		}
 		foreach (var key in GlobalStatic.ConstantData.SaveDTs)
 		{
-			if (DataDataTables.TryGetValue(key, out DataTable value))
+			if (DataDataTables.TryGetValue(key, out DataTable? value))
 			{
 				value.Clear();
 			}
@@ -1112,7 +1114,7 @@ internal sealed partial class VariableData : IDisposable
 	{
 		foreach (var key in GlobalStatic.ConstantData.GlobalSaveMaps)
 		{
-			if (DataStringMaps.TryGetValue(key, out Dictionary<string, string> value))
+			if (DataStringMaps.TryGetValue(key, out Dictionary<string, string>? value))
 			{
 				value.Clear();
 			}
@@ -1123,7 +1125,7 @@ internal sealed partial class VariableData : IDisposable
 		}
 		foreach (var key in GlobalStatic.ConstantData.GlobalSaveDTs)
 		{
-			if (DataDataTables.TryGetValue(key, out DataTable value))
+			if (DataDataTables.TryGetValue(key, out DataTable? value))
 			{
 				value.Clear();
 			}
@@ -1133,7 +1135,7 @@ internal sealed partial class VariableData : IDisposable
 	{
 		foreach (var key in GlobalStatic.ConstantData.StaticMaps)
 		{
-			if (DataStringMaps.TryGetValue(key, out Dictionary<string, string> value))
+			if (DataStringMaps.TryGetValue(key, out Dictionary<string, string>? value))
 			{
 				value.Clear();
 			}
@@ -1144,7 +1146,7 @@ internal sealed partial class VariableData : IDisposable
 		}
 		foreach (var key in GlobalStatic.ConstantData.StaticDTs)
 		{
-			if (DataDataTables.TryGetValue(key, out DataTable value))
+			if (DataDataTables.TryGetValue(key, out DataTable? value))
 			{
 				value.Clear();
 			}
@@ -1158,8 +1160,8 @@ internal sealed partial class VariableData : IDisposable
 	/// <param name="reader"></param>
 	public bool LoadVariableBinary(EraBinaryDataReader reader)
 	{
-		KeyValuePair<string, EraSaveDataType> nameAndType = reader.ReadVariableCode();
-		VariableToken vToken = null;
+		KeyValuePair<string?, EraSaveDataType> nameAndType = reader.ReadVariableCode();
+		VariableToken? vToken = null;
 		if (nameAndType.Key != null && !GlobalStatic.IdentifierDictionary.getVarTokenIsForbid(nameAndType.Key))
 			vToken = GlobalStatic.IdentifierDictionary.GetVariableToken(nameAndType.Key, null, false);
 		if (vToken != null && (vToken.IsCharacterData || vToken.IsConst || vToken.IsPrivate || vToken.IsLocal || vToken.IsCalc))
@@ -1204,13 +1206,13 @@ internal sealed partial class VariableData : IDisposable
 				if (vToken == null || !vToken.IsInteger || vToken.Dimension != 0)
 					reader.ReadInt();//該当変数なし、or型不一致なら読み捨てる
 				else
-					vToken.SetValue(reader.ReadInt(), null);
+					vToken.SetValue(reader.ReadInt(), null!);
 				break;
 			case EraSaveDataType.Str:
 				if (vToken == null || !vToken.IsString || vToken.Dimension != 0)
 					reader.ReadString();
 				else
-					vToken.SetValue(reader.ReadString(), null);
+					vToken.SetValue(reader.ReadString(), null!);
 				break;
 			case EraSaveDataType.IntArray:
 				if (vToken == null || !vToken.IsInteger || vToken.Dimension != 1)
@@ -1259,9 +1261,9 @@ internal sealed partial class VariableData : IDisposable
 	{
 		ClearLocalValue();
 		for (int i = 0; i < dataIntegerArray.Length; i++)
-			dataIntegerArray[i] = null;
+			dataIntegerArray[i] = null!;
 		for (int i = 0; i < dataStringArray.Length; i++)
-			dataStringArray[i] = null;
+			dataStringArray[i] = null!;
 		for (int i = 0; i < characterList.Count; i++)
 			characterList[i].Dispose();
 		characterList.Clear();

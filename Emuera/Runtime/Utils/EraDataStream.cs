@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -53,7 +54,7 @@ internal sealed class EraDataReader : IDisposable
 	{
 		if (reader == null)
 			throw new FileEE(trerror.InvalidStream.Text);
-		string str = reader.ReadLine();
+		string? str = reader.ReadLine();
 		if (str == null)
 			throw new FileEE(trerror.NoStrToRead.Text);
 		return str;
@@ -63,7 +64,7 @@ internal sealed class EraDataReader : IDisposable
 	{
 		if (reader == null)
 			throw new FileEE(trerror.InvalidStream.Text);
-		string str = reader.ReadLine();
+		string? str = reader.ReadLine();
 		if (str == null)
 			throw new FileEE(trerror.NoNumToRead.Text);
 		if (!long.TryParse(str, out long ret))
@@ -79,7 +80,7 @@ internal sealed class EraDataReader : IDisposable
 		if (array == null)
 			throw new FileEE(trerror.InvalidArray.Text);
 		int i = -1;
-		string str;
+		string? str;
 		while (true)
 		{
 			i++;
@@ -98,14 +99,14 @@ internal sealed class EraDataReader : IDisposable
 			array[i] = 0;
 	}
 
-	public void ReadStringArray(string[] array)
+	public void ReadStringArray(string?[] array)
 	{
 		if (reader == null)
 			throw new FileEE(trerror.InvalidStream.Text);
 		if (array == null)
 			throw new FileEE(trerror.InvalidArray.Text);
 		int i = -1;
-		string str;
+		string? str;
 		while (true)
 		{
 			i++;
@@ -134,7 +135,7 @@ internal sealed class EraDataReader : IDisposable
 			return false;
 		while (true)
 		{
-			string str = reader.ReadLine();
+			string? str = reader.ReadLine();
 			if (str == null)
 				return false;
 			if (str.Equals(EMU_1700_START, StringComparison.Ordinal))
@@ -170,7 +171,7 @@ internal sealed class EraDataReader : IDisposable
 		if (reader == null)
 			throw new FileEE(trerror.InvalidStream.Text);
 		Dictionary<string, string> strList = [];
-		string str;
+		string? str;
 		while (true)
 		{
 			str = reader.ReadLine();
@@ -194,7 +195,7 @@ internal sealed class EraDataReader : IDisposable
 		if (reader == null)
 			throw new FileEE(trerror.InvalidStream.Text);
 		Dictionary<string, long> intList = [];
-		string str;
+		string? str;
 		while (true)
 		{
 			str = reader.ReadLine();
@@ -221,7 +222,7 @@ internal sealed class EraDataReader : IDisposable
 		if (reader == null)
 			throw new FileEE(trerror.InvalidStream.Text);
 		Dictionary<string, List<long>> ret = [];
-		string str;
+		string? str;
 		while (true)
 		{
 			str = reader.ReadLine();
@@ -256,7 +257,7 @@ internal sealed class EraDataReader : IDisposable
 		if (reader == null)
 			throw new FileEE(trerror.InvalidStream.Text);
 		Dictionary<string, List<string>> ret = [];
-		string str;
+		string? str;
 		while (true)
 		{
 			str = reader.ReadLine();
@@ -291,7 +292,7 @@ internal sealed class EraDataReader : IDisposable
 		Dictionary<string, List<long[]>> ret = [];
 		if (emu_version < 1708)
 			return ret;
-		string str;
+		string? str;
 		while (true)
 		{
 			str = reader.ReadLine();
@@ -337,7 +338,7 @@ internal sealed class EraDataReader : IDisposable
 		Dictionary<string, List<string[]>> ret = [];
 		if (emu_version < 1708)
 			return ret;
-		string str;
+		string? str;
 		while (true)
 		{
 			str = reader.ReadLine();
@@ -359,7 +360,7 @@ internal sealed class EraDataReader : IDisposable
 		Dictionary<string, List<List<long[]>>> ret = [];
 		if (emu_version < 1729)
 			return ret;
-		string str;
+		string? str;
 		while (true)
 		{
 			str = reader.ReadLine();
@@ -388,7 +389,8 @@ internal sealed class EraDataReader : IDisposable
 						str = reader.ReadLine();
 						if (str == "}")
 							break;
-						if (str.Length == 0)
+						// A null line (EOF) is dereferenced as before; ! keeps the existing behavior
+						if (str!.Length == 0)
 						{
 							tokenList.Add([]);
 							continue;
@@ -416,7 +418,7 @@ internal sealed class EraDataReader : IDisposable
 		Dictionary<string, List<List<string[]>>> ret = [];
 		if (emu_version < 1729)
 			return ret;
-		string str;
+		string? str;
 		while (true)
 		{
 			str = reader.ReadLine();
@@ -440,8 +442,8 @@ internal sealed class EraDataReader : IDisposable
 			reader.Close();
 		else
 			file?.Close();
-		file = null;
-		reader = null;
+		file = null!;
+		reader = null!;
 	}
 
 	#endregion
@@ -483,7 +485,7 @@ internal sealed class EraDataWriter : IDisposable
 	}
 
 
-	public void Write(string str)
+	public void Write(string? str)
 	{
 		if (writer == null)
 			throw new FileEE(trerror.InvalidStream.Text);
@@ -508,7 +510,7 @@ internal sealed class EraDataWriter : IDisposable
 			writer.WriteLine(array[i].ToString());
 		writer.WriteLine(FINISHER);
 	}
-	public void Write(string[] array)
+	public void Write(string?[] array)
 	{
 		if (writer == null)
 			throw new FileEE(trerror.InvalidStream.Text);
@@ -553,7 +555,7 @@ internal sealed class EraDataWriter : IDisposable
 		writer.WriteLine(string.Format("{0}:{1}", key, value));
 	}
 
-	public void WriteExtended(string key, string value)
+	public void WriteExtended(string key, string? value)
 	{
 		if (writer == null)
 			throw new FileEE(trerror.InvalidStream.Text);
@@ -581,7 +583,7 @@ internal sealed class EraDataWriter : IDisposable
 			writer.WriteLine(array[i].ToString());
 		writer.WriteLine(FINISHER);
 	}
-	public void WriteExtended(string key, string[] array)
+	public void WriteExtended(string key, string?[] array)
 	{
 		if (writer == null)
 			throw new FileEE(trerror.InvalidStream.Text);
@@ -648,7 +650,7 @@ internal sealed class EraDataWriter : IDisposable
 		writer.WriteLine(FINISHER);
 	}
 
-	public void WriteExtended(string key, string[,] array2D)
+	public void WriteExtended(string key, string?[,] array2D)
 	{
 		throw new NotImplementedException(trerror.NotImplement.Text);
 	}
@@ -712,7 +714,7 @@ internal sealed class EraDataWriter : IDisposable
 		writer.WriteLine(FINISHER);
 	}
 
-	public void WriteExtended(string key, string[,,] array2D)
+	public void WriteExtended(string key, string?[,,] array2D)
 	{
 		throw new NotImplementedException(trerror.NotImplement.Text);
 	}
@@ -726,8 +728,8 @@ internal sealed class EraDataWriter : IDisposable
 			writer.Close();
 		else
 			file?.Close();
-		writer = null;
-		file = null;
+		writer = null!;
+		file = null!;
 	}
 
 	#endregion

@@ -1,4 +1,5 @@
-﻿using EnumsNET;
+﻿#nullable enable
+using EnumsNET;
 using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.Runtime.Script.Data;
 using MinorShift.Emuera.Runtime.Script.Statements;
@@ -6,6 +7,7 @@ using MinorShift.Emuera.Runtime.Script.Statements.Variable;
 using MinorShift.Emuera.Runtime.Utils;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 
 namespace MinorShift.Emuera.GameData.Variable;
@@ -98,7 +100,7 @@ internal abstract class VariableToken
 	//CodeEEにしているけど実際はExeEEかもしれない
 	public virtual long GetIntValue(ExpressionMediator exm, long[] arguments)
 	{ throw new CodeEE(string.Format(trerror.CallStrAsInt.Text, varName)); }
-	public virtual string GetStrValue(ExpressionMediator exm, long[] arguments)
+	public virtual string? GetStrValue(ExpressionMediator exm, long[] arguments)
 	{ throw new CodeEE(string.Format(trerror.CallIntAsStr.Text, varName)); }
 	public virtual void SetValue(long value, long[] arguments)
 	{ throw new CodeEE(string.Format(trerror.CallStrAsInt.Text, varName)); }
@@ -257,10 +259,12 @@ internal abstract class CharaVariableToken : VariableToken
 		IsPrivate = false;
 		CanRestructure = false;
 	}
-	protected int[] sizes;
+	// Null for user-defined chara variables until the derived constructor replaces it
+	protected int[]? sizes;
 	protected int totalSize;
 	public override int GetLength()
 	{
+		int[] sizes = this.sizes!;
 		if (sizes.Length == 1)
 			return sizes[0];
 		if (sizes.Length == 0)
@@ -269,6 +273,7 @@ internal abstract class CharaVariableToken : VariableToken
 	}
 	public override int GetLength(int dimension)
 	{
+		int[] sizes = this.sizes!;
 		if (sizes.Length == 0)
 			throw new CodeEE(string.Format(trerror.GetSize0DCharaVar.Text, varName));
 		if (dimension < sizes.Length)
@@ -277,6 +282,7 @@ internal abstract class CharaVariableToken : VariableToken
 	}
 	public override void CheckElement(long[] arguments, bool[] doCheck)
 	{
+		int[] sizes = this.sizes!;
 		if (doCheck[0] && ((arguments[0] < 0) || (arguments[0] >= varData.CharacterList.Count)))
 			throw new CodeEE(string.Format(trerror.OoRCharaVarArg.Text, varName, "1", arguments[0].ToString()));
 		if (doCheck.Length > 1 && sizes.Length > 0 && doCheck[1] && ((arguments[1] < 0) || (arguments[1] >= sizes[0])))
@@ -287,6 +293,7 @@ internal abstract class CharaVariableToken : VariableToken
 
 	public override void IsArrayRangeValid(long[] arguments, long index1, long index2, string funcName, long i1, long i2)
 	{
+		int[] sizes = this.sizes!;
 		CheckElement(arguments);
 		//CharacterData chara = varData.CharacterList[(int)arguments[0]];
 		if ((index1 < 0) || (index1 > sizes[0]))
@@ -299,7 +306,7 @@ internal abstract class CharaVariableToken : VariableToken
 internal abstract class UserDefinedVariableToken : VariableToken
 {
 	protected UserDefinedVariableToken(VariableCode varCode, UserDefinedVariableData data)
-		: base(varCode, null)
+		: base(varCode, null!)
 	{
 		varName = data.Name;
 		IsPrivate = data.Private;
@@ -430,8 +437,9 @@ internal abstract class ReferenceToken : UserDefinedVariableToken
 		arrayList = [];
 		IsForbid = false;
 	}
-	protected List<Array> arrayList;
-	protected Array array;
+	// Holds null while the reference is unset (ScopeIn/ScopeOut and SetRef drive it)
+	protected List<Array?> arrayList;
+	protected Array? array;
 
 	public override void SetDefault()
 	{//Defaultのセットは参照元がやるべき
@@ -467,9 +475,10 @@ internal abstract class ReferenceToken : UserDefinedVariableToken
 	public override void IsArrayRangeValid(long[] arguments, long index1, long index2, string funcName, long i1, long i2)
 	{
 		CheckElement(arguments);
-		if ((index1 < 0) || (index1 > array.GetLength(Dimension - 1)))
+		// CheckElement threw if the reference is unset
+		if ((index1 < 0) || (index1 > array!.GetLength(Dimension - 1)))
 			throw new CodeEE(string.Format(trerror.OoRInstructionArg.Text, funcName, i1.ToString(), index1.ToString(), varName));
-		if ((index2 < 0) || (index2 > array.GetLength(Dimension - 1)))
+		if ((index2 < 0) || (index2 > array!.GetLength(Dimension - 1)))
 			throw new CodeEE(string.Format(trerror.OoRInstructionArg.Text, funcName, i2.ToString(), index2.ToString(), varName));
 	}
 
@@ -511,7 +520,7 @@ internal abstract class ReferenceToken : UserDefinedVariableToken
 	/// </summary>
 	/// <param name="rother"></param>
 	/// <returns></returns>
-	public bool MatchType(VariableToken rother, bool allowChara, out string errMes)
+	public bool MatchType(VariableToken? rother, bool allowChara, out string errMes)
 	{
 		errMes = "";
 		if (rother == null)
@@ -798,8 +807,8 @@ internal sealed partial class VariableData
 			array = varData.DataString;
 			IsForbid = array.Length == 0;
 		}
-		string[] array;
-		public override string GetStrValue(ExpressionMediator exm, long[] arguments)
+		string?[] array;
+		public override string? GetStrValue(ExpressionMediator exm, long[] arguments)
 		{
 			return array[VarCodeInt];
 		}
@@ -825,8 +834,8 @@ internal sealed partial class VariableData
 			array = varData.DataStringArray[VarCodeInt];
 			IsForbid = array.Length == 0;
 		}
-		string[] array;
-		public override string GetStrValue(ExpressionMediator exm, long[] arguments)
+		string?[] array;
+		public override string? GetStrValue(ExpressionMediator exm, long[] arguments)
 		{
 			return array[arguments[0]];
 		}
@@ -968,7 +977,7 @@ internal sealed partial class VariableData
 		{
 			CanRestructure = false;
 		}
-		public override string GetStrValue(ExpressionMediator exm, long[] arguments)
+		public override string? GetStrValue(ExpressionMediator exm, long[] arguments)
 		{
 			CharacterData chara = varData.CharacterList[(int)arguments[0]];
 			return chara.DataString[VarCodeInt];
@@ -997,7 +1006,7 @@ internal sealed partial class VariableData
 		{
 			CanRestructure = false;
 		}
-		public override string GetStrValue(ExpressionMediator exm, long[] arguments)
+		public override string? GetStrValue(ExpressionMediator exm, long[] arguments)
 		{
 			CharacterData chara = varData.CharacterList[(int)arguments[0]];
 			return chara.DataStringArray[VarCodeInt][arguments[1]];
@@ -1012,7 +1021,7 @@ internal sealed partial class VariableData
 		public override void SetValue(string[] values, long[] arguments)
 		{
 			CharacterData chara = varData.CharacterList[(int)arguments[0]];
-			string[] array = chara.DataStringArray[VarCodeInt];
+			string?[] array = chara.DataStringArray[VarCodeInt];
 			int start = (int)arguments[1];
 			int end = start + values.Length;
 			for (int i = start; i < end; i++)
@@ -1194,8 +1203,8 @@ internal sealed partial class VariableData
 			IsForbid = array.Length == 0;
 		}
 
-		string[] array;
-		public override string GetStrValue(ExpressionMediator exm, long[] arguments)
+		string?[] array;
+		public override string? GetStrValue(ExpressionMediator exm, long[] arguments)
 		{
 			return array[arguments[0]];
 		}
@@ -1522,7 +1531,7 @@ internal sealed partial class VariableData
 			: base(varCode, varData, subId, size)
 		{
 		}
-		long[] array;
+		long[]? array;
 
 		public override void SetDefault()
 		{
@@ -1590,7 +1599,7 @@ internal sealed partial class VariableData
 			: base(varCode, varData, subId, size)
 		{
 		}
-		string[] array;
+		string[]? array;
 		public override void SetDefault()
 		{
 			if (array != null)
@@ -1664,8 +1673,9 @@ internal sealed partial class VariableData
 			//	Array.Copy(defArray, array, defArray.Length);
 		}
 		int length;
-		long[] array;
+		long[]? array;
 		long[] defArray;
+		[MemberNotNull(nameof(array))]
 		void IfNullInitArray()
 		{
 			if (array == null)
@@ -1738,8 +1748,9 @@ internal sealed partial class VariableData
 			//array = new Int64[sizes[0], sizes[1]];
 		}
 		(int x, int y) size = (0, 0);
-		long[,] array;
+		long[,]? array;
 
+		[MemberNotNull(nameof(array))]
 		void IfNullInitArray()
 		{
 			array ??= new long[sizes[0], sizes[1]];
@@ -1806,7 +1817,8 @@ internal sealed partial class VariableData
 			//array = new Int64[sizes[0], sizes[1], sizes[2]];
 		}
 		(int x, int y, int z) size = (0, 0, 0);
-		long[,,] array;
+		long[,,]? array;
+		[MemberNotNull(nameof(array))]
 		void IfNullInitArray()
 		{
 			array ??= new long[sizes[0], sizes[1], sizes[2]];
@@ -1876,9 +1888,10 @@ internal sealed partial class VariableData
 			//	Array.Copy(defArray, array, defArray.Length);
 		}
 		int length;
-		string[] array;
+		string[]? array;
 		string[] defArray;
 
+		[MemberNotNull(nameof(array))]
 		void IfNullInitArray()
 		{
 			if (array == null)
@@ -1946,9 +1959,10 @@ internal sealed partial class VariableData
 			IsStatic = true;
 			//array = new string[sizes[0], sizes[1]];
 		}
-		string[,] array;
+		string[,]? array;
 		(int x, int y) size;
 
+		[MemberNotNull(nameof(array))]
 		void IfNullInitArray()
 		{
 			if (array == null)
@@ -2011,9 +2025,10 @@ internal sealed partial class VariableData
 			IsStatic = true;
 			//array = new string[sizes[0], sizes[1], sizes[2]];
 		}
-		string[,,] array;
+		string[,,]? array;
 		(int x, int y, int z) size;
 
+		[MemberNotNull(nameof(array))]
 		void IfNullInitArray()
 		{
 			if (array == null)
@@ -2079,7 +2094,7 @@ internal sealed partial class VariableData
 			defArray = data.DefaultInt;
 		}
 		readonly Stack<long[]> arrayStack;
-		long[] array;
+		long[] array = null!;
 		long[] defArray;
 		//int counter = 0;
 		public override void SetDefault()
@@ -2132,7 +2147,7 @@ internal sealed partial class VariableData
 				array = arrayStack.Pop();
 			}
 			else
-				array = null;
+				array = null!;
 		}
 	}
 	private sealed class PrivateInt2DVariableToken : UserDefinedVariableToken
@@ -2144,7 +2159,7 @@ internal sealed partial class VariableData
 			arrayStack = [];
 		}
 		readonly Stack<long[,]> arrayStack;
-		long[,] array;
+		long[,] array = null!;
 		//int counter = 0;
 		public override void SetDefault() { }
 		public override long GetIntValue(ExpressionMediator exm, long[] arguments)
@@ -2196,7 +2211,7 @@ internal sealed partial class VariableData
 				array = arrayStack.Pop();
 			}
 			else
-				array = null;
+				array = null!;
 		}
 	}
 	private sealed class PrivateInt3DVariableToken : UserDefinedVariableToken
@@ -2208,7 +2223,7 @@ internal sealed partial class VariableData
 			arrayStack = [];
 		}
 		readonly Stack<long[,,]> arrayStack;
-		long[,,] array;
+		long[,,] array = null!;
 		//int counter = 0;
 		public override void SetDefault() { }
 		public override long GetIntValue(ExpressionMediator exm, long[] arguments)
@@ -2263,7 +2278,7 @@ internal sealed partial class VariableData
 				array = arrayStack.Pop();
 			}
 			else
-				array = null;
+				array = null!;
 		}
 	}
 
@@ -2279,7 +2294,7 @@ internal sealed partial class VariableData
 		}
 		//int counter = 0;
 		readonly Stack<string[]> arrayStack;
-		string[] array;
+		string[] array = null!;
 		string[] defArray;
 		public override void SetDefault()
 		{
@@ -2333,7 +2348,7 @@ internal sealed partial class VariableData
 				array = arrayStack.Pop();
 			}
 			else
-				array = null;
+				array = null!;
 		}
 	}
 
@@ -2347,7 +2362,7 @@ internal sealed partial class VariableData
 		}
 		//int counter = 0;
 		readonly Stack<string[,]> arrayStack;
-		string[,] array;
+		string[,] array = null!;
 		public override void SetDefault()
 		{
 		}
@@ -2396,7 +2411,7 @@ internal sealed partial class VariableData
 				array = arrayStack.Pop();
 			}
 			else
-				array = null;
+				array = null!;
 		}
 	}
 
@@ -2411,7 +2426,7 @@ internal sealed partial class VariableData
 		}
 		//int counter = 0;
 		readonly Stack<string[,,]> arrayStack;
-		string[,,] array;
+		string[,,] array = null!;
 		public override void SetDefault() { }
 
 		public override string GetStrValue(ExpressionMediator exm, long[] arguments)
@@ -2460,7 +2475,7 @@ internal sealed partial class VariableData
 				array = arrayStack.Pop();
 			}
 			else
-				array = null;
+				array = null!;
 		}
 	}
 
@@ -2873,6 +2888,7 @@ internal sealed partial class VariableData
 		public override void SetValueAll(long value, int start, int end, int charaPos)
 		{
 			long[,] array = (long[,])GetArrayChara(charaPos);
+			int[] sizes = this.sizes!;
 			int a1 = sizes[0];
 			int a2 = sizes[1];
 			for (int i = 0; i < a1; i++)
@@ -2920,6 +2936,7 @@ internal sealed partial class VariableData
 		public override void SetValueAll(string value, int start, int end, int charaPos)
 		{
 			string[,] array = (string[,])GetArrayChara(charaPos);
+			int[] sizes = this.sizes!;
 			int a1 = sizes[0];
 			int a2 = sizes[1];
 			for (int i = 0; i < a1; i++)

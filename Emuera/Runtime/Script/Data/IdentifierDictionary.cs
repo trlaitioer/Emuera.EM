@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.GameData.Function;
+﻿#nullable enable
+using MinorShift.Emuera.GameData.Function;
 using MinorShift.Emuera.GameData.Variable;
 using MinorShift.Emuera.GameProc.Function;
 using MinorShift.Emuera.Runtime.Config;
@@ -456,16 +457,16 @@ internal partial class IdentifierDictionary
 		return macroDic.Count > 0;
 	}
 
-	public DefineMacro GetMacro(string key)
+	public DefineMacro? GetMacro(string key)
 	{
 		if (macroDic.TryGetValue(key, out var value))
 			return value;
 		return null;
 	}
 
-	public VariableToken GetVariableToken(string key, string subKey, bool allowPrivate)
+	public VariableToken? GetVariableToken(string key, string? subKey, bool allowPrivate)
 	{
-		VariableToken ret;
+		VariableToken? ret;
 		//if (Config.Config.IgnoreCase)
 		//	key = key.ToUpper();
 		if (allowPrivate)
@@ -482,7 +483,7 @@ internal partial class IdentifierDictionary
 				}
 			}
 		}
-		if (localvarTokenDic.TryGetValue(key, out VariableLocal value))
+		if (localvarTokenDic.TryGetValue(key, out VariableLocal? value))
 		{
 			if (value.IsForbid)
 			{
@@ -500,7 +501,9 @@ internal partial class IdentifierDictionary
 			{
 				ParserMediator.Warn(treer.CannotRecommendCallLocalVar.Text, line, 1, false, false);
 			}
-			LocalVariableToken retLocal = value.GetNewVariableTokenIfAbsent(subKey, line.ParentLabelLine);
+			// Only the subKey-less path above proves a parent label exists; with an explicit subKey the
+			// dereference inside keeps its previous behavior
+			LocalVariableToken retLocal = value.GetNewVariableTokenIfAbsent(subKey, line.ParentLabelLine!);
 			return retLocal;
 		}
 		if (varTokenDic.TryGetValue(key, out ret))
@@ -523,14 +526,14 @@ internal partial class IdentifierDictionary
 		return null;
 	}
 
-	public FunctionIdentifier GetFunctionIdentifier(string str)
+	public FunctionIdentifier? GetFunctionIdentifier(string str)
 	{
 		string key = str;
 		if (string.IsNullOrEmpty(key))
 			return null;
 		if (Config.IgnoreCase)
 			key = key.ToUpper();
-		if (instructionDic.TryGetValue(key, out FunctionIdentifier ret))
+		if (instructionDic.TryGetValue(key, out FunctionIdentifier? ret))
 			return ret;
 		else
 			return null;
@@ -551,26 +554,26 @@ internal partial class IdentifierDictionary
 		return list;
 	}
 
-	public UserDefinedRefMethod GetRefMethod(string codeStr)
+	public UserDefinedRefMethod? GetRefMethod(string codeStr)
 	{
-		if (refmethodDic.TryGetValue(codeStr, out UserDefinedRefMethod value))
+		if (refmethodDic.TryGetValue(codeStr, out UserDefinedRefMethod? value))
 			return value;
 		return null;
 	}
 
-	public AExpression GetFunctionMethod(LabelDictionary labelDic, string codeStr, List<AExpression?> arguments, bool userDefinedOnly)
+	public AExpression? GetFunctionMethod(LabelDictionary? labelDic, string codeStr, List<AExpression?> arguments, bool userDefinedOnly)
 	{
 		//if (Config.Config.IgnoreCase)
 		//	codeStr = codeStr.ToUpper();
 		if (arguments == null)//引数なし、名前のみの探索
 		{
-			if (refmethodDic.TryGetValue(codeStr, out UserDefinedRefMethod value))
+			if (refmethodDic.TryGetValue(codeStr, out UserDefinedRefMethod? value))
 				return new UserDefinedRefMethodNoArgTerm(value);
 			return null;
 		}
 		if ((labelDic != null) && labelDic.Initialized)
 		{
-			if (refmethodDic.TryGetValue(codeStr, out UserDefinedRefMethod value))
+			if (refmethodDic.TryGetValue(codeStr, out UserDefinedRefMethod? value))
 				return new UserDefinedRefMethodTerm(value, arguments);
 			FunctionLabelLine func = labelDic.GetNonEventLabel(codeStr);
 			if (func != null)
@@ -589,12 +592,12 @@ internal partial class IdentifierDictionary
 				}
 				//1.721 #FUNCTIONが定義されていない関数は組み込み関数を上書きしない方向に。 PANCTION.ERBのRANDとか。
 				if (!methodDic.ContainsKey(codeStr))
-					throw new CodeEE(string.Format(treer.UsedNonMethodFunc.Text, func.Position.Value.Filename, func.Position.Value.LineNo));
+					throw new CodeEE(string.Format(treer.UsedNonMethodFunc.Text, func.Position!.Value.Filename, func.Position!.Value.LineNo));
 			}
 		}
 		if (userDefinedOnly)
 			return null;
-		if (!methodDic.TryGetValue(codeStr, out FunctionMethod method))
+		if (!methodDic.TryGetValue(codeStr, out FunctionMethod? method))
 			return null;
 		string errmes = method.CheckArgumentType(codeStr, arguments);
 		if (errmes != null)
@@ -673,9 +676,9 @@ internal partial class IdentifierDictionary
 	}
 	public bool getVarTokenIsForbid(string key)
 	{
-		if (localvarTokenDic.TryGetValue(key, out VariableLocal value))
+		if (localvarTokenDic.TryGetValue(key, out VariableLocal? value))
 			return value.IsForbid;
-		varTokenDic.TryGetValue(key, out VariableToken var);
+		varTokenDic.TryGetValue(key, out VariableToken? var);
 		if (var != null)
 			return var.IsForbid;
 		return true;

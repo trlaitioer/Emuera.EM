@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -82,9 +83,10 @@ internal abstract class EraBinaryDataReader : IDisposable
 		version = ver;
 		data = buf;
 	}
-	protected BinaryReader reader;
+	// Assigned by the protected constructor; nulled only by Dispose
+	protected BinaryReader reader = null!;
 	protected readonly int version;
-	protected readonly uint[] data;
+	protected readonly uint[] data = null!;
 
 	public abstract int ReaderVersion { get; }
 	/// <summary>
@@ -95,7 +97,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 	/// <returns></returns>
 	#region EM_私家版_セーブ圧縮
 	//public static EraBinaryDataReader CreateReader(FileStream fs)
-	public static EraBinaryDataReader CreateReader(Stream fs)
+	public static EraBinaryDataReader? CreateReader(Stream fs)
 	#endregion
 	{
 		try
@@ -163,19 +165,19 @@ internal abstract class EraBinaryDataReader : IDisposable
 	#endregion
 	public abstract string ReadString();
 	public abstract long ReadInt();
-	public abstract void ReadIntArray(long[] refArray, bool needInit);
-	public abstract void ReadIntArray2D(long[,] refArray, bool needInit);
-	public abstract void ReadIntArray3D(long[,,] refArray, bool needInit);
-	public abstract void ReadStrArray(string[] refArray, bool needInit);
-	public abstract void ReadStrArray2D(string[,] refArray, bool needInit);
-	public abstract void ReadStrArray3D(string[,,] refArray, bool needInit);
-	public abstract KeyValuePair<string, EraSaveDataType> ReadVariableCode();
+	public abstract void ReadIntArray(long[]? refArray, bool needInit);
+	public abstract void ReadIntArray2D(long[,]? refArray, bool needInit);
+	public abstract void ReadIntArray3D(long[,,]? refArray, bool needInit);
+	public abstract void ReadStrArray(string?[]? refArray, bool needInit);
+	public abstract void ReadStrArray2D(string?[,]? refArray, bool needInit);
+	public abstract void ReadStrArray3D(string?[,,]? refArray, bool needInit);
+	public abstract KeyValuePair<string?, EraSaveDataType> ReadVariableCode();
 	#region IDisposable メンバ
 
 	public void Dispose()
 	{
 		reader?.Close();
-		reader = null;
+		reader = null!;
 	}
 
 	#endregion
@@ -254,16 +256,16 @@ internal abstract class EraBinaryDataReader : IDisposable
 		}
 		#endregion
 
-		public override KeyValuePair<string, EraSaveDataType> ReadVariableCode()
+		public override KeyValuePair<string?, EraSaveDataType> ReadVariableCode()
 		{
 			EraSaveDataType type = (EraSaveDataType)reader.ReadByte();
 			#region EM_私家版_セーブ拡張
 			//if (type == EraSaveDataType.EOC || type == EraSaveDataType.EOF || type == EraSaveDataType.Separator)
 			if (type == EraSaveDataType.EOC || type == EraSaveDataType.EOF || type == EraSaveDataType.Separator || type == EraSaveDataType.Map || type == EraSaveDataType.Xml || type == EraSaveDataType.DT)
-				return new KeyValuePair<string, EraSaveDataType>(null, type);
+				return new KeyValuePair<string?, EraSaveDataType>(null, type);
 			#endregion
 			string key = reader.ReadString();
-			return new KeyValuePair<string, EraSaveDataType>(key, type);
+			return new KeyValuePair<string?, EraSaveDataType>(key, type);
 		}
 
 		//配列じゃないやつは特殊処理
@@ -278,9 +280,9 @@ internal abstract class EraBinaryDataReader : IDisposable
 			return reader.ReadString();
 		}
 
-		public override void ReadIntArray(long[] refArray, bool needInit)
+		public override void ReadIntArray(long[]? refArray, bool needInit)
 		{
-			long[] oriArray = null;
+			long[]? oriArray = null;
 			byte b;
 			int x = 0;
 			int saveLength0 = reader.ReadInt32();
@@ -334,9 +336,9 @@ internal abstract class EraBinaryDataReader : IDisposable
 			}
 			return;
 		}
-		public override void ReadIntArray2D(long[,] refArray, bool needInit)
+		public override void ReadIntArray2D(long[,]? refArray, bool needInit)
 		{
-			long[,] oriArray = null;
+			long[,]? oriArray = null;
 			byte b;
 			int x = 0;
 			int y = 0;
@@ -426,9 +428,9 @@ internal abstract class EraBinaryDataReader : IDisposable
 		/// </summary>
 		/// <param name="refArray">データを書き出す先。読み捨てるならnull</param>
 		/// <param name="needInit">データがない部分を0で埋める必要があるか</param>
-		public override void ReadIntArray3D(long[,,] refArray, bool needInit)
+		public override void ReadIntArray3D(long[,,]? refArray, bool needInit)
 		{
-			long[,,] oriArray = null;
+			long[,,]? oriArray = null;
 			byte b;
 			int x = 0;
 			int y = 0;
@@ -553,9 +555,9 @@ internal abstract class EraBinaryDataReader : IDisposable
 			}
 			return;
 		}
-		public override void ReadStrArray(string[] refArray, bool needInit)
+		public override void ReadStrArray(string?[]? refArray, bool needInit)
 		{
-			string[] oriArray = null;
+			string?[]? oriArray = null;
 			byte b;
 			int x = 0;
 			int saveLength0 = reader.ReadInt32();
@@ -603,9 +605,9 @@ internal abstract class EraBinaryDataReader : IDisposable
 			}
 			return;
 		}
-		public override void ReadStrArray2D(string[,] refArray, bool needInit)
+		public override void ReadStrArray2D(string?[,]? refArray, bool needInit)
 		{
-			string[,] oriArray = null;
+			string?[,]? oriArray = null;
 			byte b;
 			int x = 0;
 			int y = 0;
@@ -684,9 +686,9 @@ internal abstract class EraBinaryDataReader : IDisposable
 			}
 			return;
 		}
-		public override void ReadStrArray3D(string[,,] refArray, bool needInit)
+		public override void ReadStrArray3D(string?[,,]? refArray, bool needInit)
 		{
-			string[,,] oriArray = null;
+			string?[,,]? oriArray = null;
 			byte b;
 			int x = 0;
 			int y = 0;

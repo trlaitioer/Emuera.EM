@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.GameData.Variable;
+﻿#nullable enable
+using MinorShift.Emuera.GameData.Variable;
 using MinorShift.Emuera.GameView;
 using MinorShift.Emuera.Runtime.Config.JSON;
 using MinorShift.Emuera.Runtime.Script.Data;
@@ -425,7 +426,7 @@ internal sealed class VariableEvaluator : IDisposable
 			{
 				idx[0] = p.Index1;
 				idx[1] = i;
-				string str = p.Identifier.GetStrValue(GlobalStatic.EMediator, idx);
+				string? str = p.Identifier.GetStrValue(GlobalStatic.EMediator, idx);
 				if (str == target || targetIsNullOrEmpty && string.IsNullOrEmpty(str))
 					ret++;
 			}
@@ -436,7 +437,7 @@ internal sealed class VariableEvaluator : IDisposable
 			for (int i = (int)start; i < (int)end; i++)
 			{
 				idx[0] = i;
-				string str = p.Identifier.GetStrValue(GlobalStatic.EMediator, idx);
+				string? str = p.Identifier.GetStrValue(GlobalStatic.EMediator, idx);
 				if (str == target || targetIsNullOrEmpty && string.IsNullOrEmpty(str))
 					ret++;
 			}
@@ -473,7 +474,7 @@ internal sealed class VariableEvaluator : IDisposable
 			idx[0] = i;
 			idx[1] = p.Index2;
 			idx[2] = p.Index3;
-			string str = p.Identifier.GetStrValue(GlobalStatic.EMediator, idx);
+			string? str = p.Identifier.GetStrValue(GlobalStatic.EMediator, idx);
 			if (str == target || targetIsNullOrEmpty && string.IsNullOrEmpty(str))
 				ret++;
 		}
@@ -1034,7 +1035,7 @@ internal sealed class VariableEvaluator : IDisposable
 	public string GetHavingItemsString()
 	{
 		long[] array = ITEM;
-		string[] itemnames = ITEMNAME;
+		string?[] itemnames = ITEMNAME;
 		int length = Math.Min(array.Length, itemnames.Length);
 		int count = 0;
 		StringBuilder builder = new(100);
@@ -1079,7 +1080,7 @@ internal sealed class VariableEvaluator : IDisposable
 			throw new CodeEE(trerror.OoRCharaNum.Text);
 		CharacterData chara = varData.CharacterList[(int)target];
 		long[] array;
-		string[] arrayName;
+		string?[] arrayName;
 		int i;
 		switch (func)
 		{
@@ -1157,7 +1158,7 @@ internal sealed class VariableEvaluator : IDisposable
 		return builder.ToString();
 	}
 
-	public string GetCharacterParamString(long target, int paramCode)
+	public string? GetCharacterParamString(long target, int paramCode)
 	{
 		if (target < 0 || target >= varData.CharacterList.Count)
 			throw new CodeEE(trerror.OoRCharaNum.Text);
@@ -1167,7 +1168,7 @@ internal sealed class VariableEvaluator : IDisposable
 		CharacterData chara = varData.CharacterList[(int)target];
 		long param = chara.DataIntegerArray[(int)(VariableCode.PALAM & VariableCode.__LOWERCASE__)][paramCode];
 		long[] paramlv = varData.DataIntegerArray[(int)(VariableCode.PALAMLV & VariableCode.__LOWERCASE__)];
-		string paramName = constant.GetCsvNameList(VariableCode.PALAMNAME)[paramCode];
+		string? paramName = constant.GetCsvNameList(VariableCode.PALAMNAME)[paramCode];
 		if (param == 0 && string.IsNullOrEmpty(paramName))
 			return null;
 		if (paramName == null)
@@ -1211,7 +1212,7 @@ internal sealed class VariableEvaluator : IDisposable
 
 	public void AddCharacter(long charaTmplNo)
 	{
-		CharacterTemplate tmpl = constant.GetCharacterTemplate(charaTmplNo);
+		CharacterTemplate? tmpl = constant.GetCharacterTemplate(charaTmplNo);
 		if (tmpl == null)
 			throw new CodeEE(trerror.AddedUndefinedChara.Text);
 		CharacterData chara = new(constant, tmpl, varData);
@@ -1220,7 +1221,7 @@ internal sealed class VariableEvaluator : IDisposable
 
 	public void AddCharacter_UseSp(long charaTmplNo, bool isSp)
 	{
-		CharacterTemplate tmpl = constant.GetCharacterTemplate_UseSp(charaTmplNo, isSp);
+		CharacterTemplate? tmpl = constant.GetCharacterTemplate_UseSp(charaTmplNo, isSp);
 		if (tmpl == null)
 			throw new CodeEE(trerror.AddedUndefinedChara.Text);
 		CharacterData chara = new(constant, tmpl, varData);
@@ -1229,7 +1230,7 @@ internal sealed class VariableEvaluator : IDisposable
 
 	public void AddCharacterFromCsvNo(long CsvNo)
 	{
-		CharacterTemplate tmpl = constant.GetCharacterTemplateFromCsvNo(CsvNo);
+		CharacterTemplate? tmpl = constant.GetCharacterTemplateFromCsvNo(CsvNo);
 		if (tmpl == null)
 			//throw new CodeEE("定義していないキャラクタを作成しようとしました");
 			tmpl = constant.GetPseudoChara();
@@ -1380,9 +1381,9 @@ internal sealed class VariableEvaluator : IDisposable
 			sortorder = SortOrder.ASCENDING;
 		if (sortkey == null)
 			sortkey = GlobalStatic.VariableData.GetSystemVariableToken("NO");
-		CharacterData masterChara = null;
-		CharacterData targetChara = null;
-		CharacterData assiChara = null;
+		CharacterData? masterChara = null;
+		CharacterData? targetChara = null;
+		CharacterData? assiChara = null;
 		if (MASTER >= 0 && MASTER < varData.CharacterList.Count)
 			masterChara = varData.CharacterList[(int)MASTER];
 		if (TARGET >= 0 && TARGET < varData.CharacterList.Count)
@@ -1525,7 +1526,7 @@ internal sealed class VariableEvaluator : IDisposable
 	public long ExistCsv(long charaNo, bool getSp)
 	{
 		//SPキャラ廃止に伴う問題は呼び出し元で処理
-		CharacterTemplate tmpl = constant.GetCharacterTemplate_UseSp(charaNo, getSp);
+		CharacterTemplate? tmpl = constant.GetCharacterTemplate_UseSp(charaNo, getSp);
 		if (tmpl == null)
 			return 0;
 		else
@@ -1535,7 +1536,7 @@ internal sealed class VariableEvaluator : IDisposable
 	public string GetCharacterStrfromCSVData(long charaTmplNo, CharacterStrData type, bool isSp, long arg2Long)
 	{
 		//SPキャラ廃止に伴う問題は呼び出し元で処理
-		CharacterTemplate tmpl = constant.GetCharacterTemplate_UseSp(charaTmplNo, isSp);
+		CharacterTemplate? tmpl = constant.GetCharacterTemplate_UseSp(charaTmplNo, isSp);
 		if (tmpl == null)
 			throw new CodeEE(trerror.RefUndefinedChara.Text);
 		int arg2 = (int)arg2Long;
@@ -1566,7 +1567,7 @@ internal sealed class VariableEvaluator : IDisposable
 				{
 					if (arg2 >= tmpl.ArrayStrLength(CharacterStrData.CSTR) || arg2 < 0)
 						throw new CodeEE(trerror.OoRCstr.Text);
-					if (tmpl.CStr.TryGetValue(arg2, out string ret))
+					if (tmpl.CStr.TryGetValue(arg2, out string? ret))
 						return ret;
 					else
 						return "";
@@ -1581,7 +1582,7 @@ internal sealed class VariableEvaluator : IDisposable
 	public long GetCharacterIntfromCSVData(long charaTmplNo, CharacterIntData type, bool isSp, long arg2Long)
 	{
 		//SPキャラ廃止に伴う問題は呼び出し元で処理
-		CharacterTemplate tmpl = constant.GetCharacterTemplate_UseSp(charaTmplNo, isSp);
+		CharacterTemplate? tmpl = constant.GetCharacterTemplate_UseSp(charaTmplNo, isSp);
 		if (tmpl == null)
 			throw new CodeEE(trerror.RefUndefinedChara.Text);
 		if (arg2Long >= tmpl.ArrayLength(type) || arg2Long < 0)
@@ -1622,7 +1623,7 @@ internal sealed class VariableEvaluator : IDisposable
 		PREVCOM = -1;
 		NEXTCOM = -1;
 		long[] array;
-		string[] sarray;
+		string?[] sarray;
 		array = varData.DataIntegerArray[(int)(VariableCode.TFLAG & VariableCode.__LOWERCASE__)];
 		for (int i = 0; i < array.Length; i++)
 			array[i] = 0;
@@ -1722,7 +1723,7 @@ internal sealed class VariableEvaluator : IDisposable
 	public void UpdateInUpcheck(EmueraConsole window, bool skipPrint)
 	{
 		long[] up, down, param;
-		string[] paramname = constant.GetCsvNameList(VariableCode.PALAMNAME);
+		string?[] paramname = constant.GetCsvNameList(VariableCode.PALAMNAME);
 		up = varData.DataIntegerArray[(int)(VariableCode.UP & VariableCode.__LOWERCASE__)];
 		down = varData.DataIntegerArray[(int)(VariableCode.DOWN & VariableCode.__LOWERCASE__)];
 		long target = TARGET;
@@ -1778,7 +1779,7 @@ internal sealed class VariableEvaluator : IDisposable
 	public void CUpdateInUpcheck(EmueraConsole window, long target, bool skipPrint)
 	{
 		long[] up, down, param;
-		string[] paramname = constant.GetCsvNameList(VariableCode.PALAMNAME);
+		string?[] paramname = constant.GetCsvNameList(VariableCode.PALAMNAME);
 		if (target < 0 || target >= varData.CharacterList.Count)
 			return;
 		CharacterData chara = varData.CharacterList[(int)target];
@@ -1881,7 +1882,7 @@ internal sealed class VariableEvaluator : IDisposable
 	public bool ItemSales(long itemNo)
 	{
 		long[] itemSales = ITEMSALES;
-		string[] itemNames = constant.GetCsvNameList(VariableCode.ITEMNAME);
+		string?[] itemNames = constant.GetCsvNameList(VariableCode.ITEMNAME);
 		if (itemNo < 0 || itemNo >= itemSales.Length || itemNo >= itemNames.Length)
 			return false;
 		int index = (int)itemNo;
@@ -1997,7 +1998,7 @@ internal sealed class VariableEvaluator : IDisposable
 	/// </summary>
 	/// <param name="datfilename"></param>
 	/// <returns>適切ならnull、不適切ならエラーメッセージ</returns>
-	public static string CheckDatFilename(string datfilename)
+	public static string? CheckDatFilename(string datfilename)
 	{
 		if (string.IsNullOrEmpty(datfilename))
 			return trerror.NothingFileName.Text;
@@ -2008,7 +2009,7 @@ internal sealed class VariableEvaluator : IDisposable
 
 	public EraDataResult CheckData(string savename, EraSaveFileType type)
 	{
-		string filename = null;
+		string? filename = null;
 		switch (type)
 		{
 			case EraSaveFileType.Normal:
@@ -2025,7 +2026,7 @@ internal sealed class VariableEvaluator : IDisposable
 
 	public EraDataResult CheckData(int saveIndex, EraSaveFileType type)
 	{
-		string filename = null;
+		string? filename = null;
 		switch (type)
 		{
 			case EraSaveFileType.Normal:
@@ -2040,7 +2041,7 @@ internal sealed class VariableEvaluator : IDisposable
 		return CheckDataByFilename(filename, type);
 	}
 
-	public EraDataResult CheckDataByFilename(string filename, EraSaveFileType type)
+	public EraDataResult CheckDataByFilename(string? filename, EraSaveFileType type)
 	{
 		EraDataResult result = new();
 		if (!File.Exists(filename))
@@ -2050,9 +2051,9 @@ internal sealed class VariableEvaluator : IDisposable
 			result.Version = 0;
 			return result;
 		}
-		FileStream fs = null;
-		EraBinaryDataReader bReader = null;
-		EraDataReader reader = null;
+		FileStream? fs = null;
+		EraBinaryDataReader? bReader = null;
+		EraDataReader? reader = null;
 		long version;
 		try
 		{
@@ -2186,8 +2187,8 @@ internal sealed class VariableEvaluator : IDisposable
 		CreateDatFolder();
 		CheckDatFilename(savename);
 		string filepath = getSaveDataPathC(savename);
-		EraBinaryDataWriter bWriter = null;
-		FileStream fs = null;
+		EraBinaryDataWriter? bWriter = null;
+		FileStream? fs = null;
 		try
 		{
 			Config.Config.CreateSavDir();
@@ -2226,8 +2227,8 @@ internal sealed class VariableEvaluator : IDisposable
 		RESULT = 0;
 		if (!File.Exists(filepath))
 			return;
-		EraBinaryDataReader bReader = null;
-		FileStream fs = null;
+		EraBinaryDataReader? bReader = null;
+		FileStream? fs = null;
 		try
 		{
 			List<CharacterData> addCharaList = [];
@@ -2273,8 +2274,8 @@ internal sealed class VariableEvaluator : IDisposable
 		CreateDatFolder();
 		CheckDatFilename(savename);
 		string filepath = getSaveDataPathV(savename);
-		EraBinaryDataWriter bWriter = null;
-		FileStream fs = null;
+		EraBinaryDataWriter? bWriter = null;
+		FileStream? fs = null;
 		try
 		{
 			Config.Config.CreateSavDir();
@@ -2311,8 +2312,8 @@ internal sealed class VariableEvaluator : IDisposable
 		RESULT = 0;
 		if (!File.Exists(filepath))
 			return;
-		EraBinaryDataReader bReader = null;
-		FileStream fs = null;
+		EraBinaryDataReader? bReader = null;
+		FileStream? fs = null;
 		try
 		{
 			fs = new FileStream(filepath, FileMode.Open, FileAccess.Read);
@@ -2458,9 +2459,9 @@ internal sealed class VariableEvaluator : IDisposable
 		string filepath = getSaveDataPathG();
 		if (!File.Exists(filepath))
 			return false;
-		EraDataReader reader = null;
-		EraBinaryDataReader bReader = null;
-		FileStream fs = null;
+		EraDataReader? reader = null;
+		EraBinaryDataReader? bReader = null;
+		FileStream? fs = null;
 		#region EM_LOADDATA、LOADGLOBAL、LOADDATA、LOADGLOBAL時にMAP,XML,DataTableを適切に削除するように
 		//DIM GLOVAL SAVEDATAにあたるデータだけが上書きされるらしい？
 		varData.RemoveEMGlobalData();
@@ -2572,9 +2573,9 @@ internal sealed class VariableEvaluator : IDisposable
 	public bool SaveTo(int saveIndex, string saveText)
 	{
 		string filepath = getSaveDataPath(saveIndex);
-		FileStream fs = null;
-		EraDataWriter writer = null;
-		EraBinaryDataWriter bWriter = null;
+		FileStream? fs = null;
+		EraDataWriter? writer = null;
+		EraBinaryDataWriter? bWriter = null;
 		try
 		{
 			Config.Config.CreateSavDir();
@@ -2677,14 +2678,14 @@ internal sealed class VariableEvaluator : IDisposable
 	{
 		get
 		{
-			string ret = varData.DataStringArray[(int)(VariableCode.RESULTS & VariableCode.__LOWERCASE__)][0];
+			string? ret = varData.DataStringArray[(int)(VariableCode.RESULTS & VariableCode.__LOWERCASE__)][0];
 			if (ret == null)
 				return "";
 			return ret;
 		}
 		set { varData.DataStringArray[(int)(VariableCode.RESULTS & VariableCode.__LOWERCASE__)][0] = value; }
 	}
-	public string[] RESULTS_ARRAY
+	public string?[] RESULTS_ARRAY
 	{
 		get { return varData.DataStringArray[(int)(VariableCode.RESULTS & VariableCode.__LOWERCASE__)]; }
 	}
@@ -2703,7 +2704,7 @@ internal sealed class VariableEvaluator : IDisposable
 		get { return varData.DataIntegerArray[(int)(VariableCode.SELECTCOM & VariableCode.__LOWERCASE__)][0]; }
 		set { varData.DataIntegerArray[(int)(VariableCode.SELECTCOM & VariableCode.__LOWERCASE__)][0] = value; }
 	}
-	public string[] ITEMNAME
+	public string?[] ITEMNAME
 	{
 		get { return constant.GetCsvNameList(VariableCode.ITEMNAME); }
 	}
@@ -2728,7 +2729,7 @@ internal sealed class VariableEvaluator : IDisposable
 		get { return varData.DataIntegerArray[(int)(VariableCode.RANDDATA & VariableCode.__LOWERCASE__)]; }
 	}
 
-	public string SAVEDATA_TEXT
+	public string? SAVEDATA_TEXT
 	{
 		get { return varData.DataString[(int)(VariableCode.SAVEDATA_TEXT & VariableCode.__LOWERCASE__)]; }
 		set { varData.DataString[(int)(VariableCode.SAVEDATA_TEXT & VariableCode.__LOWERCASE__)] = value; }
