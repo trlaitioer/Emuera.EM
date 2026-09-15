@@ -92,12 +92,7 @@ token 基类与变量侧:
 
 ### 票外签名改动
 
-本链对外的可空契约全部落在范围内文件;唯一触及票外文件的是 issues/07 两个文件里被本链契约带出的局部变量标注(方法体适配,不涉签名):
-
-| 文件(归属票) | 改动 | 原因 |
-| --- | --- | --- |
-| `Runtime/Script/Parser/LexicalAnalyzer.cs`(issues/07) | 两处 `DefineMacro macro` 局部改 `DefineMacro? macro`(宏展开与标识符读取路径) | `IdentifierDictionary.GetMacro` 改返回 `DefineMacro?` 后,已启用文件出现 CS8600;两处均已有 `macro == null` 分支 |
-| `Runtime/Script/Parser/LogicalLineParser.cs`(issues/07) | `ParseLine` 内 `FunctionIdentifier func` 局部改 `FunctionIdentifier? func` | 同上,`GetFunctionIdentifier` 改返回 `FunctionIdentifier?`;下一行即 `if (func != null)` |
+本链对外的可空契约全部落在范围内文件,不触及票外文件:本链给出的是返回可空与参数可空(`GetVariableToken`/`GetFunctionMethod`/`GetMacro`/`GetFunctionIdentifier`/`GetCharacterTemplate*`/`GetStrValue`),消费点的局部标注由消费票在各自文件启用时适配。
 
 ### 下游契约分发
 
@@ -134,6 +129,7 @@ token 基类与变量侧:
 
 - 逐文件/逐批:`#nullable enable` → `dotnet build Emuera/Emuera.csproj -c Debug-NAudio -p:Platform=x64 --no-incremental -p:Nullable=enable --nologo -v:minimal` → 清零该文件 CS86xx。改动只有 `?`/`!`/`null!`/`#nullable` 与注解,不得新增 `?.`、新增分支或删除既有判空。
 - 默认构建回归:同上但不加 `-p:Nullable=enable`,CS86xx 必须为 0。
+- 后端覆盖:按 spec.md 的完成标准,`Debug`(WMP,需用 VS 的 MSBuild 构建)另需确认 CS86xx 为 0。
 - 测试:`dotnet test Emuera.Tests/Emuera.Tests.csproj -c Debug-NAudio -p:Platform=x64`;本链由 `Runtime/Script/Statements/Variable/VariableParserTests.cs`、`Runtime/Script/Data/ConstantDataTests.cs` 覆盖,有测试支撑处以真检查替换 `!`。
 
 #### 实施结果(2026-09-15)

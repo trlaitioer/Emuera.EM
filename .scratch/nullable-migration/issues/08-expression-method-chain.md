@@ -67,7 +67,7 @@ Blocked by: 05, 06, 10
 
 | 文件(归属票) | 改动 | 原因 |
 | --- | --- | --- |
-| `Runtime/Script/Data/StrForm.cs`(issues/01,已启用) | `FormattedStringMethod.CheckArgumentType` override 返回改 `string?`;`FromWordToken` 内 `AExpression operand` 局部改 `AExpression?` | 跟随基类 `CheckArgumentType` 与 `ReduceExpressionTerm` 的可空契约 |
+| `Runtime/Script/Data/StrForm.cs`(issues/01 已废止;适配由 issues/05 承担) | `FormattedStringMethod.CheckArgumentType` override 返回改 `string?`;`FromWordToken` 内 `AExpression operand` 局部改 `AExpression?` | 跟随基类 `CheckArgumentType` 与 `ReduceExpressionTerm` 的可空契约 |
 | `Runtime/Script/Data/IdentifierDictionary.cs`(issues/10,已启用) | `GetFunctionMethod` 的 `arguments` 参数改 `List<AExpression?>?`(方法体本以 `arguments == null` 表达「仅按名检索」);`GetFunctionMethod` 内 `string errmes`、`UserDefinedMethodTerm.Create` 的结果局部改 `string?`/`AExpression?` | 跟随 `CheckArgumentType` 与 `UserDefinedMethodTerm.Create` 的返回契约 |
 | `Runtime/Script/Statements/ArgumentBuilder.cs`(issues/09) | `METHOD_ArgumentBuilder.CreateArgument` 的 `string errmes` 局部改 `string?` | 同上 |
 | `Runtime/Script/Statements/CaseExpression.cs`(issues/09) | `LeftTerm`/`RightTerm` 字段改 `AExpression?` | 该类自身以 `if (LeftTerm != null)` 表达未赋值,`ExpressionParser.reduceCaseExpression` 赋入的正是可能为 null 的 `reduceTerm` 结果 |
@@ -80,7 +80,7 @@ Blocked by: 05, 06, 10
 - issues/05:`List<AExpression>` → `List<AExpression?>` 已沿 `FunctionMethod` 6 个签名贯通至 override;本票消费其元素可空契约,527 条 `arguments[i]` 警告即其后果
 - issues/06:`ExpressionMediator` 的 exm 保持非空(19 处实参 `null!`),本票不重开该决策;`OperatorMethodManager` 的 4 处 `new FunctionMethodTerm(...)` 均在 `if (method != null)` 之后,实测零 CS86xx,其构造器契约归 issues/05
 - issues/06:`GlobalStatic`/`Config`/`Lang` 的「初始化前不可达即保持非空 + 声明处 `null!`」规则,适用于本票的 `FunctionMethod.Name`/`ReturnType` 与 `UserDefinedRefMethod` 四个属性
-- issues/07:`LogicalLine.Position`(`ScriptPosition?`,record struct)在 `Creator.Method.cs` 的 `GlobalStatic.Process.getCurrentLine.Position.Value` 处产生 1 条 CS8629,故 issues/07「08 不消费本票新增的可空签名」对本条不成立;本票以注解层 `!` 消化
+- issues/07:本票从本链新消费 1 条——`FunctionLabelLine.Arg` 改 `VariableTerm[]?` 后,`UserDefinedRefMethod.MatchType` 的 `label.Arg.Length` 出现 CS8602(+1),随本票该文件启用清零。`Creator.Method.cs` 中与 `LogicalLine.Position` 相关的 CS8629 在本链前后均为 2 条,非本链带入;该处按注解层 `!` 消化(见「开工时发现的问题」4)
 - issues/10:本链消费 `GetVariableToken → VariableToken?`、`GetFunctionMethod → AExpression?`、`GetMacro → DefineMacro?`、`ConstantData.GetCharacterTemplate* → CharacterTemplate?`、`VariableToken.GetStrValue → string?` 与字符串标量数组元素 `string?`;后两者是本票数组与局部标注的输入
 - issues/09:本票提供 `arguments` 元素可空的处理规则与 `FunctionMethod` 方法体适配口径,09 的 `ArgumentBuilder.cs`(本票后 403 条)、`Instraction.Child.cs`(259 条)、`CaseExpression.cs`(16 条)按同一规则消化
 
@@ -89,7 +89,8 @@ Blocked by: 05, 06, 10
 - 逐文件/逐批:`#nullable enable` → `dotnet build Emuera/Emuera.csproj -c Debug-NAudio -p:Platform=x64 --no-incremental -p:Nullable=enable --nologo -v:minimal` → 清零该文件 CS86xx(同一警告在内联与末尾汇总各出现一次,以 MSBuild 末尾汇总为准)
 - 默认构建回归:同上但不加 `-p:Nullable=enable`,CS86xx 必须为 0(已启用的 `StrForm.cs` 等不得因本票签名改动回归)
 - 测试:`dotnet test Emuera.Tests/Emuera.Tests.csproj -c Debug-NAudio -p:Platform=x64`;表达式侧由 `Runtime/Script/Data/StrFormTests.cs` 等覆盖,有测试支撑处以真检查替换 `!`
-- 改动只有 `?`/`!`/`null!`/`#nullable` 与注解,不得新增 `?.`、新增分支或删除既有判空(本票实测的两处例外见「实施结果」)
+- 改动只有 `?`/`!`/`null!`/`#nullable` 与注解,不得新增 `?.`、新增分支或删除既有判空
+- 后端覆盖:本票范围与 `Sound.*.cs` 无关,但按 spec.md 的完成标准,`Debug`(WMP,需用 VS 的 MSBuild 构建)另需确认 CS86xx 为 0
 
 #### 实施结果(2026-09-16)
 
@@ -99,7 +100,7 @@ Blocked by: 05, 06, 10
 - `dotnet test`(`Debug-NAudio`,x64)全通过:144/144。
 - `Emuera.Tests` 的 CS86xx 现为 19 条,清尾仍归 issues/03。
 - `!` 口径:`Creator.Method.cs` 新增 390 处、`OperatorMethod.cs` 71 处,依据是 `CheckArgumentType`/`CheckArgumentTypeEx` 已在类型检查阶段拒绝必填槽位的 null;省略槽位(`OmitStart` 之后)按方法体既有分支处理,未被一律断言。
-- 唯一非注解改动:`Creator.Method.cs` 的 ENUMFILES 方法类内把两个 `List.CopyTo` 换成逐元素拷贝(`VariableData.DataStringArray` 元素为 `string?`,BCL 的 `CopyTo` 不接受可空元素目标;截断长度与原先的 if/else 一致,口径同 issues/10 的 `copyListToArray*`);另有一处经确认的运行行为修正(`&&` → `||`),见下方既存问题 2。
+- 唯一非注解改动:`Creator.Method.cs` 的 ENUMFILES 方法类内把两个 `List.CopyTo` 换成逐元素拷贝(`VariableData.DataStringArray` 元素为 `string?`,BCL 的 `CopyTo` 不接受可空元素目标;截断长度与原先的 if/else 一致,口径同 issues/10 的 `copyListToArray*`)。
 
 下游落点(全量构建,按文件去重):
 
@@ -114,7 +115,7 @@ Blocked by: 05, 06, 10
 开工时发现的问题(2026-09-16 处置):
 
 1. `UserDefinedRefMethodTerm.Restructure` 直接解引用 `srcArgs[i]`,而同链的 `FunctionMethodTerm.Restructure` 对 null 元素 `continue`;省略实参的引用函数调用会 NRE。**已就地补 `TODO` 注释**,迁移期不改行为。
-2. `Creator.Method.cs` 的 SPRITEANIME 方法类内 `if (img == null && !img.IsCreated)`:`&&` 在 `img == null` 时仍求值右侧,现状即抛 NRE。**已按同文件其余精灵分支的口径(SPRITE 系为 `img == null || !img.IsCreated`)改为 `||`**,属本票唯一的运行行为变更(修正该分支本应返回 0 的路径)。
+2. `Creator.Method.cs` 的 SPRITEANIME 方法类内 `if (img == null && !img.IsCreated)`:`&&` 在 `img == null` 时仍求值右侧,现状即抛 NRE。该处按同文件其余精灵分支的口径(SPRITE 系为 `img == null || !img.IsCreated`)修正为 `||`,使精灵不存在时返回 0;**运行行为修正不并入本票的注解改动,已拆为独立提交**(`fix(script): 修正 SPRITEANIME 空精灵分支的判空条件`),本票按上述验收标准保持纯注解。
 3. `ExpressionMediator.ConvertStringType` 的 `Strings.StrConv` 返回 `string?`,现以 `!` 断言(唯一调用点按非空打印消费)。**已补 `TODO` 注释**。
 4. `Creator.Method.cs` 打印告警分支只判 `getCurrentLine != null`,未判 `Position`,现以 `!` 断言。**已补 `TODO` 注释**。
 

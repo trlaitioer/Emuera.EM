@@ -12,7 +12,7 @@ Status: implemented
    - 现状:`GetIntValue`/`GetStrValue`/`GetString` 等被以 `null` exm 调用(2026-09-15 实测 19 处:`ArgumentBuilder.cs` 14、`VariableEvaluator.cs` 4、`ExpressionParser.cs` 1;另有 `EvilMask/Lang.cs` 的反射取属性调用,与本契约无关)
    - 决策点:方法签名 exm 改 `ExpressionMediator?`,还是保持非空并修改调用点;影响面为所有 exm 传 null 的文件(含 issues/10 的 `VariableEvaluator.cs`)
    - **决策:保持 exm 非空,调用点以 `null!` 断言**。理由:这些调用点都在常量折叠/解析期路径上,接收方是 `SingleTerm`(`ArgumentBuilder` 各处以 `is SingleTerm` 前置判断)或 `FixedVariableTerm`(`VariableEvaluator.FindChara`/`FindCharaStr` 的 `fvp`,其 `VariableTerm` 不触碰 exm),不需要求值上下文;反之把参数改为 `ExpressionMediator?` 会让约 230 个 `FunctionMethod`/`AExpression` 实现(其中 `Creator.Method.cs` 118 处、`VariableToken.cs` 7 处确实解引用 exm)都变成"允许 null",把一个调用点断言扩散成全实现的判空负担
-   - 已改:上述 19 处的实参改 `null!`,不改变运行行为;`EvilMask/Lang.cs` 的 `GetValue(null, null)` 为反射 API,保持原样
+   - `EvilMask/Lang.cs` 的 `GetValue(null, null)` 为反射 API,不适用本契约,保持原样
 
 2. **GlobalStatic 字段契约**
    - 现状:字段在 `Reset()` 中置 null、随后按非空使用(Console、Process、ConstantData、VariableData、IdentifierDictionary 等),被 42 个文件引用
@@ -50,13 +50,4 @@ Status: implemented
 
 共享类型的可空契约由本票统一决定,避免各链簇票冲突标注;决策引入的新警告由对应链簇票消化。
 
-本票落地的声明改动:
-
-- `ExpressionMediator exm` 保持非空;19 处传 null 的实参改 `null!`(`ArgumentBuilder.cs` 14、`VariableEvaluator.cs` 4、`ExpressionParser.cs` 1)
-- `GlobalStatic.Reset()` 的 9 个字段赋值改 `null!`(字段声明保持非空)
-- `Config.nameDic` 声明处 `= null!`;`LangManager.lang`/`japanese` 声明处 `= null!`
-- `ConfigData` 的 8 个查找 API 返回类型改 `AConfigItem?`(两个 `GetItem` 的局部变量同步改)
-- `AConfigItem.Copy<T>` 返回 `ConfigItem<T>?`、参数 `ConfigItem<T>?`;`AConfigItem.TryParse` 与 `ConfigItem<T>.TryParse` 参数改 `string?`
-- `Lang.TranslatableString.tr` 改 `string?`
-
-已实测的连锁(全量构建 `-p:Nullable=enable`,本票改动前 2,427 条 → 改动后 2,547 条):减少来自 `null!` 断言与声明处初始化(`GlobalStatic.cs` −9、`ArgumentBuilder.cs` −14、`VariableEvaluator.cs` −4、`EvilMask/Lang.cs` −3、`LangManager.cs` −2、`ExpressionParser.cs` −1、`ConfigItem.cs` −1);增加集中在查找 API 变可空后的消费点(`ConfigDialog.cs` +137、`DebugConfigDialog.cs` +11、`ConfigData.cs` +10、`MainWindow.cs` +2),主要由 issues/12 在 UI 文件启用时消化。默认构建 CS86xx 仍为 0。
+实测(全量构建 `-p:Nullable=enable`,本票改动前 2,427 条 → 改动后 2,547 条):减少来自 `null!` 断言与声明处初始化(`GlobalStatic.cs` −9、`ArgumentBuilder.cs` −14、`VariableEvaluator.cs` −4、`EvilMask/Lang.cs` −3、`LangManager.cs` −2、`ExpressionParser.cs` −1、`ConfigItem.cs` −1);增加集中在查找 API 变可空后的消费点(`ConfigDialog.cs` +137、`DebugConfigDialog.cs` +11、`ConfigData.cs` +10、`MainWindow.cs` +2),主要由 issues/12 在 UI 文件启用时消化。默认构建 CS86xx 仍为 0。

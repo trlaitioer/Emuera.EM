@@ -10,8 +10,8 @@ Status: in-progress
 现状:
 
 - 项目级已改为 `<Nullable>annotations</Nullable>`(注解全局生效、流分析警告逐文件开启)
-- 已启用 `#nullable enable` 且无 CS86xx 警告:`Runtime/Script/Data/StrForm.cs`(本迁移样例,18 处 `null!` 中 11 处已替换;余 7 处为省略参数占位,贯通见 issues/05)、`Program.cs`、`UI/Game/StringStyle.cs`(后两者早于本迁移即已启用,见 git 历史)
-- 剩余文件有 CS86xx 警告:issues/05(元素可空贯通)与 issues/06(横切契约声明)落地前为 99 个文件、1,799 条,落地后为 99 个文件、2,547 条。增量是契约本身引入的、按票由下游消化:元素可空化暴露的 `arguments[i]` 解引用(issues/08/09/11)与 Config 查找 API 变可空后的消费点(issues/12);链簇票开工时须重新实测本链数字
+- 已启用 `#nullable enable` 且无 CS86xx 警告:`Runtime/Script/Data/StrForm.cs`(本迁移样例,18 处 `null!` 已全部消除,省略参数占位由 issues/05 贯通;该文件原记在 issues/01 名下,而 issues/01 已废止,适配由 issues/05 承担、收尾验收归 issues/03)、`Program.cs`、`UI/Game/StringStyle.cs`(后两者早于本迁移即已启用,见 git 历史)
+- 剩余文件有 CS86xx 警告:issues/05(元素可空贯通)与 issues/06(横切契约声明)落地前为 99 个文件、1,799 条,落地后为 99 个文件、2,547 条;链簇票 issues/07、10、08 落地后为 66 个文件、1,821 条(2026-09-16 实测,与各票记录一致)。增量是契约本身引入的、按票由下游消化:元素可空化暴露的 `arguments[i]` 解引用(issues/08/09/11)与 Config 查找 API 变可空后的消费点(issues/12);链簇票开工时须重新实测本链数字
 - CS86xx 之外尚有既有警告,不属于本迁移目标:CS8981(小写 alias 64 条,处理决策见 `.scratch/performance-optimization/issues/06-cs8981-alias.md`)、CS4014(`MainWindow.cs` 未 await 的 `ReloadPartialErb` 调用 1 条)、CA1069(13 条)、CA2208(4 条)、CA1806(2 条)、CA1816(1 条)、WFO0003(1 条)
 
 计数口径:以上数字为全量构建输出去重后的警告条数。复现命令:`dotnet build Emuera/Emuera.csproj -c Debug-NAudio -p:Platform=x64 --no-incremental -p:Nullable=enable`。同一条警告在输出中会于内联与末尾汇总各出现一次,直接数行会翻倍(MSBuild 末尾的汇总行给出总数);该配置只编译 NAudio 后端文件,`Runtime/Utils/Sound.WMP.cs` 未纳入统计。迁移期的默认构建(不加 `-p:Nullable=enable`)只覆盖已启用文件,其 CS86xx 应恒为 0。issues/01、issues/04 中标注 2026-08-29 实测的历史计数按当时口径记录(输出原始行数,含重复)。
@@ -41,6 +41,7 @@ Status: in-progress
 完成标准:
 
 - 全量构建(`-p:Nullable=enable`)CS86xx 警告为 0,并按两种声音后端配置分别确认(`Debug-NAudio` 与 `Debug`,后者需用 VS 的 MSBuild 构建)
+- `Emuera.Tests` 的 CS86xx 同样为 0(测试工程已全量 `enable`,由 issues/03 清尾)
 - csproj 恢复 `<Nullable>enable</Nullable>` 后构建通过(CS8981 等非 CS86xx 既有警告不在消除目标内,见现状)
 - 迁移前后运行行为一致(用真实 era 游戏目录验证)
 

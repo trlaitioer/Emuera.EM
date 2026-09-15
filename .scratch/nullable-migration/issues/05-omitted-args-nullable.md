@@ -39,6 +39,7 @@ StrForm 修订(issues/01)时确认:基类 `FunctionMethod` 以 `arguments[i] == 
 
 - **UDF 参数数组同批可空化**:`Process.CalledFunction.cs` 的 `UserDefinedFunctionArgument` 构造器与 `Arguments` 字段、`ConvertArg` 的 `convertedArg`/`term` 改 `AExpression?[]`/`AExpression?`。依据是该类 `SetTransporter`/`Restructure` 早已以 `Arguments[i] == null` 判空,省略实参经 `ConvertArg` 的默认值分支后确实可能保持 null
 - **例外**:`StrForm.Restructure` 内的 `List<AExpression> termList = [.. terms]` 收窄为可空会在 `terms = [.. termList]` 处产生 CS8601,而 `terms` 的元素由 `FromWordToken` 逐路径保证非空,故保持不变
-- **StrForm 适配口径**(唯一已启用文件,默认构建 CS86xx 保持 0):5 处省略参数占位与 2 个局部变量改 `null`(局部变量声明改 `AExpression?`/`SingleTerm?`);`FormatCurlyBrace`/`FormatPercent` 的宽度参数改为模式匹配取局部变量;`SingleIntFormTerm` 与各 `arguments[0]`(`FormatYenAt` 另含 `arguments[1]`/`arguments[2]`)以 `!` 断言非空,依据是这些槽位由 `FromWordToken` 构造、不可能省略
+- **StrForm 适配口径**(唯一已启用文件,默认构建 CS86xx 保持 0):5 处省略参数占位与 2 个局部变量改 `null`(局部变量声明改 `AExpression?`/`SingleTerm?`);`FormatCurlyBrace`/`FormatPercent` 的宽度参数改为模式匹配取局部变量;各 `arguments[0]`(`FormatYenAt` 另含 `arguments[1]`/`arguments[2]`)以 `!` 断言非空,依据是这些槽位由 `FromWordToken` 构造、不可能省略
+- **`SingleIntFormTerm` 返回契约**:无匹配形态时返回 `null`,故返回类型为 `AExpression?`;调用点 `CallformCache.longTerm`(`Argument.cs`,归 issues/09)本就以判空使用,字段同步标注为可空,全量构建下该处原有的 CS8618 一并消除。该改动在 issues/09 同步记录
 - **链外留待各票**:`Argument` 子类自身的参数数组(`SpTInputsArgument.Terms`、`SpDtColumnOptions.Values`、`BitArgument.Term` 等)按 issues/09"按构造路径核实后标注"处理,不在本票范围
 - 元素可空化使全量构建警告数上升(增量集中在链内未启用文件的 `arguments[i]` 解引用),各链簇票开工时须重新实测本链数字

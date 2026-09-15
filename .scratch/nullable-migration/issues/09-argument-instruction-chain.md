@@ -29,6 +29,12 @@ Blocked by: 05, 06
 - issues/05:`RowArgs`(SpCallFArgment/SpCallArgment/SpCallSharpArgment)与 `GetFunctionMethod` 9 个调用点(CALLF/CALLFORM/CALLFORMF/GETMETH 系)元素可空
 - issues/06:ExpressionMediator exm、Config/Lang/Sound/UI 打印类型的叶子契约
 
+### 上游对本票范围文件的签名改动
+
+| 文件 | 改动 | 来源 |
+| --- | --- | --- |
+| `Argument.cs` 的 `CallformCache.longTerm` | 字段改 `AExpression?` | `StrForm.SingleIntFormTerm` 以 `null` 表达无匹配形态,该字段本就以判空使用(见 issues/05 的 `SingleIntFormTerm` 返回契约) |
+
 执行顺序:建议在 08 之后——指令方法体大量消费表达式链产物(求值/Restructure),先有契约再清本票警告更省;UI 打印类型、Sound 本身的文件启用在 issues/12,本票只依赖其契约。
 
 ## 影响

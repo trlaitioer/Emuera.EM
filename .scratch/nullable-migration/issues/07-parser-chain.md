@@ -1,6 +1,6 @@
 # Nullable:解析链启用
 
-Status: implemented
+Status: in-progress
 
 ## 任务
 
@@ -85,7 +85,7 @@ issues/06 的 exm 非空决策在本票的落点是 `LogicalLineParser.ParseLine
 
 | 文件(归属票) | 改动 | 原因 |
 | --- | --- | --- |
-| `Runtime/Script/Data/StrForm.cs`(issues/01) | `FromWordToken` 中 `yenat.Words` 与 `SWT.Words` 两处取值改 `!` | `SubWord.Words` 变可空;后一处已在 `TripleSymbolSubWord` 分支之外,`CurlyBraceSubWord`/`PercentSubWord` 的 `Words` 恒非空,前一处 `YenAtSubWord` 的 `Words` 由 `AnalyseYenAt` 传入恒非空。`!` 只改注解,运行期仍走既有的 null 判断。不改则默认构建出现 CS86xx 回归 |
+| `Runtime/Script/Data/StrForm.cs`(issues/01 已废止;适配由 issues/05 承担) | `FromWordToken` 中 `yenat.Words` 与 `SWT.Words` 两处取值改 `!` | `SubWord.Words` 变可空;后一处已在 `TripleSymbolSubWord` 分支之外,`CurlyBraceSubWord`/`PercentSubWord` 的 `Words` 恒非空,前一处 `YenAtSubWord` 的 `Words` 由 `AnalyseYenAt` 传入恒非空。`!` 只改注解,运行期仍走既有的 null 判断。不改则默认构建出现 CS86xx 回归 |
 | `Runtime/Script/Statements/Argument.cs`(issues/09) | `StrAsignArgument` 的 `value` 参数与 `Value` 字段改 `string?` | `LogicalLineParser.ParseLine` 的 `VARS` 无初值分支以 `default` 传 null;`Instraction.Child` 的 `SetValue(arg.Value, ...)` 需相应适配 |
 | `Runtime/Utils/CharStream.cs`(issues/12) | 本票不启用 | 它是解析链的输入类型,但范围归 issues/12;本票期间它对 `LexicalAnalyzer` 是 nullable-oblivious,不影响本票清零 |
 
@@ -97,7 +97,7 @@ issues/06 的 exm 非空决策在本票的落点是 `LogicalLineParser.ParseLine
 | 10 | `EraStreamReader.ReadLine`/`ReadEnabledLine`(ConstantData、ConfigData 消费) |
 | 11 | `PopRowArgs`、`NextLine`/`ParentLabelLine`、`LogicalLineParser.ParseLine → LogicalLine?` 与 `ErbLoader.addLine` 的 null 返回、`EraStreamReader`(ErbLoader、ErhLoader、GameBase 消费) |
 | 12 | `LogicalLineParser.ParseLine → LogicalLine?`、其 `EmueraConsole?` 参数与 `FunctionLabelLine? parentLine` 参数(EmueraConsole、PluginManager 消费) |
-| 08 | 无新增可空消费点:`Word`/`SubWord` 家族签名不变,本链只为其提供注解 |
+| 08 | `FunctionLabelLine.Arg`/`Def` 改 `VariableTerm[]?`/`SingleTerm[]?`(消费点为 `UserDefinedRefMethod.MatchType` 的 `label.Arg.Length`) |
 
 ### 执行顺序与验收
 
@@ -117,8 +117,8 @@ issues/06 的 exm 非空决策在本票的落点是 `LogicalLineParser.ParseLine
 
 ## 影响
 
-本链产出的可空契约被下游票消费:09(InstructionLine 的参数表示与两个 `Pop*` 出口、`ReadSingleIdentifierWord`)、10(ConstantData/ConfigData 消费的 EraStreamReader)、11(ErbLoader/ErhLoader/GameBase 消费的 EraStreamReader 与 `PopRowArgs`、`LogicalLineParser.ParseLine`)、12(EmueraConsole/PluginManager 消费的 `LogicalLineParser.ParseLine`)。08 不消费本票新增的可空签名——`Word`/`SubWord` 家族的签名不变,其入边仍是 05/06/10。
+本链产出的可空契约被下游票消费:09(InstructionLine 的参数表示与两个 `Pop*` 出口、`ReadSingleIdentifierWord`)、10(ConstantData/ConfigData 消费的 EraStreamReader)、11(ErbLoader/ErhLoader/GameBase 消费的 EraStreamReader 与 `PopRowArgs`、`LogicalLineParser.ParseLine`)、12(EmueraConsole/PluginManager 消费的 `LogicalLineParser.ParseLine`)。08 消费本票 1 处可空签名:`FunctionLabelLine.Arg` 改 `VariableTerm[]?` 后 `UserDefinedRefMethod.MatchType` 的 `label.Arg.Length`(`Word`/`SubWord` 家族的签名不变)。
 
 `SubWord`/`YenAtSubWord` 可空字段(`Words`、`Right`)的消费点只有已启用的 `StrForm.cs` 一处,故本票的票外改动集中在 `StrForm.cs`;`Runtime/Utils/CharStream.cs` 归 issues/12,本票期间保持 nullable-oblivious。
 
-全量构建(`-p:Nullable=enable`)实测:本链 74 条清零,全库由 2,547 条升至 2,805 条,新增消费点的分布为 09(Instraction.Child +199、ArgumentBuilder +33)、11(Process.ScriptProc +75,Process 及其 State/CalledFunction、ErbLoader、ErhLoader、LabelDictionary、GameBase 合计 +11)、10(ConstantData +5、IdentifierDictionary +2)、12(ConfigData +3、PluginManager +3、KeyMacro +1、EmueraConsole +1)、08(UserDefinedRefMethod +1);默认构建的 CS86xx 保持 0。
+全量构建(`-p:Nullable=enable`)实测(2026-09-16 复核,于本票前后两次构建;按文件与警告文本去重):本链 74 条清零(`LogicalLine.cs` −32、`WordCollection.cs` −13、`LexicalAnalyzer.cs` −12、`EraStreamReader.cs` −9、`LogicalLineParser.cs` −7、`SubWord.cs` −1),全库由 2,547 条 / 99 个文件变为 2,805 条 / 92 个文件;新增消费点的分布为 09(Instraction.Child +199、ArgumentBuilder +33、Argument.cs −1、ArgumentParser.cs −1)、11(Process.ScriptProc +75,Process 及其 State/CalledFunction、ErbLoader、ErhLoader、LabelDictionary、GameBase 合计 +11)、10(ConstantData +5、IdentifierDictionary +2)、12(ConfigData +3、PluginManager +3、KeyMacro +1、EmueraConsole +1)、08(UserDefinedRefMethod.cs +1);合计 +334 − 2 − 74 = +258,与 2,547 → 2,805 一致;默认构建的 CS86xx 保持 0。
