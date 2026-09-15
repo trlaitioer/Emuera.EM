@@ -5,8 +5,8 @@ namespace MinorShift.Emuera.Runtime.Utils;
 //マルチ言語に対応可能な形式に変更
 internal static class LangManager
 {
-    static Encoding lang;
-    static Encoding japanese;
+    static Encoding lang = null!;
+    static Encoding japanese = null!;
 
     public static void setEncode(int code)
     {

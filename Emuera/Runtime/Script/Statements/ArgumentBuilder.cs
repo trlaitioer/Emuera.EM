@@ -908,7 +908,7 @@ internal static partial class ArgumentParser
 			if (funcname is SingleTerm)
 			{
 				ret.IsConst = true;
-				ret.ConstStr = funcname.GetStrValue(null);
+				ret.ConstStr = funcname.GetStrValue(null!);
 				if (string.IsNullOrEmpty(ret.ConstStr))
 				{
 					warn(trerror.NotSpecifiedFuncName.Text, line, 2, false);
@@ -970,7 +970,7 @@ internal static partial class ArgumentParser
 			if (funcname is SingleTerm)
 			{
 				ret.IsConst = true;
-				ret.ConstStr = funcname.GetStrValue(null);
+				ret.ConstStr = funcname.GetStrValue(null!);
 				if (ret.ConstStr == "")
 				{
 					warn(trerror.NotSpecifiedFuncName.Text, line, 2, false);
@@ -1089,7 +1089,7 @@ internal static partial class ArgumentParser
 						}
 						srcTerms[i] = srcTerms[i].Restructure(exm);
 						if (allConst && (srcTerms[i] is SingleTerm))
-							constValues[i] = srcTerms[i].GetIntValue(null);
+							constValues[i] = srcTerms[i].GetIntValue(null!);
 						else
 							allConst = false;
 					}
@@ -1112,7 +1112,7 @@ internal static partial class ArgumentParser
 					{
 						ret.IsConst = true;
 						ret.AddConst = false;
-						ret.ConstInt = src.GetIntValue(null);
+						ret.ConstInt = src.GetIntValue(null!);
 					}
 					return ret;
 				}
@@ -1123,7 +1123,7 @@ internal static partial class ArgumentParser
 						ret = new SpSetArgument(varTerm, null)
 						{
 							IsConst = true,
-							ConstInt = op == OperatorCode.Plus ? src.GetIntValue(null) : -src.GetIntValue(null),
+							ConstInt = op == OperatorCode.Plus ? src.GetIntValue(null!) : -src.GetIntValue(null!),
 							AddConst = true
 						};
 						return ret;
@@ -1152,7 +1152,7 @@ internal static partial class ArgumentParser
 					{
 						ret.IsConst = true;
 						ret.AddConst = false;
-						ret.ConstStr = src.GetStrValue(null);
+						ret.ConstStr = src.GetStrValue(null!);
 					}
 					return ret;
 				}
@@ -1181,7 +1181,7 @@ internal static partial class ArgumentParser
 							{
 								ret.IsConst = true;
 								ret.AddConst = false;
-								ret.ConstStr = src.GetStrValue(null);
+								ret.ConstStr = src.GetStrValue(null!);
 							}
 							return ret;
 						}
@@ -1201,7 +1201,7 @@ internal static partial class ArgumentParser
 							}
 							srcTerms[i] = srcTerms[i].Restructure(exm);
 							if (allConst && (srcTerms[i] is SingleTerm))
-								constValues[i] = srcTerms[i].GetStrValue(null);
+								constValues[i] = srcTerms[i].GetStrValue(null!);
 							else
 								allConst = false;
 						}
@@ -1363,7 +1363,7 @@ internal static partial class ArgumentParser
 				{
 					throw new CodeEE(trerror.CanNotUseRepeat.Text);
 				}
-				if ((term is SingleTerm) && (term.GetIntValue(null) <= 0L))
+				if ((term is SingleTerm) && (term.GetIntValue(null!) <= 0L))
 				{
 					warn(trerror.RepeatCountLessthan0.Text, line, 0, true);
 				}
@@ -1375,7 +1375,7 @@ internal static partial class ArgumentParser
 			ExpressionArgument ret = new(term);
 			if (term is SingleTerm)
 			{
-				long i = term.GetIntValue(null);
+				long i = term.GetIntValue(null!);
 				ret.ConstInt = i;
 				ret.IsConst = true;
 				if (line.FunctionCode == FunctionCode.CLEARLINE)
@@ -1907,7 +1907,7 @@ internal static partial class ArgumentParser
 			if (index is SingleStrTerm term1 && index.GetOperandType() == typeof(string) && varTerm.Identifier.IsArray1D)
 			{
 				if (!GlobalStatic.ConstantData.isDefined(varTerm.Identifier.Code, term1.Str))
-				{ warn(string.Format(trerror.NotDefinedKey.Text, varTerm.Identifier.Name, index.GetStrValue(null)), line, 2, false); return null; }
+				{ warn(string.Format(trerror.NotDefinedKey.Text, varTerm.Identifier.Name, index.GetStrValue(null!)), line, 2, false); return null; }
 			}
 			if (terms.Count > 3 && !varTerm.Identifier.IsArray1D)
 				warn(trerror.IgnoreFourthLaterArg.Text, line, 1, false);
@@ -2173,7 +2173,7 @@ internal static partial class ArgumentParser
 			{
 				if (!(termList[i] is SingleTerm))
 					continue;
-				long iValue = termList[i].GetIntValue(null);
+				long iValue = termList[i].GetIntValue(null!);
 				if (iValue < 0)
 				{ warn(trerror.NotPositiveCharaNo.Text, line, 2, false); return null; }
 				if (iValue > int.MaxValue)
@@ -2182,7 +2182,7 @@ internal static partial class ArgumentParser
 				{
 					if (!(termList[j] is SingleTerm))
 						continue;
-					if (iValue == termList[j].GetIntValue(null))
+					if (iValue == termList[j].GetIntValue(null!))
 					{
 						warn(string.Format(trerror.DuplicateVarSave.Text, iValue.ToString()), line, 1, false);
 						return null;

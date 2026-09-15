@@ -369,9 +369,9 @@ internal sealed class ConfigData
 	}
 
 	#region getitem
-	public AConfigItem GetItem(ConfigCode code)
+	public AConfigItem? GetItem(ConfigCode code)
 	{
-		AConfigItem item = GetConfigItem(code);
+		AConfigItem? item = GetConfigItem(code);
 		if (item == null)
 		{
 			item = GetReplaceItem(code);
@@ -382,9 +382,9 @@ internal sealed class ConfigData
 		}
 		return item;
 	}
-	public AConfigItem GetItem(string key)
+	public AConfigItem? GetItem(string key)
 	{
-		AConfigItem item = GetConfigItem(key);
+		AConfigItem? item = GetConfigItem(key);
 		if (item == null)
 		{
 			item = GetReplaceItem(key);
@@ -396,7 +396,7 @@ internal sealed class ConfigData
 		return item;
 	}
 
-	public AConfigItem GetConfigItem(ConfigCode code)
+	public AConfigItem? GetConfigItem(ConfigCode code)
 	{
 		foreach (AConfigItem item in configArray)
 		{
@@ -407,7 +407,7 @@ internal sealed class ConfigData
 		}
 		return null;
 	}
-	public AConfigItem GetConfigItem(string key)
+	public AConfigItem? GetConfigItem(string key)
 	{
 		#region EM_私家版_Emuera多言語化改造
 		key = key.ToUpper();
@@ -426,7 +426,7 @@ internal sealed class ConfigData
 		#endregion
 	}
 
-	public AConfigItem GetReplaceItem(ConfigCode code)
+	public AConfigItem? GetReplaceItem(ConfigCode code)
 	{
 		foreach (AConfigItem item in replaceArray)
 		{
@@ -437,7 +437,7 @@ internal sealed class ConfigData
 		}
 		return null;
 	}
-	public AConfigItem GetReplaceItem(string key)
+	public AConfigItem? GetReplaceItem(string key)
 	{
 		#region EM_私家版_Emuera多言語化改造
 		key = key.ToUpper();
@@ -454,7 +454,7 @@ internal sealed class ConfigData
 		#endregion
 	}
 
-	public AConfigItem GetDebugItem(ConfigCode code)
+	public AConfigItem? GetDebugItem(ConfigCode code)
 	{
 		foreach (AConfigItem item in debugArray)
 		{
@@ -465,7 +465,7 @@ internal sealed class ConfigData
 		}
 		return null;
 	}
-	public AConfigItem GetDebugItem(string key)
+	public AConfigItem? GetDebugItem(string key)
 	{
 		#region EM_私家版_Emuera多言語化改造
 		key = key.ToUpper();

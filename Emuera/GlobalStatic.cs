@@ -63,16 +63,16 @@ internal static class GlobalStatic
 #endif
 	public static void Reset()
 	{
-		Process = null;
-		ConstantData = null;
-		GameBaseData = null;
-		EMediator = null;
-		VEvaluator = null;
-		VariableData = null;
-		Console = null;
+		Process = null!;
+		ConstantData = null!;
+		GameBaseData = null!;
+		EMediator = null!;
+		VEvaluator = null!;
+		VariableData = null!;
+		Console = null!;
 		//MainWindow = null;
-		LabelDictionary = null;
-		IdentifierDictionary = null;
+		LabelDictionary = null!;
+		IdentifierDictionary = null!;
 		tempDic.Clear();
 	}
 }

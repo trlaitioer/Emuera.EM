@@ -31,7 +31,7 @@ internal sealed partial class Lang
 		}
 
 		private string text;
-		private string tr;
+		private string? tr;
 
 		public string Text { get { return tr == null ? text : tr; } }
 	}

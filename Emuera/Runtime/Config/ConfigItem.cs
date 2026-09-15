@@ -23,7 +23,7 @@ internal abstract class AConfigItem
 	#endregion
 
 	#region EM_私家版_Emuera多言語化改造
-	public static ConfigItem<T> Copy<T>(ConfigItem<T> other)
+	public static ConfigItem<T>? Copy<T>(ConfigItem<T>? other)
 	{
 		if (other == null)
 			return null;
@@ -37,7 +37,7 @@ internal abstract class AConfigItem
 	#endregion
 
 	public abstract void CopyTo(AConfigItem other);
-	public abstract bool TryParse(string tokens);
+	public abstract bool TryParse(string? tokens);
 	public abstract void SetValue<U>(U p);
 	public abstract U GetValue<U>();
 	public abstract string ValueToString();
@@ -142,7 +142,7 @@ internal sealed class ConfigItem<T> : AConfigItem
 
 
 	/// ジェネリック化大失敗。なんかうまい方法ないかな～
-	public override bool TryParse(string param)
+	public override bool TryParse(string? param)
 	{
 		bool ret = false;
 		if (param == null || param.Length == 0)
