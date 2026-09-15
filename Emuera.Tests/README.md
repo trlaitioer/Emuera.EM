@@ -25,6 +25,7 @@ dotnet test Emuera.Tests/Emuera.Tests.csproj -c Debug-NAudio
 | `Runtime/Script/Statements/Variable/VariableParserTests.cs`(5 例) | 变量解析:`IsVariable`、`ZeroTerm`/`TARGET` 静态项、`ReduceVariable`(含下标/角色字符串变量) |
 | `Runtime/Script/Data/StrFormTests.cs`(14 例) | `StrForm`(`AnalyseFormattedString` → `FromWordToken` → 求值):字面量/`{}`/`%%`/对齐(语言字节宽)/三连符号绑定/`\@…\@` 三元/`GetAExpression`/`Restructure` 折叠/错误路径 |
 | `Runtime/Script/Parser/LogicalLineParserTests.cs`(11 例) | `LogicalLineParser`:空行/指令行/赋值行/前置自增/无效行/`@`/`$` 标签/`#FUNCTION`/`#DIM` + 脚本级冒烟(按 ErbLoader 路由逐行解析无错误) |
+| `UI/Game/StBarTests.cs`(4 例) | `EmueraConsole.BuildStBar` 与原版 `getStBar` 的等价性、零显示宽度重复的前提(`GetDisplayLength` 对空串/null/零宽字符返回 0)、`targetWidth == 0` 时与旧实现的差异、配置宽度可用性 |
 | `TestBootstrapTests.cs`(4 例) | TestBootstrap 最小初始化夹具的 sanity 验证 |
 
 ## 运行时初始化(TestBootstrap)

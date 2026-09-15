@@ -104,6 +104,42 @@ public class StringMeasureTests
 		});
 	}
 
+	[Theory]
+	[InlineData(true)]
+	[InlineData(false)]
+	public void Measurement_agrees_on_a_thread_that_does_not_own_the_measure(bool graphicsMode)
+	{
+		//Parsing folds constant expressions such as STRLENSU(GETLINESTR("─")) on pool threads, and it
+		//prints its progress on the same thread, while the StringMeasure was built with the console. The
+		//shared Graphics belongs to that other thread, so measuring off it has to fall back to a device
+		//context of its own and still report the same advances, or a folded #DIM initial value and the
+		//header load reports would both differ from the same work done at run time. Both drawing modes
+		//need this: TEXTRENDERER is the default one and its TextRenderer overload rejects a null context.
+		TextDrawingMode mode = graphicsMode ? TextDrawingMode.GRAPHICS : TextDrawingMode.TEXTRENDERER;
+		WithMode(mode, sm =>
+		{
+			Font font = DefaultFont();
+			string[] samples = ["─", "あ", "あいうえお", "　　　　　", "abc def", "[110] - 投放"];
+			int[] expected = [.. samples.Select(s => sm.GetDisplayLength(s, font))];
+
+			int[]? fromOwnThread = null;
+			int[]? fromPoolThread = null;
+			System.Threading.Tasks.Task.Run(() =>
+			{
+				fromOwnThread = [.. samples.Select(s => sm.GetDisplayLength(s, font))];
+			}).Wait();
+			System.Threading.Tasks.Task.Run(() =>
+			{
+				fromPoolThread = [.. samples.Select(s => sm.GetDisplayLength(s.AsSpan(), font))];
+			}).Wait();
+
+			Assert.NotNull(fromOwnThread);
+			Assert.NotNull(fromPoolThread);
+			Assert.Equal(expected, fromOwnThread);
+			Assert.Equal(expected, fromPoolThread);
+		});
+	}
+
 	[Fact]
 	public void Both_measurement_overloads_reject_the_unsupported_drawing_mode()
 	{
