@@ -6517,7 +6517,7 @@ internal static partial class FunctionMethodCreator
 			if (AppContents.GetSprite(imgname) == null)
 				return 0;
 			SpriteAnime img = AppContents.GetSprite(imgname) as SpriteAnime;
-			if (img == null && !img.IsCreated)
+			if (img == null || !img.IsCreated)
 				return 0;
 			GraphicsImage g = ReadGraphics(Name, exm, arguments, 1);
 			if (!g.IsCreated)
