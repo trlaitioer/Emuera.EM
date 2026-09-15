@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Config;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.Runtime.Script.Parser;
 using MinorShift.Emuera.Runtime.Utils;
 using System;
@@ -17,12 +18,12 @@ internal sealed partial class EraStreamReader : IDisposable
 		this.useRename = useRename;
 	}
 
-	string filepath;
-	string filename;
+	string filepath = null!;
+	string filename = null!;
 	readonly bool useRename;
 	int curNo;
 	int nextNo = 1;
-	string[] _fileLines;
+	string[] _fileLines = null!;
 	public bool Open(string path)
 	{
 		return Open(path, Path.GetFileName(path));
@@ -67,9 +68,9 @@ internal sealed partial class EraStreamReader : IDisposable
 	}
 
 
-	public string ReadLine()
+	public string? ReadLine()
 	{
-		string ret = null;
+		string? ret = null;
 		curNo = nextNo;
 		if (_fileLines.Length > curNo)
 		{
@@ -85,9 +86,9 @@ internal sealed partial class EraStreamReader : IDisposable
 	/// <summary>
 	/// 次の有効な行を読む。LexicalAnalyzer経由でConfigを参照するのでConfig完成までつかわないこと。
 	/// </summary>
-	public CharStream ReadEnabledLine(bool disabled = false)
+	public CharStream? ReadEnabledLine(bool disabled = false)
 	{
-		string line;
+		string? line;
 		CharStream st;
 		while (true)
 		{
@@ -208,10 +209,10 @@ internal sealed partial class EraStreamReader : IDisposable
 	{
 		if (disposed)
 			return;
-		filepath = null;
-		filename = null;
+		filepath = null!;
+		filename = null!;
 		disposed = true;
-		_fileLines = null;
+		_fileLines = null!;
 	}
 
 	#endregion

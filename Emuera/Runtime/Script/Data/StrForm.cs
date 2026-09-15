@@ -118,7 +118,7 @@ internal sealed class StrForm
 			YenAtSubWord? yenat = SWT as YenAtSubWord;
 			if (yenat != null)
 			{
-				wc = yenat.Words;
+				wc = yenat.Words!;
 				if (wc != null)
 				{
 					operand = ExpressionParser.ReduceIntegerTerm(wc, TermEndWith.EoL);
@@ -136,7 +136,7 @@ internal sealed class StrForm
 				termArray[i] = new FunctionMethodTerm(formatYenAt, [operand, left, right]);
 				continue;
 			}
-			wc = SWT.Words;
+			wc = SWT.Words!;
 			operand = ExpressionParser.ReduceExpressionTerm(wc, TermEndWith.Comma);
 			if (operand == null)
 			{

@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Config;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.Runtime.Script.Data;
 using MinorShift.Emuera.Runtime.Script.Statements.Expression;
 using MinorShift.Emuera.Runtime.Utils;
@@ -413,7 +414,7 @@ internal static partial class LexicalAnalyzer
 	/// </summary>
 	/// <param name="st"></param>
 	/// <returns></returns>
-	public static IdentifierWord ReadSingleIdentifierWord(CharStream st)
+	public static IdentifierWord? ReadSingleIdentifierWord(CharStream st)
 	{
 		string str = ReadSingleIdentifier(st);
 		if (string.IsNullOrEmpty(str))
@@ -423,7 +424,7 @@ internal static partial class LexicalAnalyzer
 			int i = 0;
 			while (true)
 			{
-				DefineMacro macro = GlobalStatic.IdentifierDictionary.GetMacro(str);
+				DefineMacro? macro = GlobalStatic.IdentifierDictionary.GetMacro(str);
 				i++;
 				if (i > MAX_EXPAND_MACRO)
 					throw new CodeEE(string.Format(trerror.MacroOverLimit.Text, MAX_EXPAND_MACRO.ToString()));
@@ -1038,14 +1039,14 @@ internal static partial class LexicalAnalyzer
 		int count = 0;
 		while (!wc.EOL)
 		{
-			IdentifierWord word = wc.Current as IdentifierWord;
+			IdentifierWord? word = wc.Current as IdentifierWord;
 			if (word == null)
 			{
 				wc.ShiftNext();
 				continue;
 			}
 			string idStr = word.Code;
-			DefineMacro macro = GlobalStatic.IdentifierDictionary.GetMacro(idStr);
+			DefineMacro? macro = GlobalStatic.IdentifierDictionary.GetMacro(idStr);
 			if (macro == null)
 			{
 				wc.ShiftNext();
@@ -1071,7 +1072,7 @@ internal static partial class LexicalAnalyzer
 	{
 		var macroStart = wc.Pointer;
 		wc.ShiftNext();
-		SymbolWord symbol = wc.Current as SymbolWord;
+		SymbolWord? symbol = wc.Current as SymbolWord;
 		if (symbol == null || symbol.Type != '(')
 			throw new CodeEE(string.Format(trerror.MacroHasNotArg.Text, macro.Keyword));
 		WordCollection macroWC = macro.Statement.Clone();
@@ -1125,12 +1126,12 @@ internal static partial class LexicalAnalyzer
 		wc.Pointer = macroStart;
 		while (macroEnd == wc.Pointer)
 		{
-			wc.Pointer = wc.Pointer.Next;
-			wc.Collection.Remove(wc.Pointer.Previous);
+			wc.Pointer = wc.Pointer!.Next;
+			wc.Collection.Remove(wc.Pointer!.Previous!);
 		}
 		while (!macroWC.EOL)
 		{
-			MacroWord w = macroWC.Current as MacroWord;
+			MacroWord? w = macroWC.Current as MacroWord;
 			if (w == null)
 			{
 				macroWC.ShiftNext();
@@ -1140,7 +1141,7 @@ internal static partial class LexicalAnalyzer
 			macroWC.InsertRange(args[w.Number]);
 			for (int i = 0; i < args[w.Number].Collection.Count; i++)
 			{
-				macroWC.Pointer = macroWC.Pointer.Next;
+				macroWC.Pointer = macroWC.Pointer!.Next;
 			}
 		}
 		wc.InsertRange(macroWC);

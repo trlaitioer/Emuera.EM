@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#nullable enable
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -17,7 +18,7 @@ internal sealed class WordCollection
 	}
 
 	public LinkedList<Word> Collection;
-	public LinkedListNode<Word> Pointer;
+	public LinkedListNode<Word>? Pointer;
 	int index = 0;
 	private static Word nullToken = new NullWord();
 
@@ -89,8 +90,7 @@ internal sealed class WordCollection
 		{
 			if (index + 1 >= Collection.Count)
 				return nullToken;
-			var nextPoint = Pointer.Next;
-			return nextPoint.Value;
+			return Pointer!.Next!.Value;
 		}
 	}
 	#endregion
@@ -118,7 +118,7 @@ internal sealed class WordCollection
 	public void InsertRange(WordCollection wc)
 	{
 		var pointer = Pointer?.Previous;
-		LinkedListNode<Word> lastPointer = null;
+		LinkedListNode<Word>? lastPointer = null;
 		foreach (var word in wc.Collection)
 		{
 			if (pointer == null)
@@ -147,8 +147,8 @@ internal sealed class WordCollection
 	}
 	public void Remove()
 	{
-		var next = Pointer.Next;
-		Collection.Remove(Pointer);
+		var next = Pointer!.Next;
+		Collection.Remove(Pointer!);
 		Pointer = next;
 	}
 

@@ -799,8 +799,8 @@ internal sealed class StrAsignArgument : Argument
 	{
 		ConstStr = str;
 	}
-	public string Value;
-	public StrAsignArgument(string str, int[] lengths, string value)
+	public string? Value;
+	public StrAsignArgument(string str, int[] lengths, string? value)
 	{
 		ConstStr = str;
 		Lengths = lengths;

@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.GameProc.Function;
+﻿#nullable enable
+using MinorShift.Emuera.GameProc.Function;
 using MinorShift.Emuera.GameView;
 using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.Runtime.Script.Data;
@@ -207,7 +208,7 @@ internal static class LogicalLineParser
 							break;
 						}
 						AExpression arg = ExpressionParser.ReduceIntegerTerm(wc, TermEndWith.EoL);
-						if (arg.Restructure(null) is not SingleLongTerm sizeTerm || sizeTerm.GetOperandType() != typeof(long))
+						if (arg.Restructure(null!) is not SingleLongTerm sizeTerm || sizeTerm.GetOperandType() != typeof(long))
 						{
 							ParserMediator.Warn(string.Format(trerror.SharpHasNotValidValue.Text, token.ToString()), position, 2);
 							break;
@@ -275,7 +276,7 @@ internal static class LogicalLineParser
 		return true;
 	}
 
-	public static LogicalLine ParseLine(string str, EmueraConsole console)
+	public static LogicalLine? ParseLine(string str, EmueraConsole? console)
 	{
 		ScriptPosition? position = new();
 		CharStream stream = new(str);
@@ -380,7 +381,7 @@ internal static class LogicalLineParser
 	}
 
 
-	public static LogicalLine ParseLine(CharStream stream, ScriptPosition? position, EmueraConsole console, FunctionLabelLine parentLine = null)
+	public static LogicalLine? ParseLine(CharStream stream, ScriptPosition? position, EmueraConsole? console, FunctionLabelLine? parentLine = null)
 	{
 		//int lineNo = Position.Value.LineNo;
 		string errMes;
@@ -416,7 +417,7 @@ internal static class LogicalLineParser
 			IdentifierWord idWT = LexicalAnalyzer.ReadFirstIdentifierWord(stream);
 			if (idWT != null)
 			{
-				FunctionIdentifier func = GlobalStatic.IdentifierDictionary.GetFunctionIdentifier(idWT.Code);
+				FunctionIdentifier? func = GlobalStatic.IdentifierDictionary.GetFunctionIdentifier(idWT.Code);
 				//命令文
 				if (func != null)//関数文
 				{
@@ -426,7 +427,7 @@ internal static class LogicalLineParser
 						{
 							ParentLabelLine = parentLine
 						};
-						var statementsSpan = line.PopArgumentPrimitive().SubstringROS();
+						var statementsSpan = line.PopArgumentPrimitive()!.SubstringROS();
 						var commentIndex = statementsSpan.IndexOf(';');
 						if (commentIndex != -1)
 						{
@@ -451,7 +452,7 @@ internal static class LogicalLineParser
 						List<int> lengths = [1];
 						if (func.Code == FunctionCode.VARI)
 						{
-							AExpression exp = null;
+							AExpression? exp = null;
 							if (leftSplit.Length > 1)
 							{
 								//配列である
@@ -479,7 +480,7 @@ internal static class LogicalLineParser
 								Dimension = lengths.Count,
 								TypeIsStr = false
 							};
-							parentLine.AddPrivateVariable(varData);
+							parentLine!.AddPrivateVariable(varData);
 
 							if (exp != null)
 							{
@@ -493,7 +494,7 @@ internal static class LogicalLineParser
 						}
 						else if (func.Code == FunctionCode.VARS)
 						{
-							string value = default;
+							string? value = default;
 							if (leftSplit.Length > 1)
 							{
 								//配列である
@@ -522,7 +523,7 @@ internal static class LogicalLineParser
 								Dimension = lengths.Count,
 								TypeIsStr = true
 							};
-							parentLine.AddPrivateVariable(varData);
+							parentLine!.AddPrivateVariable(varData);
 
 							line.Argument = new StrAsignArgument(varName, varData.Lengths, value);
 							return line;

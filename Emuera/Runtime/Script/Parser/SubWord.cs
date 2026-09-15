@@ -1,13 +1,15 @@
-﻿namespace MinorShift.Emuera.Runtime.Script.Parser;
+﻿#nullable enable
+
+namespace MinorShift.Emuera.Runtime.Script.Parser;
 
 /// <summary>
 /// FormattedStringWTの中身用のトークン
 /// </summary>
 internal abstract class SubWord
 {
-	protected SubWord(WordCollection w) { words = w; }
-	readonly WordCollection words;
-	public WordCollection Words { get { return words; } }
+	protected SubWord(WordCollection? w) { words = w; }
+	readonly WordCollection? words;
+	public WordCollection? Words { get { return words; } }
 	public bool IsMacro;
 	public virtual void SetIsMacro()
 	{
@@ -35,22 +37,22 @@ internal sealed class PercentSubWord : SubWord
 
 internal sealed class YenAtSubWord : SubWord
 {
-	public YenAtSubWord(WordCollection w, StrFormWord fsLeft, StrFormWord fsRight)
+	public YenAtSubWord(WordCollection w, StrFormWord fsLeft, StrFormWord? fsRight)
 		: base(w)
 	{
 		left = fsLeft;
 		right = fsRight;
 	}
 	readonly StrFormWord left;
-	readonly StrFormWord right;
+	readonly StrFormWord? right;
 	public StrFormWord Left { get { return left; } }
-	public StrFormWord Right { get { return right; } }
+	public StrFormWord? Right { get { return right; } }
 
 	public override void SetIsMacro()
 	{
 		IsMacro = true;
-		Words.SetIsMacro();
+		Words!.SetIsMacro();
 		Left.SetIsMacro();
-		Right.SetIsMacro();
+		Right!.SetIsMacro();//Right is null only on the missing-# warning path, which never reaches macro expansion
 	}
 }
