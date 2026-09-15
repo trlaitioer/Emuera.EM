@@ -50,11 +50,11 @@ internal static class ExpressionParser
 	/// </summary>
 	/// <returns></returns>
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
-	public static List<AExpression> ReduceArguments(WordCollection wc, ArgsEndWith endWith, bool isDefine)
+	public static List<AExpression?> ReduceArguments(WordCollection wc, ArgsEndWith endWith, bool isDefine)
 	{
 		if (wc == null)
 			throw new ExeEE(trerror.EmptyStream.Text);
-		var terms = new LinkedList<AExpression>();
+		var terms = new LinkedList<AExpression?>();
 		TermEndWith termEndWith = TermEndWith.EoL;
 		switch (endWith)
 		{

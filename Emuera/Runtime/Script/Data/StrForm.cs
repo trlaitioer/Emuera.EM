@@ -40,8 +40,9 @@ internal sealed class StrForm
 		}
 		if (funcnameTerm is FunctionMethodTerm fmt
 			&& ReferenceEquals(fmt.Method, formatCurlyBrace)
-			&& fmt.Arguments[0].GetOperandType() == typeof(long))
-			return fmt.Arguments[0];
+			&& fmt.Arguments[0] is AExpression operand
+			&& operand.GetOperandType() == typeof(long))
+			return operand;
 		return null;
 	}
 
@@ -77,11 +78,11 @@ internal sealed class StrForm
 		VariableTerm callnameplayer = new(callnameID, [player]);
 		VariableTerm nameassi = new(nameID, [assi]);
 		VariableTerm callnametarget = new(callnameID, [target]);
-		NameTarget = new FunctionMethodTerm(formatPercent, [nametarget, null!, null!]);
-		CallnameMaster = new FunctionMethodTerm(formatPercent, [callnamemaster, null!, null!]);
-		CallnamePlayer = new FunctionMethodTerm(formatPercent, [callnameplayer, null!, null!]);
-		NameAssi = new FunctionMethodTerm(formatPercent, [nameassi, null!, null!]);
-		CallnameTarget = new FunctionMethodTerm(formatPercent, [callnametarget, null!, null!]);
+		NameTarget = new FunctionMethodTerm(formatPercent, [nametarget, null, null]);
+		CallnameMaster = new FunctionMethodTerm(formatPercent, [callnamemaster, null, null]);
+		CallnamePlayer = new FunctionMethodTerm(formatPercent, [callnameplayer, null, null]);
+		NameAssi = new FunctionMethodTerm(formatPercent, [nameassi, null, null]);
+		CallnameTarget = new FunctionMethodTerm(formatPercent, [callnametarget, null, null]);
 	}
 
 	public static StrForm FromWordToken(StrFormWord wt)
@@ -144,8 +145,8 @@ internal sealed class StrForm
 				else
 					throw new CodeEE(trerror.EmptyPer.Text);
 			}
-			AExpression second = null!;
-			SingleTerm third = null!;
+			AExpression? second = null;
+			SingleTerm? third = null;
 			wc.ShiftNext();
 			if (!wc.EOL)
 			{
@@ -214,9 +215,9 @@ internal sealed class StrForm
 		List<AExpression> termList = [.. terms];
 		for (int i = 0; i < termList.Count; i++)
 		{
-			if (termList[i] is SingleTerm)
+			if (termList[i] is SingleTerm single)
 			{
-				string str = termList[i].GetStrValue(exm);
+				string str = single.GetStrValue(exm);
 				strList[i] = strList[i] + str + strList[i + 1];
 				termList.RemoveAt(i);
 				strList.RemoveAt(i + 1);
@@ -249,34 +250,34 @@ internal sealed class StrForm
 			CanRestructure = true;
 			ReturnType = typeof(string);
 		}
-		public override string CheckArgumentType(string name, List<AExpression> arguments) { throw new ExeEE(trerror.TypeCheckIsCallersResponsibility.Text); }
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments) { throw new ExeEE(trerror.ReturnTypeMismatch.Text); }
-		public override SingleTerm GetReturnValue(ExpressionMediator exm, List<AExpression> arguments) { return new SingleStrTerm(GetStrValue(exm, arguments)); }
+		public override string CheckArgumentType(string name, List<AExpression?> arguments) { throw new ExeEE(trerror.TypeCheckIsCallersResponsibility.Text); }
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments) { throw new ExeEE(trerror.ReturnTypeMismatch.Text); }
+		public override SingleTerm GetReturnValue(ExpressionMediator exm, List<AExpression?> arguments) { return new SingleStrTerm(GetStrValue(exm, arguments)); }
 	}
 
 	private sealed class FormatCurlyBrace : FormattedStringMethod
 	{
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string ret = arguments[0].GetIntValue(exm).ToString();
-			if (arguments[1] == null)
+			string ret = arguments[0]!.GetIntValue(exm).ToString();
+			if (arguments[1] is not AExpression widthArg)
 				return ret;
 			if (arguments[2] != null)
-				ret = ret.PadRight((int)arguments[1].GetIntValue(exm), ' ');//LEFT
+				ret = ret.PadRight((int)widthArg.GetIntValue(exm), ' ');//LEFT
 			else
-				ret = ret.PadLeft((int)arguments[1].GetIntValue(exm), ' ');//RIGHT
+				ret = ret.PadLeft((int)widthArg.GetIntValue(exm), ' ');//RIGHT
 			return ret;
 		}
 	}
 
 	private sealed class FormatPercent : FormattedStringMethod
 	{
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string ret = arguments[0].GetStrValue(exm);
-			if (arguments[1] == null)
+			string ret = arguments[0]!.GetStrValue(exm);
+			if (arguments[1] is not AExpression widthArg)
 				return ret;
-			int totalLength = (int)arguments[1].GetIntValue(exm);
+			int totalLength = (int)widthArg.GetIntValue(exm);
 			int currentLength = LangManager.GetStrlenLang(ret);
 			totalLength -= currentLength - ret.Length;//全角文字の数だけマイナス。タブ文字？ゼロ幅文字？知るか！
 			if (totalLength < ret.Length)
@@ -291,9 +292,9 @@ internal sealed class StrForm
 
 	private sealed class FormatYenAt : FormattedStringMethod
 	{//Operator のTernaryIntStrStrとやってることは同じ
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			return arguments[0].GetIntValue(exm) != 0 ? arguments[1].GetStrValue(exm) : arguments[2].GetStrValue(exm);
+			return arguments[0]!.GetIntValue(exm) != 0 ? arguments[1]!.GetStrValue(exm) : arguments[2]!.GetStrValue(exm);
 		}
 	}
 

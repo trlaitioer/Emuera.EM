@@ -1,4 +1,4 @@
-﻿using MinorShift.Emuera.GameData.Variable;
+﻿﻿using MinorShift.Emuera.GameData.Variable;
 using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.Runtime.Script;
 using MinorShift.Emuera.Runtime.Script.Parser;
@@ -50,7 +50,7 @@ internal abstract class ArgumentBuilder
 	/// 引数の数に制限なし。
 	/// </summary>
 	protected bool argAny;
-	protected bool checkArgumentType(InstructionLine line, ExpressionMediator exm, List<AExpression> arguments)
+	protected bool checkArgumentType(InstructionLine line, ExpressionMediator exm, List<AExpression?> arguments)
 	{
 		if (arguments == null)
 		{
@@ -103,7 +103,7 @@ internal abstract class ArgumentBuilder
 		return true;
 	}
 
-	protected static VariableTerm getChangeableVariable(List<AExpression> terms, int i, InstructionLine line)
+	protected static VariableTerm getChangeableVariable(List<AExpression?> terms, int i, InstructionLine line)
 	{
 		if (!(terms[i - 1] is VariableTerm varTerm))
 		{
@@ -124,7 +124,7 @@ internal abstract class ArgumentBuilder
 		return LexicalAnalyzer.Analyse(st, LexEndWith.EoL, LexAnalyzeFlag.None);
 	}
 
-	protected static List<AExpression> popTerms(InstructionLine line)
+	protected static List<AExpression?> popTerms(InstructionLine line)
 	{
 		CharStream st = line.PopArgumentPrimitive();
 		WordCollection wc = LexicalAnalyzer.Analyse(st, LexEndWith.EoL, LexAnalyzeFlag.None);
@@ -362,7 +362,7 @@ internal static partial class ArgumentParser
 		{
 			CharStream st = line.PopArgumentPrimitive();
 			WordCollection wc = LexicalAnalyzer.Analyse(st, LexEndWith.EoL, LexAnalyzeFlag.AnalyzePrintV);
-			List<AExpression> args = ExpressionParser.ReduceArguments(wc, ArgsEndWith.EoL, false);
+			List<AExpression?> args = ExpressionParser.ReduceArguments(wc, ArgsEndWith.EoL, false);
 			if (args.Count < 1)
 			{
 				warn(trerror.NotEnoughArguments.Text, line, 2, false);
@@ -442,7 +442,7 @@ internal static partial class ArgumentParser
 				return null;
 			}
 			List<SpDtColumnOptions.DTOptions> opts = [];
-			List<AExpression> values = [];
+			List<AExpression?> values = [];
 			int argCount = 3;
 			while (!wc.EOL)
 			{
@@ -562,7 +562,7 @@ internal static partial class ArgumentParser
 		{
 			Argument ret;
 			CharStream st = line.PopArgumentPrimitive();
-			List<AExpression> termList = [];
+			List<AExpression?> termList = [];
 			LexicalAnalyzer.SkipHalfSpace(st);
 			if (st.EOS)
 			{
@@ -870,8 +870,8 @@ internal static partial class ArgumentParser
 			WordCollection wc = LexicalAnalyzer.Analyse(st, LexEndWith.EoL, LexAnalyzeFlag.None);
 			wc.ShiftNext();
 
-			List<AExpression> subNames = null;
-			List<AExpression> args = null;
+			List<AExpression?> subNames = null;
+			List<AExpression?> args = null;
 			if (cur == '[')
 			{
 				subNames = ExpressionParser.ReduceArguments(wc, ArgsEndWith.RightBracket, false);
@@ -935,8 +935,8 @@ internal static partial class ArgumentParser
 			WordCollection wc = LexicalAnalyzer.Analyse(st, LexEndWith.EoL, LexAnalyzeFlag.None);
 			wc.ShiftNext();
 
-			List<AExpression> subNames = null;
-			List<AExpression> args = null;
+			List<AExpression?> subNames = null;
+			List<AExpression?> args = null;
 			if (cur == '[')
 			{
 				subNames = ExpressionParser.ReduceArguments(wc, ArgsEndWith.RightBracket, false);
@@ -1407,7 +1407,7 @@ internal static partial class ArgumentParser
 			if (!checkArgumentType(line, exm, terms))
 				return null;
 
-			List<AExpression> termList = [.. terms];
+			List<AExpression?> termList = [.. terms];
 			ExpressionArrayArgument ret = new(termList);
 			if (terms.Count == 0)
 			{
@@ -1790,7 +1790,7 @@ internal static partial class ArgumentParser
 			VariableTerm varTerm = getChangeableVariable(terms, 1, line);
 			if (varTerm == null)
 				return null;
-			List<AExpression> termList = [.. terms];
+			List<AExpression?> termList = [.. terms];
 			//最初の項はいらない
 			termList.RemoveAt(0);
 			BitArgument ret = new(varTerm, termList.ToArray());
@@ -2166,7 +2166,7 @@ internal static partial class ArgumentParser
 			if (!checkArgumentType(line, exm, terms))
 				return null;
 
-			List<AExpression> termList = [.. terms];
+			List<AExpression?> termList = [.. terms];
 			ExpressionArrayArgument ret = new(termList);
 
 			for (int i = 2; i < termList.Count; i++)

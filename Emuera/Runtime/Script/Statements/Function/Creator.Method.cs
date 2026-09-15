@@ -38,7 +38,7 @@ internal static partial class FunctionMethodCreator
 				];
 			CanRestructure = true;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			int len = HtmlManager.HtmlLength(arguments[0].GetStrValue(exm));
 			if (arguments.Count == 1 || arguments[1].GetIntValue(exm) == 0)
@@ -82,7 +82,7 @@ internal static partial class FunctionMethodCreator
 				default: array[i] = node.Value; break;
 			}
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			XmlDocument doc = null;
 			XmlNodeList nodes = null;
@@ -143,7 +143,7 @@ internal static partial class FunctionMethodCreator
 			CanRestructure = true;
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			return (GlobalStatic.IdentifierDictionary.GetMacro(arguments[0].GetStrValue(exm)) != null) ? 1 : 0;
 		}
@@ -174,7 +174,7 @@ internal static partial class FunctionMethodCreator
 			this.type = type;
 			action = act;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string arg = arguments[0].GetStrValue(exm).ToUpper();
 			string[] array = null;
@@ -230,7 +230,7 @@ internal static partial class FunctionMethodCreator
 				];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			var dir = Utils.GetValidPath(arguments[0].GetStrValue(exm));
 			if (dir == null || !Directory.Exists(dir)) return -1;
@@ -271,7 +271,7 @@ internal static partial class FunctionMethodCreator
 			CanRestructure = false;
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string name = arguments[0].GetStrValue(exm);
 			WordCollection wc = LexicalAnalyzer.Analyse(new CharStream(arguments[0].GetStrValue(exm)), LexEndWith.EoL, LexAnalyzeFlag.None);
@@ -299,7 +299,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(string)];
 			CanRestructure = false;
 		}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string name = arguments[0].GetStrValue(exm);
 			WordCollection wc = LexicalAnalyzer.Analyse(new CharStream(arguments[0].GetStrValue(exm)), LexEndWith.EoL, LexAnalyzeFlag.None);
@@ -328,7 +328,7 @@ internal static partial class FunctionMethodCreator
 			CanRestructure = true;
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			VariableToken token = GlobalStatic.IdentifierDictionary.GetVariableToken(arguments[0].GetStrValue(exm), null, true);
 			if (token != null)
@@ -377,7 +377,7 @@ internal static partial class FunctionMethodCreator
 				throw new CodeEE(err);
 			return term as VariableTerm;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			bool isAscending = arguments.Count < 3 || arguments[2] == null || arguments[2].GetIntValue(exm) != 0;
 			long fixedLength = arguments.Count < 4 ? -1 : arguments[3].GetIntValue(exm);
@@ -493,7 +493,7 @@ internal static partial class FunctionMethodCreator
 			}
 			return 1;
 		}
-		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression> arguments)
+		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			for (int i = 0; i < arguments.Count; i++)
 				arguments[i] = arguments[i].Restructure(exm);
@@ -510,7 +510,7 @@ internal static partial class FunctionMethodCreator
 				];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string name = arguments[0].GetStrValue(exm);
 			WordCollection wc = LexicalAnalyzer.Analyse(new CharStream(arguments[0].GetStrValue(exm)), LexEndWith.EoL, LexAnalyzeFlag.None);
@@ -548,7 +548,7 @@ internal static partial class FunctionMethodCreator
 				];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string name = arguments[0].GetStrValue(exm);
 			WordCollection wc = LexicalAnalyzer.Analyse(new CharStream(arguments[0].GetStrValue(exm)), LexEndWith.EoL, LexAnalyzeFlag.None);
@@ -653,7 +653,7 @@ internal static partial class FunctionMethodCreator
 			CanRestructure = false;
 		}
 
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string str = arguments[0].GetStrValue(exm);
 			string[] strs = HtmlManager.HtmlSubString(str, (int)arguments[1].GetIntValue(exm));
@@ -672,7 +672,7 @@ internal static partial class FunctionMethodCreator
 			CanRestructure = false;
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string str = arguments[0].GetStrValue(exm);
 			if (string.IsNullOrEmpty(str)) return 0;
@@ -709,7 +709,7 @@ internal static partial class FunctionMethodCreator
 					idx++;
 				}
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string baseString = arguments[0].GetStrValue(exm);
 			Regex reg;
@@ -754,7 +754,7 @@ internal static partial class FunctionMethodCreator
 			CanRestructure = false;
 		}
 		private Operation op;
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string idx = arguments[0].GetOperandType() == typeof(string) ? arguments[0].GetStrValue(exm) : arguments[0].GetIntValue(exm).ToString();
 			var xmlDict = exm.VEvaluator.VariableData.DataXmlDocument;
@@ -816,7 +816,7 @@ internal static partial class FunctionMethodCreator
 				default: node.Value = val; break;
 			}
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			XmlDocument doc;
 			bool saveToArg0 = true;
@@ -882,7 +882,7 @@ internal static partial class FunctionMethodCreator
 				];
 			CanRestructure = false;
 		}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string idx = arguments[0].GetOperandType() == typeof(string) ? arguments[0].GetStrValue(exm) : arguments[0].GetIntValue(exm).ToString();
 			var xmlDict = exm.VEvaluator.VariableData.DataXmlDocument;
@@ -959,7 +959,7 @@ internal static partial class FunctionMethodCreator
 			}
 			return false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			XmlDocument doc;
 			int methodPos = op == Operation.Node ? 4 : 5;
@@ -1088,7 +1088,7 @@ internal static partial class FunctionMethodCreator
 			}
 			return false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			XmlDocument doc;
 			int method = arguments.Count >= 4 ? (int)arguments[3].GetIntValue(exm) : 0;
@@ -1173,7 +1173,7 @@ internal static partial class FunctionMethodCreator
 			}
 			return false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			XmlDocument newXml = new();
 			{
@@ -1260,7 +1260,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(string)];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			var filepath = Utils.GetValidPath(arguments[0].GetStrValue(exm));
 			if (filepath != null && File.Exists(filepath)) return 1;
@@ -1281,7 +1281,7 @@ internal static partial class FunctionMethodCreator
 			op = type;
 		}
 		private Operation op;
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string key = arguments[0].GetStrValue(exm);
 			var dict = exm.VEvaluator.VariableData.DataDataTables;
@@ -1342,7 +1342,7 @@ internal static partial class FunctionMethodCreator
 			op = type;
 		}
 		private Operation op;
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string key = arguments[0].GetStrValue(exm);
 			var dict = exm.VEvaluator.VariableData.DataDataTables;
@@ -1447,7 +1447,7 @@ internal static partial class FunctionMethodCreator
 				throw new CodeEE(string.Format(trerror.DTInvalidDataType.Text, Name, key, name));
 			row[name] = Utils.DataTable.ConvertInt(v, dt.Columns[name].DataType);
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			var b = op == Operation.Add ? 0 : 1;
 			string key = arguments[0].GetStrValue(exm);
@@ -1518,7 +1518,7 @@ internal static partial class FunctionMethodCreator
 			op = type;
 		}
 		private Operation op;
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string key = arguments[0].GetStrValue(exm);
 			var dict = exm.VEvaluator.VariableData.DataDataTables;
@@ -1537,7 +1537,7 @@ internal static partial class FunctionMethodCreator
 					];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string key = arguments[0].GetStrValue(exm);
 			var dict = exm.VEvaluator.VariableData.DataDataTables;
@@ -1576,7 +1576,7 @@ internal static partial class FunctionMethodCreator
 			op = type;
 		}
 		private Operation op;
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			var key = arguments[0].GetStrValue(exm);
 			var dict = exm.VEvaluator.VariableData.DataDataTables;
@@ -1602,7 +1602,7 @@ internal static partial class FunctionMethodCreator
 			}
 			return op == Operation.IsNull ? -2 : 0;
 		}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			var key = arguments[0].GetStrValue(exm);
 			var dict = exm.VEvaluator.VariableData.DataDataTables;
@@ -1639,7 +1639,7 @@ internal static partial class FunctionMethodCreator
 				];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			var key = arguments[0].GetStrValue(exm);
 			var dict = exm.VEvaluator.VariableData.DataDataTables;
@@ -1680,7 +1680,7 @@ internal static partial class FunctionMethodCreator
 				];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			var key = arguments[0].GetStrValue(exm);
 			var dict = exm.VEvaluator.VariableData.DataDataTables;
@@ -1715,7 +1715,7 @@ internal static partial class FunctionMethodCreator
 				];
 			CanRestructure = false;
 		}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			var key = arguments[0].GetStrValue(exm);
 			var dict = exm.VEvaluator.VariableData.DataDataTables;
@@ -1742,7 +1742,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(string), typeof(string), typeof(string)];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			var key = arguments[0].GetStrValue(exm);
 			var dict = exm.VEvaluator.VariableData.DataDataTables;
@@ -1779,7 +1779,7 @@ internal static partial class FunctionMethodCreator
 			op = type;
 		}
 		private Operation op;
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string key = arguments[0].GetStrValue(exm);
 			var dict = exm.VEvaluator.VariableData.DataStringMaps;
@@ -1814,7 +1814,7 @@ internal static partial class FunctionMethodCreator
 			op = type;
 		}
 		private Operation op;
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			var map = arguments[0].GetStrValue(exm);
 			var dict = exm.VEvaluator.VariableData.DataStringMaps;
@@ -1856,7 +1856,7 @@ internal static partial class FunctionMethodCreator
 			op = type;
 		}
 		private Operation op;
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			var dict = exm.VEvaluator.VariableData.DataStringMaps;
 			var map = arguments[0].GetStrValue(exm);
@@ -1924,7 +1924,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(string), typeof(string)];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			var map = arguments[0].GetStrValue(exm);
 			var dict = exm.VEvaluator.VariableData.DataStringMaps;
@@ -1964,7 +1964,7 @@ internal static partial class FunctionMethodCreator
 			resume = b;
 		}
 		bool resume;
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (resume) exm.Console.Window.ResetTextBoxPos();
 			else exm.Console.Window.SetTextBoxPos(
@@ -2006,7 +2006,7 @@ internal static partial class FunctionMethodCreator
 		//		return name + "関数の2番目の引数の型が正しくありません";
 		//	return null;
 		//}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long integer = arguments[0].GetIntValue(exm);
 			if (!Config.CompatiSPChara)
@@ -2039,7 +2039,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long)];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (!Config.CompatiSPChara)
 				// throw new CodeEE("SPキャラ関係の機能は標準では使用できません(互換性オプション「SPキャラを使用する」をONにしてください)");
@@ -2088,7 +2088,7 @@ internal static partial class FunctionMethodCreator
 		//		return name + "関数の2番目の変数が数値ではありません";
 		//	return null;
 		//}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long x = arguments[0].GetIntValue(exm);
 			long y = (arguments.Count > 1 && arguments[1] != null) ? arguments[1].GetIntValue(exm) : 0;
@@ -2130,7 +2130,7 @@ internal static partial class FunctionMethodCreator
 		//		return name + "関数の3番目の変数が数値ではありません";
 		//	return null;
 		//}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long x = arguments[0].GetIntValue(exm);
 			long y = arguments[1].GetIntValue(exm);
@@ -2185,7 +2185,7 @@ internal static partial class FunctionMethodCreator
 		//		return name + "関数の3番目の変数が数値ではありません";
 		//	return null;
 		//}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long x = arguments[0].GetIntValue(exm);
 			long y = arguments[1].GetIntValue(exm);
@@ -2237,7 +2237,7 @@ internal static partial class FunctionMethodCreator
 		//		return name + "関数の4番目の引数の型が正しくありません";
 		//	return null;
 		//}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			VariableTerm vTerm = (VariableTerm)arguments[0];
 			VariableToken varID = vTerm.Identifier;
@@ -2304,7 +2304,7 @@ internal static partial class FunctionMethodCreator
 		//		return name + "関数の2番目の変数が数値ではありません";
 		//	return null;
 		//}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long no = arguments[0].GetIntValue(exm);
 			bool isSp = (arguments.Count == 2 && arguments[1] != null) ? (arguments[1].GetIntValue(exm) != 0) : false;
@@ -2355,7 +2355,7 @@ internal static partial class FunctionMethodCreator
 		//		return null;
 		//	return null;
 		//}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			VariableToken var = GlobalStatic.IdentifierDictionary.GetVariableToken(arguments[0].GetStrValue(exm), null, true);
 			if (var == null)
@@ -2368,7 +2368,7 @@ internal static partial class FunctionMethodCreator
 				dim--;
 			return var.GetLength(dim);
 		}
-		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression> arguments)
+		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			arguments[0].Restructure(exm);
 			if (arguments.Count > 1)
@@ -2392,7 +2392,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(string)];
 			CanRestructure = true;//起動中に変わることもそうそうないはず……
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string str = arguments[0].GetStrValue(exm);
 			using System.Drawing.Text.InstalledFontCollection ifc = new();
@@ -2431,7 +2431,7 @@ internal static partial class FunctionMethodCreator
 		}
 
 		readonly EraSaveFileType type;
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long target = arguments[0].GetIntValue(exm);
 			if (target < 0)
@@ -2461,7 +2461,7 @@ internal static partial class FunctionMethodCreator
 		}
 
 		readonly EraSaveFileType type;
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string datFilename = arguments[0].GetStrValue(exm);
 			EraDataResult result = exm.VEvaluator.CheckData(datFilename, type);
@@ -2499,7 +2499,7 @@ internal static partial class FunctionMethodCreator
 		//	return null;
 		//}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string pattern = "*";
 			if (arguments.Count > 0 && arguments[0] != null)
@@ -2523,7 +2523,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			return exm.Process.SkipPrint ? 1L : 0L;
 		}
@@ -2540,7 +2540,7 @@ internal static partial class FunctionMethodCreator
 		}
 
 		readonly bool warn;
-		public override string CheckArgumentType(string name, List<AExpression> arguments)
+		public override string CheckArgumentType(string name, List<AExpression?> arguments)
 		{
 			if (arguments.Count > 0)
 				// return name + "関数の引数が多すぎます";
@@ -2550,7 +2550,7 @@ internal static partial class FunctionMethodCreator
 				ParserMediator.Warn(string.Format(trerror.FuncDeprecated.Text, name, "MESSKIP"), GlobalStatic.Process.GetScaningLine(), 1, false, false, null);
 			return null;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			return GlobalStatic.Console.MesSkip ? 1L : 0L;
 		}
@@ -2568,7 +2568,7 @@ internal static partial class FunctionMethodCreator
 		}
 
 		readonly bool defaultColor;
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			Color color = defaultColor ? Config.ForeColor : GlobalStatic.Console.StringStyle.Color;
 			return color.ToArgb() & 0xFFFFFF;
@@ -2583,7 +2583,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [];
 			CanRestructure = true;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			return Config.FocusColor.ToArgb() & 0xFFFFFF;
 		}
@@ -2600,7 +2600,7 @@ internal static partial class FunctionMethodCreator
 		}
 
 		readonly bool defaultColor;
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			Color color = defaultColor ? Config.BackColor : GlobalStatic.Console.bgColor;
 			return color.ToArgb() & 0xFFFFFF;
@@ -2616,7 +2616,7 @@ internal static partial class FunctionMethodCreator
 			CanRestructure = false;
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			FontStyle fontstyle = GlobalStatic.Console.StringStyle.FontStyle;
 			long ret = 0;
@@ -2640,7 +2640,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [];
 			CanRestructure = false;
 		}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			return GlobalStatic.Console.StringStyle.Fontname;
 		}
@@ -2654,7 +2654,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long), typeof(long), typeof(long)];
 			CanRestructure = true;
 		}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long var = arguments[0].GetIntValue(exm);
 			long max = arguments[1].GetIntValue(exm);
@@ -2671,7 +2671,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [];
 			CanRestructure = false;
 		}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (exm.Console.Alignment == DisplayLineAlignment.LEFT)
 				return "LEFT";
@@ -2690,7 +2690,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			return (exm.Console.Redraw == GameView.ConsoleRedraw.None) ? 0L : 1L;
 		}
@@ -2704,7 +2704,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(string)];
 			CanRestructure = true;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string colorName = arguments[0].GetStrValue(exm);
 			Color color = Color.FromName(colorName);
@@ -2731,7 +2731,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long), typeof(long), typeof(long)];
 			CanRestructure = true;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long r = arguments[0].GetIntValue(exm);
 			if (r < 0 || r > 255)
@@ -2806,7 +2806,7 @@ internal static partial class FunctionMethodCreator
 		//		return name + "関数の2番目の引数の型が正しくありません";
 		//	return null;
 		//}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long money = arguments[0].GetIntValue(exm);
 			if ((arguments.Count < 2) || (arguments[1] == null))
@@ -2834,7 +2834,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [];
 			CanRestructure = true;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			return Config.PrintCPerLine;
 		}
@@ -2848,7 +2848,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [];
 			CanRestructure = true;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			return Config.PrintCLength;
 		}
@@ -2862,7 +2862,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [];
 			CanRestructure = true;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			return Config.SaveDataNos;
 		}
@@ -2876,7 +2876,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long date = DateTime.Now.Year;
 			date = date * 100 + DateTime.Now.Month;
@@ -2897,7 +2897,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [];
 			CanRestructure = false;
 		}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			return DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
 		}
@@ -2911,7 +2911,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			//西暦0001年1月1日からの経過時間をミリ秒で。
 			return DateTime.Now.Ticks / 10000;
@@ -2926,7 +2926,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			//西暦0001年1月1日からの経過時間を秒で。
 			//Ticksは100ナノ秒単位であるが実際にはそんな精度はないので無駄。
@@ -2970,7 +2970,7 @@ internal static partial class FunctionMethodCreator
 		//		return name + "関数の2番目の引数の型が正しくありません";
 		//	return null;
 		//}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long min = 0;
 			long max;
@@ -3031,7 +3031,7 @@ internal static partial class FunctionMethodCreator
 		//	}
 		//	return null;
 		//}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long ret = arguments[0].GetIntValue(exm);
 
@@ -3061,7 +3061,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long)];
 			CanRestructure = true;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long ret = arguments[0].GetIntValue(exm);
 			//普通は使わない値なので例外として投げてしまう方向性で
@@ -3079,7 +3079,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long), typeof(long)];
 			CanRestructure = true;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long x = arguments[0].GetIntValue(exm);
 			long y = arguments[1].GetIntValue(exm);
@@ -3105,7 +3105,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long)];
 			CanRestructure = true;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long ret = arguments[0].GetIntValue(exm);
 			if (ret < 0)
@@ -3123,7 +3123,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long)];
 			CanRestructure = true;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long ret = arguments[0].GetIntValue(exm);
 			if (ret < 0)
@@ -3150,7 +3150,7 @@ internal static partial class FunctionMethodCreator
 			Base = b;
 			CanRestructure = true;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long ret = arguments[0].GetIntValue(exm);
 			if (ret <= 0)
@@ -3185,7 +3185,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long)];
 			CanRestructure = true;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long ret = arguments[0].GetIntValue(exm);
 			double dret = Math.Exp(ret);
@@ -3212,7 +3212,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long)];
 			CanRestructure = true;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long ret = arguments[0].GetIntValue(exm);
 			return Math.Sign(ret);
@@ -3227,7 +3227,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long), typeof(long), typeof(long)];
 			CanRestructure = true;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long value = arguments[0].GetIntValue(exm);
 			long min = arguments[1].GetIntValue(exm);
@@ -3295,7 +3295,7 @@ internal static partial class FunctionMethodCreator
 		//		return name + "関数の3番目の変数が数値ではありません";
 		//	return null;
 		//}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			VariableTerm varTerm = (VariableTerm)arguments[0];
 			long index1 = (arguments.Count >= 2 && arguments[1] != null) ? arguments[1].GetIntValue(exm) : 0;
@@ -3372,7 +3372,7 @@ internal static partial class FunctionMethodCreator
 		//	return null;
 		//}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			VariableTerm varTerm = arguments[0] as VariableTerm;
 			long start = (arguments.Count > 2 && arguments[2] != null) ? arguments[2].GetIntValue(exm) : 0;
@@ -3412,7 +3412,7 @@ internal static partial class FunctionMethodCreator
 			}
 		}
 
-		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression> arguments)
+		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			arguments[0].Restructure(exm);
 			for (int i = 1; i < arguments.Count; i++)
@@ -3452,7 +3452,7 @@ internal static partial class FunctionMethodCreator
 		//	}
 		//	return null;
 		//}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long ret = 0;
 			if (arguments[0].GetOperandType() == typeof(long))
@@ -3504,7 +3504,7 @@ internal static partial class FunctionMethodCreator
 		//	}
 		//	return null;
 		//}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (arguments[0].GetOperandType() == typeof(long))
 			{
@@ -3559,7 +3559,7 @@ internal static partial class FunctionMethodCreator
 		//	}
 		//	return null;
 		//}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (arguments[0].GetOperandType() == typeof(long))
 			{
@@ -3656,7 +3656,7 @@ internal static partial class FunctionMethodCreator
 		//		return name + "関数の3番目の引数の型が正しくありません";
 		//	return null;
 		//}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			VariableTerm vTerm = (VariableTerm)arguments[0];
 			long start = (arguments.Count > 1 && arguments[1] != null) ? arguments[1].GetIntValue(exm) : 0;
@@ -3698,7 +3698,7 @@ internal static partial class FunctionMethodCreator
 		//	}
 		//	return null;
 		//}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long n = arguments[0].GetIntValue(exm);
 			long m = arguments[1].GetIntValue(exm);
@@ -3736,7 +3736,7 @@ internal static partial class FunctionMethodCreator
 		//		return name + "関数の2番目の引数の型が正しくありません";
 		//	return null;
 		//}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			VariableTerm vToken = (VariableTerm)arguments[0];
 			VariableCode varCode = vToken.Identifier.Code;
@@ -3756,7 +3756,7 @@ internal static partial class FunctionMethodCreator
 			else
 				return -1;
 		}
-		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression> arguments)
+		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			arguments[1] = arguments[1].Restructure(exm);
 			return arguments[1] is SingleTerm;
@@ -3788,7 +3788,7 @@ internal static partial class FunctionMethodCreator
 			return null;
 		}
 		*/
-		public override Int64 GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override Int64 GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			VariableToken var = GlobalStatic.IdentifierDictionary.GetVariableToken(arguments[0].GetStrValue(exm), null, true);
 			if (var == null)
@@ -3822,7 +3822,7 @@ internal static partial class FunctionMethodCreator
 		//		return name + "関数の1番目の引数は省略できません";
 		//	return null;
 		//}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long value = arguments[0].GetIntValue(exm);
 			long maxLv = arguments[1].GetIntValue(exm);
@@ -3848,7 +3848,7 @@ internal static partial class FunctionMethodCreator
 		//		return name + "関数の1番目の引数は省略できません";
 		//	return null;
 		//}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long value = arguments[0].GetIntValue(exm);
 			long maxLv = arguments[1].GetIntValue(exm);
@@ -3902,7 +3902,7 @@ internal static partial class FunctionMethodCreator
 		//	return null;
 		//}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			bool isExact = false;
 			VariableTerm varTerm = (VariableTerm)arguments[0];
@@ -3937,7 +3937,7 @@ internal static partial class FunctionMethodCreator
 		}
 
 
-		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression> arguments)
+		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			arguments[0].Restructure(exm);
 			VariableTerm varToken = arguments[0] as VariableTerm;
@@ -3962,7 +3962,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long), typeof(long), typeof(long)];
 			CanRestructure = true;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long value = arguments[0].GetIntValue(exm);
 			long min = arguments[1].GetIntValue(exm);
@@ -4026,7 +4026,7 @@ internal static partial class FunctionMethodCreator
 		//		return name + "関数の5番目の引数の型が正しくありません";
 		//	return null;
 		//}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long min = arguments[1].GetIntValue(exm);
 			long max = arguments[2].GetIntValue(exm);
@@ -4087,7 +4087,7 @@ internal static partial class FunctionMethodCreator
 		//	}
 		//	return null;
 		//}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			VariableTerm varTerm = arguments[0] as VariableTerm;
 			int[] sortedArray;
@@ -4203,7 +4203,7 @@ internal static partial class FunctionMethodCreator
 			}
 			return 1;
 		}
-		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression> arguments)
+		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			for (int i = 0; i < arguments.Count; i++)
 				arguments[i] = arguments[i].Restructure(exm);
@@ -4221,7 +4221,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(string)];
 			CanRestructure = true;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string str = arguments[0].GetStrValue(exm);
 			return LangManager.GetStrlenLang(str);
@@ -4236,7 +4236,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(string)];
 			CanRestructure = true;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string str = arguments[0].GetStrValue(exm);
 			return str.Length;
@@ -4274,7 +4274,7 @@ internal static partial class FunctionMethodCreator
 		//		return name + "関数の3番目の引数の型が正しくありません";
 		//	return null;
 		//}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string str = arguments[0].GetStrValue(exm);
 			int start = 0;
@@ -4319,7 +4319,7 @@ internal static partial class FunctionMethodCreator
 		//		return name + "関数の3番目の引数の型が正しくありません";
 		//	return null;
 		//}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string str = arguments[0].GetStrValue(exm);
 			int start = 0;
@@ -4381,7 +4381,7 @@ internal static partial class FunctionMethodCreator
 		//		return name + "関数の3番目の引数の型が正しくありません";
 		//	return null;
 		//}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 
 			string target = arguments[0].GetStrValue(exm);
@@ -4418,7 +4418,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(string), typeof(string)];
 			CanRestructure = true;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			Regex reg;
 			try
@@ -4461,7 +4461,7 @@ internal static partial class FunctionMethodCreator
 		//		return name + "関数の2番目の引数の型が正しくありません";
 		//	return null;
 		//}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long i = arguments[0].GetIntValue(exm);
 			if ((arguments.Count < 2) || (arguments[1] == null))
@@ -4490,7 +4490,7 @@ internal static partial class FunctionMethodCreator
 			CanRestructure = true;
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string str = arguments[0].GetStrValue(exm);
 			if (str == null || string.IsNullOrEmpty(str))
@@ -4549,7 +4549,7 @@ internal static partial class FunctionMethodCreator
 			strType = type;
 			CanRestructure = true;
 		}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string str = arguments[0].GetStrValue(exm);
 			if (str == null || string.IsNullOrEmpty(str))
@@ -4577,7 +4577,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			return GlobalStatic.Console.EmptyLine ? 1L : 0L;
 		}
@@ -4598,7 +4598,7 @@ internal static partial class FunctionMethodCreator
 			CanRestructure = false;
 		}
 
-		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression> arguments)
+		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			return arguments.Count < 4 || arguments[3].GetIntValue(exm) != 1;
 		}
@@ -4616,7 +4616,7 @@ internal static partial class FunctionMethodCreator
 		//		return string.Format("{0}関数:4番目の引数が整数ではありません", name);
 		//	return null;
 		//}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string baseString = arguments[0].GetStrValue(exm);
 			Regex reg = null;
@@ -4673,7 +4673,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long)];
 			CanRestructure = true;
 		}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long i = arguments[0].GetIntValue(exm);
 			if ((i < 0) || (i > 0xFFFF))
@@ -4709,7 +4709,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(string)];
 			CanRestructure = true;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string target = arguments[0].GetStrValue(exm);
 			int length = Encoding.UTF32.GetEncoder().GetByteCount(target.ToCharArray(), 0, target.Length, false);
@@ -4729,7 +4729,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long), typeof(long)];
 			CanRestructure = true;
 		}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long toBase = arguments[1].GetIntValue(exm);
 			if ((toBase != 2) && (toBase != 8) && (toBase != 10) && (toBase != 16))
@@ -4747,7 +4747,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(string)];
 			CanRestructure = true;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string baseStr = arguments[0].GetStrValue(exm);
 
@@ -4788,7 +4788,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(string)];
 			CanRestructure = true;
 		}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			return Regex.Escape(arguments[0].GetStrValue(exm));
 		}
@@ -4820,7 +4820,7 @@ internal static partial class FunctionMethodCreator
 		//		return name + "関数の2番目の引数の型が正しくありません";
 		//	return null;
 		//}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string baseStr = arguments[0].GetStrValue(exm);
 			if (baseStr.Length == 0)
@@ -4844,7 +4844,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(string), typeof(long)];
 			CanRestructure = true;
 		}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string str = arguments[0].GetStrValue(exm);
 			long pos = arguments[1].GetIntValue(exm);
@@ -4866,7 +4866,7 @@ internal static partial class FunctionMethodCreator
 			//measurement does not use the Graphics owned by the console thread (StringMeasure).
 			CanRestructure = true;
 		}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string str = arguments[0].GetStrValue(exm);
 			if (string.IsNullOrEmpty(str))
@@ -4885,7 +4885,7 @@ internal static partial class FunctionMethodCreator
 			HasUniqueRestructure = true;
 			CanRestructure = true;
 		}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string str = arguments[0].GetStrValue(exm);
 			string destStr;
@@ -4907,7 +4907,7 @@ internal static partial class FunctionMethodCreator
 			}
 			return destStr;
 		}
-		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression> arguments)
+		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			arguments[0].Restructure(exm);
 			//引数が文字列式等ならお手上げなので諦める
@@ -4972,7 +4972,7 @@ internal static partial class FunctionMethodCreator
 		//		return name + "関数の4番目の変数が数値ではありません";
 		//	return null;
 		//}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			VariableTerm varTerm = (VariableTerm)arguments[0];
 			string delimiter = (arguments.Count >= 2 && arguments[1] != null) ? arguments[1].GetStrValue(exm) : ",";
@@ -4988,7 +4988,7 @@ internal static partial class FunctionMethodCreator
 			p.IsArrayRangeValid(index1, index1 + index2, "STRJOIN", 2L, 3L);
 			return VariableEvaluator.GetJoinedStr(p, delimiter, index1, index2);
 		}
-		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression> arguments)
+		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			//第1変数は変数名なので、定数文字列変数だと事故が起こるので独自対応
 			VariableTerm varTerm = (VariableTerm)arguments[0];
@@ -5022,7 +5022,7 @@ internal static partial class FunctionMethodCreator
 			CanRestructure = true;
 		}
 		private readonly string funcname;
-		private SingleTerm GetSingleTerm(ExpressionMediator exm, List<AExpression> arguments)
+		private SingleTerm GetSingleTerm(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string str = arguments[0].GetStrValue(exm);
 			if (str == null || str.Length == 0)
@@ -5035,7 +5035,7 @@ internal static partial class FunctionMethodCreator
 				throw new CodeEE(errMes);
 			return term;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (ReturnType != typeof(long))
 				throw new ExeEE(funcname + "関数:不正な呼び出し");
@@ -5045,7 +5045,7 @@ internal static partial class FunctionMethodCreator
 				throw new CodeEE(string.Format(trerror.InvalidType.Text, Name, "GETCONFIGS"));
 			return singleLongTerm.Int;
 		}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (ReturnType != typeof(string))
 				throw new ExeEE(funcname + "関数:不正な呼び出し");
@@ -5083,7 +5083,7 @@ internal static partial class FunctionMethodCreator
 		//		return name + "関数の1番目の引数の型が正しくありません";
 		//	return null;
 		//}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long lineNo = 0;
 			if (arguments.Count > 0)
@@ -5107,7 +5107,7 @@ internal static partial class FunctionMethodCreator
 			CanRestructure = false;
 		}
 
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			ConsoleDisplayLine[] dispLines = exm.Console.PopDisplayingLines();
 			if (dispLines == null)
@@ -5124,7 +5124,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(string)];
 			CanRestructure = false;
 		}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			return HtmlManager.Html2PlainText(arguments[0].GetStrValue(exm));
 		}
@@ -5137,7 +5137,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(string)];
 			CanRestructure = false;
 		}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			return HtmlManager.Escape(arguments[0].GetStrValue(exm));
 		}
@@ -5148,7 +5148,7 @@ internal static partial class FunctionMethodCreator
 	/// <summary>
 	/// argNo番目の引数をGraphicsImageのIDを示す整数値として読み取り、 GraphicsImage又はnullを返す。
 	/// </summary>
-	private static GraphicsImage ReadGraphics(string Name, ExpressionMediator exm, List<AExpression> arguments, int argNo)
+	private static GraphicsImage ReadGraphics(string Name, ExpressionMediator exm, List<AExpression?> arguments, int argNo)
 	{
 		long target = arguments[argNo].GetIntValue(exm);
 		if (target < 0)//funcname + "関数:GraphicsIDに負の値(" + target.ToString() + ")が指定されました"
@@ -5176,7 +5176,7 @@ internal static partial class FunctionMethodCreator
 	/// <summary>
 	/// argNo番目の引数を整数値として読み取り、 アルファ値を含むColor構造体にして返す。
 	/// </summary>
-	private static Color ReadColor(string Name, ExpressionMediator exm, List<AExpression> arguments, int argNo)
+	private static Color ReadColor(string Name, ExpressionMediator exm, List<AExpression?> arguments, int argNo)
 	{
 		long c64 = arguments[argNo].GetIntValue(exm);
 		if (c64 < 0 || c64 > 0xFFFFFFFF)
@@ -5188,7 +5188,7 @@ internal static partial class FunctionMethodCreator
 	/// <summary>
 	/// argNo番目を含む2つの引数を整数値として読み取り、Point形式にして返す。
 	/// </summary>
-	private static Point ReadPoint(string Name, ExpressionMediator exm, List<AExpression> arguments, int argNo)
+	private static Point ReadPoint(string Name, ExpressionMediator exm, List<AExpression?> arguments, int argNo)
 	{
 		long x64 = arguments[argNo].GetIntValue(exm);
 		if (x64 < int.MinValue || x64 > int.MaxValue)
@@ -5204,7 +5204,7 @@ internal static partial class FunctionMethodCreator
 	/// <summary>
 	/// argNo番目を含む4つの引数を整数値として読み取り、Rectangle形式にして返す。
 	/// </summary>
-	private static Rectangle ReadRectangle(string Name, ExpressionMediator exm, List<AExpression> arguments, int argNo)
+	private static Rectangle ReadRectangle(string Name, ExpressionMediator exm, List<AExpression?> arguments, int argNo)
 	{
 		long x64 = arguments[argNo].GetIntValue(exm);
 		if (x64 < int.MinValue || x64 > int.MaxValue)
@@ -5229,7 +5229,7 @@ internal static partial class FunctionMethodCreator
 	/// <summary>
 	/// argNo番目の引数を5x5のカラーマトリクス配列変数として読み取り、 5x5のfloat[][]形式にして返す。
 	/// </summary>
-	private static float[][] ReadColormatrix(string Name, ExpressionMediator exm, List<AExpression> arguments, int argNo)
+	private static float[][] ReadColormatrix(string Name, ExpressionMediator exm, List<AExpression?> arguments, int argNo)
 	{
 		//数値型二次元以上配列変数のはず
 		FixedVariableTerm p = ((VariableTerm)arguments[argNo]).GetFixedVariableTerm(exm);
@@ -5302,7 +5302,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long)];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -5344,7 +5344,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long)];
 			CanRestructure = false;
 		}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -5370,7 +5370,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long), typeof(long), typeof(long)];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -5396,7 +5396,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long), typeof(long), typeof(long), typeof(long)];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -5421,7 +5421,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long), typeof(long)];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -5454,7 +5454,7 @@ internal static partial class FunctionMethodCreator
 		//		return null;
 		//	return string.Format(Properties.Resources.SyntaxErrMesMethodDefaultArgumentNum1, name, 2);
 		//}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -5517,7 +5517,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long), typeof(long), typeof(long)];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -5541,7 +5541,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long), typeof(long), typeof(long)];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -5591,7 +5591,7 @@ internal static partial class FunctionMethodCreator
 		//	return null;
 		//}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -5647,7 +5647,7 @@ internal static partial class FunctionMethodCreator
 		//		return null;
 		//	return string.Format(Properties.Resources.SyntaxErrMesMethodDefaultArgumentNum1, name, 2);
 		//}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -5748,7 +5748,7 @@ internal static partial class FunctionMethodCreator
 		//		return string.Format(Properties.Resources.SyntaxErrMesMethodDefaultArgumentNum0, name);
 		//	return null;
 		//}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -5804,7 +5804,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long), typeof(long), typeof(long), typeof(long), typeof(long)];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				throw new CodeEE(string.Format(trerror.GDIPlusOnly.Text, Name));
@@ -5827,7 +5827,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(string)];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string imgname = arguments[0].GetStrValue(exm);
 			ASprite img = AppContents.GetSprite(imgname);
@@ -5858,7 +5858,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(string), typeof(long), typeof(long)];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string imgname = arguments[0].GetStrValue(exm);
 			ASprite img = AppContents.GetSprite(imgname);
@@ -5886,7 +5886,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(string), typeof(long), typeof(long)];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string imgname = arguments[0].GetStrValue(exm);
 			ASprite img = AppContents.GetSprite(imgname);
@@ -5913,7 +5913,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			switch (Name)
 			{
@@ -5934,7 +5934,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long), typeof(long), typeof(long)];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -5974,7 +5974,7 @@ internal static partial class FunctionMethodCreator
 				];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -6034,7 +6034,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long)];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -6090,7 +6090,7 @@ internal static partial class FunctionMethodCreator
 		//	}
 		//	return null;
 		//}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -6131,7 +6131,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(string)];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string imgname = arguments[0].GetStrValue(exm);
 			ASprite img = AppContents.GetSprite(imgname);
@@ -6150,7 +6150,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long)];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			return AppContents.SpriteDisposeAll(arguments[0].GetIntValue(exm) != 0);
 		}
@@ -6188,7 +6188,7 @@ internal static partial class FunctionMethodCreator
 		//	}
 		//	return null;
 		//}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -6217,7 +6217,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long), typeof(long), typeof(long), typeof(long), typeof(long)];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -6272,7 +6272,7 @@ internal static partial class FunctionMethodCreator
 		//		return string.Format(Properties.Resources.SyntaxErrMesMethodGraphicsColorMatrix0, name);
 		//	return null;
 		//}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -6295,7 +6295,7 @@ internal static partial class FunctionMethodCreator
 			return 1;
 		}
 
-		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression> arguments)
+		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			for (int i = 0; i < arguments.Count; i++)
 			{
@@ -6324,7 +6324,7 @@ internal static partial class FunctionMethodCreator
 		}
 
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -6395,7 +6395,7 @@ internal static partial class FunctionMethodCreator
 		//		return string.Format(Properties.Resources.SyntaxErrMesMethodGraphicsColorMatrix0, name);
 		//	return null;
 		//}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -6436,7 +6436,7 @@ internal static partial class FunctionMethodCreator
 			return 1;
 		}
 
-		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression> arguments)
+		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			for (int i = 0; i < arguments.Count; i++)
 			{
@@ -6463,7 +6463,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(string), typeof(long), typeof(long)];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -6506,7 +6506,7 @@ internal static partial class FunctionMethodCreator
 			CanRestructure = false;
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -6549,7 +6549,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			//if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 			//	throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -6569,7 +6569,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long), typeof(long)];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 
 			long x64 = arguments[0].GetIntValue(exm);
@@ -6592,7 +6592,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			//if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 			//	throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -6611,7 +6611,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			//if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 			//	throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -6630,7 +6630,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long), typeof(long), typeof(long), typeof(long)];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -6661,7 +6661,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long)];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -6687,7 +6687,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(string), typeof(long), typeof(long), typeof(long)];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			//if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 			//	throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -6742,7 +6742,7 @@ internal static partial class FunctionMethodCreator
 		//	}
 		//	return null;
 		//}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -6780,7 +6780,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long)];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (!exm.Console.IsActive)//アクティブでないならスルー
 				return 0;
@@ -6807,7 +6807,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			switch (Name)
 			{
@@ -6826,7 +6826,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [];
 			CanRestructure = false;
 		}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			//if (exm.Console.SelectingButton != null)
 			//	return exm.Console.SelectingButton.ToString();
@@ -6858,7 +6858,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			return exm.Console.IsActive ? 1 : 0;
 		}
@@ -6872,7 +6872,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long)];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long i64 = arguments[0].GetIntValue(exm);
 			if (i64 < int.MinValue || i64 > short.MaxValue)
@@ -6916,7 +6916,7 @@ internal static partial class FunctionMethodCreator
 		//	}
 		//	return null;
 		//}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			#region EM_私家版_LoadText＆SaveText機能拡張
 			//string savText = arguments[0].GetStrValue(exm);
@@ -7025,7 +7025,7 @@ internal static partial class FunctionMethodCreator
 		//	}
 		//	return null;
 		//}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			#region EM_私家版_LoadText＆SaveText機能拡張
 			//Int64 i64 = arguments[0].GetIntValue(exm);
@@ -7101,7 +7101,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long), typeof(long)];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -7138,7 +7138,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(long), typeof(long)];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
@@ -7192,7 +7192,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(string)];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string str = arguments[0].GetStrValue(exm);
 			string filepath = Path.GetFullPath(".\\sound\\" + str);
@@ -7216,7 +7216,7 @@ internal static partial class FunctionMethodCreator
 				];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string functionname = arguments[0].GetStrValue(exm);
 			if (arguments.Count == 1 || arguments[1].GetIntValue(exm) == 0)
@@ -7272,7 +7272,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			using (System.Diagnostics.Process memory = System.Diagnostics.Process.GetCurrentProcess())
 			{
@@ -7290,7 +7290,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			using (System.Diagnostics.Process destmemory = System.Diagnostics.Process.GetCurrentProcess())
 			{
@@ -7313,7 +7313,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [];
 			CanRestructure = false;
 		}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			return exm.Console.Window.TextBox.Text;
 		}
@@ -7326,7 +7326,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [typeof(string)];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			exm.Console.Window.ChangeTextBox(arguments[0].GetStrValue(exm));
 			return 1;
@@ -7346,7 +7346,7 @@ internal static partial class FunctionMethodCreator
 			CanRestructure = true;
 			HasUniqueRestructure = true;
 		}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			VariableTerm vToken = (VariableTerm)arguments[0];
 			string varname = "";
@@ -7360,7 +7360,7 @@ internal static partial class FunctionMethodCreator
 			else
 				return "";
 		}
-		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression> arguments)
+		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			arguments[1] = arguments[1].Restructure(exm);
 			return arguments[1] is SingleTerm;
@@ -7379,7 +7379,7 @@ internal static partial class FunctionMethodCreator
 				];
 			CanRestructure = false;
 		}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			//修正に失敗したので差し戻す
 			//long num = arguments[0].GetIntValue(exm)-exm.Console.DeletedLines;
@@ -7400,7 +7400,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArray = [];
 			CanRestructure = true;
 		}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			LogicalLine line = exm.Process.GetScaningLine();
 			if ((line == null) || (line.ParentLabelLine == null))
@@ -7420,7 +7420,7 @@ internal static partial class FunctionMethodCreator
 				];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 
 			exm.Process.flowinputDef = arguments[0].GetIntValue(exm);
@@ -7443,7 +7443,7 @@ internal static partial class FunctionMethodCreator
 				];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 
 			exm.Process.flowinputString = arguments[0].GetIntValue(exm) != 0 ? true : false;
@@ -7467,10 +7467,10 @@ internal static partial class FunctionMethodCreator
 			CanRestructure = false;
 		}
 
-		public override Int64 GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override Int64 GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string name = arguments[0].GetStrValue(exm);
-			List<AExpression> methArgs = new List<AExpression>(arguments.Skip(2).ToArray());
+			List<AExpression?> methArgs = new List<AExpression?>(arguments.Skip(2).ToArray());
 			var term = GlobalStatic.IdentifierDictionary.GetFunctionMethod(GlobalStatic.LabelDictionary, name, methArgs, true);
 
 			if (term == null)
@@ -7497,10 +7497,10 @@ internal static partial class FunctionMethodCreator
 				];
 			CanRestructure = false;
 		}
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string name = arguments[0].GetStrValue(exm);
-			List<AExpression> methArgs = new List<AExpression>(arguments.Skip(2).ToArray());
+			List<AExpression?> methArgs = new List<AExpression?>(arguments.Skip(2).ToArray());
 			var term = GlobalStatic.IdentifierDictionary.GetFunctionMethod(GlobalStatic.LabelDictionary, name, methArgs, true);
 
 			if (term == null)
@@ -7525,13 +7525,13 @@ internal static partial class FunctionMethodCreator
 			CanRestructure = true;
 		}
 
-		public override Int64 GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override Int64 GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string name = arguments[0].GetStrValue(exm);
 			AExpression term;
 			try
 			{
-				term = GlobalStatic.IdentifierDictionary.GetFunctionMethod(GlobalStatic.LabelDictionary, name, new List<AExpression>(), true);
+				term = GlobalStatic.IdentifierDictionary.GetFunctionMethod(GlobalStatic.LabelDictionary, name, new List<AExpression?>(), true);
 			}
 			catch (CodeEE)
 			{
@@ -7566,7 +7566,7 @@ internal static partial class FunctionMethodCreator
 				];
 			CanRestructure = false;
 		}
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long argument0 = arguments[0].GetIntValue(exm);
 			GlobalStatic.Console.bitmapCacheEnabledForNextLine = argument0 != 0;
@@ -7587,7 +7587,7 @@ internal static partial class FunctionMethodCreator
 				];
 			CanRestructure = false;
 		}
-		public override Int64 GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override Int64 GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			Int64 argument0 = arguments[0].GetIntValue(exm);
 			Int64 argument1 = arguments[1].GetIntValue(exm);
@@ -7607,7 +7607,7 @@ internal static partial class FunctionMethodCreator
 				];
 			CanRestructure = false;
 		}
-		public override Int64 GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override Int64 GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			Int64 argument0 = arguments[0].GetIntValue(exm);
 			GlobalStatic.Console.Window.hotkeyState.HotkeyStateInit((nint)argument0);
@@ -7626,7 +7626,7 @@ internal static partial class FunctionMethodCreator
 				];
 			CanRestructure = false;
 		}
-		public override Int64 GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
+		public override Int64 GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string filename = "";
 			if (arguments.Count > 0)

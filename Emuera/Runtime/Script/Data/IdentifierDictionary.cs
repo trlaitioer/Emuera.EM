@@ -558,7 +558,7 @@ internal partial class IdentifierDictionary
 		return null;
 	}
 
-	public AExpression GetFunctionMethod(LabelDictionary labelDic, string codeStr, List<AExpression> arguments, bool userDefinedOnly)
+	public AExpression GetFunctionMethod(LabelDictionary labelDic, string codeStr, List<AExpression?> arguments, bool userDefinedOnly)
 	{
 		//if (Config.Config.IgnoreCase)
 		//	codeStr = codeStr.ToUpper();

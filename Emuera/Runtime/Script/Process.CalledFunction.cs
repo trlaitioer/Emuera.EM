@@ -15,7 +15,7 @@ namespace MinorShift.Emuera.Runtime.Script;
 
 internal sealed class UserDefinedFunctionArgument
 {
-	public UserDefinedFunctionArgument(AExpression[] srcArgs, VariableTerm[] destArgs)
+	public UserDefinedFunctionArgument(AExpression?[] srcArgs, VariableTerm[] destArgs)
 	{
 		Arguments = srcArgs;
 		TransporterInt = new long[Arguments.Length];
@@ -27,7 +27,7 @@ internal sealed class UserDefinedFunctionArgument
 			isRef[i] = destArgs[i].Identifier.IsReference;
 		}
 	}
-	public readonly AExpression[] Arguments;
+	public readonly AExpression?[] Arguments;
 	public readonly long[] TransporterInt;
 	public readonly string[] TransporterStr;
 	public readonly Array[] TransporterRef;
@@ -151,7 +151,7 @@ internal sealed class CalledFunction
 	/// 1806+v6.99 式中関数の引数に無効な#DIM変数を与えている場合に例外になるのを修正
 	/// 1808beta009 REF型に対応
 	/// </summary>
-	public UserDefinedFunctionArgument ConvertArg(List<AExpression> srcArgs, out string errMes)
+	public UserDefinedFunctionArgument ConvertArg(List<AExpression?> srcArgs, out string errMes)
 	{
 		errMes = null;
 		if (TopLabel.IsError)
@@ -160,13 +160,13 @@ internal sealed class CalledFunction
 			return null;
 		}
 		FunctionLabelLine func = TopLabel;
-		AExpression[] convertedArg = new AExpression[func.Arg.Length];
+		AExpression?[] convertedArg = new AExpression?[func.Arg.Length];
 		if (convertedArg.Length < srcArgs.Count)
 		{
 			errMes = string.Format(trerror.TooManyFuncArgs.Text, func.LabelName);
 			return null;
 		}
-		AExpression term;
+		AExpression? term;
 		VariableTerm destArg;
 		//bool isString = false;
 		for (int i = 0; i < func.Arg.Length; i++)

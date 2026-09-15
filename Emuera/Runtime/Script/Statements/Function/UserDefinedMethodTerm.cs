@@ -47,7 +47,7 @@ internal sealed class UserDefinedMethodTerm : SuperUserDefinedMethodTerm
 	/// <summary>
 	/// エラーならnullを返す。
 	/// </summary>
-	public static UserDefinedMethodTerm Create(FunctionLabelLine targetLabel, List<AExpression> srcArgs, out string errMes)
+	public static UserDefinedMethodTerm Create(FunctionLabelLine targetLabel, List<AExpression?> srcArgs, out string errMes)
 	{
 		CalledFunction call = CalledFunction.CreateCalledFunctionMethod(targetLabel, targetLabel.LabelName);
 		UserDefinedFunctionArgument arg = call.ConvertArg(srcArgs, out errMes);
@@ -78,13 +78,13 @@ internal sealed class UserDefinedMethodTerm : SuperUserDefinedMethodTerm
 }
 internal sealed class UserDefinedRefMethodTerm : SuperUserDefinedMethodTerm
 {
-	public UserDefinedRefMethodTerm(UserDefinedRefMethod reffunc, List<AExpression> srcArgs)
+	public UserDefinedRefMethodTerm(UserDefinedRefMethod reffunc, List<AExpression?> srcArgs)
 		: base(reffunc.RetType)
 	{
 		this.srcArgs = srcArgs;
 		this.reffunc = reffunc;
 	}
-	List<AExpression> srcArgs;
+	List<AExpression?> srcArgs;
 	readonly UserDefinedRefMethod reffunc;
 	public override UserDefinedFunctionArgument Argument
 	{

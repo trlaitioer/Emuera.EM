@@ -594,7 +594,7 @@ internal sealed class ErbLoader
 			}
 			if (!wc.EOL)
 			{
-				List<AExpression> argsRow;
+				List<AExpression?> argsRow;
 				if (symbol.Type == ',')
 					argsRow = ExpressionParser.ReduceArguments(wc, ArgsEndWith.EoL, true);
 				else if (symbol.Type == '(')

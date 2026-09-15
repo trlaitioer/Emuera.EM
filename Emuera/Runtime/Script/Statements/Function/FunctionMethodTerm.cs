@@ -5,7 +5,7 @@ namespace MinorShift.Emuera.Runtime.Script.Statements.Function;
 
 internal sealed class FunctionMethodTerm : AExpression
 {
-	public FunctionMethodTerm(FunctionMethod meth, List<AExpression> args)
+	public FunctionMethodTerm(FunctionMethod meth, List<AExpression?> args)
 		: base(meth.ReturnType)
 	{
 		Method = meth;
@@ -13,7 +13,7 @@ internal sealed class FunctionMethodTerm : AExpression
 	}
 
 	internal FunctionMethod Method { get; }
-	internal List<AExpression> Arguments { get; }
+	internal List<AExpression?> Arguments { get; }
 
 	public override long GetIntValue(ExpressionMediator exm)
 	{
