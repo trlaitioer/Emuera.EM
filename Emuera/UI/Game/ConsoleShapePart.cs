@@ -1,4 +1,4 @@
-using MinorShift.Emuera.Runtime.Config;
+﻿using MinorShift.Emuera.Runtime.Config;
 using System;
 using System.Drawing;
 using System.Text;

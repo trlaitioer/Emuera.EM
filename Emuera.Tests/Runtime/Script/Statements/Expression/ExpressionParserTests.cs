@@ -1,4 +1,4 @@
-using MinorShift.Emuera;
+﻿using MinorShift.Emuera;
 using MinorShift.Emuera.Runtime.Script.Parser;
 using MinorShift.Emuera.Runtime.Script.Statements.Expression;
 using MinorShift.Emuera.Runtime.Utils;

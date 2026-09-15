@@ -1,4 +1,4 @@
-using MinorShift.Emuera.GameData.Function;
+﻿using MinorShift.Emuera.GameData.Function;
 using MinorShift.Emuera.Runtime.Script.Statements.Expression;
 using Xunit;
 

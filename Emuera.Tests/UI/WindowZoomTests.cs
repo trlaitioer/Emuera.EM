@@ -1,4 +1,4 @@
-using MinorShift.Emuera.UI;
+﻿using MinorShift.Emuera.UI;
 using System.Drawing;
 using Xunit;
 
