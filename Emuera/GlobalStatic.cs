@@ -41,6 +41,11 @@ internal static class GlobalStatic
 	//ERBloaderに引数解析の結果を渡すための橋渡し変数
 	//1756 Processから移動。Program.AnalysisMode用
 	public static Dictionary<string, long> tempDic = new(StringComparer.OrdinalIgnoreCase);
+	/// <summary>
+	/// Guards <see cref="tempDic"/>. In AnalysisMode the dictionary is written from the depth-layer
+	/// workers of ErbLoader.ParseScript, so every write and the read-back enumeration take this lock.
+	/// </summary>
+	public static readonly object TempDicLock = new();
 	#region EE_FORCE_QUIT_AND_RESTART
 	public static bool ForceQuitAndRestart;//連続実行を防ぐ
 	#endregion

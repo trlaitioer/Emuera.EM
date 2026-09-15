@@ -680,6 +680,13 @@ internal sealed class ErbLoader
 	}
 
 
+	/// <summary>
+	/// Set once any dynamic CALL form is seen, and read after all parse passes to decide whether the
+	/// "function never called" warnings are suppressed. It is passed by ref into
+	/// <c>Instruction.SetJumpTo</c> and therefore written from the depth-layer workers as well; the
+	/// write is monotonic (every writer stores true) and only ever flips false to true, so the
+	/// unsynchronized write is benign, and the read happens after the parallel region has joined.
+	/// </summary>
 	public bool useCallForm;
 
 	/// <summary>
@@ -687,27 +694,114 @@ internal sealed class ErbLoader
 	/// </summary>
 	private void ParseScript()
 	{
+		//Parse errors are collected instead of beeping per error: this method runs on a worker
+		//thread (both call sites wrap it in Task.Run) and must not touch the UI.
+		ParserMediator.DeferParseErrorSound = true;
+		try
+		{
+			ParseScriptCore();
+		}
+		finally
+		{
+			ParserMediator.DeferParseErrorSound = false;
+		}
+	}
+
+	/// <summary>
+	/// Re-decides the static CALL edges that were resolved inside one Depth layer.
+	/// </summary>
+	/// <remarks>
+	/// Within a layer the parse order comes from LabelDictionary.AddLabel insertion order, so a caller
+	/// may be parsed before its callee. Such a caller reads the callee's IsError while it is still
+	/// false and keeps its call site usable, which is one of the two outcomes the serial parser could
+	/// reach for that edge. Once the layer is joined every IsError in it is final, so those
+	/// read-before-write edges are decided here instead. The check reads only the callee, and the write
+	/// goes to a calling line whose owning worker has already finished, so the pass runs in parallel.
+	/// <para>
+	/// The reads need no lock, here and in CALL_Instruction.SetJumpTo. IsError is a plain field, so a
+	/// concurrent read is atomic and, while a same-layer callee may still be parsing, it sees either
+	/// the pre-write or the post-write value rather than anything in between. The assignment only ever
+	/// goes false to true, so a callee that was already final cannot be lost, and an edge whose read
+	/// was early is exactly what this method re-decides. Layers are kept apart by the join of the
+	/// previous Parallel.ForEach.
+	/// </para>
+	/// <para>
+	/// The decision re-runs ConvertArg rather than assuming its result, because the serial parser ran
+	/// it as part of the same branch: that is what reproduces the call site's diagnostics. When the
+	/// call's own arguments are at fault it warns exactly as that branch does, and only a callee that
+	/// failed elsewhere leaves the call site carrying the callee's message. Skipping it would report
+	/// the callee's message for a call site whose own arguments were what the serial parse rejected.
+	/// </para>
+	/// <para>
+	/// CallFunc is not back-filled: Process.ScriptProc throws CodeEE on an error line before it
+	/// reaches the instruction, so the resolved call is never read. The outcome is independent of the
+	/// enumeration order either way.
+	/// </para>
+	/// </remarks>
+	private static void ReconcileLayerErrors(
+		System.Collections.Concurrent.ConcurrentBag<
+			(InstructionLine Line, SpCallArgment Arg, CalledFunction Callee)> edges)
+	{
+		if (edges.IsEmpty)
+			return;
+		System.Threading.Tasks.Parallel.ForEach(edges, static edge =>
+		{
+			if (edge.Line.IsError || !edge.Callee.TopLabel.IsError)
+				return;
+			//Mirrors CALL_Instruction.SetJumpTo, which is the branch a serial parse took whenever the
+			//callee had already been parsed in its enumeration order.
+			if (edge.Arg.UDFArgument == null)
+			{
+				edge.Arg.UDFArgument = edge.Callee.ConvertArg(edge.Arg.RowArgs, out string errMes);
+				if (edge.Arg.UDFArgument == null)
+				{
+					ParserMediator.Warn(errMes, edge.Line, 2, true, false);
+					return;
+				}
+			}
+			edge.Line.IsError = true;
+			edge.Line.ErrMes = edge.Callee.TopLabel.ErrMes;
+		});
+	}
+
+	private void ParseScriptCore()
+	{
 		int usedLabelCount = 0;
 		int labelDepth = -1;
 		List<FunctionLabelLine> labelList = labelDic.GetAllLabels(true);
+		List<FunctionLabelLine> currentLayer = [];
+		//Collects the static CALL edges resolved inside the current layer.
+		System.Collections.Concurrent.ConcurrentBag<
+			(InstructionLine Line, SpCallArgment Arg, CalledFunction Callee)> callEdges = [];
+		ParserMediator.CallEdgeRecorder = callEdges;
 		while (true)
 		{
 			labelDepth++;
-			int countInDepth = 0;
+			currentLayer.Clear();
 			foreach (FunctionLabelLine label in labelList)
 			{
 				if (label.Depth != labelDepth)
 					continue;
-				//1756beta003 なんで追加したんだろう デバグ中になんかやったのか とりあえずコメントアウトしておく
-				//if (label.LabelName == "EVENTTURNEND")
-				//    useCallForm = true;
-				usedLabelCount++;
-				countInDepth++;
-				ParseFunctionWithCatch(label);
+				currentLayer.Add(label);
 			}
-			if (countInDepth == 0)
+			if (currentLayer.Count == 0)
 				break;
+			//1756beta003 なんで追加したんだろう デバグ中になんかやったのか とりあえずコメントアウトしておく
+			//if (label.LabelName == "EVENTTURNEND")
+			//    useCallForm = true;
+			usedLabelCount += currentLayer.Count;
+			//Parallelize only inside a single Depth layer; a barrier between layers is mandatory.
+			//Layer k+1 is discovered while parsing layer k, so parallelizing across layers would let
+			//a not-yet-numbered function (Depth < 0) be parsed and pick up setJumpTo's -2
+			//normalization, shifting every later layer number. Within a layer the concurrent writes
+			//to Depth are harmless: every writer stores the same k+1.
+			System.Threading.Tasks.Parallel.ForEach(currentLayer, ParseFunctionWithCatch);
+			//Repair same-layer read-before-write errors before the next layer is parsed, because the
+			//next layer's SetJumpTo must observe the corrected IsError.
+			ReconcileLayerErrors(callEdges);
+			callEdges.Clear();
 		}
+		ParserMediator.CallEdgeRecorder = null;
 		labelDepth = -1;
 		var ignoredFNCWarningFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 		int ignoredFNCWarningCount = 0;
@@ -780,23 +874,40 @@ internal sealed class ErbLoader
 				}
 			}
 		}
-		if (Program.AnalysisMode && (warningDic.Keys.Count > 0 || GlobalStatic.tempDic.Keys.Count > 0))
+		//Parse-error notification sound. It used to be played per error from ParseFunctionWithCatch
+		//and ArgumentParser, but both can be reached from the parallel region, so it is played once
+		//after every parse pass has finished instead.
+		if (ParserMediator.TakeParseErrorCount() > 0)
+			System.Media.SystemSounds.Hand.Play();
+		if (Program.AnalysisMode && (warningDic.Count > 0 || GlobalStatic.tempDic.Count > 0))
 		{
 			output.PrintError(trerror.UndefinedFunctions.Text);
-			if (warningDic.Keys.Count > 0)
+			//Both dictionaries are written from the depth-layer workers in AnalysisMode; enumerate
+			//snapshots under the same locks instead of the live collections.
+			List<KeyValuePair<string, long>> generalFuncs;
+			lock (warningDicLock)
+			{
+				generalFuncs = [.. warningDic];
+			}
+			if (generalFuncs.Count > 0)
 			{
 				output.PrintError(trerror.GeneralFunc.Text);
-				foreach (string labelName in warningDic.Keys)
+				foreach (var pair in generalFuncs)
 				{
-					output.PrintError("　　" + labelName + ": " + warningDic[labelName].ToString() + trerror.Occurrences.Text);
+					output.PrintError("　　" + pair.Key + ": " + pair.Value.ToString() + trerror.Occurrences.Text);
 				}
 			}
-			if (GlobalStatic.tempDic.Keys.Count > 0)
+			List<KeyValuePair<string, long>> sentenceFuncs;
+			lock (GlobalStatic.TempDicLock)
+			{
+				sentenceFuncs = [.. GlobalStatic.tempDic];
+			}
+			if (sentenceFuncs.Count > 0)
 			{
 				output.PrintError(trerror.SentenceFunc.Text);
-				foreach (string labelName in GlobalStatic.tempDic.Keys)
+				foreach (var pair in sentenceFuncs)
 				{
-					output.PrintError("　　" + labelName + ": " + GlobalStatic.tempDic[labelName].ToString() + trerror.Occurrences.Text);
+					output.PrintError("　　" + pair.Key + ": " + pair.Value.ToString() + trerror.Occurrences.Text);
 				}
 			}
 		}
@@ -834,18 +945,28 @@ internal sealed class ErbLoader
 
 
 	public Dictionary<string, long> warningDic = [];
+	//setJumpTo reaches this warning path from several threads during the parallel parse of a Depth
+	//layer. warningDic and ignoredFNFWarningFiles are a Dictionary and a HashSet, so their writes
+	//are serialized.
+	readonly object warningDicLock = new();
 	private void printFunctionNotFoundWarning(string str, InstructionLine line, int level, bool isError)
 	{
 		if (Program.AnalysisMode)
 		{
-			if (warningDic.TryGetValue(str, out long value))
-				warningDic[str] = ++value;
-			else
-				warningDic.Add(str, 1);
+			lock (warningDicLock)
+			{
+				if (warningDic.TryGetValue(str, out long value))
+					warningDic[str] = ++value;
+				else
+					warningDic.Add(str, 1);
+			}
 			return;
 		}
 		if (isError)
 		{
+			//Only ErbLoader.setJumpTo calls this, inside the worker that parses that function's body,
+			//so the line has a single writer and does not need warningListLock as ParserMediator.Warn
+			//does. Runtime callers on other threads only read the flag.
 			line.IsError = true;
 			line.ErrMes = str;
 		}
@@ -863,20 +984,23 @@ internal sealed class ErbLoader
 			string filename = line.Position.Value.Filename;
 			if (!string.IsNullOrEmpty(filename))
 			{
-				if (ignoredFNFWarningFiles.Contains(filename))
+				lock (warningDicLock)
 				{
-					ignore = true;
-				}
-				else
-				{
-					ignore = false;
-					ignoredFNFWarningFiles.Add(filename);
+					if (ignoredFNFWarningFiles.Contains(filename))
+					{
+						ignore = true;
+					}
+					else
+					{
+						ignore = false;
+						ignoredFNFWarningFiles.Add(filename);
+					}
 				}
 			}
 		}
 		if (ignore && !Program.AnalysisMode)
 		{
-			ignoredFNFWarningCount++;
+			System.Threading.Interlocked.Increment(ref ignoredFNFWarningCount);
 			return;
 		}
 		ParserMediator.Warn(str, line, level, isError, false);
@@ -892,16 +1016,23 @@ internal sealed class ErbLoader
 		}
 		catch (Exception exc)
 		{
-			System.Media.SystemSounds.Hand.Play();
+			//A function body is parsed on a thread pool thread here, so no UI may be touched. Errors
+			//are accumulated through ParserMediator.Warn and the notification sound is played once
+			//outside the parallel region (in the ParseScript layer loop).
 			//1756beta2+v6.1 修正の効率化のために何かパース関係でハンドリングできてないエラーが出た場合はスタックトレースを投げるようにした
 			string errmes = exc is EmueraException ? exc.Message : exc.GetType().ToString() + ":" + exc.Message;
 			ParserMediator.Warn(string.Format(trerror.FuncAnalysisError.Text, label.LabelName, errmes), label, 2, true, false, exc is not EmueraException ? exc.StackTrace : null);
 			label.ErrMes = trerror.CalledFailedFunc.Text;
-			System.Windows.Forms.Application.DoEvents();
+			//The label is re-decided through CallEdgeRecorder after the layer is joined, and that pass
+			//skips a callee whose label still has IsError false. Warn already set IsError, and this
+			//keeps the pair complete if that ever stops being the case, so the failure reaches the
+			//call sites.
+			label.IsError = true;
+			ParserMediator.NotifyParseError();
 		}
 		finally
 		{
-			parentProcess.scaningLine = null;
+			parentProcess.SetScaningLineForThread(null);
 		}
 
 	}
@@ -915,7 +1046,7 @@ internal sealed class ErbLoader
 		while (true)
 		{
 			nextLine = nextLine.NextLine;
-			parentProcess.scaningLine = nextLine;
+			parentProcess.SetScaningLineForThread(nextLine);
 			if (nextLine is not InstructionLine func)
 			{
 				if (nextLine is NullLine or FunctionLabelLine)
@@ -948,7 +1079,7 @@ internal sealed class ErbLoader
 		while (true)
 		{
 			nextLine = nextLine.NextLine;
-			parentProcess.scaningLine = nextLine;
+			parentProcess.SetScaningLineForThread(nextLine);
 			if (nextLine is NullLine or FunctionLabelLine)
 				break;
 			if (nextLine is not InstructionLine)
@@ -1501,7 +1632,7 @@ internal sealed class ErbLoader
 			}
 			if (func.IsError)
 				continue;
-			parentProcess.scaningLine = func;
+			parentProcess.SetScaningLineForThread(func);
 
 			if (func.Function.Instruction != null)
 			{

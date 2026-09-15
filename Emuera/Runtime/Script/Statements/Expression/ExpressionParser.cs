@@ -260,10 +260,14 @@ internal static class ExpressionParser
 					GlobalStatic.IdentifierDictionary.ThrowException(idStr, true);
 				else
 				{
-					if (GlobalStatic.tempDic.TryGetValue(idStr, out long value))
-						GlobalStatic.tempDic[idStr] = ++value;
-					else
-						GlobalStatic.tempDic.Add(idStr, 1);
+					//Reached from the depth-layer workers of ErbLoader.ParseScript in AnalysisMode.
+					lock (GlobalStatic.TempDicLock)
+					{
+						if (GlobalStatic.tempDic.TryGetValue(idStr, out long value))
+							GlobalStatic.tempDic[idStr] = ++value;
+						else
+							GlobalStatic.tempDic.Add(idStr, 1);
+					}
 					return new NullTerm(0);
 				}
 			}

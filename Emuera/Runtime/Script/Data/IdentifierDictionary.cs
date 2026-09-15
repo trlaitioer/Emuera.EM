@@ -500,8 +500,7 @@ internal partial class IdentifierDictionary
 			{
 				ParserMediator.Warn(treer.CannotRecommendCallLocalVar.Text, line, 1, false, false);
 			}
-			LocalVariableToken retLocal = value.GetExistLocalVariableToken(subKey);
-			retLocal ??= value.GetNewLocalVariableToken(subKey, line.ParentLabelLine);
+			LocalVariableToken retLocal = value.GetNewVariableTokenIfAbsent(subKey, line.ParentLabelLine);
 			return retLocal;
 		}
 		if (varTokenDic.TryGetValue(key, out ret))

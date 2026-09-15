@@ -49,11 +49,11 @@ internal static partial class ArgumentParser
 
 		static bool error(InstructionLine line, string errmes)
 		{
-			System.Media.SystemSounds.Hand.Play();
-
-			line.IsError = true;
-			line.ErrMes = errmes;
+			//ParserMediator.Warn sets line.IsError/ErrMes under its own lock, so they must not be
+			//written here as well: one discipline for those two fields. The sound is played by
+			//NotifyParseError immediately for runtime callers and deferred during the parallel parse.
 			ParserMediator.Warn(errmes, line, 2, true, false);
+			ParserMediator.NotifyParseError();
 			return false;
 		}
 	}

@@ -19,19 +19,18 @@ internal sealed class VariableLocal
 	//VariableData varData;
 	CreateLocalVariableToken creater;
 	Dictionary<string, LocalVariableToken> localVarTokens = [];
-	public LocalVariableToken GetExistLocalVariableToken(string subKey)
-	{
-		if (localVarTokens.TryGetValue(subKey, out LocalVariableToken ret))
-			return ret;
-		return null;
-	}
+	//While function bodies are parsed in parallel, several threads create tokens for different
+	//functions at once. Writes are serialized to keep the Dictionary intact. A lock is used rather
+	//than GetOrAdd because creater must run exactly once per subKey: calling it twice would leave a
+	//function referring to the array that never made it into the dictionary.
+	readonly object localVarTokensLock = new();
 
 	public int GetDefaultSize()
 	{
 		return size;
 	}
 
-	public LocalVariableToken GetNewLocalVariableToken(string subKey, FunctionLabelLine func)
+	private LocalVariableToken GetNewLocalVariableToken(string subKey, FunctionLabelLine func)
 	{
 		LocalVariableToken ret = null;
 		int newSize = 0;
@@ -64,34 +63,58 @@ internal sealed class VariableLocal
 			}
 			//throw new CodeEE("この関数に引数変数\"" + varCode + "\"は定義されていません");
 		}
-		localVarTokens.Add(subKey, ret);
+		lock (localVarTokensLock)
+		{
+			localVarTokens.Add(subKey, ret);
+		}
 		return ret;
+	}
+
+	/// <summary>
+	/// Returns the existing token, or creates and registers one when absent. The lookup and the
+	/// creation share a single critical section, so the same subKey cannot be created twice while
+	/// parsing runs in parallel.
+	/// </summary>
+	public LocalVariableToken GetNewVariableTokenIfAbsent(string subKey, FunctionLabelLine func)
+	{
+		lock (localVarTokensLock)
+		{
+			if (localVarTokens.TryGetValue(subKey, out LocalVariableToken exist))
+				return exist;
+			return GetNewLocalVariableToken(subKey, func);
+		}
 	}
 
 	public void ResizeLocalVariableToken(string subKey, int newSize)
 	{
-		if (localVarTokens.TryGetValue(subKey, out LocalVariableToken ret))
+		lock (localVarTokensLock)
 		{
-			if (size < newSize)
-				ret.resize(newSize);
+			if (localVarTokens.TryGetValue(subKey, out LocalVariableToken ret))
+			{
+				if (size < newSize)
+					ret.resize(newSize);
+				else
+					ret.resize(size);
+			}
 			else
-				ret.resize(size);
-		}
-		else
-		{
-			if (newSize > size)
-				ret = creater(varCode, subKey, newSize);
-			else if (newSize == 0)
-				ret = creater(varCode, subKey, size);
-			else
-				return;
-			localVarTokens.Add(subKey, ret);
+			{
+				if (newSize > size)
+					ret = creater(varCode, subKey, newSize);
+				else if (newSize == 0)
+					ret = creater(varCode, subKey, size);
+				else
+					return;
+				localVarTokens.Add(subKey, ret);
+			}
 		}
 	}
 
 	public void Clear()
 	{
-		localVarTokens.Clear();
+		lock (localVarTokensLock)
+		{
+			localVarTokens.Clear();
+		}
 	}
 
 	public void SetDefault()

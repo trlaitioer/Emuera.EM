@@ -1,4 +1,4 @@
-using MinorShift.Emuera.GameView;
+﻿using MinorShift.Emuera.GameView;
 using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.Runtime.Script;
 using MinorShift.Emuera.Runtime.Script.Data;
@@ -465,9 +465,38 @@ internal sealed partial class Process(EmueraConsole view)
 				return state.Scope;
 			}
 	*/
+	/// <summary>
+	/// The "current line" during parsing. Because function bodies are parsed in parallel, each
+	/// thread keeps its own thread-local value and reads that first. A thread that never set one
+	/// (tests, runtime code) keeps reading this instance field, so paths that do not take part in
+	/// the parallel parse behave exactly as before.
+	/// </summary>
 	public LogicalLine scaningLine;
+	[ThreadStatic]
+	static LogicalLine scaningLineForThread;
+	[ThreadStatic]
+	static bool scaningLineForThreadInitialized;
+
+	/// <summary>
+	/// Sets the "current line" for a parsing thread. Parallel workers are pooled threads, so this
+	/// must always be used to be sure the thread-local side is owned rather than inherited.
+	/// </summary>
+	internal void SetScaningLineForThread(LogicalLine line)
+	{
+		if (!scaningLineForThreadInitialized)
+		{
+			//This thread has not joined the parse yet. Inherit the outer value (a test
+			//placeholder, for instance) exactly once, then switch to the thread-local side.
+			scaningLineForThread = scaningLine;
+			scaningLineForThreadInitialized = true;
+		}
+		scaningLineForThread = line;
+	}
+
 	internal LogicalLine GetScaningLine()
 	{
+		if (scaningLineForThreadInitialized && scaningLineForThread != null)
+			return scaningLineForThread;
 		if (scaningLine != null)
 			return scaningLine;
 		LogicalLine line = state.ErrorLine;

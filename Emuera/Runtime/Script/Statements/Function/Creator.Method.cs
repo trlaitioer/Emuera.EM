@@ -4860,6 +4860,10 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(string);
 			argumentTypeArray = [typeof(string)];
+			//Foldable, and it has to stay foldable: UserDefinedVariableData rejects a #DIM initial value
+			//that does not reduce to a constant, and STRLENSU(GETLINESTR(...)) only reduces because this
+			//folds. GetStrValue measures the text, which is safe off the UI thread now that the
+			//measurement does not use the Graphics owned by the console thread (StringMeasure).
 			CanRestructure = true;
 		}
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression> arguments)

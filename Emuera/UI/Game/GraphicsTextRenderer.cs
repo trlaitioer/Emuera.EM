@@ -25,12 +25,22 @@ internal static class GraphicsTextRenderer
 	/// <summary>
 	/// Pen advances of the whole text, which is what the layout is built on.
 	/// </summary>
+	/// <param name="graph">Device context to measure through, or null on a thread that does not own the
+	/// one the console built. Null makes GDI create its own for the call, which is what keeps parsing
+	/// from touching a Graphics across threads while it folds a constant expression.</param>
 	/// <param name="layoutSize">Measuring box; GDI grows it instead of clipping, so it only has to be large
 	/// enough for the widest measured node.</param>
 	public static int MeasureAdvance(Graphics graph, ReadOnlySpan<char> text, Font font, Size layoutSize)
 	{
 		if (text.IsEmpty)
 			return 0;
+		if (graph == null)
+		{
+			// GDI copies the text into its own buffer whichever overload is used, so this saves the caller's copy
+			// rather than GDI's
+			return TextRenderer.MeasureText(new string(text), font, layoutSize,
+				TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix).Width;
+		}
 		// GDI copies the text into its own buffer whichever overload is used, so this saves the caller's copy
 		// rather than GDI's
 		return TextRenderer.MeasureText(graph, text, font, layoutSize,
@@ -40,6 +50,8 @@ internal static class GraphicsTextRenderer
 	/// <summary>
 	/// Pen advances of the whole text, which is what the layout is built on.
 	/// </summary>
+	/// <param name="graph">Device context to measure through, or null on a thread that does not own the
+	/// one the console built.</param>
 	/// <param name="layoutSize">Measuring box; GDI grows it instead of clipping, so it only has to be large
 	/// enough for the widest measured node.</param>
 	public static int MeasureAdvance(Graphics graph, string text, Font font, Size layoutSize)

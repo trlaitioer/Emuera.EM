@@ -517,11 +517,12 @@ internal sealed partial class FunctionIdentifier
 				throw new CodeEE(trerror.MissingArg.Text);
 			else
 				rowStr = st.Substring();
-			rowStr = GlobalStatic.Console.getStBar(rowStr);
+			//getStBar() measures the text with GDI+, so it must not run here: function bodies are
+			//parsed on thread pool workers. The width is resolved when the bar is printed instead.
 			Argument ret = new ExpressionArgument(new SingleStrTerm(rowStr))
 			{
 				ConstStr = rowStr,
-				IsConst = true
+				IsConst = false
 			};
 			return ret;
 		}
@@ -530,7 +531,8 @@ internal sealed partial class FunctionIdentifier
 		{
 			if (GlobalStatic.Process.SkipPrint)
 				return;
-			GlobalStatic.Console.printCustomBar(func.Argument.ConstStr, true);
+			//isConst false so printCustomBar applies getStBar() on the UI thread
+			GlobalStatic.Console.printCustomBar(((ExpressionArgument)func.Argument).Term.GetStrValue(exm), false);
 			exm.Console.NewLine();
 		}
 	}
@@ -1215,13 +1217,15 @@ internal sealed partial class FunctionIdentifier
 
 		public override Argument CreateArgument(InstructionLine line, ExpressionMediator exm)
 		{
+			//Unreachable: the constructor assigns ArgBuilder, so ArgumentParser.SetArgumentTo routes
+			//through SP_CALLSHARP_ArgumentBuilder. Kept in sync with CUSTOMDRAWLINE by not measuring
+			//text here, in case the builder is ever removed.
 			CharStream st = line.PopArgumentPrimitive();
 			string rowStr;
 			if (st.EOS)
 				throw new CodeEE(trerror.MissingArg.Text);
 			else
 				rowStr = st.Substring();
-			rowStr = GlobalStatic.Console.getStBar(rowStr);
 			Argument ret = new ExpressionArgument(new SingleStrTerm(rowStr))
 			{
 				ConstStr = rowStr,
@@ -3658,6 +3662,15 @@ internal sealed partial class FunctionIdentifier
 				func.JumpTo = call.TopLabel;
 				if (call.TopLabel.Depth < 0)
 					call.TopLabel.Depth = currentDepth + 1;
+				//Hand the resolved edge to the loader so it can decide it again once the whole Depth
+				//layer is parsed: a same-layer callee may not have had its error state set yet, and
+				//this branch is the one the serial parser may have taken instead.
+				ParserMediator.RecordCallEdge(func, callArg, call);
+				//IsError is a plain field: the read is atomic, so it cannot observe a half-written
+				//value, but a same-layer callee may still be parsing, which makes this either the
+				//pre-write or the post-write value. Either way that callee's own worker has finished
+				//by the time the layer joins, and ReconcileLayerErrors decides the edge from the final
+				//state, so the outcome does not depend on which of the two this read saw.
 				if (call.TopLabel.IsError)
 				{
 					func.IsError = true;

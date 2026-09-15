@@ -17,6 +17,10 @@ internal sealed class StringMeasure : IDisposable
 		RefreshLayout();
 		bmp = new Bitmap(16, 16, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 		graph = Graphics.FromImage(bmp);
+		// The Graphics above belongs to the thread that built it. Parsing folds constant expressions on
+		// pool threads while this object was created with the console, so the owner has to be remembered
+		// to keep those threads off it.
+		ownerThreadId = Environment.CurrentManagedThreadId;
 	}
 
 	readonly TextDrawingMode textDrawingMode;
@@ -32,22 +36,42 @@ internal sealed class StringMeasure : IDisposable
 
 	readonly Graphics graph;
 	readonly Bitmap bmp;
+	readonly int ownerThreadId;
+
+	/// <summary>
+	/// The Graphics to measure through: the shared one on the thread that owns it, null anywhere else so
+	/// that GDI builds its own device context instead. The measurement is the advance width either way,
+	/// and both paths were compared value for value; the shared Graphics must not be touched off its
+	/// thread, which is what an unqualified call would do while parsing folds an expression.
+	/// </summary>
+	private Graphics MeasuringGraphics => Environment.CurrentManagedThreadId == ownerThreadId ? graph : null;
+
+	/// <summary>
+	/// Measures through the given device context, or through one GDI provides for the call when it is
+	/// null. TextRenderer rejects a null context, so the two overloads must not be chosen by a ternary.
+	/// </summary>
+	private static int MeasureText(Graphics graph, ReadOnlySpan<char> text, Font font, Size layoutSize)
+	{
+		if (graph == null)
+			return TextRenderer.MeasureText(new string(text), font, layoutSize, TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix).Width;
+		return TextRenderer.MeasureText(graph, text, font, layoutSize, TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix).Width;
+	}
 
 	public int GetDisplayLength(ReadOnlySpan<char> chars, Font f)
 	{
 		// The string overload answers empty text before it looks at the mode, so nothing here rejects it either
 		if (chars.IsEmpty)
 			return 0;
+		var measuringGraphics = MeasuringGraphics;
 		if (textDrawingMode == TextDrawingMode.TEXTRENDERER)
 		{
-			var size = TextRenderer.MeasureText(graph, chars, f, layoutSize, TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix);
-			return size.Width;
+			return MeasureText(measuringGraphics, chars, f, layoutSize);
 		}
 		else if (textDrawingMode == TextDrawingMode.GRAPHICS)
 		{
 			// The span goes straight to the helper, so this path does not copy the text into a string first.
 			// Tab expansion stays with the string overload, which is the one the print paths use
-			return GraphicsTextRenderer.MeasureAdvance(graph, chars, f, layoutSize);
+			return GraphicsTextRenderer.MeasureAdvance(measuringGraphics, chars, f, layoutSize);
 		}
 		else// if (StaticConfig.TextDrawingMode == TextDrawingMode.WINAPI)
 		{
@@ -59,6 +83,7 @@ internal sealed class StringMeasure : IDisposable
 	{
 		if (string.IsNullOrEmpty(s))
 			return 0;
+		var measuringGraphics = MeasuringGraphics;
 		if (textDrawingMode == TextDrawingMode.GRAPHICS)
 		{
 			if (s.Contains('\t'))
@@ -66,13 +91,11 @@ internal sealed class StringMeasure : IDisposable
 			// The advance width of the text, which is the quantity the layout is built on. Drawing uses GDI+
 			// without padding, so the pen it starts from is the same one the layout computed
 			// (see .scratch/ui-modernization/issues/04).
-			return GraphicsTextRenderer.MeasureAdvance(graph, s, font, layoutSize);
+			return GraphicsTextRenderer.MeasureAdvance(measuringGraphics, s, font, layoutSize);
 		}
 		else if (textDrawingMode == TextDrawingMode.TEXTRENDERER)
 		{
-			Size size = TextRenderer.MeasureText(graph, s.AsSpan(), font, layoutSize, TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix);
-			//Size size = TextRenderer.MeasureText(g, s, StaticConfig.Font);
-			return size.Width;
+			return MeasureText(measuringGraphics, s.AsSpan(), font, layoutSize);
 		}
 		else// if (StaticConfig.TextDrawingMode == TextDrawingMode.WINAPI)
 		{

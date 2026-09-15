@@ -731,19 +731,47 @@ internal sealed partial class EmueraConsole : IDisposable
 
 	public string getStBar(string barStr)
 	{
+		return BuildStBar(stringMeasure, barStr, Config.DrawableWidth, Config.DefaultFont);
+	}
+
+	/// <summary>
+	/// Repeats <paramref name="barStr"/> until it fills <paramref name="targetWidth"/>.
+	/// </summary>
+	/// <remarks>
+	/// The original grew the string one repetition at a time and remeasured the whole prefix on every
+	/// step, so the number of measurements was the number of repetitions. This starts from an estimate
+	/// instead: the integer division of the target by one repetition's width never exceeds the first
+	/// repetition count whose width reaches the target, so stepping by whole repetitions afterwards
+	/// overshoots by at most one repetition. The character by character trim that follows is the same
+	/// as before, which is what keeps the result identical.
+	/// <para>
+	/// A repetition that measures zero cannot bound the count, because the loop below would never
+	/// advance. It is treated as if one repetition already reached the target, which returns a single
+	/// repetition; the original looped forever on such input.
+	/// </para>
+	/// </remarks>
+	internal static string BuildStBar(StringMeasure measure, string barStr, int targetWidth, Font font)
+	{
 		var builder = new StringBuilder();
-		builder.Append(barStr);
-		int width = 0;
-		Font font = Config.DefaultFont;
-		while (width < Config.DrawableWidth)
+		int singleWidth = measure.GetDisplayLength(barStr, font);
+		if (singleWidth <= 0)
+		{
+			singleWidth = targetWidth;
+		}
+		for (int i = 0; i < targetWidth; i += singleWidth)
+		{
+			builder.Append(barStr);
+		}
+		int width = measure.GetDisplayLength(builder.ToString(), font);
+		while (width < targetWidth)
 		{//境界を越えるまで一文字ずつ増やす
 			builder.Append(barStr);
-			width = stringMeasure.GetDisplayLength(builder.ToString(), font);
+			width = measure.GetDisplayLength(builder.ToString(), font);
 		}
-		while (width > Config.DrawableWidth)
+		while (width > targetWidth)
 		{//境界を越えたら、今度は超えなくなるまで一文字ずつ減らす（barStrに複数字の文字列がきた場合に対応するため）
 			builder.Remove(builder.Length - 1, 1);
-			width = stringMeasure.GetDisplayLength(builder.ToString(), font);
+			width = measure.GetDisplayLength(builder.ToString(), font);
 		}
 		return builder.ToString();
 	}

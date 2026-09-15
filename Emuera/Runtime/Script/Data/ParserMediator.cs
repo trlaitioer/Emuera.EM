@@ -1,5 +1,6 @@
 ﻿using MinorShift.Emuera.GameView;
 using MinorShift.Emuera.Runtime.Config;
+using MinorShift.Emuera.Runtime.Script;
 using MinorShift.Emuera.Runtime.Script.Statements;
 using MinorShift.Emuera.Runtime.Utils;
 using System;
@@ -34,6 +35,57 @@ internal partial class ParserMediator
 	public static void Initialize(EmueraConsole console)
 	{
 		ParserMediator.console = console;
+	}
+
+	/// <summary>
+	/// True while a parse-error notification sound must be deferred. Set only for the duration of
+	/// ErbLoader.ParseScript, whose worker threads must not touch the UI. Checked from
+	/// ArgumentParser.SetArgumentTo, which is also reached from runtime callers that still want the
+	/// immediate sound.
+	/// </summary>
+	public static bool DeferParseErrorSound { get; set; }
+
+	static int parseErrorCount;
+
+	/// <summary>
+	/// Records that a parse error occurred. Thread-safe. When <see cref="DeferParseErrorSound"/> is
+	/// false the caller is on the UI thread and the sound is played right away; otherwise the count
+	/// is kept for <see cref="TakeParseErrorCount"/>.
+	/// </summary>
+	public static void NotifyParseError()
+	{
+		if (DeferParseErrorSound)
+		{
+			System.Threading.Interlocked.Increment(ref parseErrorCount);
+			return;
+		}
+		System.Media.SystemSounds.Hand.Play();
+	}
+
+	/// <summary>
+	/// Returns the number of parse errors recorded while deferring, and resets the counter.
+	/// </summary>
+	public static int TakeParseErrorCount()
+	{
+		return System.Threading.Interlocked.Exchange(ref parseErrorCount, 0);
+	}
+
+	/// <summary>
+	/// Records a resolved static CALL edge while ErbLoader.ParseScript runs. It is installed only for
+	/// the duration of ParseScript. The loader reads the edges of each Depth layer back once the layer
+	/// is joined, so a call site whose callee had not been parsed yet is decided the way the serial
+	/// parser decided it when the callee came first. The resolved call and the call argument travel
+	/// with the edge because deciding it again re-runs the argument conversion.
+	/// </summary>
+	public static System.Collections.Concurrent.ConcurrentBag<
+		(InstructionLine Line, SpCallArgment Arg, CalledFunction Callee)> CallEdgeRecorder { get; set; }
+
+	/// <summary>
+	/// Reports a resolved static CALL edge to <see cref="CallEdgeRecorder"/> when one is installed.
+	/// </summary>
+	public static void RecordCallEdge(InstructionLine line, SpCallArgment arg, CalledFunction callee)
+	{
+		CallEdgeRecorder?.Add((line, arg, callee));
 	}
 
 	#region Rename
@@ -112,31 +164,59 @@ internal partial class ParserMediator
 	{
 		if (isError)
 		{
-			line.IsError = true;
-			line.ErrMes = str;
+			//Also written from the depth-layer workers of ErbLoader.ParseScript. Each line has a
+			//single owning worker, but the console may flush from the UI thread concurrently.
+			lock (warningListLock)
+			{
+				line.IsError = true;
+				line.ErrMes = str;
+			}
 		}
 		if (level < Config.DisplayWarningLevel && !Program.AnalysisMode)
 			return;
 		if (isBackComp && !Config.WarnBackCompatibility)
 			return;
 		if (console != null && !console.RunERBFromMemory)
-			warningList.Add(new ParserWarning(str, line.Position, level, stack));
+		{
+			lock (warningListLock)
+			{
+				warningList.Add(new ParserWarning(str, line.Position, level, stack));
+			}
+		}
 		//				console.PrintWarning(str, line.Position, level);
 	}
 
 	private static List<ParserWarning> warningList = [];
 
-	public static bool HasWarning { get { return warningList.Count > 0; } }
+	public static bool HasWarning
+	{
+		get
+		{
+			lock (warningListLock)
+			{
+				return warningList.Count > 0;
+			}
+		}
+	}
 	public static void ClearWarningList()
 	{
-		warningList.Clear();
+		lock (warningListLock)
+		{
+			warningList.Clear();
+		}
 	}
 
 	public static void FlushWarningList()
 	{
-		for (int i = 0; i < warningList.Count; i++)
+		ParserWarning[] pending;
+		lock (warningListLock)
 		{
-			ParserWarning warning = warningList[i];
+			pending = [.. warningList];
+			warningList.Clear();
+		}
+		for (int i = 0; i < pending.Length; i++)
+		{
+			ParserWarning warning = pending[i];
 			console.PrintWarning(warning.WarningMes, warning.WarningPos, warning.WarningLevel);
 			if (warning.StackTrace != null)
 			{
@@ -147,7 +227,6 @@ internal partial class ParserMediator
 				}
 			}
 		}
-		warningList.Clear();
 	}
 
 	private sealed class ParserWarning
