@@ -1,4 +1,4 @@
-﻿﻿using MinorShift.Emuera.GameData.Variable;
+﻿using MinorShift.Emuera.GameData.Variable;
 using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.Runtime.Script;
 using MinorShift.Emuera.Runtime.Script.Parser;
@@ -1232,7 +1232,7 @@ internal static partial class ArgumentParser
 		public override Argument CreateArgument(InstructionLine line, ExpressionMediator exm)
 		{
 			var args = popTerms(line);
-			string errmes = line.Function.Method.CheckArgumentType(line.Function.Name, args);
+			string? errmes = line.Function.Method.CheckArgumentType(line.Function.Name, args);
 			if (errmes != null)
 				throw new CodeEE(errmes);
 			var mTerm = new FunctionMethodTerm(line.Function.Method, args);

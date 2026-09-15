@@ -561,7 +561,7 @@ internal partial class IdentifierDictionary
 		return null;
 	}
 
-	public AExpression? GetFunctionMethod(LabelDictionary? labelDic, string codeStr, List<AExpression?> arguments, bool userDefinedOnly)
+	public AExpression? GetFunctionMethod(LabelDictionary? labelDic, string codeStr, List<AExpression?>? arguments, bool userDefinedOnly)
 	{
 		//if (Config.Config.IgnoreCase)
 		//	codeStr = codeStr.ToUpper();
@@ -585,7 +585,7 @@ internal partial class IdentifierDictionary
 				if (func.IsMethod)
 				{
 					string errMes;
-					AExpression ret = UserDefinedMethodTerm.Create(func, arguments, out errMes);
+					AExpression? ret = UserDefinedMethodTerm.Create(func, arguments, out errMes);
 					if (ret == null)
 						throw new CodeEE(errMes);
 					return ret;
@@ -599,7 +599,7 @@ internal partial class IdentifierDictionary
 			return null;
 		if (!methodDic.TryGetValue(codeStr, out FunctionMethod? method))
 			return null;
-		string errmes = method.CheckArgumentType(codeStr, arguments);
+		string? errmes = method.CheckArgumentType(codeStr, arguments);
 		if (errmes != null)
 			throw new CodeEE(errmes);
 		return new FunctionMethodTerm(method, arguments);

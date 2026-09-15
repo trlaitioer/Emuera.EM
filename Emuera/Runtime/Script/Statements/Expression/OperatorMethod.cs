@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Script.Statements.Function;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Script.Statements.Function;
 using MinorShift.Emuera.Runtime.Script.Statements.Variable;
 using MinorShift.Emuera.Runtime.Utils;
 using MinorShift.Emuera.Runtime.Utils.EvilMask;
@@ -18,7 +19,7 @@ internal abstract class OperatorMethod : FunctionMethod
 	{
 		argumentTypeArray = null;
 	}
-	public override string CheckArgumentType(string name, List<AExpression?> arguments) { throw new ExeEE(trerror.TypeCheckIsCallersResponsibility.Text); }
+	public override string? CheckArgumentType(string name, List<AExpression?> arguments) { throw new ExeEE(trerror.TypeCheckIsCallersResponsibility.Text); }
 }
 
 internal static class OperatorMethodManager
@@ -82,7 +83,7 @@ internal static class OperatorMethodManager
 
 	public static AExpression ReduceUnaryTerm(OperatorCode op, AExpression o1)
 	{
-		OperatorMethod method = null;
+		OperatorMethod? method = null;
 		if (op == OperatorCode.Increment || op == OperatorCode.Decrement)
 		{
 			if (!(o1 is VariableTerm var))
@@ -94,7 +95,7 @@ internal static class OperatorMethodManager
 		{
 			if (op == OperatorCode.Plus)
 				return o1;
-			if (unaryDic.TryGetValue(op, out OperatorMethod value))
+			if (unaryDic.TryGetValue(op, out OperatorMethod? value))
 				method = value;
 		}
 		if (method != null)
@@ -112,7 +113,7 @@ internal static class OperatorMethodManager
 
 	public static AExpression ReduceUnaryAfterTerm(OperatorCode op, AExpression o1)
 	{
-		OperatorMethod method = null;
+		OperatorMethod? method = null;
 		if (op == OperatorCode.Increment || op == OperatorCode.Decrement)
 		{
 			if (!(o1 is VariableTerm var))
@@ -122,7 +123,7 @@ internal static class OperatorMethodManager
 		}
 		if (o1.GetOperandType() == typeof(long))
 		{
-			if (unaryAfterDic.TryGetValue(op, out OperatorMethod value))
+			if (unaryAfterDic.TryGetValue(op, out OperatorMethod? value))
 				method = value;
 		}
 		if (method != null)
@@ -150,15 +151,15 @@ internal static class OperatorMethodManager
 		if (left is SingleStrTerm leftStr3 && right is SingleLongTerm rightLong3)
 			return ReduceBinaryTerm(op, leftStr3.Str, rightLong3.Int);
 
-		OperatorMethod method = null;
+		OperatorMethod? method = null;
 		if (left.GetOperandType() == typeof(long) && right.GetOperandType() == typeof(long))
 		{
-			if (binaryIntIntDic.TryGetValue(op, out OperatorMethod value))
+			if (binaryIntIntDic.TryGetValue(op, out OperatorMethod? value))
 				method = value;
 		}
 		else if (left.GetOperandType() == typeof(string) && right.GetOperandType() == typeof(string))
 		{
-			if (binaryStrStrDic.TryGetValue(op, out OperatorMethod value))
+			if (binaryStrStrDic.TryGetValue(op, out OperatorMethod? value))
 				method = value;
 		}
 		else if (left.GetOperandType() == typeof(long) && right.GetOperandType() == typeof(string)
@@ -331,7 +332,7 @@ internal static class OperatorMethodManager
 
 	public static AExpression ReduceTernaryTerm(AExpression o1, AExpression o2, AExpression o3)
 	{
-		OperatorMethod method = null;
+		OperatorMethod? method = null;
 		if (o1.GetOperandType() == typeof(long) && o2.GetOperandType() == typeof(long) && o3.GetOperandType() == typeof(long))
 			method = ternaryIntIntInt;
 		else if (o1.GetOperandType() == typeof(long) && o2.GetOperandType() == typeof(string) && o3.GetOperandType() == typeof(string))
@@ -354,7 +355,7 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			return arguments[0].GetIntValue(exm) + arguments[1].GetIntValue(exm);
+			return arguments[0]!.GetIntValue(exm) + arguments[1]!.GetIntValue(exm);
 		}
 	}
 
@@ -369,7 +370,7 @@ internal static class OperatorMethodManager
 
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			return arguments[0].GetStrValue(exm) + arguments[1].GetStrValue(exm);
+			return arguments[0]!.GetStrValue(exm) + arguments[1]!.GetStrValue(exm);
 		}
 	}
 
@@ -383,7 +384,7 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			return arguments[0].GetIntValue(exm) - arguments[1].GetIntValue(exm);
+			return arguments[0]!.GetIntValue(exm) - arguments[1]!.GetIntValue(exm);
 		}
 	}
 
@@ -397,7 +398,7 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			return arguments[0].GetIntValue(exm) * arguments[1].GetIntValue(exm);
+			return arguments[0]!.GetIntValue(exm) * arguments[1]!.GetIntValue(exm);
 		}
 	}
 
@@ -412,15 +413,15 @@ internal static class OperatorMethodManager
 		{
 			string str;
 			long value;
-			if (arguments[0].GetOperandType() == typeof(long))
+			if (arguments[0]!.GetOperandType() == typeof(long))
 			{
-				value = arguments[0].GetIntValue(exm);
-				str = arguments[1].GetStrValue(exm);
+				value = arguments[0]!.GetIntValue(exm);
+				str = arguments[1]!.GetStrValue(exm);
 			}
 			else
 			{
-				str = arguments[0].GetStrValue(exm);
-				value = arguments[1].GetIntValue(exm);
+				str = arguments[0]!.GetStrValue(exm);
+				value = arguments[1]!.GetIntValue(exm);
 			}
 			if (value < 0)
 				throw new CodeEE(string.Format(trerror.MultiplyNegativeToStr.Text, value.ToString()));
@@ -450,10 +451,10 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long right = arguments[1].GetIntValue(exm);
+			long right = arguments[1]!.GetIntValue(exm);
 			if (right == 0)
 				throw new CodeEE(trerror.DivideByZero.Text);
-			return arguments[0].GetIntValue(exm) / right;
+			return arguments[0]!.GetIntValue(exm) / right;
 		}
 	}
 
@@ -467,10 +468,10 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long right = arguments[1].GetIntValue(exm);
+			long right = arguments[1]!.GetIntValue(exm);
 			if (right == 0)
 				throw new CodeEE(trerror.DivideByZero.Text);
-			return arguments[0].GetIntValue(exm) % right;
+			return arguments[0]!.GetIntValue(exm) % right;
 		}
 	}
 
@@ -485,7 +486,7 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			if (arguments[0].GetIntValue(exm) == arguments[1].GetIntValue(exm))
+			if (arguments[0]!.GetIntValue(exm) == arguments[1]!.GetIntValue(exm))
 				return 1L;
 			return 0L;
 		}
@@ -502,7 +503,7 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			if (arguments[0].GetStrValue(exm) == arguments[1].GetStrValue(exm))
+			if (arguments[0]!.GetStrValue(exm) == arguments[1]!.GetStrValue(exm))
 				return 1L;
 			return 0L;
 		}
@@ -518,7 +519,7 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			if (arguments[0].GetIntValue(exm) != arguments[1].GetIntValue(exm))
+			if (arguments[0]!.GetIntValue(exm) != arguments[1]!.GetIntValue(exm))
 				return 1L;
 			return 0L;
 		}
@@ -533,7 +534,7 @@ internal static class OperatorMethodManager
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			if (arguments[0].GetStrValue(exm) != arguments[1].GetStrValue(exm))
+			if (arguments[0]!.GetStrValue(exm) != arguments[1]!.GetStrValue(exm))
 				return 1L;
 			return 0L;
 		}
@@ -550,7 +551,7 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			if (arguments[0].GetIntValue(exm) > arguments[1].GetIntValue(exm))
+			if (arguments[0]!.GetIntValue(exm) > arguments[1]!.GetIntValue(exm))
 				return 1L;
 			return 0L;
 		}
@@ -565,7 +566,7 @@ internal static class OperatorMethodManager
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			int c = string.Compare(arguments[0].GetStrValue(exm), arguments[1].GetStrValue(exm), Config.Config.SCExpression);
+			int c = string.Compare(arguments[0]!.GetStrValue(exm), arguments[1]!.GetStrValue(exm), Config.Config.SCExpression);
 			if (c > 0)
 				return 1L;
 			return 0L;
@@ -581,7 +582,7 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			if (arguments[0].GetIntValue(exm) < arguments[1].GetIntValue(exm))
+			if (arguments[0]!.GetIntValue(exm) < arguments[1]!.GetIntValue(exm))
 				return 1L;
 			return 0L;
 		}
@@ -595,7 +596,7 @@ internal static class OperatorMethodManager
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			int c = string.Compare(arguments[0].GetStrValue(exm), arguments[1].GetStrValue(exm), Config.Config.SCExpression);
+			int c = string.Compare(arguments[0]!.GetStrValue(exm), arguments[1]!.GetStrValue(exm), Config.Config.SCExpression);
 			if (c < 0)
 				return 1L;
 			return 0L;
@@ -613,7 +614,7 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			if (arguments[0].GetIntValue(exm) >= arguments[1].GetIntValue(exm))
+			if (arguments[0]!.GetIntValue(exm) >= arguments[1]!.GetIntValue(exm))
 				return 1L;
 			return 0L;
 		}
@@ -628,7 +629,7 @@ internal static class OperatorMethodManager
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			int c = string.Compare(arguments[0].GetStrValue(exm), arguments[1].GetStrValue(exm), Config.Config.SCExpression);
+			int c = string.Compare(arguments[0]!.GetStrValue(exm), arguments[1]!.GetStrValue(exm), Config.Config.SCExpression);
 			if (c >= 0)
 				return 1L;
 			return 0L;
@@ -644,7 +645,7 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			if (arguments[0].GetIntValue(exm) <= arguments[1].GetIntValue(exm))
+			if (arguments[0]!.GetIntValue(exm) <= arguments[1]!.GetIntValue(exm))
 				return 1L;
 			return 0L;
 		}
@@ -659,7 +660,7 @@ internal static class OperatorMethodManager
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			int c = string.Compare(arguments[0].GetStrValue(exm), arguments[1].GetStrValue(exm), Config.Config.SCExpression);
+			int c = string.Compare(arguments[0]!.GetStrValue(exm), arguments[1]!.GetStrValue(exm), Config.Config.SCExpression);
 			if (c <= 0)
 				return 1L;
 			return 0L;
@@ -676,7 +677,7 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			if (arguments[0].GetIntValue(exm) != 0 && arguments[1].GetIntValue(exm) != 0)
+			if (arguments[0]!.GetIntValue(exm) != 0 && arguments[1]!.GetIntValue(exm) != 0)
 				return 1L;
 			return 0L;
 		}
@@ -693,7 +694,7 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			if (arguments[0].GetIntValue(exm) != 0 || arguments[1].GetIntValue(exm) != 0)
+			if (arguments[0]!.GetIntValue(exm) != 0 || arguments[1]!.GetIntValue(exm) != 0)
 				return 1L;
 			return 0L;
 		}
@@ -709,8 +710,8 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long i1 = arguments[0].GetIntValue(exm);
-			long i2 = arguments[1].GetIntValue(exm);
+			long i1 = arguments[0]!.GetIntValue(exm);
+			long i2 = arguments[1]!.GetIntValue(exm);
 			if (i1 == 0 && i2 != 0 || i1 != 0 && i2 == 0)
 				return 1L;
 			return 0L;
@@ -728,7 +729,7 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			if (arguments[0].GetIntValue(exm) == 0 || arguments[1].GetIntValue(exm) == 0)
+			if (arguments[0]!.GetIntValue(exm) == 0 || arguments[1]!.GetIntValue(exm) == 0)
 				return 1L;
 			return 0L;
 		}
@@ -745,7 +746,7 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			if (arguments[0].GetIntValue(exm) == 0 && arguments[1].GetIntValue(exm) == 0)
+			if (arguments[0]!.GetIntValue(exm) == 0 && arguments[1]!.GetIntValue(exm) == 0)
 				return 1L;
 			return 0L;
 		}
@@ -761,7 +762,7 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			return arguments[0].GetIntValue(exm) & arguments[1].GetIntValue(exm);
+			return arguments[0]!.GetIntValue(exm) & arguments[1]!.GetIntValue(exm);
 		}
 	}
 
@@ -775,7 +776,7 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			return arguments[0].GetIntValue(exm) | arguments[1].GetIntValue(exm);
+			return arguments[0]!.GetIntValue(exm) | arguments[1]!.GetIntValue(exm);
 		}
 	}
 
@@ -789,7 +790,7 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			return arguments[0].GetIntValue(exm) ^ arguments[1].GetIntValue(exm);
+			return arguments[0]!.GetIntValue(exm) ^ arguments[1]!.GetIntValue(exm);
 		}
 	}
 
@@ -803,7 +804,7 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			return arguments[0].GetIntValue(exm) >> (int)arguments[1].GetIntValue(exm);
+			return arguments[0]!.GetIntValue(exm) >> (int)arguments[1]!.GetIntValue(exm);
 		}
 	}
 
@@ -817,7 +818,7 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			return arguments[0].GetIntValue(exm) << (int)arguments[1].GetIntValue(exm);
+			return arguments[0]!.GetIntValue(exm) << (int)arguments[1]!.GetIntValue(exm);
 		}
 	}
 
@@ -831,7 +832,7 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			return arguments[0].GetIntValue(exm);
+			return arguments[0]!.GetIntValue(exm);
 		}
 	}
 
@@ -845,7 +846,7 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long ret = arguments[0].GetIntValue(exm);
+			long ret = arguments[0]!.GetIntValue(exm);
 			if (ret == long.MinValue)
 			{
 				exm.Console.PrintSystemLine(string.Format(Lang.SystemLine.MinusWontWork.Text, long.MinValue));
@@ -864,7 +865,7 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			if (arguments[0].GetIntValue(exm) == 0)
+			if (arguments[0]!.GetIntValue(exm) == 0)
 				return 1L;
 			return 0L;
 		}
@@ -879,7 +880,7 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			return ~arguments[0].GetIntValue(exm);
+			return ~arguments[0]!.GetIntValue(exm);
 		}
 	}
 
@@ -893,7 +894,7 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			VariableTerm var = (VariableTerm)arguments[0];
+			VariableTerm var = (VariableTerm)arguments[0]!;
 			return var.ChangeValue(1L, exm);
 		}
 	}
@@ -907,7 +908,7 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			VariableTerm var = (VariableTerm)arguments[0];
+			VariableTerm var = (VariableTerm)arguments[0]!;
 			return var.ChangeValue(-1L, exm);
 		}
 	}
@@ -921,7 +922,7 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			VariableTerm var = (VariableTerm)arguments[0];
+			VariableTerm var = (VariableTerm)arguments[0]!;
 			return var.ChangeValue(1L, exm) - 1;
 		}
 	}
@@ -936,7 +937,7 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			VariableTerm var = (VariableTerm)arguments[0];
+			VariableTerm var = (VariableTerm)arguments[0]!;
 			return var.ChangeValue(-1L, exm) + 1;
 		}
 	}
@@ -952,7 +953,7 @@ internal static class OperatorMethodManager
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			return arguments[0].GetIntValue(exm) != 0 ? arguments[1].GetIntValue(exm) : arguments[2].GetIntValue(exm);
+			return arguments[0]!.GetIntValue(exm) != 0 ? arguments[1]!.GetIntValue(exm) : arguments[2]!.GetIntValue(exm);
 		}
 	}
 
@@ -966,7 +967,7 @@ internal static class OperatorMethodManager
 
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			return arguments[0].GetIntValue(exm) != 0 ? arguments[1].GetStrValue(exm) : arguments[2].GetStrValue(exm);
+			return arguments[0]!.GetIntValue(exm) != 0 ? arguments[1]!.GetStrValue(exm) : arguments[2]!.GetStrValue(exm);
 		}
 	}
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualBasic;
+﻿#nullable enable
+using Microsoft.VisualBasic;
 using MinorShift.Emuera.GameProc;
 using MinorShift.Emuera.GameProc.Function;
 using MinorShift.Emuera.GameView;
@@ -63,16 +64,18 @@ internal sealed class ExpressionMediator
 
 	public string ConvertStringType(string str)
 	{
+		// TODO: Strings.StrConv may return null for an unsupported conversion; consider handling that instead of asserting a non-null result.
+		// Its only callers consume the result as non-null on the print path.
 		if (!(forceHiragana | forceKatakana | halftoFull))
 			return str;
 		if (forceKatakana)
-			return Strings.StrConv(str, VbStrConv.Katakana, 0x0411);
+			return Strings.StrConv(str, VbStrConv.Katakana, 0x0411)!;
 		else if (forceHiragana)
 		{
 			if (halftoFull)
-				return Strings.StrConv(str, VbStrConv.Hiragana | VbStrConv.Wide, 0x0411);
+				return Strings.StrConv(str, VbStrConv.Hiragana | VbStrConv.Wide, 0x0411)!;
 			else
-				return Strings.StrConv(str, VbStrConv.Hiragana, 0x0411);
+				return Strings.StrConv(str, VbStrConv.Hiragana, 0x0411)!;
 		}
 		return str;
 	}

@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Script.Data;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Script.Data;
 using System;
 
 namespace MinorShift.Emuera.Runtime.Script.Statements.Expression;
@@ -140,7 +141,7 @@ internal sealed class StrFormTerm : AExpression
 		sfValue.Restructure(exm);
 		if (sfValue.IsConst)
 			return new SingleStrTerm(sfValue.GetString(exm));
-		AExpression term = sfValue.GetAExpression();
+		AExpression? term = sfValue.GetAExpression();
 		if (term != null)
 			return term;
 		return this;

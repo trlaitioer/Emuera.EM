@@ -12,8 +12,8 @@ internal enum CaseExpressionType
 internal sealed class CaseExpression
 {
 	public CaseExpressionType CaseType = CaseExpressionType.Normal;
-	public AExpression LeftTerm;
-	public AExpression RightTerm;
+	public AExpression? LeftTerm;
+	public AExpression? RightTerm;
 
 	public OperatorCode Operator;
 	public Type GetOperandType()

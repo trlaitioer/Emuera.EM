@@ -137,7 +137,7 @@ internal sealed partial class EmueraConsole : IDisposable
 		public readonly int zdepth;
 		public bool isButton;
 		public int buttonValue;
-		public string tooltipString;
+		public string? tooltipString;
 		public int CompareTo(ClientBackGroundImage other)
 		{
 			if (other == null)
@@ -236,7 +236,7 @@ internal sealed partial class EmueraConsole : IDisposable
 		return true;
 	}
 
-	public bool CBG_SetButtonImage(int buttonValue, ASprite imageN, ASprite imageB, int x, int y, int zdepth, string tooltip = null)
+	public bool CBG_SetButtonImage(int buttonValue, ASprite imageN, ASprite imageB, int x, int y, int zdepth, string? tooltip = null)
 	{
 		ArgumentOutOfRangeException.ThrowIfZero(zdepth);
 		ClientBackGroundImage cbg = new(zdepth)

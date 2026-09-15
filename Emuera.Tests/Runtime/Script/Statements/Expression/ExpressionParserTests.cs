@@ -29,7 +29,7 @@ public class ExpressionParserTests : IDisposable
 	private static AExpression Reduce(string expr)
 		=> ExpressionParser.ReduceExpressionTerm(
 			LexicalAnalyzer.Analyse(new CharStream(expr), LexEndWith.EoL, LexAnalyzeFlag.None),
-			TermEndWith.EoL);
+			TermEndWith.EoL)!;
 
 	[Fact]
 	public void Constant_Arithmetic_With_Parentheses()

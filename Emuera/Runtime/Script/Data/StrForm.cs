@@ -114,7 +114,7 @@ internal sealed class StrForm
 				throw new ExeEE(trerror.StrFormUnexpected.Text);
 			}
 			WordCollection wc;
-			AExpression operand;
+			AExpression? operand;
 			YenAtSubWord? yenat = SWT as YenAtSubWord;
 			if (yenat != null)
 			{
@@ -250,7 +250,7 @@ internal sealed class StrForm
 			CanRestructure = true;
 			ReturnType = typeof(string);
 		}
-		public override string CheckArgumentType(string name, List<AExpression?> arguments) { throw new ExeEE(trerror.TypeCheckIsCallersResponsibility.Text); }
+		public override string? CheckArgumentType(string name, List<AExpression?> arguments) { throw new ExeEE(trerror.TypeCheckIsCallersResponsibility.Text); }
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments) { throw new ExeEE(trerror.ReturnTypeMismatch.Text); }
 		public override SingleTerm GetReturnValue(ExpressionMediator exm, List<AExpression?> arguments) { return new SingleStrTerm(GetStrValue(exm, arguments)); }
 	}

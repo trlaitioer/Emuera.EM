@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Script.Statements.Expression;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Script.Statements.Expression;
 using MinorShift.Emuera.Runtime.Script.Statements.Variable;
 using MinorShift.Emuera.Runtime.Utils;
 using System;
@@ -10,9 +11,9 @@ namespace MinorShift.Emuera.Runtime.Script.Statements.Function;
 
 internal abstract class FunctionMethod
 {
-	public Type ReturnType { get; protected set; }
+	public Type ReturnType { get; protected set; } = null!;
 	protected Type[]? argumentTypeArray;
-	protected string Name { get; private set; }
+	protected string Name { get; private set; } = null!;
 	#region EM_私家版_Emuera多言語化改造
 	protected enum ArgType
 	{
@@ -96,7 +97,7 @@ internal abstract class FunctionMethod
 		public int OmitStart { get; set; } = -1;
 		public bool MatchVariadicGroup { get; set; }
 
-		public _ArgType[] LastVariadics
+		public _ArgType[]? LastVariadics
 		{
 			get
 			{
@@ -116,17 +117,19 @@ internal abstract class FunctionMethod
 			}
 		}
 	}
-	protected ArgTypeList[] argumentTypeArrayEx;
+	protected ArgTypeList[]? argumentTypeArrayEx;
 
 	//引数の数・型が一致するかどうかのテスト
 	//正しくない場合はエラーメッセージを返す。
 	//引数の数が不定である場合や引数の省略を許す場合にはoverrideすること。
-	private string CheckArgumentTypeEx(string name, List<AExpression?> arguments)
+	private string? CheckArgumentTypeEx(string name, List<AExpression?> arguments)
 	{
-		string[] errMsg = new string[argumentTypeArrayEx.Length];
-		for (int idx = 0; idx < argumentTypeArrayEx.Length; idx++)
+		// Only reached from CheckArgumentType after the null check on argumentTypeArrayEx.
+		var rules = argumentTypeArrayEx!;
+		string[] errMsg = new string[rules.Length];
+		for (int idx = 0; idx < rules.Length; idx++)
 		{
-			var list = argumentTypeArrayEx[idx];
+			var list = rules[idx];
 			var vs = list.LastVariadics;
 			bool variadic = vs != null;
 			bool argsNotMoreThanRule = variadic ? true : arguments.Count <= list.ArgTypes.Count;
@@ -145,7 +148,7 @@ internal abstract class FunctionMethod
 				// 引数の数が有効
 				for (int i = 0; i < (variadic ? arguments.Count : Math.Min(arguments.Count, list.ArgTypes.Count)); i++)
 				{
-					var rule = variadic && i >= list.ArgTypes.Count ? vs[(i - list.ArgTypes.Count) % vs.Length] : list.ArgTypes[i];
+					var rule = variadic && i >= list.ArgTypes.Count ? vs![(i - list.ArgTypes.Count) % vs!.Length] : list.ArgTypes[i];
 					if (arguments[i] == null)
 					{
 						if (i < list.OmitStart || list.OmitStart > -1 && i >= list.OmitStart && rule.DisallowVoid)
@@ -156,8 +159,8 @@ internal abstract class FunctionMethod
 						else continue;
 					}
 					bool typeNotMatch = rule.SameAsFirst
-						? arguments[0].GetOperandType() != arguments[i].GetOperandType()
-						: !rule.Any && rule.Type != arguments[i].GetOperandType();
+						? arguments[0]!.GetOperandType() != arguments[i]!.GetOperandType()
+						: !rule.Any && rule.Type != arguments[i]!.GetOperandType();
 					if (rule.Ref)
 					{
 						if (rule.CharacterData && (!(arguments[i] is VariableTerm cvarTerm) || !cvarTerm.Identifier.IsCharacterData))
@@ -219,7 +222,7 @@ internal abstract class FunctionMethod
 					}
 					else if (typeNotMatch)
 					{
-						var type = rule.SameAsFirst ? arguments[0].GetOperandType() : rule.Type;
+						var type = rule.SameAsFirst ? arguments[0]!.GetOperandType() : rule.Type;
 						// 引数の型が違う
 						errMsg[idx] = type == typeof(string) ? string.Format(trerror.ArgIsNotStr.Text, name, i + 1)
 							: string.Format(trerror.ArgIsNotInt.Text, name, i + 1);
@@ -251,7 +254,7 @@ internal abstract class FunctionMethod
 				continue;
 			}
 		}
-		if (argumentTypeArrayEx.Length == 1) return errMsg[0];
+		if (rules.Length == 1) return errMsg[0];
 
 		StringBuilder sb = new();
 		for (int i = 0; i < errMsg.Length; i++)
@@ -261,7 +264,7 @@ internal abstract class FunctionMethod
 		}
 		return string.Format(trerror.NotValidArgs.Text, name, sb.ToString());
 	}
-	public virtual string CheckArgumentType(string name, List<AExpression?> arguments)
+	public virtual string? CheckArgumentType(string name, List<AExpression?> arguments)
 	{
 		if (argumentTypeArrayEx != null)
 		{
@@ -282,7 +285,7 @@ internal abstract class FunctionMethod
 				if (arguments[i] == null)
 					// return string.Format(Properties.Resources.SyntaxErrMesMethodDefaultArgumentNotNullable0, name, i + 1);
 					return string.Format(trerror.ArgCanNotBeNull.Text, name, i + 1);
-				if (argumentTypeArray[i] != arguments[i].GetOperandType())
+				if (argumentTypeArray[i] != arguments[i]!.GetOperandType())
 					// return string.Format(Properties.Resources.SyntaxErrMesMethodDefaultArgumentType0, name, i + 1);
 					return argumentTypeArray[i] == typeof(string) ? string.Format(trerror.ArgIsNotStr.Text, name, i + 1)
 							: string.Format(trerror.ArgIsNotInt.Text, name, i + 1);

@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Script.Data;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Script.Data;
 using MinorShift.Emuera.Runtime.Script.Statements.Expression;
 using MinorShift.Emuera.Runtime.Utils;
 using System;
@@ -47,7 +48,7 @@ internal sealed class UserDefinedMethodTerm : SuperUserDefinedMethodTerm
 	/// <summary>
 	/// エラーならnullを返す。
 	/// </summary>
-	public static UserDefinedMethodTerm Create(FunctionLabelLine targetLabel, List<AExpression?> srcArgs, out string errMes)
+	public static UserDefinedMethodTerm? Create(FunctionLabelLine targetLabel, List<AExpression?> srcArgs, out string errMes)
 	{
 		CalledFunction call = CalledFunction.CreateCalledFunctionMethod(targetLabel, targetLabel.LabelName);
 		UserDefinedFunctionArgument arg = call.ConvertArg(srcArgs, out errMes);
@@ -110,12 +111,13 @@ internal sealed class UserDefinedRefMethodTerm : SuperUserDefinedMethodTerm
 
 	public override AExpression Restructure(ExpressionMediator exm)
 	{
+		// TODO: srcArgs can hold null for an omitted argument, as FunctionMethodTerm.Restructure accepts; decide whether to skip null elements instead of asserting them non-null.
 		for (int i = 0; i < srcArgs.Count; i++)
 		{
 			if ((reffunc.ArgTypeList[i] & UserDifinedFunctionDataArgType.__Ref) == UserDifinedFunctionDataArgType.__Ref)
-				srcArgs[i].Restructure(exm);
+				srcArgs[i]!.Restructure(exm);
 			else
-				srcArgs[i] = srcArgs[i].Restructure(exm);
+				srcArgs[i] = srcArgs[i]!.Restructure(exm);
 		}
 		return this;
 	}

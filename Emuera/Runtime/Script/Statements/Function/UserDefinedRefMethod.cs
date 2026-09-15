@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.GameData.Variable;
+﻿#nullable enable
+using MinorShift.Emuera.GameData.Variable;
 using MinorShift.Emuera.Runtime.Script.Data;
 using System;
 
@@ -6,10 +7,10 @@ namespace MinorShift.Emuera.Runtime.Script.Statements.Function;
 
 internal sealed class UserDefinedRefMethod
 {
-	public CalledFunction CalledFunction { get; private set; }
-	public string Name { get; private set; }
-	public Type RetType { get; private set; }
-	public UserDifinedFunctionDataArgType[] ArgTypeList { get; private set; }
+	public CalledFunction CalledFunction { get; private set; } = null!;
+	public string Name { get; private set; } = null!;
+	public Type RetType { get; private set; } = null!;
+	public UserDifinedFunctionDataArgType[] ArgTypeList { get; private set; } = null!;
 
 	internal static UserDefinedRefMethod Create(UserDefinedFunctionData funcData)
 	{
@@ -37,7 +38,7 @@ internal sealed class UserDefinedRefMethod
 			return false;
 		if (RetType != label.MethodType)
 			return false;
-		if (ArgTypeList.Length != label.Arg.Length)
+		if (ArgTypeList.Length != label.Arg!.Length)
 			return false;
 		for (int i = 0; i < ArgTypeList.Length; i++)
 		{

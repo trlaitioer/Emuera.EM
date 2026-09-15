@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.GameData.Variable;
+﻿#nullable enable
+using MinorShift.Emuera.GameData.Variable;
 using MinorShift.Emuera.Runtime.Script.Data;
 using MinorShift.Emuera.Runtime.Script.Parser;
 using MinorShift.Emuera.Runtime.Script.Statements.Variable;
@@ -109,16 +110,16 @@ internal static class ExpressionParser
 					if (wc.Current is OperatorWord)
 					{//=がある
 						wc.ShiftNext();
-						AExpression term = reduceTerm(wc, false, termEndWith, VariableCode.__NULL__);
+						AExpression? term = reduceTerm(wc, false, termEndWith, VariableCode.__NULL__);
 						if (term == null)
 							throw new CodeEE(trerror.NoExpressionAfterEqual.Text);
-						if (term.GetOperandType() != terms.Last.Value.GetOperandType())
+						if (term.GetOperandType() != terms.Last!.Value!.GetOperandType())
 							throw new CodeEE(trerror.DoesNotMatchEqual.Text);
 						terms.AddLast(term);
 					}
 					else
 					{
-						if (terms.Last.Value.GetOperandType() == typeof(long))
+						if (terms.Last!.Value!.GetOperandType() == typeof(long))
 							terms.AddLast(new NullTerm(0));
 						else
 							terms.AddLast(new NullTerm(""));
@@ -140,9 +141,9 @@ internal static class ExpressionParser
 	/// </summary>
 	/// <param name="st"></param>
 	/// <returns></returns>
-	public static AExpression ReduceExpressionTerm(WordCollection wc, TermEndWith endWith)
+	public static AExpression? ReduceExpressionTerm(WordCollection wc, TermEndWith endWith)
 	{
-		AExpression term = reduceTerm(wc, false, endWith, VariableCode.__NULL__);
+		AExpression? term = reduceTerm(wc, false, endWith, VariableCode.__NULL__);
 		return term;
 	}
 
@@ -163,7 +164,7 @@ internal static class ExpressionParser
 
 	public static AExpression ReduceIntegerTerm(WordCollection wc, TermEndWith endwith)
 	{
-		AExpression term = reduceTerm(wc, false, endwith, VariableCode.__NULL__);
+		AExpression? term = reduceTerm(wc, false, endwith, VariableCode.__NULL__);
 		if (term == null)
 			throw new CodeEE(trerror.CanNotInterpretedExpression.Text);
 		if (term.GetOperandType() != typeof(long))
@@ -204,20 +205,20 @@ internal static class ExpressionParser
 	public static AExpression ReduceVariableArgument(WordCollection wc, VariableCode varCode, VariableToken id)
 	{
 		// IOperandTerm ret = reduceTerm(wc, false, TermEndWith.EoL, varCode);
-		AExpression ret = reduceTerm(wc, false, TermEndWith.EoL, varCode, id);
+		AExpression? ret = reduceTerm(wc, false, TermEndWith.EoL, varCode, id);
 		if (ret == null)
 			throw new CodeEE(trerror.MissingArgAfterColon.Text);
 		return ret;
 	}
 	#endregion
 
-	public static VariableToken ReduceVariableIdentifier(WordCollection wc, string idStr)
+	public static VariableToken? ReduceVariableIdentifier(WordCollection wc, string idStr)
 	{
-		string subId = null;
+		string? subId = null;
 		if (wc.Current.Type == '@')
 		{
 			wc.ShiftNext();
-			IdentifierWord subidWT = wc.Current as IdentifierWord;
+			IdentifierWord? subidWT = wc.Current as IdentifierWord;
 			if (subidWT == null)
 				throw new CodeEE(trerror.InvalidAt.Text);
 			wc.ShiftNext();
@@ -236,12 +237,12 @@ internal static class ExpressionParser
 	/// <returns></returns>
 	#region EE_ERD
 	//private static IOperandTerm reduceIdentifier(WordCollection wc, string idStr, VariableCode varCode)
-	private static AExpression reduceIdentifier(WordCollection wc, string idStr, VariableCode varCode, VariableToken varId = null)
+	private static AExpression reduceIdentifier(WordCollection wc, string idStr, VariableCode varCode, VariableToken? varId = null)
 	#endregion
 
 	{
 		wc.ShiftNext();
-		SymbolWord symbol = wc.Current as SymbolWord;
+		SymbolWord? symbol = wc.Current as SymbolWord;
 		if (symbol != null && symbol.Type == '.')
 		{//名前空間
 			throw new NotImplCodeEE();
@@ -253,7 +254,7 @@ internal static class ExpressionParser
 				throw new CodeEE(trerror.SBracketsFuncNotImprement.Text);
 			//引数を処理
 			var args = ReduceArguments(wc, ArgsEndWith.RightParenthesis, false);
-			AExpression mToken = GlobalStatic.IdentifierDictionary.GetFunctionMethod(GlobalStatic.LabelDictionary, idStr, args, false);
+			AExpression? mToken = GlobalStatic.IdentifierDictionary.GetFunctionMethod(GlobalStatic.LabelDictionary, idStr, args, false);
 			if (mToken == null)
 			{
 				if (!Program.AnalysisMode)
@@ -271,11 +272,12 @@ internal static class ExpressionParser
 					return new NullTerm(0);
 				}
 			}
-			return mToken;
+			// IdentifierDictionary.ThrowException never returns, so mToken is non-null here.
+			return mToken!;
 		}
 		else
 		{//変数 or キーワード
-			VariableToken id = ReduceVariableIdentifier(wc, idStr);
+			VariableToken? id = ReduceVariableIdentifier(wc, idStr);
 			if (id != null)//idStrが変数名の場合、
 			{
 				if (varCode != VariableCode.__NULL__)//変数の引数が引数を持つことはない
@@ -284,7 +286,7 @@ internal static class ExpressionParser
 					return VariableParser.ReduceVariable(id, wc);
 			}
 			//idStrが変数名でない場合、
-			AExpression refToken = GlobalStatic.IdentifierDictionary.GetFunctionMethod(GlobalStatic.LabelDictionary, idStr, null, false);
+			AExpression? refToken = GlobalStatic.IdentifierDictionary.GetFunctionMethod(GlobalStatic.LabelDictionary, idStr, null, false);
 			if (refToken != null)//関数参照と名前が一致したらそれを返す。実際に使うとエラー
 				return refToken;
 			if (varCode != VariableCode.__NULL__ && GlobalStatic.ConstantData.isDefined(varCode, idStr))//連想配列的な可能性アリ
@@ -328,12 +330,12 @@ internal static class ExpressionParser
 	private static CaseExpression reduceCaseExpression(WordCollection wc)
 	{
 		CaseExpression ret = new();
-		IdentifierWord id = wc.Current as IdentifierWord;
+		IdentifierWord? id = wc.Current as IdentifierWord;
 		if (id != null && id.Code.Equals("IS", Config.Config.StringComparison))
 		{
 			wc.ShiftNext();
 			ret.CaseType = CaseExpressionType.Is;
-			OperatorWord opWT = wc.Current as OperatorWord;
+			OperatorWord? opWT = wc.Current as OperatorWord;
 			if (opWT == null)
 				throw new CodeEE(trerror.NoOpAfterIs.Text);
 
@@ -381,7 +383,7 @@ internal static class ExpressionParser
 
 	#region EE_ERD
 	// private static IOperandTerm reduceTerm(WordCollection wc, bool allowKeywordTo, TermEndWith endWith, VariableCode varCode)
-	private static AExpression reduceTerm(WordCollection wc, bool allowKeywordTo, TermEndWith endWith, VariableCode varCode, VariableToken varId = null)
+	private static AExpression? reduceTerm(WordCollection wc, bool allowKeywordTo, TermEndWith endWith, VariableCode varCode, VariableToken? varId = null)
 	#endregion
 	{
 		TermStack stack = new();
@@ -397,17 +399,17 @@ internal static class ExpressionParser
 				case '\0':
 					return end(stack, ternaryCount);
 				case '"'://LiteralStringWT
-					stack.Add((token as LiteralStringWord).Str);
+					stack.Add((token as LiteralStringWord)!.Str);
 					break;
 				case '0'://LiteralIntegerWT
-					stack.Add((token as LiteralIntegerWord).Int);
+					stack.Add((token as LiteralIntegerWord)!.Int);
 					break;
 				case 'F'://FormattedStringWT
-					stack.Add(ToStrFormTerm(token as StrFormWord));
+					stack.Add(ToStrFormTerm((token as StrFormWord)!));
 					break;
 				case 'A'://IdentifierWT
 					{
-						string idStr = (token as IdentifierWord).Code;
+						string idStr = (token as IdentifierWord)!.Code;
 						if (idStr.Equals("TO", Config.Config.StringComparison))
 						{
 							if (allowKeywordTo)
@@ -435,7 +437,7 @@ internal static class ExpressionParser
 					{
 						if (varArg)
 							throw new CodeEE(trerror.UnexpectedOpInVarArg.Text);
-						OperatorCode op = (token as OperatorWord).Code;
+						OperatorCode op = (token as OperatorWord)!.Code;
 						if (op == OperatorCode.Assignment)
 						{
 							if ((endWith & TermEndWith.Assignment) == TermEndWith.Assignment)
@@ -467,7 +469,7 @@ internal static class ExpressionParser
 					}
 				case '(':
 					wc.ShiftNext();
-					AExpression inTerm = reduceTerm(wc, false, TermEndWith.RightParenthesis, VariableCode.__NULL__);
+					AExpression? inTerm = reduceTerm(wc, false, TermEndWith.RightParenthesis, VariableCode.__NULL__);
 					if (inTerm == null)
 						throw new CodeEE(trerror.NoContainExpressionInBrackets.Text);
 					stack.Add(inTerm);
@@ -498,7 +500,7 @@ internal static class ExpressionParser
 		} while (!varArg);
 		return end(stack, ternaryCount);
 
-		static AExpression end(TermStack stack, int ternaryCount)
+		static AExpression? end(TermStack stack, int ternaryCount)
 		{
 			if (ternaryCount > 0)
 				throw new CodeEE(trerror.TernaryBinaryError.Text);
@@ -612,7 +614,7 @@ internal static class ExpressionParser
 			return priority;
 		}
 
-		public AExpression ReduceAll()
+		public AExpression? ReduceAll()
 		{
 			if (stack.Count == 0)
 				return null;

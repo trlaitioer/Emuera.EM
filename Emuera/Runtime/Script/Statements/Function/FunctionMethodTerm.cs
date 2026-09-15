@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Script.Statements.Expression;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Script.Statements.Expression;
 using System.Collections.Generic;
 
 namespace MinorShift.Emuera.Runtime.Script.Statements.Function;
@@ -41,7 +42,7 @@ internal sealed class FunctionMethodTerm : AExpression
 		{
 			if (Arguments[i] == null)
 				continue;
-			Arguments[i] = Arguments[i].Restructure(exm);
+			Arguments[i] = Arguments[i]!.Restructure(exm);
 			argIsConst &= Arguments[i] is SingleTerm;
 		}
 		if (Method.CanRestructure && argIsConst)
