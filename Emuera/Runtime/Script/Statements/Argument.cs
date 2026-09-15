@@ -344,7 +344,7 @@ internal sealed class CallformCache
 	}
 
 	readonly AExpression nameTerm;
-	readonly AExpression longTerm;
+	readonly AExpression? longTerm;
 	readonly Dictionary<long, CallformEntry> longDic;
 	readonly Dictionary<string, CallformEntry> strDic;
 

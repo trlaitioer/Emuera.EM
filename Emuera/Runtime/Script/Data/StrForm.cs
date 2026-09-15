@@ -30,7 +30,7 @@ internal sealed class StrForm
 	/// building any string. Alignment specifiers ({I,4,LEFT}) keep the name deterministic
 	/// and are included in this form.
 	/// </summary>
-	internal static AExpression SingleIntFormTerm(AExpression funcnameTerm)
+	internal static AExpression? SingleIntFormTerm(AExpression funcnameTerm)
 	{
 		if (funcnameTerm is StrFormTerm formTerm)
 		{
