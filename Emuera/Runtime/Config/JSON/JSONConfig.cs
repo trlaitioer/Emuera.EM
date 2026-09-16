@@ -1,4 +1,5 @@
-﻿//新設したコンフィグ設定のロード、セーブ、公開を担当する。
+﻿#nullable enable
+//新設したコンフィグ設定のロード、セーブ、公開を担当する。
 using System.IO;
 using System.Text.Json;
 
@@ -6,7 +7,7 @@ using System.Text.Json;
 namespace MinorShift.Emuera.Runtime.Config.JSON;
 static class JSONConfig
 {
-	public static JSONConfigData Data;
+	public static JSONConfigData Data = null!;
 
 	const string _configFileName = "setting.json";
 	static string _configFilePath = Program.ExeDir + _configFileName;
@@ -22,7 +23,7 @@ static class JSONConfig
 
 		var json = File.ReadAllText(_configFilePath);
 
-		Data = JsonSerializer.Deserialize<JSONConfigData>(json);
+		Data = JsonSerializer.Deserialize<JSONConfigData>(json)!;
 	}
 
 	public static void Save()

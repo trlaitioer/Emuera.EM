@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.GameView;
+﻿#nullable enable
+using MinorShift.Emuera.GameView;
 using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.Runtime.Script;
 using MinorShift.Emuera.Runtime.Script.Statements;
@@ -103,7 +104,8 @@ namespace MinorShift.Emuera.Forms
 		public VScrollBar ScrollBar { get { return vScrollBar; } }
 		public RichTextBox TextBox { get { return richTextBox1; } }
 		public ToolTip ToolTip { get { return toolTipButton; } }
-		private EmueraConsole console;
+		//Assigned by the constructor and nulled by MainWindow_FormClosing
+		private EmueraConsole? console;
 
 		#region EM_私家版_Icon指定機能
 		public void SetupIcon(Icon icon)
@@ -157,7 +159,7 @@ namespace MinorShift.Emuera.Forms
 		#endregion
 
 		#region EM_textbox位置指定拡張
-		void textBoxHandleScrollValueChanged(object sender, EventArgs e)
+		void textBoxHandleScrollValueChanged(object? sender, EventArgs e)
 		{
 			if (TextBoxIgnoreScrollBarChanges) return;
 			if (vScrollBar.Value < vScrollBar.Maximum && TextBoxPosChanged)
@@ -243,7 +245,7 @@ namespace MinorShift.Emuera.Forms
 					if (string.IsNullOrEmpty(TextBox.SelectedText))
 					{
 						var dialog = new ClipBoardDialog { StartPosition = FormStartPosition.CenterParent };
-						dialog.Setup(console);
+						dialog.Setup(console!);
 						dialog.ShowDialog();
 						return true;
 					}
@@ -282,7 +284,7 @@ namespace MinorShift.Emuera.Forms
 								}
 								if (doit)
 								{
-									console.ReloadPartialErb(filepath);
+									console!.ReloadPartialErb(filepath);
 									return true;
 								}
 							}
@@ -301,7 +303,7 @@ namespace MinorShift.Emuera.Forms
 								MessageBox.Show(trmb.NotAvailableDuringScript.Text);
 								doit = false;
 							}
-							if (console.notToTitle)
+							if (console!.notToTitle)
 							{
 								if (console.byError)
 									MessageBox.Show(trmb.ErrorInAnalysisMode.Text);
@@ -341,7 +343,8 @@ namespace MinorShift.Emuera.Forms
 					}
 					else
 					{
-						if (Clipboard.GetDataObject().GetDataPresent(DataFormats.Text))
+						//The call above returned non-null, so the clipboard has a data object here
+						if (Clipboard.GetDataObject()!.GetDataPresent(DataFormats.Text))
 							TextBox.Paste(DataFormats.GetFormat(DataFormats.UnicodeText));
 						return true;
 					}
@@ -357,10 +360,10 @@ namespace MinorShift.Emuera.Forms
 				//}
 				#region EE_AnchorのCB機能移植
 				case Keys.Up when (keyData & Keys.Modifiers & Keys.Control) == Keys.Control:
-					if (Config.CBUseClipboard && console.CBProc.ScrollUp(1)) return true;
+					if (Config.CBUseClipboard && console!.CBProc.ScrollUp(1)) return true;
 					break;
 				case Keys.Down when (keyData & Keys.Modifiers & Keys.Control) == Keys.Control:
-					if (Config.CBUseClipboard && console.CBProc.ScrollDown(1)) return true;
+					if (Config.CBUseClipboard && console!.CBProc.ScrollDown(1)) return true;
 					break;
 				#endregion
 				//HOTKEY STATE
@@ -474,7 +477,7 @@ namespace MinorShift.Emuera.Forms
 
 		private async void Init(object sender, EventArgs e)
 		{
-			await console.Initialize();
+			await console!.Initialize();
 		}
 
 		/// <summary>
@@ -571,7 +574,8 @@ namespace MinorShift.Emuera.Forms
 		private int maximamY = 2560;
 		/// <summary>While dragging, the commit is deferred and a preview is shown</summary>
 		private bool resizing;
-		private Font inputPreviewFont;
+		//Null until SetInputFont builds the first one
+		private Font? inputPreviewFont;
 		/// <summary>Distance of the input box from the bottom edge, also kept when a script sets the position</summary>
 		private int textBoxBottomOffset;
 
@@ -610,7 +614,7 @@ namespace MinorShift.Emuera.Forms
 		{
 			int renderFontSize = FontMetrics.FindRenderSizePx(Config.FontName, fontSize);
 			Font font = new(Config.DefaultFont.FontFamily, renderFontSize, FontStyle.Regular, GraphicsUnit.Pixel);
-			Font old = inputPreviewFont;
+			Font? old = inputPreviewFont;
 			inputPreviewFont = font;
 			richTextBox1.Font = font;
 			old?.Dispose();
@@ -690,7 +694,8 @@ namespace MinorShift.Emuera.Forms
 		/// </summary>
 		private void SetMaximizedBounds()
 		{
-			Screen screen = Screen.FromControl(this) ?? Screen.PrimaryScreen;
+			//Both sources are annotated nullable, but a control always has a screen here
+			Screen screen = (Screen.FromControl(this) ?? Screen.PrimaryScreen)!;
 			MaximizedBounds = WindowZoom.MaximizedBounds(Size, screen.WorkingArea, maximamY);
 		}
 
@@ -721,14 +726,14 @@ namespace MinorShift.Emuera.Forms
 		{
 			if (Config.CBUseClipboard)
 			{
-				if (e.Button == MouseButtons.Left) console.CBProc.Check(ClipboardProcessor.CBTriggers.LeftClick);
-				else if (e.Button == MouseButtons.Middle) console.CBProc.Check(ClipboardProcessor.CBTriggers.MiddleClick);
+				if (e.Button == MouseButtons.Left) console!.CBProc.Check(ClipboardProcessor.CBTriggers.LeftClick);
+				else if (e.Button == MouseButtons.Middle) console!.CBProc.Check(ClipboardProcessor.CBTriggers.MiddleClick);
 			}
 		}
 
 		private void mainPicBox_MouseDoubleClickCBCheck(object sender, MouseEventArgs e)
 		{
-			if (Config.CBUseClipboard && e.Button == MouseButtons.Left) console.CBProc.Check(ClipboardProcessor.CBTriggers.DoubleLeftClick);
+			if (Config.CBUseClipboard && e.Button == MouseButtons.Left) console!.CBProc.Check(ClipboardProcessor.CBTriggers.DoubleLeftClick);
 		}
 		#endregion
 		bool changeTextbyMouse;
@@ -749,7 +754,7 @@ namespace MinorShift.Emuera.Forms
 				return;
 			}
 			bool isBacklog = vScrollBar.Value != vScrollBar.Maximum;
-			string str = console.SelectedString;
+			string? str = console.SelectedString;
 
 			if (isBacklog)
 				if ((e.Button == MouseButtons.Left) || (e.Button == MouseButtons.Right))
@@ -782,7 +787,8 @@ namespace MinorShift.Emuera.Forms
 				if (e.Button == MouseButtons.Left || e.Button == MouseButtons.Right || e.Button == MouseButtons.Middle)
 				{
 					if (!isBacklog)
-						GlobalStatic.Process.InputInteger(3, console.SelectingButton.GetMappedColor(e.X, e.Y));
+						//A selected string implies a selected button
+						GlobalStatic.Process.InputInteger(3, console.SelectingButton!.GetMappedColor(e.X, e.Y));
 					if (modifiersWhileWaintingInputWithMouse != null)
 					{
 						GlobalStatic.Process.InputInteger(2, (long)modifiersWhileWaintingInputWithMouse);
@@ -1007,7 +1013,7 @@ namespace MinorShift.Emuera.Forms
 		private void mainPicBox_MouseLeave(object sender, EventArgs e)
 		{
 			if (Config.UseMouse)
-				console.LeaveMouse();
+				console!.LeaveMouse();
 		}
 
 		private void コンフィグCToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1114,7 +1120,7 @@ namespace MinorShift.Emuera.Forms
 				{
 					Text = Lang.UI.ClipBoardDialog.Text
 				};
-				dialog.Setup(console);
+				dialog.Setup(console!);
 				dialog.ShowDialog();
 			}
 			catch (Exception)
@@ -1211,7 +1217,7 @@ namespace MinorShift.Emuera.Forms
 		{
 			if (instance.GetConfigValue<int>(code) == value)
 				return false;
-			instance.GetConfigItem(code).SetValue(value);
+			instance.GetRequiredConfigItem(code).SetValue(value);
 			return true;
 		}
 
@@ -1325,13 +1331,13 @@ namespace MinorShift.Emuera.Forms
 		}
 		#region EM_私家版_INPUT系機能拡張
 		Keys? modifiersWhileWaintingInputWithMouse;
-		private void richTextBox1_ModifierRecorder_KeyUp(object sender, KeyEventArgs e)
+		private void richTextBox1_ModifierRecorder_KeyUp(object? sender, KeyEventArgs e)
 		{
 			if (console == null || !console.IsWaintingInputWithMouse)
 				return;
 			modifiersWhileWaintingInputWithMouse = null;
 		}
-		private void richTextBox1_ModifierRecorder_KeyDown(object sender, KeyEventArgs e)
+		private void richTextBox1_ModifierRecorder_KeyDown(object? sender, KeyEventArgs e)
 		{
 			if (console == null || !console.IsWaintingInputWithMouse)
 				return;
@@ -1453,14 +1459,14 @@ namespace MinorShift.Emuera.Forms
 		{
 			if (!Program.DebugMode)
 				return;
-			console.OpenDebugDialog();
+			console!.OpenDebugDialog();
 		}
 
 		private void デバッグ情報の更新ToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (!Program.DebugMode)
 				return;
-			if ((console.DebugDialog != null) && console.DebugDialog.Created)
+			if ((console!.DebugDialog != null) && console.DebugDialog.Created)
 				console.DebugDialog.UpdateData();
 		}
 
@@ -1656,7 +1662,7 @@ namespace MinorShift.Emuera.Forms
 				GlobalStatic.Console.CBProc.Init();
 			else
 				GlobalStatic.Console.CBProc.Reset();
-			ConfigData.Instance.GetConfigItem(ConfigCode.CBUseClipboard).SetValue(クリップボードにコピーToolStripMenuItem.Checked);
+			ConfigData.Instance.GetRequiredConfigItem(ConfigCode.CBUseClipboard).SetValue(クリップボードにコピーToolStripMenuItem.Checked);
 			Config.UpdateClipboardSetting(ConfigData.Instance);
 			ConfigData.Instance.SaveConfig();
 		}

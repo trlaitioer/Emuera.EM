@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.UI.Game;
+﻿#nullable enable
+using MinorShift.Emuera.UI.Game;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -46,8 +47,8 @@ internal sealed class Utils
 	}
 	internal sealed class StyledBoxModel
 	{
-		public MixedNum[] border, margin, padding, radius;
-		public int[] color;
+		public MixedNum[]? border, margin, padding, radius;
+		public int[]? color;
 	}
 	static Stopwatch stopwatch = new();
 	static long stopwatch_base = DateTime.Now.Ticks;
@@ -87,7 +88,7 @@ internal sealed class Utils
 		if (obj == null) obj = new T();
 		return obj;
 	}
-	public static int[] CreateIfNull(ref int[] obj, int len = 4)
+	public static int[] CreateIfNull(ref int[]? obj, int len = 4)
 	{
 		if (obj == null) obj = new int[len];
 		return obj;
@@ -133,7 +134,7 @@ internal sealed class Utils
 		else if (!int.TryParse(attrValue, out num.num))
 			throw new CodeEE(string.Format(Lang.Error.AttributeCanNotInterpretNum.Text, tag, word));
 	}
-	public static void AddTagMixedNumArg(StringBuilder sb, string name, MixedNum num)
+	public static void AddTagMixedNumArg(StringBuilder sb, string name, MixedNum? num)
 	{
 		if (num != null && num.num != 0)
 		{
@@ -141,7 +142,7 @@ internal sealed class Utils
 			num.BuilderString(sb).Append('\'');
 		}
 	}
-	public static void AddTagMixedParam(StringBuilder sb, string name, MixedNum[] nums)
+	public static void AddTagMixedParam(StringBuilder sb, string name, MixedNum[]? nums)
 	{
 		if (nums != null)
 		{
@@ -178,7 +179,7 @@ internal sealed class Utils
 			sb.Append(' ').Append(name).Append("='").Append(HtmlManager.GetColorToString(color)).Append('\'');
 		}
 	}
-	public static void AddColorParam4(StringBuilder sb, string name, Color[] colors)
+	public static void AddColorParam4(StringBuilder sb, string name, Color[]? colors)
 	{
 		if (colors != null)
 		{
@@ -211,7 +212,7 @@ internal sealed class Utils
 	/// <summary>
 	///  ※重要※絶対パスで返すので返り値でEmueraの互換性を保つならGetRelativePathを通すこと！
 	/// </summary>
-	public static string GetValidPath(string path)
+	public static string? GetValidPath(string path)
 	{
 		path = path.Replace('/', '\\').Replace("..\\", "");
 		try
@@ -225,19 +226,19 @@ internal sealed class Utils
 		}
 		return Path.Combine(Program.ExeDir + path);
 	}
-	public static void MixedNum4ToInt4(MixedNum[] mnums, ref int[] nums)
+	public static void MixedNum4ToInt4(MixedNum[]? mnums, ref int[]? nums)
 	{
 		if (mnums != null)
 		{
 			CreateIfNull(ref nums);
 			for (int i = 0; i < 4; i++)
-				nums[i] = MixedNum.ToPixel(mnums[i]);
+				nums![i] = MixedNum.ToPixel(mnums[i]);
 		}
 	}
 	// filepathの安全性(ゲームフォルダ以外のフォルダか)を確認しない
-	static public Bitmap LoadImage(string filepath)
+	static public Bitmap? LoadImage(string? filepath)
 	{
-		Bitmap bmp = null;
+		Bitmap? bmp = null;
 		//FileStream fs = null;
 		if (!File.Exists(filepath)) return null;
 		try
@@ -304,19 +305,19 @@ internal sealed class Utils
 			if (t == typeof(string)) return 5;
 			return long.MaxValue;
 		}
-		public static Type IntToType(long i)
+		public static Type? IntToType(long i)
 		{
 			if (i > 0 && i <= builtInDTTypes.Length) return builtInDTTypes[i - 1];
 			return null;
 		}
-		public static Type NameToType(string n)
+		public static Type? NameToType(string n)
 		{
-			if (builtInDictDTTypeNames_R.TryGetValue(n, out Type value)) return value;
+			if (builtInDictDTTypeNames_R.TryGetValue(n, out Type? value)) return value;
 			return null;
 		}
-		public static string TypeToName(Type t)
+		public static string? TypeToName(Type t)
 		{
-			if (builtInDictDTTypeNames.TryGetValue(t, out string value)) return value;
+			if (builtInDictDTTypeNames.TryGetValue(t, out string? value)) return value;
 			return null;
 		}
 		public static object ConvertInt(long v, Type t)

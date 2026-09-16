@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿#nullable enable
+using System.Drawing;
 using System.Drawing.Drawing2D;
 
 namespace MinorShift.Emuera.Runtime.Utils.EvilMask;
@@ -10,7 +11,7 @@ internal sealed class Shape
 
 	internal sealed class BoxBorder
 	{
-		public static void DrawBorder(Graphics graph, Rectangle rect, int[] border, int[] radius, Color[] colors, Color bgColor)
+		public static void DrawBorder(Graphics graph, Rectangle rect, int[]? border, int[]? radius, Color[]? colors, Color bgColor)
 		{
 			if (radius == null || radius[Corner.LeftTop] == 0)
 				drawNormalCornerBorderLeftTop(graph, rect, border, bgColor, colors, false, false);
@@ -32,7 +33,7 @@ internal sealed class Shape
 			else
 				drawRoundedCornerBorderLeftTop(graph, rect, border, radius, bgColor, colors, true, true);
 		}
-		static void drawNormalCornerBorderLeftTop(Graphics graph, Rectangle rect, int[] border, Color bgColor, Color[] colors, bool flipX, bool flipY)
+		static void drawNormalCornerBorderLeftTop(Graphics graph, Rectangle rect, int[]? border, Color bgColor, Color[]? colors, bool flipX, bool flipY)
 		{
 			var backUp = graph.SmoothingMode;
 			graph.SmoothingMode = SmoothingMode.AntiAlias;
@@ -108,11 +109,11 @@ internal sealed class Shape
 			}
 			graph.SmoothingMode = backUp;
 		}
-		static void drawRoundedCornerBorderLeftTop(Graphics graph, Rectangle rect, int[] border, int[] radius, Color bgColor, Color[] colors, bool flipX, bool flipY)
+		static void drawRoundedCornerBorderLeftTop(Graphics graph, Rectangle rect, int[]? border, int[] radius, Color bgColor, Color[]? colors, bool flipX, bool flipY)
 		{
 			var backUp = graph.SmoothingMode;
 			graph.SmoothingMode = SmoothingMode.AntiAlias;
-			GraphicsPath innerEllipse = null;
+			GraphicsPath? innerEllipse = null;
 			int corner = flipX ? flipY ? Corner.RightBottom : Corner.RightTop : flipY ? Corner.LeftBottom : Corner.LeftTop;
 			Rectangle cornerRect = new(
 				flipX ? rect.X + rect.Width - radius[corner] : rect.X,
@@ -163,7 +164,7 @@ internal sealed class Shape
 									region.Exclude(innerEllipseRect);
 									graph.FillRegion(brush, region);
 									graph.SetClip(innerEllipseRect, CombineMode.Replace);
-									graph.FillPath(brush, innerEllipse);
+									graph.FillPath(brush, innerEllipse!);
 									graph.SetClip(rect, CombineMode.Replace);
 								}
 							else
@@ -172,7 +173,7 @@ internal sealed class Shape
 				}
 				if (border != null)
 				{
-					if (hasInnerEllipse) cornerEllipse.AddPath(innerEllipse, false);
+					if (hasInnerEllipse) cornerEllipse.AddPath(innerEllipse!, false);
 					if (border[flipX ? Direction.Right : Direction.Left] > 0)
 					{
 						// 左枠の半分
@@ -196,9 +197,9 @@ internal sealed class Shape
 								graph.SmoothingMode = backUp;
 								graph.FillRectangle(brush, new Rectangle(
 									flipX ? rect.X + rect.Width - border[Direction.Right] : rect.X,
-									flipY ? rect.Y + rect.Height / 2 : rect.Y + radius[corner],
+									flipY ? rect.Y + rect.Height / 2 : rect.Y + radius![corner],
 									border[flipX ? Direction.Right : Direction.Left],
-									rect.Height / 2 - radius[corner]));
+									rect.Height / 2 - radius![corner]));
 								graph.SmoothingMode = SmoothingMode.AntiAlias;
 							}
 					}
@@ -225,9 +226,9 @@ internal sealed class Shape
 								graph.SetClip(rect, CombineMode.Replace);
 								graph.SmoothingMode = backUp;
 								graph.FillRectangle(brush, new Rectangle(
-									flipX ? rect.X + rect.Width / 2 : rect.X + radius[corner],
+									flipX ? rect.X + rect.Width / 2 : rect.X + radius![corner],
 									flipY ? rect.Y + rect.Height - border[Direction.Bottom] : rect.Y,
-									rect.Width / 2 - (flipX ? radius[corner] : 0),
+									rect.Width / 2 - (flipX ? radius![corner] : 0),
 									border[flipY ? Direction.Bottom : Direction.Top]));
 								graph.SmoothingMode = SmoothingMode.AntiAlias;
 							}

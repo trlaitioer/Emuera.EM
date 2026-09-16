@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.GameProc;
+﻿#nullable enable
+using MinorShift.Emuera.GameProc;
 using MinorShift.Emuera.GameProc.Function;
 using MinorShift.Emuera.GameView;
 using MinorShift.Emuera.Runtime.Script;
@@ -35,7 +36,8 @@ namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 
 		}
 
-		static private PluginManager instance;
+		// created on the first GetInstance call
+		static private PluginManager instance = null!;
 
 		/// <summary>
 		/// Unsafe rudimentary method to execute ERB line of code from Plugin.
@@ -45,9 +47,9 @@ namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 		public void ExecuteLine(string line)
 		{
 			var logicalLine = LogicalLineParser.ParseLine(line, null);
-			InstructionLine func = (InstructionLine)logicalLine;
+			InstructionLine func = (InstructionLine)logicalLine!;
 			ArgumentParser.SetArgumentTo(func);
-			func.Function.Instruction.DoInstruction(expressionMediator, func, processState);
+			func.Function.Instruction!.DoInstruction(expressionMediator, func, processState);
 		}
 
 		public void Print(string text)
@@ -105,7 +107,7 @@ namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 		{
 			expressionMediator.Console.PrintHtml(htmlText, toBuffer);
 		}
-		public void PrintImage(string resourceName, int width, int height, int y, string buttonResourceName = null, string mapResourceName = null)
+		public void PrintImage(string resourceName, int width, int height, int y, string? buttonResourceName = null, string? mapResourceName = null)
 		{
 			MixedNum widthNum = new()
 			{
@@ -195,7 +197,7 @@ namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 		{
 			return expressionMediator.VEvaluator.VariableData.GetVarTokenDic()[name].GetIntValue(expressionMediator, [index]);
 		}
-		public string GetStrVar(string name, int index = 0)
+		public string? GetStrVar(string name, int index = 0)
 		{
 			return expressionMediator.VEvaluator.VariableData.GetVarTokenDic()[name].GetStrValue(expressionMediator, [index]);
 		}
@@ -213,7 +215,7 @@ namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 			var variable = expressionMediator.VEvaluator.VariableData.GetVarTokenDic()[name];
 			var errPos = "";
 			var dict = expressionMediator.VEvaluator.Constant.GetKeywordDictionary(out errPos, VariableCode.CFLAG, 1, key);
-			variable.SetValue(value, [charId, dict[key]]);
+			variable.SetValue(value, [charId, dict![key]]);
 		}
 		public void SetCharVar(string name, long charId, long key, long value)
 		{
@@ -230,7 +232,7 @@ namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 			var variable = expressionMediator.VEvaluator.VariableData.GetVarTokenDic()[name];
 			var errPos = "";
 			var dict = expressionMediator.VEvaluator.Constant.GetKeywordDictionary(out errPos, VariableCode.CFLAG, 1, key);
-			return variable.GetIntValue(expressionMediator, [charId, dict[key]]);
+			return variable.GetIntValue(expressionMediator, [charId, dict![key]]);
 		}
 
 		public System.Data.DataTable GetDataTable(string name)
@@ -248,18 +250,18 @@ namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 		/// Returns call stacktrace from emuera/ERB side
 		/// </summary>
 		public IEnumerable<String> GetStackTrace(){
-			LogicalLine parent;
+			LogicalLine? parent;
 			List<String> stackTraceCollecter = [];
 			int depth = 0;
 
 			// add initial caller
-			stackTraceCollecter.Add(this.processState.CurrentLine.Position.Value.Filename + ":" + this.processState.CurrentLine.Position.Value.LineNo.ToString() + "@" +  this.processState.CurrentLine.ParentLabelLine.LabelName);
+			stackTraceCollecter.Add(this.processState.CurrentLine!.Position!.Value.Filename + ":" + this.processState.CurrentLine.Position.Value.LineNo.ToString() + "@" +  this.processState.CurrentLine.ParentLabelLine!.LabelName);
 			// loop call stack
 			while ((parent = this.processState.GetReturnAddressSequensial(depth++)) != null)
 			{
 				if (parent.Position != null)
 				{
-					stackTraceCollecter.Add(parent.Position.Value.Filename + ":" + parent.Position.Value.LineNo.ToString() + "@" + parent.ParentLabelLine.LabelName);
+					stackTraceCollecter.Add(parent.Position.Value.Filename + ":" + parent.Position.Value.LineNo.ToString() + "@" + parent.ParentLabelLine!.LabelName);
 				}
 			}
 			return stackTraceCollecter;
@@ -303,7 +305,7 @@ namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 				}
 				*/
 
-				PluginManifestAbstract manifest = (PluginManifestAbstract)Activator.CreateInstance(manifestType);
+				PluginManifestAbstract? manifest = (PluginManifestAbstract?)Activator.CreateInstance(manifestType);
 				if (manifest == null)
 				{
 					//TODO: throw warning
@@ -432,74 +434,75 @@ namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 		}
 
 		private Dictionary<string, IPluginMethod> methods = [];
-		private Process process;
-		private ProcessState processState;
-		private ExpressionMediator expressionMediator;
+		// all fields below are assigned by SetParent/CacheVariables, which run before any plugin method executes
+		private Process process = null!;
+		private ProcessState processState = null!;
+		private ExpressionMediator expressionMediator = null!;
 
-		public GlobalInt1dWrapper DAY;
-		public GlobalInt1dWrapper MONEY;
-		public GlobalInt1dWrapper ITEM;
-		public GlobalInt1dWrapper FLAG;
-		public GlobalInt1dWrapper TFLAG;
-		public GlobalInt1dWrapper UP;
-		public GlobalInt1dWrapper PALAMLV;
-		public GlobalInt1dWrapper EXPLV;
-		public GlobalInt1dWrapper EJAC;
-		public GlobalInt1dWrapper DOWN;
-		public GlobalInt1dWrapper RESULT;
-		public GlobalInt1dWrapper COUNT;
-		public GlobalInt1dWrapper TARGET;
-		public GlobalInt1dWrapper ASSI;
-		public GlobalInt1dWrapper MASTER;
-		public GlobalInt1dWrapper NOITEM;
-		public GlobalInt1dWrapper LOSEBASE;
-		public GlobalInt1dWrapper SELECTCOM;
-		public GlobalInt1dWrapper ASSIPLAY;
-		public GlobalInt1dWrapper PREVCOM;
-		public GlobalInt1dWrapper TIME;
-		public GlobalInt1dWrapper ITEMSALES;
-		public GlobalInt1dWrapper PLAYER;
-		public GlobalInt1dWrapper NEXTCOM;
-		public GlobalInt1dWrapper PBAND;
-		public GlobalInt1dWrapper BOUGHT;
+		public GlobalInt1dWrapper DAY = null!;
+		public GlobalInt1dWrapper MONEY = null!;
+		public GlobalInt1dWrapper ITEM = null!;
+		public GlobalInt1dWrapper FLAG = null!;
+		public GlobalInt1dWrapper TFLAG = null!;
+		public GlobalInt1dWrapper UP = null!;
+		public GlobalInt1dWrapper PALAMLV = null!;
+		public GlobalInt1dWrapper EXPLV = null!;
+		public GlobalInt1dWrapper EJAC = null!;
+		public GlobalInt1dWrapper DOWN = null!;
+		public GlobalInt1dWrapper RESULT = null!;
+		public GlobalInt1dWrapper COUNT = null!;
+		public GlobalInt1dWrapper TARGET = null!;
+		public GlobalInt1dWrapper ASSI = null!;
+		public GlobalInt1dWrapper MASTER = null!;
+		public GlobalInt1dWrapper NOITEM = null!;
+		public GlobalInt1dWrapper LOSEBASE = null!;
+		public GlobalInt1dWrapper SELECTCOM = null!;
+		public GlobalInt1dWrapper ASSIPLAY = null!;
+		public GlobalInt1dWrapper PREVCOM = null!;
+		public GlobalInt1dWrapper TIME = null!;
+		public GlobalInt1dWrapper ITEMSALES = null!;
+		public GlobalInt1dWrapper PLAYER = null!;
+		public GlobalInt1dWrapper NEXTCOM = null!;
+		public GlobalInt1dWrapper PBAND = null!;
+		public GlobalInt1dWrapper BOUGHT = null!;
 
-		public GlobalInt1dWrapper GLOBAL;
-		public GlobalInt1dWrapper RANDDATA;
+		public GlobalInt1dWrapper GLOBAL = null!;
+		public GlobalInt1dWrapper RANDDATA = null!;
 
-		public GlobalString1dWrapper SAVESTR;
-		public GlobalString1dWrapper TSTR;
-		public GlobalString1dWrapper STR;
-		public GlobalString1dWrapper RESULTS;
-		public GlobalString1dWrapper GLOBALS;
+		public GlobalString1dWrapper SAVESTR = null!;
+		public GlobalString1dWrapper TSTR = null!;
+		public GlobalString1dWrapper STR = null!;
+		public GlobalString1dWrapper RESULTS = null!;
+		public GlobalString1dWrapper GLOBALS = null!;
 		
-		public GlobalConstInt1dWrapper NO;
-		public GlobalConstInt1dWrapper ITEMPRICE;
+		public GlobalConstInt1dWrapper NO = null!;
+		public GlobalConstInt1dWrapper ITEMPRICE = null!;
 
-		public GlobalConstString1dWrapper ABLNAME;
-		public GlobalConstString1dWrapper TALENTNAME;
-		public GlobalConstString1dWrapper EXPNAME;
-		public GlobalConstString1dWrapper MARKNAME;
-		public GlobalConstString1dWrapper PALAMNAME;
-		public GlobalConstString1dWrapper ITEMNAME;
-		public GlobalConstString1dWrapper TRAINNAME;
-		public GlobalConstString1dWrapper BASENAME;
-		public GlobalConstString1dWrapper SOURCENAME;
-		public GlobalConstString1dWrapper EXNAME;
-		public GlobalConstString1dWrapper EQUIPNAME;
-		public GlobalConstString1dWrapper TEQUIPNAME;
-		public GlobalConstString1dWrapper FLAGNAME;
-		public GlobalConstString1dWrapper TFLAGNAME;
-		public GlobalConstString1dWrapper CFLAGNAME;
-		public GlobalConstString1dWrapper TCVARNAME;
-		public GlobalConstString1dWrapper CSTRNAME;
-		public GlobalConstString1dWrapper STAINNAME;
+		public GlobalConstString1dWrapper ABLNAME = null!;
+		public GlobalConstString1dWrapper TALENTNAME = null!;
+		public GlobalConstString1dWrapper EXPNAME = null!;
+		public GlobalConstString1dWrapper MARKNAME = null!;
+		public GlobalConstString1dWrapper PALAMNAME = null!;
+		public GlobalConstString1dWrapper ITEMNAME = null!;
+		public GlobalConstString1dWrapper TRAINNAME = null!;
+		public GlobalConstString1dWrapper BASENAME = null!;
+		public GlobalConstString1dWrapper SOURCENAME = null!;
+		public GlobalConstString1dWrapper EXNAME = null!;
+		public GlobalConstString1dWrapper EQUIPNAME = null!;
+		public GlobalConstString1dWrapper TEQUIPNAME = null!;
+		public GlobalConstString1dWrapper FLAGNAME = null!;
+		public GlobalConstString1dWrapper TFLAGNAME = null!;
+		public GlobalConstString1dWrapper CFLAGNAME = null!;
+		public GlobalConstString1dWrapper TCVARNAME = null!;
+		public GlobalConstString1dWrapper CSTRNAME = null!;
+		public GlobalConstString1dWrapper STAINNAME = null!;
 
-		public GlobalConstString1dWrapper CDFLAGNAME1;
-		public GlobalConstString1dWrapper CDFLAGNAME2;
-		public GlobalConstString1dWrapper STRNAME;
-		public GlobalConstString1dWrapper TSTRNAME;
-		public GlobalConstString1dWrapper SAVESTRNAME;
-		public GlobalConstString1dWrapper GLOBALNAME;
-		public GlobalConstString1dWrapper GLOBALSNAME;
+		public GlobalConstString1dWrapper CDFLAGNAME1 = null!;
+		public GlobalConstString1dWrapper CDFLAGNAME2 = null!;
+		public GlobalConstString1dWrapper STRNAME = null!;
+		public GlobalConstString1dWrapper TSTRNAME = null!;
+		public GlobalConstString1dWrapper SAVESTRNAME = null!;
+		public GlobalConstString1dWrapper GLOBALNAME = null!;
+		public GlobalConstString1dWrapper GLOBALSNAME = null!;
 	}
 }

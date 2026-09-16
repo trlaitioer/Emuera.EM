@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Config;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.Runtime.Utils;
 using MinorShift.Emuera.Runtime.Utils.EvilMask;
 using System;
@@ -34,19 +35,19 @@ static class AppContents
 	//}
 	static public GraphicsImage GetGraphics(int i)
 	{
-		if (gList.TryGetValue(i, out GraphicsImage value))
+		if (gList.TryGetValue(i, out GraphicsImage? value))
 			return value;
 		GraphicsImage g = new(i);
 		gList[i] = g;
 		return g;
 	}
 
-	static public ASprite GetSprite(string name)
+	static public ASprite? GetSprite(string name)
 	{
 		if (name == null)
 			return null;
 		name = name.ToUpper();
-		if (!imageDictionary.TryGetValue(name, out ASprite value))
+		if (!imageDictionary.TryGetValue(name, out ASprite? value))
 			return null;
 		return value;
 	}
@@ -56,7 +57,7 @@ static class AppContents
 		if (name == null)
 			return;
 		name = name.ToUpper();
-		if (!imageDictionary.TryGetValue(name, out ASprite value))
+		if (!imageDictionary.TryGetValue(name, out ASprite? value))
 			return;
 		value.Dispose();
 		imageDictionary.TryRemove(name, out _);
@@ -97,7 +98,7 @@ static class AppContents
 		imageDictionary[imgName] = newCImg;
 	}
 
-	static public Exception LoadContents(bool reload)
+	static public Exception? LoadContents(bool reload)
 	{
 		if (!Directory.Exists(Program.ContentDir))
 			return null;
@@ -124,7 +125,7 @@ static class AppContents
 				.ForAll(path =>
 				{
 					//アニメスプライト宣言。nullでないとき、フレーム追加モード
-					SpriteAnime currentAnime = null;
+					SpriteAnime? currentAnime = null;
 					string directory = Path.GetDirectoryName(path) + "\\";
 					string filename = Path.GetFileName(path);
 					string[] lines = File.ReadAllLines(path, EncodingHandler.DetectEncoding(path));
@@ -217,7 +218,7 @@ static class AppContents
 	/// <param name="currentAnime"></param>
 	/// <param name="sp"></param>
 	/// <returns></returns>
-	static private AContentItem CreateFromCsv(string[] tokens, string dir, SpriteAnime currentAnime, ScriptPosition? sp)
+	static private AContentItem? CreateFromCsv(string[] tokens, string dir, SpriteAnime? currentAnime, ScriptPosition? sp)
 	{
 		if (tokens.Length < 2)
 			return null;
@@ -258,7 +259,7 @@ static class AppContents
 
 
 		//親画像のロードConstImage
-		if (!resourceDic.TryGetValue(parentName, out AbstractImage value))
+		if (!resourceDic.TryGetValue(parentName, out AbstractImage? value))
 		{
 			string filepath = parentName;
 			Bitmap bmp;

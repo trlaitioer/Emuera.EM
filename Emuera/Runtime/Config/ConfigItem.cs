@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Utils;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Utils;
 using MinorShift.Emuera.Runtime.Utils.EvilMask;
 using System;
 using System.Collections.Generic;
@@ -128,7 +129,7 @@ internal sealed class ConfigItem<T> : AConfigItem
 			return sb.ToString();
 		}
 		#endregion
-		return val.ToString();
+		return val!.ToString()!;
 	}
 
 

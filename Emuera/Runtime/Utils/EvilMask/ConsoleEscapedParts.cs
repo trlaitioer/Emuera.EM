@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.UI.Game;
+﻿#nullable enable
+using MinorShift.Emuera.UI.Game;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -131,7 +132,7 @@ internal sealed class ConsoleEscapedParts
 					&& (divType != 0 || top > line || line > bottom + 1)))
 				continue;
 			int depth = (int)row[ROW_DEPTH];
-			if (!rmap.TryGetValue(depth, out List<AConsoleDisplayNode> list))
+			if (!rmap.TryGetValue(depth, out List<AConsoleDisplayNode>? list))
 			{
 				list = [];
 				rmap.Add(depth, list);

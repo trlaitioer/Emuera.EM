@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Utils;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Utils;
 using System.Drawing;
 using System.IO;
 
@@ -6,7 +7,7 @@ namespace MinorShift.Emuera.UI.Game.Image;
 
 static class ImgUtils
 {
-	public static Bitmap LoadImage(string filepath)
+	public static Bitmap? LoadImage(string filepath)
 	{
 		if (!File.Exists(filepath))
 		{

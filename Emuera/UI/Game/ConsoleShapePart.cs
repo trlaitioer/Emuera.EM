@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Config;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Config;
 using System;
 using System.Drawing;
 using System.Text;
@@ -40,7 +41,7 @@ abstract class ConsoleShapePart : AConsoleColoredPart
 			sb.Append('\'');
 		}
 		sb.Append('>');
-		ConsoleShapePart ret = null;
+		ConsoleShapePart? ret = null;
 
 		switch (type)
 		{
@@ -229,9 +230,10 @@ internal sealed class ConsoleErrorShapePart : ConsoleShapePart
 	public override void DrawTo(Graphics graph, int pointY, bool isSelecting, bool isFocus, bool isBackLog, TextDrawingMode mode, bool isButton = false, bool scalePreview = false)
 	{
 		if (mode == TextDrawingMode.GRAPHICS || scalePreview)
-			GraphicsTextRenderer.Draw(graph, Text, Config.DefaultFont, Config.ForeColor, PointX, XsubPixel, pointY);
+			// the constructor of this shape assigns Text and AltText
+			GraphicsTextRenderer.Draw(graph, Text!, Config.DefaultFont, Config.ForeColor, PointX, XsubPixel, pointY);
 		else
-			System.Windows.Forms.TextRenderer.DrawText(graph, Text.AsSpan(), Config.DefaultFont, new Point(PointX, pointY), Config.ForeColor, System.Windows.Forms.TextFormatFlags.NoPrefix);
+			System.Windows.Forms.TextRenderer.DrawText(graph, Text!.AsSpan(), Config.DefaultFont, new Point(PointX, pointY), Config.ForeColor, System.Windows.Forms.TextFormatFlags.NoPrefix);
 	}
 	public override void ResetLayout(StringMeasure sm)
 	{
@@ -244,7 +246,7 @@ internal sealed class ConsoleErrorShapePart : ConsoleShapePart
 			Width = 0;
 			return;
 		}
-		Width = sm.GetDisplayLength(Text, Config.DefaultFont);
+		Width = sm.GetDisplayLength(Text!, Config.DefaultFont);
 		XsubPixel = subPixel;
 	}
 }

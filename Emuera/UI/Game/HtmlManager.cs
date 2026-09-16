@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.GameView;
+﻿#nullable enable
+using MinorShift.Emuera.GameView;
 using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.Runtime.Script.Parser;
 using MinorShift.Emuera.Runtime.Script.Statements.Expression;
@@ -189,7 +190,7 @@ internal static class HtmlManager
 	#region EM_私家版_HTML_divタグ
 	private sealed class HtmlDivTag
 	{
-		public HtmlDivTag(MixedNum x, MixedNum y, MixedNum width, MixedNum height, int depth, int color, StyledBoxModel box, bool isRelative)
+		public HtmlDivTag(MixedNum x, MixedNum y, MixedNum width, MixedNum height, int depth, int color, StyledBoxModel? box, bool isRelative)
 		{
 			X = x;
 			Y = y;
@@ -200,14 +201,15 @@ internal static class HtmlManager
 			StyledBox = box;
 			IsRelative = isRelative;
 		}
-		public ConsoleDisplayLine[] Lines;
+		// Set by the div parsing path once the subdivision that owns this tag is parsed
+		public ConsoleDisplayLine[] Lines = null!;
 		public MixedNum Width;
 		public MixedNum Height;
 		public MixedNum X;
 		public MixedNum Y;
 		public int Color;
 		public int Depth;
-		public StyledBoxModel StyledBox;
+		public StyledBoxModel? StyledBox;
 		public bool IsRelative;
 	}
 	#endregion
@@ -225,7 +227,8 @@ internal static class HtmlManager
 	{
 		public int Color = -1;
 		public int BColor = -1;
-		public string FontName;
+		// Set when the <font> tag carries a face attribute
+		public string FontName = null!;
 		//public int PointX = 0;
 		//public bool PointXisLocked = false;
 	}
@@ -235,8 +238,9 @@ internal static class HtmlManager
 		public bool IsButton = true;
 		public bool IsButtonTag = true;
 		public long ButtonValueInt;
-		public string ButtonValueStr;
-		public string ButtonTitle;
+		// Only read while IsButton is true, which requires a value attribute to have been parsed
+		public string ButtonValueStr = null!;
+		public string? ButtonTitle;
 		public bool ButtonIsInteger;
 		public int PointX;
 		public bool PointXisLocked;
@@ -256,11 +260,11 @@ internal static class HtmlManager
 		/// <summary>
 		/// 今まで追加された文字列についてのボタンタグ情報
 		/// </summary>
-		public HtmlAnalzeStateButtonTag LastButtonTag;
+		public HtmlAnalzeStateButtonTag? LastButtonTag;
 		/// <summary>
 		/// 最新のボタンタグ情報
 		/// </summary>
-		public HtmlAnalzeStateButtonTag CurrentButtonTag;
+		public HtmlAnalzeStateButtonTag? CurrentButtonTag;
 
 		#region EM_私家版_clearbutton
 		public bool FlagClearButton;//falseの時に</clearbutton>するとエラー,trueの時ボタン化が無効とする
@@ -269,7 +273,7 @@ internal static class HtmlManager
 
 		#region EM_私家版_HTML_divタグ
 		public bool StartingSubDivision;
-		public HtmlDivTag CurrentDivTag;
+		public HtmlDivTag? CurrentDivTag;
 		public int SubDivisionWidth;
 		// public int SubDivisionXOffset; // 必要がなさそうなので削除する
 		#endregion
@@ -280,7 +284,7 @@ internal static class HtmlManager
 		{
 			Color c = Config.ForeColor;
 			Color b = Config.FocusColor;
-			string fontname = null;
+			string? fontname = null;
 			bool colorChanged = false;
 			if (FonttagList.Count > 0)
 			{
@@ -296,7 +300,8 @@ internal static class HtmlManager
 					b = Color.FromArgb(font.BColor >> 16, font.BColor >> 8 & 0xFF, font.BColor & 0xFF);
 				}
 			}
-			return new StringStyle(c, colorChanged, b, FontStyle, fontname);
+			// StringStyle substitutes Config.FontName when this is null
+			return new StringStyle(c, colorChanged, b, FontStyle, fontname!);
 		}
 	}
 
@@ -333,9 +338,10 @@ internal static class HtmlManager
 			ConsoleButtonString[] buttons = lines[dispCounter].Buttons;
 			for (int buttonCounter = 0; buttonCounter < buttons.Length; buttonCounter++)
 			{
-				string titleValue = null;
+				string? titleValue = null;
+				// The empty check guarantees a non-null title
 				if (!string.IsNullOrEmpty(buttons[buttonCounter].Title))
-					titleValue = Escape(buttons[buttonCounter].Title);
+					titleValue = Escape(buttons[buttonCounter].Title!);
 				bool hasTag = buttons[buttonCounter].IsButton || titleValue != null
 					|| buttons[buttonCounter].PointXisLocked;
 				if (hasTag)
@@ -370,9 +376,11 @@ internal static class HtmlManager
 				{
 					if (parts[cssCounter] is ConsoleStyledString)
 					{
-						ConsoleStyledString css = parts[cssCounter] as ConsoleStyledString;
-						b.Append(getStringStyleStartingTag(css.StringStyle));
-						b.Append(Escape(css.Text));
+						// The type check above guarantees that the cast succeeds
+						ConsoleStyledString? css = parts[cssCounter] as ConsoleStyledString;
+						b.Append(getStringStyleStartingTag(css!.StringStyle));
+						// ConsoleStyledString always sets Text in its constructor
+						b.Append(Escape(css!.Text!));
 						b.Append(getClosingStyleStartingTag(css.StringStyle));
 					}
 					else if (parts[cssCounter] is ConsoleImagePart)
@@ -412,7 +420,7 @@ internal static class HtmlManager
 		return b.ToString();
 	}
 
-	public static string[] HtmlTagSplit(string str)
+	public static string[]? HtmlTagSplit(string str)
 	{
 		List<string> strList = [];
 		CharStream st = new(str);
@@ -445,8 +453,9 @@ internal static class HtmlManager
 	#region EM_私家版_描画拡張
 	sealed class HtmlParentInfo
 	{
-		public HtmlAnalzeState State;
-		public CharStream Stream;
+		// Both are set by the caller when the subdivision is parsed
+		public HtmlAnalzeState State = null!;
+		public CharStream Stream = null!;
 		public bool HasComment;
 		public bool HasReturn;
 	}
@@ -457,17 +466,18 @@ internal static class HtmlManager
 	/// <param name="sm"></param>
 	/// <param name="console">実際の表示に使わないならnullにする</param>
 	/// <returns></returns>
-	public static ConsoleDisplayLine[] Html2DisplayLine(string str, StringMeasure sm, EmueraConsole console)
+	public static ConsoleDisplayLine[] Html2DisplayLine(string? str, StringMeasure sm, EmueraConsole? console)
 	{
-		return html2DisplayLine(str, sm, console, null, null);
+		// A null buttonsOutput never reaches the null-returning path of html2DisplayLine
+		return html2DisplayLine(str, sm, console, null, null)!;
 	}
-	public static ConsoleButtonString[] Html2ButtonList(string str, StringMeasure sm, EmueraConsole console)
+	public static ConsoleButtonString[] Html2ButtonList(string? str, StringMeasure sm, EmueraConsole? console)
 	{
 		var parts = new List<ConsoleButtonString>();
 		html2DisplayLine(str, sm, console, null, parts);
 		return parts.ToArray();
 	}
-	static ConsoleDisplayLine[] html2DisplayLine(string str, StringMeasure sm, EmueraConsole console, HtmlParentInfo parent, List<ConsoleButtonString> buttonsOutput)
+	static ConsoleDisplayLine[]? html2DisplayLine(string? str, StringMeasure sm, EmueraConsole? console, HtmlParentInfo? parent, List<ConsoleButtonString>? buttonsOutput)
 	#endregion
 	{
 		#region EM_私家版_HTML_PRINT拡張
@@ -476,10 +486,11 @@ internal static class HtmlManager
 		List<ConsoleButtonString> buttonList = buttonsOutput == null ? [] : buttonsOutput;
 		#endregion
 		// StringStream st = new StringStream(str);
-		CharStream st = parent != null ? parent.Stream : new(str);
+		// str is null only on the recursive call, which always passes a parent
+		CharStream st = parent != null ? parent.Stream : new(str!);
 		int found;
-		bool hasComment = parent != null ? parent.HasComment : str.Contains("<!--", StringComparison.Ordinal);
-		bool hasReturn = parent != null ? parent.HasReturn : str.Contains('\n', StringComparison.Ordinal);
+		bool hasComment = parent != null ? parent.HasComment : str!.Contains("<!--", StringComparison.Ordinal);
+		bool hasReturn = parent != null ? parent.HasReturn : str!.Contains('\n', StringComparison.Ordinal);
 		HtmlAnalzeState state = new();
 		#region EM_私家版_HTML_divタグ
 		if (parent != null)
@@ -536,7 +547,7 @@ internal static class HtmlManager
 			else//タグ解析
 			{
 				st.ShiftNext();
-				AConsoleDisplayNode part = tagAnalyze(state, st);
+				AConsoleDisplayNode? part = tagAnalyze(state, st);
 				if (st.Current != '>')
 					throw new CodeEE(trerror.NotFoundTerminateTag.Text);
 				if (part != null)
@@ -574,13 +585,14 @@ internal static class HtmlManager
 									// state.SubDivisionXOffset += MixedNum.ToPixel(box.padding[Direction.Left]);
 								}
 							}
+							// A null buttonsOutput never reaches the null-returning path of html2DisplayLine
 							state.CurrentDivTag.Lines = html2DisplayLine(null, sm, console, new HtmlParentInfo
 							{
 								HasComment = hasComment,
 								HasReturn = hasReturn,
 								State = state,
 								Stream = st,
-							}, null);
+							}, null)!;
 							var tagInfo = state.CurrentDivTag;
 							state.CurrentDivTag = null;
 							state.StartingSubDivision = false;
@@ -597,7 +609,8 @@ internal static class HtmlManager
 				state.LastButtonTag = state.CurrentButtonTag;
 				if (cssList.Count > 0)
 					buttonList.Add(cssToButton(cssList, state, console));
-				buttonList.Add(null);
+				// A null entry marks an explicit line break and is skipped by the loop below
+				buttonList.Add(null!);
 			}
 			if (state.FlagButton && cssList.Count > 0)
 			{
@@ -760,7 +773,7 @@ internal static class HtmlManager
 	/// <param name="state"></param>
 	/// <param name="console"></param>
 	/// <returns></returns>
-	private static ConsoleButtonString cssToButton(List<AConsoleDisplayNode> cssList, HtmlAnalzeState state, EmueraConsole console)
+	private static ConsoleButtonString cssToButton(List<AConsoleDisplayNode> cssList, HtmlAnalzeState state, EmueraConsole? console)
 	{
 		AConsoleDisplayNode[] css = new AConsoleDisplayNode[cssList.Count];
 		cssList.CopyTo(css);
@@ -867,7 +880,7 @@ internal static class HtmlManager
 		return b.ToString();
 	}
 
-	private static AConsoleDisplayNode tagAnalyze(HtmlAnalzeState state, CharStream st)
+	private static AConsoleDisplayNode? tagAnalyze(HtmlAnalzeState state, CharStream st)
 	{
 		bool endTag = st.Current == '/';
 		string tag;
@@ -943,7 +956,7 @@ internal static class HtmlManager
 		//以降は開始タグ
 
 		bool tempUseMacro = LexicalAnalyzer.UseMacro;
-		WordCollection wc = null;
+		WordCollection? wc = null;
 		try
 		{
 			LexicalAnalyzer.UseMacro = false;//一時的にマクロ展開をやめる
@@ -958,7 +971,7 @@ internal static class HtmlManager
 		}
 		if (string.IsNullOrEmpty(tag))
 			goto error;
-		IdentifierWord word;
+		IdentifierWord? word;
 		FontStyle newStyle = FontStyle.Strikeout;
 		switch (tag.ToLower())
 		{
@@ -996,9 +1009,9 @@ internal static class HtmlManager
 						throw new CodeEE(string.Format(trerror.DuplicateTag.Text, "p"));
 					word = wc.Current as IdentifierWord;
 					wc.ShiftNext();
-					OperatorWord op = wc.Current as OperatorWord;
+					OperatorWord? op = wc.Current as OperatorWord;
 					wc.ShiftNext();
-					LiteralStringWord attr = wc.Current as LiteralStringWord;
+					LiteralStringWord? attr = wc.Current as LiteralStringWord;
 					wc.ShiftNext();
 					if (!wc.EOL || word == null || op == null || op.Code != OperatorCode.Assignment || attr == null)
 						goto error;
@@ -1027,23 +1040,23 @@ internal static class HtmlManager
 					if (wc == null)
 						throw new CodeEE(string.Format(trerror.TagHasNotAttribute.Text, tag));
 					string attrValue;
-					string src = null;
-					string srcb = null;
-					string srcm = null;
+					string? src = null;
+					string? srcb = null;
+					string? srcm = null;
 					#region EM_私家版_HTMLパラメータ拡張
 					//int height = 0;
 					//int width = 0;
 					//int ypos = 0;
-					MixedNum height = null;
-					MixedNum width = null;
-					MixedNum ypos = null;
+					MixedNum? height = null;
+					MixedNum? width = null;
+					MixedNum? ypos = null;
 					while (wc != null && !wc.EOL)
 					{
 						word = wc.Current as IdentifierWord;
 						wc.ShiftNext();
-						OperatorWord op = wc.Current as OperatorWord;
+						OperatorWord? op = wc.Current as OperatorWord;
 						wc.ShiftNext();
-						LiteralStringWord attr = wc.Current as LiteralStringWord;
+						LiteralStringWord? attr = wc.Current as LiteralStringWord;
 						wc.ShiftNext();
 						if (word == null || op == null || op.Code != OperatorCode.Assignment || attr == null)
 							goto error;
@@ -1068,15 +1081,15 @@ internal static class HtmlManager
 						}
 						else if (word.Code.Equals("height", StringComparison.OrdinalIgnoreCase))
 						{
-							ParseMixedNum(ref height, tag, word.Code, attrValue);
+							ParseMixedNum(ref height!, tag, word.Code, attrValue);
 						}
 						else if (word.Code.Equals("width", StringComparison.OrdinalIgnoreCase))
 						{
-							ParseMixedNum(ref width, tag, word.Code, attrValue);
+							ParseMixedNum(ref width!, tag, word.Code, attrValue);
 						}
 						else if (word.Code.Equals("ypos", StringComparison.OrdinalIgnoreCase))
 						{
-							ParseMixedNum(ref ypos, tag, word.Code, attrValue);
+							ParseMixedNum(ref ypos!, tag, word.Code, attrValue);
 						}
 						else
 							throw new CodeEE(string.Format(trerror.CanNotInterpretAttributeName.Text, tag, word.Code));
@@ -1091,11 +1104,11 @@ internal static class HtmlManager
 				{
 					if (state.CurrentDivTag != null)
 						throw new CodeEE(string.Format(trerror.NestedTag.Text, "div"));
-					MixedNum x = null;
-					MixedNum y = null;
-					MixedNum width = null;
-					MixedNum height = null;
-					StyledBoxModel box = null;
+					MixedNum? x = null;
+					MixedNum? y = null;
+					MixedNum? width = null;
+					MixedNum? height = null;
+					StyledBoxModel? box = null;
 					bool isRelative = true;
 					int depth = 0;
 					int color = -1;
@@ -1104,28 +1117,28 @@ internal static class HtmlManager
 					{
 						word = wc.Current as IdentifierWord;
 						wc.ShiftNext();
-						OperatorWord op = wc.Current as OperatorWord;
+						OperatorWord? op = wc.Current as OperatorWord;
 						wc.ShiftNext();
-						LiteralStringWord attr = wc.Current as LiteralStringWord;
+						LiteralStringWord? attr = wc.Current as LiteralStringWord;
 						wc.ShiftNext();
 						if (word == null || op == null || op.Code != OperatorCode.Assignment || attr == null)
 							goto error;
 						attrValue = Unescape(attr.Str);
 						if (word.Code.Equals("height", StringComparison.OrdinalIgnoreCase))
 						{
-							ParseMixedNum(ref height, tag, word.Code, attrValue);
+							ParseMixedNum(ref height!, tag, word.Code, attrValue);
 						}
 						else if (word.Code.Equals("width", StringComparison.OrdinalIgnoreCase))
 						{
-							ParseMixedNum(ref width, tag, word.Code, attrValue);
+							ParseMixedNum(ref width!, tag, word.Code, attrValue);
 						}
 						else if (word.Code.Equals("ypos", StringComparison.OrdinalIgnoreCase))
 						{
-							ParseMixedNum(ref y, tag, word.Code, attrValue);
+							ParseMixedNum(ref y!, tag, word.Code, attrValue);
 						}
 						else if (word.Code.Equals("xpos", StringComparison.OrdinalIgnoreCase))
 						{
-							ParseMixedNum(ref x, tag, word.Code, attrValue);
+							ParseMixedNum(ref x!, tag, word.Code, attrValue);
 						}
 						else if (word.Code.Equals("depth", StringComparison.OrdinalIgnoreCase))
 						{
@@ -1150,8 +1163,8 @@ internal static class HtmlManager
 								tokens[i] = tokens[i].Trim();
 								switch (i)
 								{
-									case 0: ParseMixedNum(ref width, tag, "width", tokens[i]); break;
-									case 1: ParseMixedNum(ref height, tag, "height", tokens[i]); break;
+									case 0: ParseMixedNum(ref width!, tag, "width", tokens[i]); break;
+									case 1: ParseMixedNum(ref height!, tag, "height", tokens[i]); break;
 								}
 							}
 						}
@@ -1165,16 +1178,17 @@ internal static class HtmlManager
 								tokens[i] = tokens[i].Trim();
 								switch (i)
 								{
-									case 0: ParseMixedNum(ref x, tag, "xpos", tokens[i]); break;
-									case 1: ParseMixedNum(ref y, tag, "ypos", tokens[i]); break;
-									case 2: ParseMixedNum(ref width, tag, "width", tokens[i]); break;
-									case 3: ParseMixedNum(ref height, tag, "height", tokens[i]); break;
+									case 0: ParseMixedNum(ref x!, tag, "xpos", tokens[i]); break;
+									case 1: ParseMixedNum(ref y!, tag, "ypos", tokens[i]); break;
+									case 2: ParseMixedNum(ref width!, tag, "width", tokens[i]); break;
+									case 3: ParseMixedNum(ref height!, tag, "height", tokens[i]); break;
 								}
 							}
 						}
 						else if (word.Code.Equals("bcolor", StringComparison.OrdinalIgnoreCase))
 						{
-							ParseParam4IntNum(ref CreateIfNull(ref box).color, tag, word.Code, attrValue);
+							// CreateIfNull replaces the null box/array with a new instance; the ref parameters are non-nullable
+							ParseParam4IntNum(ref CreateIfNull(ref box!).color!, tag, word.Code, attrValue);
 						}
 						else if (word.Code.Equals("display", StringComparison.OrdinalIgnoreCase))
 						{
@@ -1182,14 +1196,14 @@ internal static class HtmlManager
 							else if (attrValue.Equals("relative", StringComparison.OrdinalIgnoreCase)) isRelative = true;
 							else throw new CodeEE(string.Format(trerror.CanNotInterpretAttribute.Text, attrValue));
 						}
-						else if (!TryParseStyledBoxModel(ref box, tag, word.Code, attrValue))
+						else if (!TryParseStyledBoxModel(ref box!, tag, word.Code, attrValue))
 							throw new CodeEE(string.Format(trerror.CanNotInterpretAttributeName.Text, tag, word.Code));
 					}
 					if (width == null)
 						throw new CodeEE(string.Format(trerror.NotSetAttribute.Text, tag, "width"));
 					if (height == null)
 						throw new CodeEE(string.Format(trerror.NotSetAttribute.Text, tag, "height"));
-					state.CurrentDivTag = new HtmlDivTag(x, y, width, height, depth, color, box, isRelative);
+					state.CurrentDivTag = new HtmlDivTag(x!, y!, width, height, depth, color, box, isRelative);
 					state.StartingSubDivision = true;
 					return null;
 				}
@@ -1200,17 +1214,17 @@ internal static class HtmlManager
 						throw new CodeEE(string.Format(trerror.TagHasNotAttribute.Text, tag));
 					#region EM_私家版_HTMLパラメータ拡張
 					// int[] param = null;
-					MixedNum[] param = null;
-					string type = null;
+					MixedNum[]? param = null;
+					string? type = null;
 					int color = -1;
 					int bcolor = -1;
 					while (!wc.EOL)
 					{
 						word = wc.Current as IdentifierWord;
 						wc.ShiftNext();
-						OperatorWord op = wc.Current as OperatorWord;
+						OperatorWord? op = wc.Current as OperatorWord;
 						wc.ShiftNext();
-						LiteralStringWord attr = wc.Current as LiteralStringWord;
+						LiteralStringWord? attr = wc.Current as LiteralStringWord;
 						wc.ShiftNext();
 						if (word == null || op == null || op.Code != OperatorCode.Assignment || attr == null)
 							goto error;
@@ -1285,16 +1299,16 @@ internal static class HtmlManager
 					HtmlAnalzeStateButtonTag buttonTag = new();
 					bool isButton = tag.Equals("button", StringComparison.OrdinalIgnoreCase);
 					string attrValue;
-					string value = null;
+					string? value = null;
 					//if (wc == null)
 					//	throw new CodeEE("<" + tag + ">タグに属性が設定されていません");
 					while (wc != null && !wc.EOL)
 					{
 						word = wc.Current as IdentifierWord;
 						wc.ShiftNext();
-						OperatorWord op = wc.Current as OperatorWord;
+						OperatorWord? op = wc.Current as OperatorWord;
 						wc.ShiftNext();
-						LiteralStringWord attr = wc.Current as LiteralStringWord;
+						LiteralStringWord? attr = wc.Current as LiteralStringWord;
 						wc.ShiftNext();
 						if (word == null || op == null || op.Code != OperatorCode.Assignment || attr == null)
 							goto error;
@@ -1344,7 +1358,8 @@ internal static class HtmlManager
 							//	throw new CodeEE("<" + tag + ">タグにvalue属性が設定されていません");
 							buttonTag.ButtonIsInteger = long.TryParse(value, out long intValue);
 							buttonTag.ButtonValueInt = intValue;
-							buttonTag.ButtonValueStr = value;
+							// IsButton is set from value != null below, so ButtonValueStr is only read when value is non-null
+							buttonTag.ButtonValueStr = value!;
 						}
 						buttonTag.IsButton = value != null;
 					}
@@ -1370,9 +1385,9 @@ internal static class HtmlManager
 						{
 							word = wc.Current as IdentifierWord;
 							wc.ShiftNext();
-							OperatorWord op = wc.Current as OperatorWord;
+							OperatorWord? op = wc.Current as OperatorWord;
 							wc.ShiftNext();
-							LiteralStringWord attr = wc.Current as LiteralStringWord;
+							LiteralStringWord? attr = wc.Current as LiteralStringWord;
 							wc.ShiftNext();
 							if (word == null || op == null || op.Code != OperatorCode.Assignment || attr == null)
 								goto error;
@@ -1400,9 +1415,9 @@ internal static class HtmlManager
 					{
 						word = wc.Current as IdentifierWord;
 						wc.ShiftNext();
-						OperatorWord op = wc.Current as OperatorWord;
+						OperatorWord? op = wc.Current as OperatorWord;
 						wc.ShiftNext();
-						LiteralStringWord attr = wc.Current as LiteralStringWord;
+						LiteralStringWord? attr = wc.Current as LiteralStringWord;
 						wc.ShiftNext();
 						if (word == null || op == null || op.Code != OperatorCode.Assignment || attr == null)
 							goto error;

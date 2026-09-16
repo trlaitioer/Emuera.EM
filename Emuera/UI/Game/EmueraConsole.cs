@@ -1,4 +1,5 @@
-﻿//using System.Drawing.Imaging;
+﻿#nullable enable
+//using System.Drawing.Imaging;
 using MinorShift.Emuera.Forms;
 //using MinorShift.Emuera.GameData;
 using MinorShift.Emuera.GameProc.Function;
@@ -116,7 +117,8 @@ internal sealed partial class EmueraConsole : IDisposable
 	}
 	#region 1823 cbg関連
 	private readonly List<ClientBackGroundImage> cbgList = [];
-	private GraphicsImage cbgButtonMap;
+	// null while no button map is registered
+	private GraphicsImage? cbgButtonMap;
 	private int selectingCBGButtonInt = -1;
 	private int lastSelectingCBGButtonInt = -1;
 	//ConsoleButtonString selectingButton = null;
@@ -130,15 +132,16 @@ internal sealed partial class EmueraConsole : IDisposable
 		/// <param name="zdepth"></param>
 		internal ClientBackGroundImage(int zdepth)
 		{ this.zdepth = zdepth; }
-		public ASprite Img;
-		public ASprite ImgB;
+		// null unless an image was set for this layer
+		public ASprite? Img;
+		public ASprite? ImgB;
 		public int x;
 		public int y;
 		public readonly int zdepth;
 		public bool isButton;
 		public int buttonValue;
 		public string? tooltipString;
-		public int CompareTo(ClientBackGroundImage other)
+		public int CompareTo(ClientBackGroundImage? other)
 		{
 			if (other == null)
 				return -1;
@@ -270,9 +273,11 @@ internal sealed partial class EmueraConsole : IDisposable
 	public readonly ClipboardProcessor CBProc;
 	#endregion
 	private List<KeyValuePair<long, ConsoleBackground>> backgroundList = [];
-	private Bitmap bakedBackground;
+	// null until ValidateBackground creates it for the current canvas size
+	private Bitmap? bakedBackground;
 
-	GameProc.Process process;
+	// assigned by Initialize before anything else touches the process
+	GameProc.Process process = null!;
 	// ConsoleState state = ConsoleState.Initializing;
 	#region EM_私家版_描画拡張
 	ConsoleState _state = ConsoleState.Initializing;
@@ -461,7 +466,7 @@ internal sealed partial class EmueraConsole : IDisposable
 		}
 	}
 
-	internal string SelectedString
+	internal string? SelectedString
 	{
 		get
 		{
@@ -490,8 +495,8 @@ internal sealed partial class EmueraConsole : IDisposable
 	public async Task Initialize()
 	{
 		var boottimeDebugStopwatch = Stopwatch.StartNew();
-		FileStream fs = null;
-		StreamWriter logWriter = null;
+		FileStream? fs = null;
+		StreamWriter? logWriter = null;
 		try
 		{
 			try
@@ -610,7 +615,8 @@ internal sealed partial class EmueraConsole : IDisposable
 	public int NewButtonGeneration { get { return newButtonGeneration; } }
 	public void UpdateGeneration() { lastButtonGeneration = newButtonGeneration; updatedGeneration = true; }
 	public void forceUpdateGeneration() { newButtonGeneration++; lastButtonGeneration = newButtonGeneration; updatedGeneration = true; }
-	LogicalLine lastInputLine;
+	// null until the first newGeneration call records it
+	LogicalLine? lastInputLine;
 
 	private void newGeneration()
 	{
@@ -655,9 +661,10 @@ internal sealed partial class EmueraConsole : IDisposable
 	/// <summary>
 	/// 選択中のボタン。INPUTやINPUTSに対応したものでなければならない
 	/// </summary>
-	ConsoleButtonString selectingButton;
-	ConsoleButtonString lastSelectingButton;
-	public ConsoleButtonString SelectingButton { get { return selectingButton; } }
+	// null while no button is selected (never selected yet, or cleared by RefreshStrings/LeaveMouse)
+	ConsoleButtonString? selectingButton;
+	ConsoleButtonString? lastSelectingButton;
+	public ConsoleButtonString? SelectingButton { get { return selectingButton; } }
 	public bool ButtonIsSelected(ConsoleButtonString button) { return selectingButton == button; }
 	public bool ButtonIsPointing(ConsoleButtonString button) { return pointingStrings.Contains(button); }
 
@@ -669,13 +676,14 @@ internal sealed partial class EmueraConsole : IDisposable
 	/// マウスの直下にあるテキスト。ボタンであってもよい。
 	/// ToolTip表示用。世代無視、履歴中も表示
 	/// </summary>
-	ConsoleButtonString pointingString;
+	// null while the mouse points at no part of the console
+	ConsoleButtonString? pointingString;
 	// pointingStrings记录鼠标下所有Button图像。当多个Button重叠时，被鼠标划到的图像都会变化
 	HashSet<ConsoleButtonString> pointingStrings = [];
 	#region EE_MOUSEB
-	public ConsoleButtonString PointingSring { get { return pointingString; } }
+	public ConsoleButtonString? PointingSring { get { return pointingString; } }
 	#endregion
-	ConsoleButtonString lastPointingString;
+	ConsoleButtonString? lastPointingString;
 	#endregion
 
 	#region Input & Timer系
@@ -684,7 +692,8 @@ internal sealed partial class EmueraConsole : IDisposable
 	//Int64 defNum;
 	//string defStr;
 
-	public InputRequest inputReq;
+	// set by WaitInput/ReadAnyKey before any read; the DEBUG check in PressEnterKey guards the invariant
+	public InputRequest inputReq = null!;
 	#region EE_INPUT第二引数修正
 	public InputType NowInputType { get { return inputReq.InputType; } }
 	#endregion
@@ -819,7 +828,7 @@ internal sealed partial class EmueraConsole : IDisposable
 	/// </summary>
 	Timer redrawTimer;
 
-	private void tickRedrawTimer(object sender, EventArgs e)
+	private void tickRedrawTimer(object? sender, EventArgs e)
 	{
 		if (!redrawTimer.Enabled)
 			return;
@@ -884,7 +893,7 @@ internal sealed partial class EmueraConsole : IDisposable
 	}
 
 	//汎用
-	private void tickTimer(object sender, EventArgs e)
+	private void tickTimer(object? sender, EventArgs e)
 	{
 		if (!genericTimer.Enabled)
 			return;
@@ -981,7 +990,7 @@ internal sealed partial class EmueraConsole : IDisposable
 	/// スクリプト実行。RefreshStringsはしないので呼び出し側がすること
 	/// </summary>
 	/// <param name="input"></param>
-	private void RunEmueraProgram(string input)
+	private void RunEmueraProgram(string? input)
 	{
 		//入力文字列の表示処理を行わない場合はstr == null
 		if (input != null)
@@ -1407,7 +1416,8 @@ internal sealed partial class EmueraConsole : IDisposable
 			FileName = Config.TextEditor
 		};
 		var ignoreCaseCmp = StringComparison.OrdinalIgnoreCase;
-		string fname = pos.Value.Filename.ToUpper();
+		// the only caller checks the position before passing it
+		string fname = pos!.Value.Filename.ToUpper();
 		if (fname.EndsWith(".CSV", ignoreCaseCmp))
 		{
 			if (fname.Contains(Program.CsvDir, ignoreCaseCmp))
@@ -1626,7 +1636,8 @@ internal sealed partial class EmueraConsole : IDisposable
 			RefreshStrings(true);
 	}
 
-	string debugTitle;
+	// null unless the title was set while running in debug mode
+	string? debugTitle;
 	public void SetWindowTitle(string str)
 	{
 		if (Program.DebugMode)
@@ -1711,7 +1722,8 @@ internal sealed partial class EmueraConsole : IDisposable
 	}
 
 	#region EM_私家版_描画拡張
-	Dictionary<int, List<AConsoleDisplayNode>> escapedParts;
+	// null until the first draw or hit test fills it; EscapedParts stays non-nullable for its ERB consumers
+	Dictionary<int, List<AConsoleDisplayNode>> escapedParts = null!;
 	#endregion
 	#region EE_BINPUT
 	public Dictionary<int, List<AConsoleDisplayNode>> EscapedParts { get { return escapedParts; } }
@@ -1806,7 +1818,7 @@ internal sealed partial class EmueraConsole : IDisposable
 				if (cidx < cbgList.Count && cbgList[cidx].zdepth == depth)
 				{
 					// 先にCBGを描画
-					ASprite img = cbgList[cidx].Img;
+					ASprite? img = cbgList[cidx].Img;
 					if (cbgList[cidx].isButton && cbgList[cidx].buttonValue == selectingCBGButtonInt)
 						img = cbgList[cidx].ImgB;
 					if (img != null && img.IsCreated)
@@ -1833,7 +1845,9 @@ internal sealed partial class EmueraConsole : IDisposable
 					{
 						if (p.Parent?.ParentLine != null)
 							ensureLineLayout(p.Parent.ParentLine);
-						var baseLineNo = p.Parent.ParentLine.LineNo;
+						// escaped parts are registered with their parent button, so Parent is set; the
+						// conditional access above only left the null state unclear
+						var baseLineNo = p.Parent!.ParentLine.LineNo;
 						if (GlobalStatic.Console?.GetLineNo > Config.MaxLog)
 						{
 							var correction = GlobalStatic.Console.GetLineNo - Config.MaxLog;
@@ -1890,7 +1904,7 @@ internal sealed partial class EmueraConsole : IDisposable
 			if (tooltipUsed)
 				window.ToolTip.RemoveAll();
 
-			string title = null;
+			string? title = null;
 			if (pointingString != null)
 				title = pointingString.Title;
 			else if (selectingCBGButtonInt > 0)
@@ -1929,10 +1943,11 @@ internal sealed partial class EmueraConsole : IDisposable
 				}
 				else
 				{
-					System.Threading.SynchronizationContext context = System.Threading.SynchronizationContext.Current;
+					// a paint runs on the UI thread, which always has a context
+					System.Threading.SynchronizationContext context = System.Threading.SynchronizationContext.Current!;
 					Task.Run(async () =>
 					{
-						ConsoleButtonString savedPointingString = pointingString;
+						ConsoleButtonString? savedPointingString = pointingString;
 						if (window.ToolTip.InitialDelay != 0)
 							//	await Task.Delay(500);
 							//else
@@ -1943,7 +1958,8 @@ internal sealed partial class EmueraConsole : IDisposable
 							if (lastPointingString == savedPointingString)
 							{
 								Point mousePos = window.MainPicBox.PointToClient(Control.MousePosition);
-								Point p = new Point(mousePos.X + 2, mousePos.Y + Cursor.Current.Size.Height);
+								// null only while no cursor is available; the same expression is read below
+								Point p = new Point(mousePos.X + 2, mousePos.Y + Cursor.Current!.Size.Height);
 								Point absoluteP = Cursor.Position;
 								if (absoluteP.Y + tooltip_size.Height > Screen.FromPoint(mousePos).WorkingArea.Height) p.Y -= Cursor.Current.Size.Height * 2;
 								if (tooltip_duration == 0)
@@ -1980,7 +1996,7 @@ internal sealed partial class EmueraConsole : IDisposable
 			graph.ResetTransform();
 	}
 
-	private void ToolTip_Draw(object sender, DrawToolTipEventArgs e)
+	private void ToolTip_Draw(object? sender, DrawToolTipEventArgs e)
 	{
 		if (tooltip_img && int.TryParse(e.ToolTipText, out int i))
 		{
@@ -2012,9 +2028,10 @@ internal sealed partial class EmueraConsole : IDisposable
 		}
 	}
 	Size tooltip_size;
-	private void ToolTip_Popup(object sender, PopupEventArgs e)
+	private void ToolTip_Popup(object? sender, PopupEventArgs e)
 	{
-		if (tooltip_img && int.TryParse((sender as ToolTip).GetToolTip(e.AssociatedControl), out int i))
+		// the handlers are registered on this console's ToolTip
+		if (tooltip_img && int.TryParse((sender as ToolTip)!.GetToolTip(e.AssociatedControl), out int i))
 		{
 			var g = GameData.Function.FunctionMethodCreator.ReadGraphics(i);
 			if (g.IsCreated)
@@ -2034,7 +2051,7 @@ internal sealed partial class EmueraConsole : IDisposable
 		}
 		f = new Font(tooltip_fontname, tooltip_fontsize);
 	foundfont:
-		var size = TextRenderer.MeasureText((sender as ToolTip).GetToolTip(e.AssociatedControl), f, new Size(int.MaxValue, int.MaxValue), tooltip_format);
+		var size = TextRenderer.MeasureText((sender as ToolTip)!.GetToolTip(e.AssociatedControl), f, new Size(int.MaxValue, int.MaxValue), tooltip_format);
 		e.ToolTipSize = new Size(size.Width, size.Height);
 		tooltip_size = e.ToolTipSize;
 	}
@@ -2107,8 +2124,9 @@ internal sealed partial class EmueraConsole : IDisposable
 	#endregion
 
 	#region DebugMode系
-	DebugDialog dd;
-	public DebugDialog DebugDialog { get { return dd; } }
+	// null while the debug dialog is not open
+	DebugDialog? dd;
+	public DebugDialog? DebugDialog { get { return dd; } }
 	StringBuilder dConsoleLog = new("");
 	public string DebugConsoleLog { get { return dConsoleLog.ToString(); } }
 	List<string> dTraceLogList = [];
@@ -2117,7 +2135,7 @@ internal sealed partial class EmueraConsole : IDisposable
 		//if (!dTraceLogChanged && !force)
 		//	return null;
 		StringBuilder builder = new("");
-		LogicalLine line = process.GetScaningLine();
+		LogicalLine? line = process.GetScaningLine();
 		builder.AppendLine(trsl.Processing.Text);
 		if ((line == null) || (line.Position == null))
 		{
@@ -2128,7 +2146,8 @@ internal sealed partial class EmueraConsole : IDisposable
 		else
 		{
 			builder.AppendLine(string.Format(trsl.FileName.Text, line.Position.Value.Filename));
-			builder.AppendLine(string.Format(trsl.LineFuncName.Text, line.Position.Value.LineNo.ToString(), line.ParentLabelLine.LabelName));
+			// a line that carries a position was parsed from a file and therefore has its label line
+			builder.AppendLine(string.Format(trsl.LineFuncName.Text, line.Position.Value.LineNo.ToString(), line.ParentLabelLine!.LabelName));
 			builder.AppendLine("");
 		}
 		builder.AppendLine(trsl.FuncCallStack.Text);
@@ -2216,13 +2235,13 @@ internal sealed partial class EmueraConsole : IDisposable
 				foreach (KeyValuePair<string, string> pair in ParserMediator.RenameDic)
 					com = com.Replace(pair.Key, pair.Value);
 			}
-			LogicalLine line = null;
+			LogicalLine? line = null;
 			if (!com.StartsWith('@') && !com.StartsWith('"') && !com.StartsWith('\\'))
 				line = LogicalLineParser.ParseLine(com, null);
 			if (line == null || (line is InvalidLine))
 			{
 				WordCollection wc = LexicalAnalyzer.Analyse(new CharStream(com), LexEndWith.EoL, LexAnalyzeFlag.None);
-				AExpression term = ExpressionParser.ReduceExpressionTerm(wc, TermEndWith.EoL);
+				AExpression? term = ExpressionParser.ReduceExpressionTerm(wc, TermEndWith.EoL);
 				if (term == null)
 					throw new CodeEE(trerror.CanNotInterpretedLine.Text);
 				if (term.GetOperandType() == typeof(long))
@@ -2371,8 +2390,8 @@ internal sealed partial class EmueraConsole : IDisposable
 			}
 		}
 		selectingCBGButtonInt = -1;
-		ConsoleButtonString select = null;
-		ConsoleButtonString pointing = null;
+		ConsoleButtonString? select = null;
+		ConsoleButtonString? pointing = null;
 		int prevPointingStringsLen = pointingStrings.Count;
 		pointingStrings.Clear();
 		bool firstPointngSelected = false;
@@ -2474,8 +2493,10 @@ internal sealed partial class EmueraConsole : IDisposable
 			{
 				// 行範囲を超えたパーツのヒットテスト
 				var correction = lineNo > Config.MaxLog ? lineNo - Config.MaxLog : 0;
-				if (depth != 0 || escapedParts.ContainsKey(depth))
-					foreach (var part in escapedParts[depth])
+				// the field was filled in above when it was still null; only the null test in the
+				// edepth expression above lost that state
+				if (depth != 0 || escapedParts!.ContainsKey(depth))
+					foreach (var part in escapedParts![depth])
 					{
 						if (part.Parent?.ParentLine != null)
 							ensureLineLayout(part.Parent.ParentLine);
@@ -2494,7 +2515,8 @@ internal sealed partial class EmueraConsole : IDisposable
 							&& (relPointY >= part.Top) && (relPointY <= part.Bottom))
 						{
 							pointing = part.Parent;
-							if (pointing.IsButton)
+							// Parent is non-nullable; only the null state was lost by the conditional access above
+							if (pointing!.IsButton)
 								goto breakfor;
 						}
 					}
@@ -2569,7 +2591,8 @@ internal sealed partial class EmueraConsole : IDisposable
 				cdp = pointing.StrArray[first_subbutton_i];
 				if (cdp.rikaichaned)
 				{
-					css = cdp as ConsoleStyledString;
+					// rikaichaned is only set on ConsoleStyledString nodes
+					css = (cdp as ConsoleStyledString)!;
 					if (css.PointX + css.Width > point.X)
 					{
 						goto rikaichan_found;
@@ -2584,7 +2607,8 @@ internal sealed partial class EmueraConsole : IDisposable
 			//rikaichan.laststr_css = pointing; //LATER: do I even need this?
 			//rikaichan.laststr = rikaichan.laststr_css.ToString();
 
-			rikaichan.laststr = css.Text;
+			// ConsoleStyledString always carries its text
+			rikaichan.laststr = css.Text!;
 			if (css.NextLine != null)
 			{
 				rikaichan.laststr += css.NextLine.Text;
@@ -2769,7 +2793,8 @@ internal sealed partial class EmueraConsole : IDisposable
 	bool force_temporary;
 	bool timer_suspended;
 	ConsoleState prevState;
-	InputRequest prevReq;
+	// saved by ReloadErb and restored by ReloadErbFinished
+	InputRequest prevReq = null!;
 
 	public async Task ReloadErb()
 	{

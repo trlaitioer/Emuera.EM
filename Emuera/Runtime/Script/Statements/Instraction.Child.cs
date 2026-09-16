@@ -346,7 +346,7 @@ internal sealed partial class FunctionIdentifier
 		{
 			SpHtmlSplitArgument spSplitArg = (SpHtmlSplitArgument)func.Argument!;
 			string str = spSplitArg.TargetStr.GetStrValue(exm);
-			string[] strs = HtmlManager.HtmlTagSplit(str);
+			string[]? strs = HtmlManager.HtmlTagSplit(str);
 
 			if (strs == null)
 			{
@@ -425,16 +425,13 @@ internal sealed partial class FunctionIdentifier
 			var strb = arg.Nameb?.GetStrValue(exm);
 			var strm = arg.Namem?.GetStrValue(exm);
 			if (strb == string.Empty) strb = null;
-			// TODO: PrintImg and ConsoleImagePart treat the button name, the mapping name and the three
-			// size tags as optional but declare them non-nullable; tighten those signatures instead of
-			// asserting here.
 			exm.Console.PrintImg(
 				arg.Name.GetStrValue(exm),
-				strb!,
-				strm!,
-				arg.Param != null && arg.Param.Length > 1 ? new MixedNum { num = (int)arg.Param[1].num.GetIntValue(exm), isPx = arg.Param[1].isPx } : null!,
-				arg.Param != null && arg.Param.Length > 0 ? new MixedNum { num = (int)arg.Param[0].num.GetIntValue(exm), isPx = arg.Param[0].isPx } : null!,
-				arg.Param != null && arg.Param.Length > 2 ? new MixedNum { num = (int)arg.Param[2].num.GetIntValue(exm), isPx = arg.Param[2].isPx } : null!);
+				strb,
+				strm,
+				arg.Param != null && arg.Param.Length > 1 ? new MixedNum { num = (int)arg.Param[1].num.GetIntValue(exm), isPx = arg.Param[1].isPx } : null,
+				arg.Param != null && arg.Param.Length > 0 ? new MixedNum { num = (int)arg.Param[0].num.GetIntValue(exm), isPx = arg.Param[0].isPx } : null,
+				arg.Param != null && arg.Param.Length > 2 ? new MixedNum { num = (int)arg.Param[2].num.GetIntValue(exm), isPx = arg.Param[2].isPx } : null);
 			#endregion
 		}
 	}
@@ -1275,7 +1272,7 @@ internal sealed partial class FunctionIdentifier
 					var varTerm = (VariableTerm)rowArg;
 					if (varTerm.IsString)
 					{
-						varTerm.SetValue(pluginArgs[i].strValue, exm);
+						varTerm.SetValue(pluginArgs[i].strValue!, exm);
 					}
 					else
 					{

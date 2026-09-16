@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Config;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.Runtime.Config.JSON;
 using System;
 using System.Drawing;
@@ -32,7 +33,8 @@ internal sealed class ConsoleStyledString : AConsoleColoredPart
 		PointX = -1;
 		Width = -1;
 	}
-	public Font Font { get; private set; }
+	// Null exactly when Error is set, which every reader checks before touching the font
+	public Font? Font { get; private set; }
 	public StringStyle StringStyle { get; private set; }
 	public override bool CanDivide
 	{
@@ -41,23 +43,23 @@ internal sealed class ConsoleStyledString : AConsoleColoredPart
 	//単一のボタンフラグ
 	//public bool IsButton { get; set; }
 	//indexの文字数の前方文字列とindex以降の後方文字列に分割
-	public ConsoleStyledString DivideAt(int index, StringMeasure sm)
+	public ConsoleStyledString? DivideAt(int index, StringMeasure sm)
 	{
 		//if ((index <= 0)||(index > Text.Length)||this.Error)
 		//	return null;
-		ConsoleStyledString ret = DivideAt(index);
+		ConsoleStyledString? ret = DivideAt(index);
 		if (ret == null)
 			return null;
 		SetWidth(sm, XsubPixel);
 		ret.SetWidth(sm, XsubPixel);
 		return ret;
 	}
-	public ConsoleStyledString DivideAt(int index)
+	public ConsoleStyledString? DivideAt(int index)
 	{
-		if (index <= 0 || index > Text.Length || Error)
+		if (index <= 0 || index > Text!.Length || Error)
 			return null;
-		string str = Text[index..];
-		Text = Text[..index];
+		string str = Text![index..];
+		Text = Text![..index];
 		ConsoleStyledString ret = new()
 		{
 			Font = Font,
@@ -83,7 +85,8 @@ internal sealed class ConsoleStyledString : AConsoleColoredPart
 		Width = -1;
 		#region EmuEra-Rikaichan
 		rikaichaned = false;
-		Ends = null;
+		// Ends is rebuilt by SetWidth; the field is declared non-null for its readers
+		Ends = null!;
 		#endregion
 	}
 
@@ -94,19 +97,19 @@ internal sealed class ConsoleStyledString : AConsoleColoredPart
 			Width = 0;
 			return;
 		}
-		Width = sm.GetDisplayLength(Text, Font);
+		Width = sm.GetDisplayLength(Text!, Font!);
 		XsubPixel = subPixel;
 
 		#region EmuEra-Rikaichan
 		if (!rikaichaned && Config.RikaiEnabled)
 		{
 			rikaichaned = true;
-			int len = Text.Length;
+			int len = Text!.Length;
 			Ends = new int[len];
 			for (int i = 0; i < len; i++)
 			{
-				string temp = Text.Substring(0, i + 1);
-				Ends[i] = sm.GetDisplayLength(temp, Font);
+				string temp = Text!.Substring(0, i + 1);
+				Ends[i] = sm.GetDisplayLength(temp, Font!);
 			}
 
 		}
@@ -150,7 +153,7 @@ internal sealed class ConsoleStyledString : AConsoleColoredPart
 		// GDI ignores the Graphics transform, so the zoom preview and GRAPHICS mode draw text with GDI+
 		if (mode == TextDrawingMode.GRAPHICS || scalePreview)
 		{
-			GraphicsTextRenderer.Draw(graph, Text, Font, color, PointX, XsubPixel, pointY);
+			GraphicsTextRenderer.Draw(graph, Text!, Font!, color, PointX, XsubPixel, pointY);
 		}
 		else
 		// TextRenderer.DrawText(graph, Text, Font, new Point(PointX, pointY), color, TextFormatFlags.NoPrefix);
@@ -158,7 +161,7 @@ internal sealed class ConsoleStyledString : AConsoleColoredPart
 			TextFormatFlags flags = TextFormatFlags.NoPrefix;
 			if (!JSONConfig.Data.UseButtonFocusBackgroundColor)
 				flags |= TextFormatFlags.PreserveGraphicsClipping;
-			TextRenderer.DrawText(graph, Text.AsSpan(), Font, new Point(PointX, pointY), color, flags);
+			TextRenderer.DrawText(graph, Text!.AsSpan(), Font!, new Point(PointX, pointY), color, flags);
 		}
 
 		#endregion
@@ -177,10 +180,10 @@ internal sealed class ConsoleStyledString : AConsoleColoredPart
 
 		#region EM_私家版_描画拡張
 		if (mode == TextDrawingMode.GRAPHICS)
-			GraphicsTextRenderer.Draw(graph, Text, Font, color, xOffset, subPixel, 0);
+			GraphicsTextRenderer.Draw(graph, Text!, Font!, color, xOffset, subPixel, 0);
 		else
 			// TextRenderer.DrawText(graph, Text, Font, new Point(PointX, pointY), color, TextFormatFlags.NoPrefix);
-			TextRenderer.DrawText(graph, Text.AsSpan(), Font, new Point(xOffset, 0), color, TextFormatFlags.NoPrefix | TextFormatFlags.PreserveGraphicsClipping);
+			TextRenderer.DrawText(graph, Text!.AsSpan(), Font!, new Point(xOffset, 0), color, TextFormatFlags.NoPrefix | TextFormatFlags.PreserveGraphicsClipping);
 		#endregion
 	}
 }

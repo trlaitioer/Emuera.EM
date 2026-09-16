@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿#nullable enable
+using System.Runtime.InteropServices;
 
 namespace MinorShift.Emuera.Runtime.Utils;
 

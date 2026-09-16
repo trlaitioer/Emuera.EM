@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -38,8 +39,9 @@ internal static class FontMetrics
 	private static readonly Dictionary<(string FontName, int Size), int> advances = [];
 	private static readonly object advancesLock = new();
 
-	private static Bitmap probeBitmap;
-	private static Graphics probeGraphics;
+	//Created together on the first measurement, before any read
+	private static Bitmap probeBitmap = null!;
+	private static Graphics probeGraphics = null!;
 
 	/// <summary>
 	/// The size to build <paramref name="fontName"/> at, so that its full width cell matches the baseline
@@ -98,7 +100,7 @@ internal static class FontMetrics
 				return cached;
 
 			int advance = 0;
-			Font font = FontFactory.CreateFont(fontName, size, FontStyle.Regular);
+			Font? font = FontFactory.CreateFont(fontName, size, FontStyle.Regular);
 			if (font != null)
 			{
 				using (font)

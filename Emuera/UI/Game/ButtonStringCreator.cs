@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Script.Parser;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Script.Parser;
 using MinorShift.Emuera.Runtime.Utils;
 using System.Collections.Generic;
 using System.Text;
@@ -38,7 +39,7 @@ internal static class ButtonStringCreator
 		List<ButtonPrimitive> ret = [];
 		if (printString.Length == 0)
 			goto nonButton;
-		List<string> strs;
+		List<string>? strs;
 		if (!printString.Contains('[') || !printString.Contains(']'))
 			goto nonButton;
 		strs = lex(new CharStream(printString));
@@ -217,7 +218,7 @@ internal static class ButtonStringCreator
 	/// </summary>
 	/// <param name="st"></param>
 	/// <returns></returns>
-	private static List<string> lex(CharStream st)
+	private static List<string>? lex(CharStream st)
 	{
 		List<string> strs = [];
 		int state = 0;

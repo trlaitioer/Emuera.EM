@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Drawing;
 using System.Drawing.Text;
 using System.Windows.Forms;
@@ -30,7 +31,7 @@ internal static class GraphicsTextRenderer
 	/// from touching a Graphics across threads while it folds a constant expression.</param>
 	/// <param name="layoutSize">Measuring box; GDI grows it instead of clipping, so it only has to be large
 	/// enough for the widest measured node.</param>
-	public static int MeasureAdvance(Graphics graph, ReadOnlySpan<char> text, Font font, Size layoutSize)
+	public static int MeasureAdvance(Graphics? graph, ReadOnlySpan<char> text, Font font, Size layoutSize)
 	{
 		if (text.IsEmpty)
 			return 0;
@@ -54,7 +55,7 @@ internal static class GraphicsTextRenderer
 	/// one the console built.</param>
 	/// <param name="layoutSize">Measuring box; GDI grows it instead of clipping, so it only has to be large
 	/// enough for the widest measured node.</param>
-	public static int MeasureAdvance(Graphics graph, string text, Font font, Size layoutSize)
+	public static int MeasureAdvance(Graphics? graph, string text, Font font, Size layoutSize)
 	{
 		return MeasureAdvance(graph, text.AsSpan(), font, layoutSize);
 	}

@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Config;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Config;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,7 +12,8 @@ namespace MinorShift.Emuera.Forms;
 public partial class RikaiDialog : Form
 {
 	private byte[] mEdict;
-	private byte[] mEdictIndex;
+	//Built by the worker and only read back from bwRunWorkerCompleted
+	private byte[] mEdictIndex = null!;
 	public delegate void RikaiSendIndex(byte[] edictind);
 	private RikaiSendIndex rikaiSendIndex;
 	public Encoding eucjp = Encoding.GetEncoding(20932);
@@ -42,12 +44,12 @@ public partial class RikaiDialog : Form
 	}
 
 	private void bwRunWorkerCompleted(
-		object sender, RunWorkerCompletedEventArgs e)
+		object? sender, RunWorkerCompletedEventArgs e)
 	{
 		rikaiSendIndex(mEdictIndex);
 	}
 
-	private void bwProgressChanged(object sender, ProgressChangedEventArgs e)
+	private void bwProgressChanged(object? sender, ProgressChangedEventArgs e)
 	{
 		var per = e.ProgressPercentage;
 		dialogLines[0] = $"Generating {Config.RikaiFilename}.ind, {e.ProgressPercentage}% done.";
@@ -223,9 +225,10 @@ public partial class RikaiDialog : Form
 			offsets = new List<int>(4);
 		}
 
-		public int CompareTo(IndexEntry ie)
+		//List.BinarySearch never passes null; the nullable parameter matches IComparable<IndexEntry>.CompareTo
+		public int CompareTo(IndexEntry? ie)
 		{
-			return Compare(this.mWord, ie.mWord);
+			return Compare(this.mWord, ie!.mWord);
 		}
 	}
 
@@ -236,7 +239,7 @@ public partial class RikaiDialog : Form
 		return res;
 	}
 
-	private void bwDoWork(object sender, DoWorkEventArgs e)
+	private void bwDoWork(object? sender, DoWorkEventArgs e)
 	{
 		//GenerateIndex
 
@@ -256,7 +259,8 @@ public partial class RikaiDialog : Form
 		// When you need to search for search_word, you search for 0x00 search_word 0x01, and it's guaranteed that there is only one such byte sequence in the index.
 
 
-		BackgroundWorker worker = sender as BackgroundWorker;
+		//DoWork is always raised by this worker, so sender is it
+		BackgroundWorker? worker = sender as BackgroundWorker;
 
 		var indexEntryList = new IndexEntryList();
 
@@ -275,7 +279,7 @@ public partial class RikaiDialog : Form
 			edictParser.Step();
 			if (edictParser.mFinished)
 			{
-				worker.ReportProgress(100);
+				worker!.ReportProgress(100);
 				break;
 			}
 			
@@ -288,7 +292,7 @@ public partial class RikaiDialog : Form
 					if (oldPercentage != percentage)
 					{
 						oldPercentage = percentage;
-						worker.ReportProgress(percentage);
+						worker!.ReportProgress(percentage);
 					}
 				}
 			}

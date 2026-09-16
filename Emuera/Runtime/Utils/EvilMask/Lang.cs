@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -1407,7 +1408,7 @@ internal sealed partial class Lang
 			return;
 		}
 
-		if (langList.TryGetValue(Config.Config.EmueraLang, out string lang))
+		if (langList.TryGetValue(Config.Config.EmueraLang, out string? lang))
 		{
 			loadLangXML(LoadXmlFile(lang));
 			return;
@@ -1431,12 +1432,13 @@ internal sealed partial class Lang
 			MFont = fnode.InnerText.Trim();
 		else
 			MFont = "MS UI Gothic";
-		var nodes = xml.SelectNodes("/lang/tr");
+		// The XPath is constant, so this always yields a node list
+		var nodes = xml.SelectNodes("/lang/tr")!;
 		for (int i = 0; i < nodes.Count; i++)
 		{
-			var attr = nodes[i].Attributes["id"];
-			if (attr != null && trItems.TryGetValue(attr.Value, out TranslatableString value))
-				value.Set(nodes[i].InnerText);
+			var attr = nodes[i]!.Attributes!["id"];
+			if (attr != null && trItems.TryGetValue(attr.Value, out TranslatableString? value))
+				value.Set(nodes[i]!.InnerText);
 		}
 	}
 
@@ -1448,7 +1450,7 @@ internal sealed partial class Lang
 			return;
 		}
 
-		if (!langList.TryGetValue(Config.Config.EmueraLang, out string path))
+		if (!langList.TryGetValue(Config.Config.EmueraLang, out string? path))
 			return;
 
 		XmlDocument xml;
@@ -1519,8 +1521,8 @@ internal sealed partial class Lang
 
 	static readonly Dictionary<string, string> langList = [];
 	static readonly Dictionary<string, string> localeList = [];
-	public static string MFont { get; private set; }
-	static string[] langNames;
+	public static string MFont { get; private set; } = null!;
+	static string[] langNames = null!;
 	static readonly Dictionary<string, TranslatableString> trItems = [];
 	static readonly Dictionary<Type, TranslatableString> trClass = [];
 
@@ -1534,7 +1536,7 @@ internal sealed partial class Lang
 		if (addr.Length > 0) addr += '.';
 		foreach (var nt in t.GetNestedTypes())
 		{
-			string tr = null;
+			string? tr = null;
 			bool managed = false;
 			foreach (var attr in nt.GetCustomAttributes(false))
 			{
@@ -1557,7 +1559,7 @@ internal sealed partial class Lang
 						{
 							if (pattr is Managed)
 							{
-								trItems.Add(addr + nt.Name + '.' + prop.Name, prop.GetValue(null, null) as TranslatableString);
+								trItems.Add(addr + nt.Name + '.' + prop.Name, (prop.GetValue(null, null) as TranslatableString)!);
 							}
 						}
 					}

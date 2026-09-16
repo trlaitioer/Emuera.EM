@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using MinorShift.Emuera.UI.Game;
@@ -14,15 +15,16 @@ internal partial class ClipboardProcessor
 
 	private bool minTimePassed; //Has enough time passed since the last Clipboard update?
 	private bool postWaiting; //Is there text waiting to be sent to clipboard?
-	private static System.Timers.Timer minTimer; //Minimum timer for refrehsing the clipboard to prevent spam
+	//minTimer, OldText and lineBuffer are created by Init() and cleared by Reset(): they stay null while the clipboard feature is off
+	private static System.Timers.Timer? minTimer; //Minimum timer for refrehsing the clipboard to prevent spam
 
 	private int MaxCB; //Max length in lines of the output to clipboard
 	private int ScrollPos; //Position of the clipboard output in the buffer
 	private int ScrollCount; //Lines to scroll at a time
 	private int NewLineCount; //Number of new lines
 	private int OldNewLineCount; //Number of lines in the last update, used for Classic mode + scrolling back to bottom
-	private string OldText; //Last set of lines sent to the clipboard
-	private CircularBuffer<string> lineBuffer; //Buffer for processed strings ready for clipboard
+	private string? OldText; //Last set of lines sent to the clipboard
+	private CircularBuffer<string>? lineBuffer; //Buffer for processed strings ready for clipboard
 
 	private bool Initialized;
 
@@ -69,7 +71,8 @@ internal partial class ClipboardProcessor
 	public void Reset()
 	{
 		lineBuffer = null;
-		minTimer.Dispose();
+		//Reset() is only reached while the feature is on, so the timer created by Init() exists
+		minTimer!.Dispose();
 		OldText = null;
 		Initialized = false;
 	}
@@ -78,7 +81,7 @@ internal partial class ClipboardProcessor
 	{
 		if (!Initialized)
 			return;
-		minTimer.Interval = interval;
+		minTimer!.Interval = interval;
 	}
 
 	public void SetMaxCB(int value)
@@ -96,7 +99,7 @@ internal partial class ClipboardProcessor
 		if (!Config.Config.CBUseClipboard) return false;
 		if (ScrollPos == 0 && classicMode && ScrollCount > OldNewLineCount) ScrollPos = OldNewLineCount;
 		else ScrollPos += ScrollCount * value;
-		if (lineBuffer.Count < ScrollPos) ScrollPos = lineBuffer.Count - ScrollCount;
+		if (lineBuffer!.Count < ScrollPos) ScrollPos = lineBuffer.Count - ScrollCount;
 		SendToCB(true);
 		return true;
 	}
@@ -111,7 +114,7 @@ internal partial class ClipboardProcessor
 		return true;
 	}
 
-	private void MinTimerDone(object source, System.Timers.ElapsedEventArgs e)
+	private void MinTimerDone(object? source, System.Timers.ElapsedEventArgs e)
 	{
 		minTimePassed = true;
 		if (postWaiting) SendToCB(true);
@@ -122,7 +125,7 @@ internal partial class ClipboardProcessor
 		if (minTimePassed)
 		{
 			minTimePassed = false;
-			minTimer.Start();
+			minTimer!.Start();
 			return true;
 		}
 		else return false;
@@ -135,7 +138,7 @@ internal partial class ClipboardProcessor
 
 		NewLineCount++;
 		string processed = ProcessLine(inputLine.ToString());
-		lineBuffer.Enqueue(processed);
+		lineBuffer!.Enqueue(processed);
 	}
 
 	public void DelLine(int count)
@@ -143,12 +146,12 @@ internal partial class ClipboardProcessor
 		if (!Config.Config.CBUseClipboard || count <= 0) return;
 
 		NewLineCount = Math.Max(0, NewLineCount - count);
-		if (count >= lineBuffer.Count) lineBuffer.Clear();
+		if (count >= lineBuffer!.Count) lineBuffer.Clear();
 		else
 		{
 			while (count > 0)
 			{
-				lineBuffer.Dequeue();
+				lineBuffer!.Dequeue();
 				count--;
 			}
 		}
@@ -159,13 +162,13 @@ internal partial class ClipboardProcessor
 		if (!Config.Config.CBUseClipboard) return;
 		if (Config.Config.CBClearBuffer)
 		{
-			lineBuffer.Clear();
+			lineBuffer!.Clear();
 			ScrollPos = 0;
 			NewLineCount = 0;
 		}
 		else
 		{
-			lineBuffer.Enqueue("");
+			lineBuffer!.Enqueue("");
 		}
 	}
 
@@ -215,14 +218,14 @@ internal partial class ClipboardProcessor
 		if (NewLineCount == 0 && ScrollPos == 0) NewLineCount = OldNewLineCount;
 
 		int length;
-		if (classicMode && ScrollPos == 0) length = Math.Min(NewLineCount, lineBuffer.Count);
-		else length = Math.Min(MaxCB, lineBuffer.Count - ScrollPos);
+		if (classicMode && ScrollPos == 0) length = Math.Min(NewLineCount, lineBuffer!.Count);
+		else length = Math.Min(MaxCB, lineBuffer!.Count - ScrollPos);
 		if (length <= 0) return;
 
 		var builder = new DefaultInterpolatedStringHandler(length * 2, 0);
 		for (int count = 0; count < length; count++)
 		{
-			builder.AppendLiteral(lineBuffer[lineBuffer.Count - length - ScrollPos + count]);
+			builder.AppendLiteral(lineBuffer![lineBuffer.Count - length - ScrollPos + count]);
 			builder.AppendLiteral("\n");
 		}
 		var newText = builder.ToString();

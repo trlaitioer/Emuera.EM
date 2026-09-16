@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.GameView;
+﻿#nullable enable
+using MinorShift.Emuera.GameView;
 using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.Runtime.Utils;
 using MinorShift.Emuera.Runtime.Utils.EvilMask;
@@ -27,16 +28,17 @@ internal sealed class ConsoleButtonString
 			}
 		}
 	}
-	public ConsoleButtonString(EmueraConsole console, AConsoleDisplayNode[] strs)
+	public ConsoleButtonString(EmueraConsole? console, AConsoleDisplayNode[] strs)
 	{
-		parent = console;
+		// The console is absent only for the non-button string that DivideAt splits off, which re-parents it
+		parent = console!;
 		strArray = strs;
 		IsButton = false;
 		PointX = -1;
 		Width = -1;
 		ErrPos = null;
 	}
-	public ConsoleButtonString(EmueraConsole console, AConsoleDisplayNode[] strs, long input)
+	public ConsoleButtonString(EmueraConsole? console, AConsoleDisplayNode[] strs, long input)
 		: this(console, strs)
 	{
 		Input = input;
@@ -51,7 +53,7 @@ internal sealed class ConsoleButtonString
 		}
 		ErrPos = null;
 	}
-	public ConsoleButtonString(EmueraConsole console, AConsoleDisplayNode[] strs, string inputs)
+	public ConsoleButtonString(EmueraConsole? console, AConsoleDisplayNode[] strs, string inputs)
 		: this(console, strs)
 	{
 		Inputs = inputs;
@@ -66,7 +68,7 @@ internal sealed class ConsoleButtonString
 		ErrPos = null;
 	}
 
-	public ConsoleButtonString(EmueraConsole console, AConsoleDisplayNode[] strs, long input, string inputs)
+	public ConsoleButtonString(EmueraConsole? console, AConsoleDisplayNode[] strs, long input, string inputs)
 		: this(console, strs)
 	{
 		Input = input;
@@ -81,7 +83,7 @@ internal sealed class ConsoleButtonString
 		}
 		ErrPos = null;
 	}
-	public ConsoleButtonString(EmueraConsole console, AConsoleDisplayNode[] strs, string inputs, ScriptPosition? pos)
+	public ConsoleButtonString(EmueraConsole? console, AConsoleDisplayNode[] strs, string inputs, ScriptPosition? pos)
 		: this(console, strs)
 	{
 		Inputs = inputs;
@@ -108,27 +110,29 @@ internal sealed class ConsoleButtonString
 	}
 
 	//Bitmap Cache
-	public Bitmap bitmapCache;
+	public Bitmap? bitmapCache;
 
-	ConsoleImagePart mask;
+	ConsoleImagePart? mask;
 	#endregion
 
 	AConsoleDisplayNode[] strArray;
 	public AConsoleDisplayNode[] StrArray { get { return strArray; } }
 	EmueraConsole parent;
 
-	public ConsoleDisplayLine ParentLine { get; set; }
+	// Assigned by the ConsoleDisplayLine constructor before the button is drawn
+	public ConsoleDisplayLine ParentLine { get; set; } = null!;
 	public bool IsButton { get; private set; }
 	public bool IsInteger { get; private set; }
 	public long Input { get; private set; }
-	public string Inputs { get; private set; }
+	// The plain-text constructor leaves this unset; the readers only compare it against a string
+	public string Inputs { get; private set; } = null!;
 	public int PointX { get; set; }
 	public bool PointXisLocked { get; set; }
 	public int Width { get; set; }
 	public float XsubPixel { get; set; }
 	public long Generation { get; private set; }
 	public ScriptPosition? ErrPos { get; set; }
-	public string Title { get; set; }
+	public string? Title { get; set; }
 
 
 	public int RelativePointX { get; private set; }
@@ -141,8 +145,8 @@ internal sealed class ConsoleButtonString
 	}
 
 	#region EM_私家版_描画拡張
-	public AConsoleDisplayNode[] EscapedParts { get { return escaped; } }
-	AConsoleDisplayNode[] escaped;
+	public AConsoleDisplayNode[]? EscapedParts { get { return escaped; } }
+	AConsoleDisplayNode[]? escaped;
 	bool escapeFilterApplied;
 
 	public void FilterEscaped()
@@ -158,7 +162,7 @@ internal sealed class ConsoleButtonString
 	#endregion
 
 	//indexの文字数の前方文字列とindex以降の後方文字列に分割
-	public ConsoleButtonString DivideAt(int divIndex, StringMeasure sm)
+	public ConsoleButtonString? DivideAt(int divIndex, StringMeasure sm)
 	{
 		if (divIndex <= 0)
 			return null;
@@ -174,13 +178,13 @@ internal sealed class ConsoleButtonString
 				cssListB.Add(strArray[cssIndex]);
 				continue;
 			}
-			int length = strArray[cssIndex].Text.Length;
+			int length = strArray[cssIndex].Text!.Length;
 			if (divIndex < index + length)
 			{
-				ConsoleStyledString oldcss = strArray[cssIndex] as ConsoleStyledString;
+				ConsoleStyledString? oldcss = strArray[cssIndex] as ConsoleStyledString;
 				if (oldcss == null || !oldcss.CanDivide)
 					throw new ExeEE(trerror.StringSplitError.Text);
-				ConsoleStyledString newCss = oldcss.DivideAt(divIndex - index, sm);
+				ConsoleStyledString? newCss = oldcss.DivideAt(divIndex - index, sm);
 				cssListA.Add(oldcss);
 				if (newCss != null)
 					cssListB.Add(newCss);
@@ -325,8 +329,9 @@ internal sealed class ConsoleButtonString
 				foreach (AConsoleDisplayNode css in strArray)
 				{
 					if (css is not ConsoleStyledString) continue;
-					ConsoleStyledString willDrawHere = css as ConsoleStyledString;
-					willDrawHere.DrawToBitmap(g, isSelecting, isBackLog, mode, xOffset, css.XsubPixel);
+					ConsoleStyledString? willDrawHere = css as ConsoleStyledString;
+					// the check above guarantees the cast succeeded
+					willDrawHere!.DrawToBitmap(g, isSelecting, isBackLog, mode, xOffset, css.XsubPixel);
 					xOffset += css.Width;
 				}
 

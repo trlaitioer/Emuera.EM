@@ -83,7 +83,7 @@ public class FontMetricsTests
 		Config.ApplyWindowGeometry(WindowX, 480, BaseFontSize, LineHeight);
 		//the font the product builds is the font the layout measures, for the configured family and for a
 		//family a script asks for by name alike
-		Font font = FontFactory.GetFont(family, FontStyle.Regular);
+		Font? font = FontFactory.GetFont(family, FontStyle.Regular);
 		Assert.NotNull(font);
 		int baselineCell = MeasureAdvance(FontMetrics.BaselineFontName, BaseFontSize);
 		Assert.InRange(Math.Abs(MeasureAdvance(font) - baselineCell), 0, 1);

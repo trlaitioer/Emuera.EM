@@ -52,7 +52,7 @@ internal sealed partial class Process(EmueraConsole view)
 	bool initialiing;
 	public bool inInitializeing { get { return initialiing; } }
 
-	public async Task<bool> Initialize(StreamWriter logWriter)
+	public async Task<bool> Initialize(StreamWriter? logWriter)
 	{
 		var stopWatch = new Stopwatch();
 		stopWatch.Start();

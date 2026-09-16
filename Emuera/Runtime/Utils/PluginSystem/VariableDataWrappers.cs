@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.GameData.Variable;
+﻿#nullable enable
+using MinorShift.Emuera.GameData.Variable;
 using MinorShift.Emuera.Runtime.Script.Statements;
 using MinorShift.Emuera.Runtime.Script.Statements.Variable;
 using System.Collections.Generic;
@@ -29,7 +30,7 @@ namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 		{
 			var errPos = "";
 			var dict = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, key);
-			return Get(dict[key]);
+			return Get(dict![key]);
 		}
 		public long Get(long key)
 		{
@@ -39,7 +40,7 @@ namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 		{
 			var errPos = "";
 			var dict = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, key);
-			Set(dict[key], value);
+			Set(dict![key], value);
 		}
 		public void Set(long key, long value)
 		{
@@ -53,15 +54,15 @@ namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 
 	public class GlobalString1dWrapper
 	{
-		public string this[string key]
+		public string? this[string key]
 		{
 			get => Get(key);
-			set => Set(key, value);
+			set => Set(key, value!);
 		}
-		public string this[long key]
+		public string? this[long key]
 		{
 			get => Get(key);
-			set => Set(key, value);
+			set => Set(key, value!);
 		}
 
 		internal GlobalString1dWrapper(VariableToken token, ExpressionMediator exm, VariableCode variableCode)
@@ -71,13 +72,13 @@ namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 			this.variableCode = variableCode;
 		}
 
-		public string Get(string key)
+		public string? Get(string key)
 		{
 			var errPos = "";
 			var dict = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, key);
-			return Get(dict[key]);
+			return Get(dict![key]);
 		}
-		public string Get(long key)
+		public string? Get(long key)
 		{
 			return token.GetStrValue(exm, [key]);
 		}
@@ -85,7 +86,7 @@ namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 		{
 			var errPos = "";
 			var dict = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, key);
-			Set(dict[key], value);
+			Set(dict![key], value);
 		}
 		public void Set(long key, string value)
 		{
@@ -99,11 +100,11 @@ namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 
 	public class GlobalConstString1dWrapper
 	{
-		public string this[string key]
+		public string? this[string key]
 		{
 			get => Get(key);
 		}
-		public string this[long key]
+		public string? this[long key]
 		{
 			get => Get(key);
 		}
@@ -115,13 +116,13 @@ namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 			this.variableCode = variableCode;
 		}
 
-		public string Get(string key)
+		public string? Get(string key)
 		{
 			var errPos = "";
 			var dict = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, key);
-			return Get(dict[key]);
+			return Get(dict![key]);
 		}
-		public string Get(long key)
+		public string? Get(long key)
 		{
 			return token.GetStrValue(exm, [key]);
 		}
@@ -152,7 +153,7 @@ namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 		{
 			var errPos = "";
 			var dict = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, key);
-			return Get(dict[key]);
+			return Get(dict![key]);
 		}
 		public long Get(long key)
 		{
@@ -188,7 +189,7 @@ namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 		{
 			var errPos = "";
 			var dict = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, key);
-			return Get(dict[key]);
+			return Get(dict![key]);
 		}
 		public long Get(long key)
 		{
@@ -198,7 +199,7 @@ namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 		{
 			var errPos = "";
 			var dict = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, key);
-			Set(dict[key], value);
+			Set(dict![key], value);
 		}
 		public void Set(long key, long value)
 		{
@@ -246,19 +247,19 @@ namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 			var errPos = "";
 			var dictA = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, keyA);
 			var dictB = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, keyB);
-			return Get(dictA[keyA], dictB[keyB]);
+			return Get(dictA![keyA], dictB![keyB]);
 		}
 		public long Get(long keyA, string keyB)
 		{
 			var errPos = "";
 			var dictB = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, keyB);
-			return Get(keyA, dictB[keyB]);
+			return Get(keyA, dictB![keyB]);
 		}
 		public long Get(string keyA, long keyB)
 		{
 			var errPos = "";
 			var dictA = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, keyA);
-			return Get(dictA[keyA], keyB);
+			return Get(dictA![keyA], keyB);
 		}
 		public long Get(long keyA, long keyB)
 		{
@@ -269,19 +270,19 @@ namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 			var errPos = "";
 			var dictA = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, keyA);
 			var dictB = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, keyB);
-			Set(dictA[keyA], dictB[keyB], value);
+			Set(dictA![keyA], dictB![keyB], value);
 		}
 		public void Set(long keyA, string keyB, long value)
 		{
 			var errPos = "";
 			var dictB = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, keyB);
-			Set(keyA, dictB[keyB], value);
+			Set(keyA, dictB![keyB], value);
 		}
 		public void Set(string keyA, long keyB, long value)
 		{
 			var errPos = "";
 			var dictA = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, keyA);
-			Set(dictA[keyA], keyB, value);
+			Set(dictA![keyA], keyB, value);
 		}
 		public void Set(long keyA, long keyB, long value)
 		{
@@ -347,7 +348,7 @@ namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 			this.variableCode = variableCode;
 		}
 
-		public string Get()
+		public string? Get()
 		{
 			return token.GetStrValue(exm, [charId]);
 		}
@@ -364,15 +365,15 @@ namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 
 	public class CharString1dWrapper
 	{
-		public string this[string key]
+		public string? this[string key]
 		{
 			get => Get(key);
-			set => Set(key, value);
+			set => Set(key, value!);
 		}
-		public string this[long key]
+		public string? this[long key]
 		{
 			get => Get(key);
-			set => Set(key, value);
+			set => Set(key, value!);
 		}
 		internal CharString1dWrapper(long charId, VariableToken token, ExpressionMediator exm, VariableCode variableCode)
 		{
@@ -382,13 +383,13 @@ namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 			this.variableCode = variableCode;
 		}
 
-		public string Get(string key)
+		public string? Get(string key)
 		{
 			var errPos = "";
 			var dict = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, key);
-			return Get(dict[key]);
+			return Get(dict![key]);
 		}
-		public string Get(long key)
+		public string? Get(long key)
 		{
 			return token.GetStrValue(exm, [charId, key]);
 		}
@@ -396,7 +397,7 @@ namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 		{
 			var errPos = "";
 			var dict = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, key);
-			Set(dict[key], value);
+			Set(dict![key], value);
 		}
 		public void Set(long key, string value)
 		{

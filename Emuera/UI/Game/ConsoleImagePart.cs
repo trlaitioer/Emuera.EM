@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Config;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.UI.Game.Image;
 using System;
 using System.Drawing;
@@ -11,7 +12,7 @@ sealed class ConsoleImagePart : AConsoleDisplayNode
 {
 	#region EM_私家版_HTMLパラメータ拡張
 	//public ConsoleImagePart(string resName, string resNameb, int raw_height, int raw_width, int raw_ypos)
-	public ConsoleImagePart(string resName, string resNameb, string resNamem, MixedNum raw_height, MixedNum raw_width, MixedNum raw_ypos)
+	public ConsoleImagePart(string resName, string? resNameb, string? resNamem, MixedNum? raw_height, MixedNum? raw_width, MixedNum? raw_ypos)
 	{
 		top = 0;
 		bottom = Config.FontSize;
@@ -83,21 +84,21 @@ sealed class ConsoleImagePart : AConsoleDisplayNode
 			cImageM = AppContents.GetSprite(MappingGraphName);
 		}
 	}
-	public readonly string MappingGraphName;
-	private readonly ASprite cImageM;
+	public readonly string? MappingGraphName;
+	private readonly ASprite? cImageM;
 	#endregion
-	private readonly ASprite cImage;
-	private readonly ASprite cImageB;
+	private readonly ASprite? cImage;
+	private readonly ASprite? cImageB;
 	private int top;
 	private int bottom;
 	private Rectangle destRect;
 	// Raw tag values are kept so that the geometry can be recomputed when the font size changes
-	private readonly MixedNum rawHeight, rawWidth, rawYPos;
+	private readonly MixedNum? rawHeight, rawWidth, rawYPos;
 	//#pragma warning disable CS0649 // フィールド 'ConsoleImagePart.ia' は割り当てられません。常に既定値 null を使用します。
 	//		private readonly ImageAttributes ia;
 	//#pragma warning restore CS0649 // フィールド 'ConsoleImagePart.ia' は割り当てられません。常に既定値 null を使用します。
 	public readonly string ResourceName;
-	public readonly string ButtonResourceName;
+	public readonly string? ButtonResourceName;
 	public override int Top { get { return top; } }
 	public override int Bottom { get { return bottom; } }
 
@@ -119,7 +120,8 @@ sealed class ConsoleImagePart : AConsoleDisplayNode
 		//without a width the aspect ratio of the image is kept; the fraction is recorded as the sub pixel
 		if (rawWidth == null || rawWidth.num == 0)
 		{
-			Width = cImage.DestBaseSize.Width * height / cImage.DestBaseSize.Height;
+			//both callers of this method returned when cImage was null
+			Width = cImage!.DestBaseSize.Width * height / cImage.DestBaseSize.Height;
 			XsubPixel = (float)cImage.DestBaseSize.Width * height / cImage.DestBaseSize.Height - Width;
 		}
 		else if (rawWidth.isPx)
@@ -173,7 +175,7 @@ sealed class ConsoleImagePart : AConsoleDisplayNode
 		}
 		if (cImage != null)
 			return;
-		Width = sm.GetDisplayLength(Text, Config.DefaultFont);
+		Width = sm.GetDisplayLength(Text!, Config.DefaultFont);
 		XsubPixel = subPixel;
 	}
 
@@ -217,7 +219,7 @@ sealed class ConsoleImagePart : AConsoleDisplayNode
 	{
 		if (Error)
 			return;
-		ASprite img = cImage;
+		ASprite? img = cImage;
 		if ((isSelecting || isFocus) && cImageB != null)
 			img = cImageB;
 
@@ -232,9 +234,10 @@ sealed class ConsoleImagePart : AConsoleDisplayNode
 		else
 		{
 			if (mode == TextDrawingMode.GRAPHICS)
-				GraphicsTextRenderer.Draw(graph, AltText, Config.DefaultFont, Config.ForeColor, PointX, XsubPixel, pointY);
+				// AltText is assigned unconditionally in the constructor
+				GraphicsTextRenderer.Draw(graph, AltText!, Config.DefaultFont, Config.ForeColor, PointX, XsubPixel, pointY);
 			else
-				System.Windows.Forms.TextRenderer.DrawText(graph, AltText.AsSpan(), Config.DefaultFont, new Point(PointX, pointY), Config.ForeColor, System.Windows.Forms.TextFormatFlags.NoPrefix);
+				System.Windows.Forms.TextRenderer.DrawText(graph, AltText!.AsSpan(), Config.DefaultFont, new Point(PointX, pointY), Config.ForeColor, System.Windows.Forms.TextFormatFlags.NoPrefix);
 		}
 	}
 }

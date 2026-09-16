@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Utils;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Utils;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -59,7 +60,7 @@ internal abstract class ASpriteSingle : ASprite
 	/// ソース画像上の位置を指定する四角形。Width, Heightは負の値をとり得る
 	/// </summary>
 	public readonly Rectangle SrcRectangle;
-	private Bitmap Bitmap
+	private Bitmap? Bitmap
 	{
 		get
 		{
@@ -75,7 +76,7 @@ internal abstract class ASpriteSingle : ASprite
 	}
 	public override Color SpriteGetColor(int x, int y)
 	{
-		Bitmap bmp = Bitmap;
+		Bitmap? bmp = Bitmap;
 		if (bmp == null)
 			return Color.Transparent;
 		int bmpX = x + SrcRectangle.X;
@@ -87,14 +88,15 @@ internal abstract class ASpriteSingle : ASprite
 	}
 	public override void Dispose()
 	{
-		BaseImage = null;
+		BaseImage = null!;
 	}
 
 
 	public override void GraphicsDraw(Graphics g, Point offset)
 	{
 		offset.Offset(DestBasePosition);
-		g.DrawImage(Bitmap, new Rectangle(offset, DestBaseSize), SrcRectangle, GraphicsUnit.Pixel);
+		// DrawImage rejects null at runtime, as it did before the annotation.
+		g.DrawImage(Bitmap!, new Rectangle(offset, DestBaseSize), SrcRectangle, GraphicsUnit.Pixel);
 	}
 	public override void GraphicsDraw(Graphics g, Rectangle destRect)
 	{
@@ -105,7 +107,7 @@ internal abstract class ASpriteSingle : ASprite
 			destRect.Width = destRect.Width * SrcRectangle.Width / DestBaseSize.Width;
 			destRect.Height = destRect.Height * SrcRectangle.Height / DestBaseSize.Height;
 		}
-		g.DrawImage(Bitmap, destRect, SrcRectangle, GraphicsUnit.Pixel);
+		g.DrawImage(Bitmap!, destRect, SrcRectangle, GraphicsUnit.Pixel);
 	}
 
 	public override void GraphicsDraw(Graphics g, Rectangle destRect, ImageAttributes attr)
@@ -118,7 +120,7 @@ internal abstract class ASpriteSingle : ASprite
 			destRect.Height = destRect.Height * SrcRectangle.Height / DestBaseSize.Height;
 		}
 		//g.DrawImage(Bitmap, destRect, SrcRectangle, GraphicsUnit.Pixel, attr);←このパターンがない
-		g.DrawImage(Bitmap, destRect, SrcRectangle.X, SrcRectangle.Y, SrcRectangle.Width, SrcRectangle.Height, GraphicsUnit.Pixel, attr);
+		g.DrawImage(Bitmap!, destRect, SrcRectangle.X, SrcRectangle.Y, SrcRectangle.Width, SrcRectangle.Height, GraphicsUnit.Pixel, attr);
 	}
 
 }
@@ -132,8 +134,8 @@ internal sealed class SpriteG : ASpriteSingle
 		: base(name, gra, rect)
 	{
 	}
-	public bool useImgList { get { return (BaseImage as GraphicsImage).useImgList; } }
-	public List<Tuple<ASprite, Rectangle>> drawImgList { get { return (BaseImage as GraphicsImage).drawImgList; } }
+	public bool useImgList { get { return (BaseImage as GraphicsImage)!.useImgList; } }
+	public List<Tuple<ASprite, Rectangle>> drawImgList { get { return (BaseImage as GraphicsImage)!.drawImgList; } }
 	public bool isBaseImage(GraphicsImage gImg)
 	{
 		return BaseImage as GraphicsImage == gImg;
@@ -167,7 +169,7 @@ internal sealed class SpriteAnime : ASprite
 	private sealed class AnimeFrame : IDisposable
 	{
 		public int index;
-		public AbstractImage BaseImage;
+		public AbstractImage? BaseImage;
 		public Rectangle SrcRectangle;
 		public Point Offset;
 		public int DelayTimeMs;
@@ -227,7 +229,7 @@ internal sealed class SpriteAnime : ASprite
 	DateTime StartTime;
 	DateTime lastFrameTime;
 	int lastFrame = -1;
-	private AnimeFrame GetCurrentFrame()
+	private AnimeFrame? GetCurrentFrame()
 	{
 		if (totaltime <= 0)
 			return null;
@@ -297,7 +299,7 @@ internal sealed class SpriteAnime : ASprite
 
 	public override void GraphicsDraw(Graphics g, Point offset)
 	{
-		AnimeFrame frame = GetCurrentFrame();
+		AnimeFrame? frame = GetCurrentFrame();
 		if (frame == null || frame.BaseImage == null || !frame.BaseImage.IsCreated || frame.BaseImage.Bitmap == null)
 			return;
 		offset.Offset(DestBasePosition);
@@ -309,7 +311,7 @@ internal sealed class SpriteAnime : ASprite
 
 	public override void GraphicsDraw(Graphics g, Rectangle destRect)
 	{
-		AnimeFrame frame = GetCurrentFrame();
+		AnimeFrame? frame = GetCurrentFrame();
 		if (frame == null || frame.BaseImage == null || !frame.BaseImage.IsCreated || frame.BaseImage.Bitmap == null)
 			return;
 		destRect.X = destRect.X + (DestBasePosition.X + frame.Offset.X) * destRect.Width / DestBaseSize.Width;
@@ -321,7 +323,7 @@ internal sealed class SpriteAnime : ASprite
 
 	public override void GraphicsDraw(Graphics g, Rectangle destRect, ImageAttributes attr)
 	{
-		AnimeFrame frame = GetCurrentFrame();
+		AnimeFrame? frame = GetCurrentFrame();
 		if (frame == null || frame.BaseImage == null || !frame.BaseImage.IsCreated || frame.BaseImage.Bitmap == null)
 			return;
 		destRect.X = destRect.X + (DestBasePosition.X + frame.Offset.X) * destRect.Width / DestBaseSize.Width;

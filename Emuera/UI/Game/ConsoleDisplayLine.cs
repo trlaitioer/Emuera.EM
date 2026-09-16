@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Config;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Config;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -72,7 +73,8 @@ internal sealed class ConsoleDisplayLine
 	readonly public bool IsTemporary;
 	public bool IsLineEnd = true;
 	//EmueraConsole parent;
-	ConsoleButtonString[] buttons;
+	// The constructor only assigns this in its non-null branch, and ChangeStr uses null as an intermediate state
+	ConsoleButtonString[] buttons = null!;
 	DisplayLineAlignment align;
 	public ConsoleButtonString[] Buttons { get { return buttons; } }
 	public DisplayLineAlignment Align { get { return align; } }
@@ -208,7 +210,8 @@ internal sealed class ConsoleDisplayLine
 
 	public void ChangeStr(ConsoleButtonString[] newButtons)
 	{
-		buttons = null;
+		// null is the intermediate state while the buttons are re-parented
+		buttons = null!;
 		foreach (ConsoleButtonString button in newButtons)
 			button.ParentLine = this;
 		buttons = newButtons;

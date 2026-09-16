@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Config.JSON;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Config.JSON;
 using MinorShift.Emuera.Runtime.Script.Statements.Expression;
 using MinorShift.Emuera.Runtime.Utils;
 using MinorShift.Emuera.Sub;
@@ -362,7 +363,7 @@ internal sealed class ConfigData
 
 	public T GetConfigValue<T>(ConfigCode code)
 	{
-		AConfigItem item = GetItem(code);
+		AConfigItem item = GetRequiredItem(code);
 		//if ((item != null) && (item is ConfigItem<T>))
 		return ((ConfigItem<T>)item).Value;
 		//throw new ExeEE("GetConfigValueのCodeまたは型が不適切");
@@ -482,9 +483,33 @@ internal sealed class ConfigData
 		#endregion
 	}
 
+	// Accessors for call sites whose lookup is known to hit. They keep the current behaviour: on a miss the null
+	// from GetItem/GetConfigItem/GetDebugItem is used exactly as before, so "Required" asserts the result rather
+	// than introducing a new exception.
+	internal AConfigItem GetRequiredItem(ConfigCode code)
+	{
+		return GetItem(code)!;
+	}
+	internal AConfigItem GetRequiredConfigItem(ConfigCode code)
+	{
+		return GetConfigItem(code)!;
+	}
+	internal ConfigItem<T> GetRequiredConfigItem<T>(ConfigCode code)
+	{
+		return (ConfigItem<T>)GetConfigItem(code)!;
+	}
+	internal AConfigItem GetRequiredDebugItem(ConfigCode code)
+	{
+		return GetDebugItem(code)!;
+	}
+	internal ConfigItem<T> GetRequiredDebugItem<T>(ConfigCode code)
+	{
+		return (ConfigItem<T>)GetDebugItem(code)!;
+	}
+
 	public static SingleTerm? GetConfigValueInERB(string text, ref string? errMes)
 	{
-		AConfigItem item = Instance.GetItem(text);
+		AConfigItem? item = Instance.GetItem(text);
 		if (item == null)
 		{
 			errMes = string.Format(trerror.InvalidConfigName.Text, text);
@@ -611,7 +636,7 @@ internal sealed class ConfigData
 
 	public bool SaveConfig()
 	{
-		StreamWriter writer = null;
+		StreamWriter? writer = null;
 
 		try
 		{
@@ -706,7 +731,7 @@ internal sealed class ConfigData
 			needSave = true;
 		if (Config.CheckUpdate())
 		{
-			GetItem(ConfigCode.LastKey).SetValue(Config.LastKey);
+			GetRequiredItem(ConfigCode.LastKey).SetValue(Config.LastKey);
 			needSave = true;
 		}
 		if (needSave)
@@ -724,7 +749,7 @@ internal sealed class ConfigData
 		ScriptPosition? pos = null;
 		try
 		{
-			string line = null;
+			string? line = null;
 			//bool defineIgnoreWarningFiles = false;
 			while ((line = eReader.ReadLine()) != null)
 			{
@@ -735,14 +760,14 @@ internal sealed class ConfigData
 				if (tokens.Length < 2)
 					continue;
 				#region EM_私家版_Emuera多言語化改造
-				AConfigItem item = GetConfigItem(tokens[0].Trim());
+				AConfigItem? item = GetConfigItem(tokens[0].Trim());
 				#endregion
 				if (item != null)
 				{
 					//1806beta001 CompatiDRAWLINEの廃止、CompatiLinefeedAs1739へ移行
 					if (item.Code == ConfigCode.CompatiDRAWLINE)
 					{
-						item = GetConfigItem(ConfigCode.CompatiLinefeedAs1739);
+						item = GetRequiredConfigItem(ConfigCode.CompatiLinefeedAs1739);
 					}
 					//if ((item.Code == ConfigCode.IgnoreWarningFiles))
 					//{ 
@@ -807,7 +832,7 @@ internal sealed class ConfigData
 		ScriptPosition? pos = null;
 		try
 		{
-			string line = null;
+			string? line = null;
 			while ((line = eReader.ReadLine()) != null)
 			{
 				line = line.Trim();
@@ -823,7 +848,7 @@ internal sealed class ConfigData
 				tokens[1] = line[(tokens[0].Length + 1)..];
 				if (string.IsNullOrEmpty(tokens[1].Trim()))
 					continue;
-				AConfigItem item = GetReplaceItem(itemName);
+				AConfigItem? item = GetReplaceItem(itemName);
 				item?.TryParse(tokens[1]);
 			}
 		}
@@ -845,7 +870,7 @@ internal sealed class ConfigData
 
 	public bool SaveDebugConfig()
 	{
-		StreamWriter writer = null;
+		StreamWriter? writer = null;
 		try
 		{
 			#region EM_私家版_Emuera多言語化改造
@@ -883,7 +908,7 @@ internal sealed class ConfigData
 		ScriptPosition? pos = null;
 		try
 		{
-			string line = null;
+			string? line = null;
 			while ((line = eReader.ReadLine()) != null)
 			{
 				if ((line.Length == 0) || (line[0] == ';'))
@@ -892,7 +917,7 @@ internal sealed class ConfigData
 				string[] tokens = line.Split([':']);
 				if (tokens.Length < 2)
 					continue;
-				AConfigItem item = GetDebugItem(tokens[0].Trim());
+				AConfigItem? item = GetDebugItem(tokens[0].Trim());
 				item?.TryParse(tokens[1]);
 #if DEBUG
 				//else

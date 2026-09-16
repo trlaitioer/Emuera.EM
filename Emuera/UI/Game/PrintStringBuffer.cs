@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.GameView;
+﻿#nullable enable
+using MinorShift.Emuera.GameView;
 using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.Runtime.Utils;
 using System;
@@ -41,7 +42,7 @@ internal sealed class PrintStringBuffer
 			foreach (AConsoleDisplayNode css in m_stringList)
 			{
 				if (css is ConsoleStyledString)
-					length += css.Text.Length;
+					length += css.Text!.Length;
 				else
 					length += 1;
 			}
@@ -145,7 +146,7 @@ internal sealed class PrintStringBuffer
 		return buf.ToString();
 	}
 
-	public ConsoleDisplayLine AppendAndFlushErrButton(string str, StringStyle style, string input, ScriptPosition? pos, StringMeasure sm)
+	public ConsoleDisplayLine? AppendAndFlushErrButton(string str, StringStyle style, string input, ScriptPosition? pos, StringMeasure sm)
 	{
 		fromCssToButton();
 		m_stringList.Add(new ConsoleStyledString(str, style));
@@ -226,7 +227,8 @@ internal sealed class PrintStringBuffer
 				#endregion
 				if (divIndex > 0)
 				{
-					ConsoleButtonString newButton = buttonList[i].DivideAt(divIndex, stringMeasure);
+					// divIndex > 0 means the button had a splittable part, so a split button comes back
+					ConsoleButtonString newButton = buttonList[i].DivideAt(divIndex, stringMeasure)!;
 					//newButton.CalcPointX(buttonList[i].PointX + buttonList[i].Width);
 					#region EmuEra-Rikaichan
 					if (Config.RikaiEnabled)
@@ -381,13 +383,13 @@ internal sealed class PrintStringBuffer
 				if (cssIndex >= cssList.Count)
 					break;
 				AConsoleDisplayNode css = cssList[cssIndex];
-				if (cssStartCharIndex + css.Text.Length >= buttonEndCharIndex)
+				if (cssStartCharIndex + css.Text!.Length >= buttonEndCharIndex)
 				{//ボタンの終端を発見
 					int used = buttonEndCharIndex - cssStartCharIndex;
 					if (used > 0 && css.CanDivide)
 					{//cssの区切りの途中でボタンの区切りがある。
 
-						ConsoleStyledString newCss = ((ConsoleStyledString)css).DivideAt(used);
+						ConsoleStyledString? newCss = ((ConsoleStyledString)css).DivideAt(used);
 						if (newCss != null)
 						{
 							cssList.Insert(cssIndex + 1, newCss);
@@ -501,7 +503,7 @@ internal sealed class PrintStringBuffer
 	private static int getDivideIndex(ConsoleButtonString button, StringMeasure sm, int divWidth = 0)
 	#endregion
 	{
-		AConsoleDisplayNode divCss = null;
+		AConsoleDisplayNode? divCss = null;
 		int pointX = button.PointX;
 		int strLength = 0;
 		int index = 0;
@@ -518,7 +520,7 @@ internal sealed class PrintStringBuffer
 				break;
 			}
 			index++;
-			strLength += css.Text.Length;
+			strLength += css.Text!.Length;
 			pointX += css.Width;
 		}
 		if (divCss != null)
@@ -541,14 +543,14 @@ internal sealed class PrintStringBuffer
 			return -1;
 		#region EM_私家版_描画拡張
 		if (divWidth == 0) divWidth = Config.DrawableWidth;
-		ConsoleStyledString css = part as ConsoleStyledString;
+		ConsoleStyledString? css = part as ConsoleStyledString;
 		if (part == null)
 			return -1;
 		// int widthLimit = Config.DrawableWidth - css.PointX;
-		int widthLimit = divWidth - css.PointX;
+		int widthLimit = divWidth - css!.PointX;
 		#endregion
-		string str = css.Text;
-		Font font = css.Font;
+		string str = css.Text!;
+		Font font = css.Font!;
 
 		//最適なサイズを二分探索する
 		var span = str.AsSpan();

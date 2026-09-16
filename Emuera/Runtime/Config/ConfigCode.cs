@@ -1,4 +1,5 @@
-﻿namespace MinorShift.Emuera.Runtime.Config;
+﻿#nullable enable
+namespace MinorShift.Emuera.Runtime.Config;
 
 internal enum DisplayWarningFlag
 {

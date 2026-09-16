@@ -5096,7 +5096,7 @@ internal static partial class FunctionMethodCreator
 			if (lineNo < 0)
 				// throw new CodeEE("引数を0未満にできません");
 				throw new CodeEE(string.Format(trerror.ArgIsNegative.Text, Name, 1, lineNo));
-			ConsoleDisplayLine[] dispLines = exm.Console.GetDisplayLines(lineNo);
+			ConsoleDisplayLine[]? dispLines = exm.Console.GetDisplayLines(lineNo);
 			if (dispLines == null)
 				return "";
 			return HtmlManager.DisplayLine2Html(dispLines, true);
@@ -5114,7 +5114,7 @@ internal static partial class FunctionMethodCreator
 
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			ConsoleDisplayLine[] dispLines = exm.Console.PopDisplayingLines();
+			ConsoleDisplayLine[]? dispLines = exm.Console.PopDisplayingLines();
 			if (dispLines == null)
 				return "";
 			return HtmlManager.DisplayLine2Html(dispLines, false);
@@ -5835,7 +5835,7 @@ internal static partial class FunctionMethodCreator
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string imgname = arguments[0]!.GetStrValue(exm);
-			ASprite img = AppContents.GetSprite(imgname);
+			ASprite? img = AppContents.GetSprite(imgname);
 			if (img == null || !img.IsCreated)
 				return 0;
 			switch (Name)
@@ -5866,7 +5866,7 @@ internal static partial class FunctionMethodCreator
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string imgname = arguments[0]!.GetStrValue(exm);
-			ASprite img = AppContents.GetSprite(imgname);
+			ASprite? img = AppContents.GetSprite(imgname);
 			if (img == null || !img.IsCreated)
 				return 0;
 			Point p = ReadPoint(Name, exm, arguments, 1);
@@ -5894,7 +5894,7 @@ internal static partial class FunctionMethodCreator
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string imgname = arguments[0]!.GetStrValue(exm);
-			ASprite img = AppContents.GetSprite(imgname);
+			ASprite? img = AppContents.GetSprite(imgname);
 			//他と違って失敗は0ではなく負の値
 			if (img == null || !img.IsCreated)
 				return -1;
@@ -6103,7 +6103,7 @@ internal static partial class FunctionMethodCreator
 			string imgname = arguments[0]!.GetStrValue(exm);
 			if (string.IsNullOrEmpty(imgname))
 				return 0;
-			ASprite img = AppContents.GetSprite(imgname);
+			ASprite? img = AppContents.GetSprite(imgname);
 			if (img != null && img.IsCreated)
 				return 0;
 			GraphicsImage g = ReadGraphics(Name, exm, arguments, 1);
@@ -6139,7 +6139,7 @@ internal static partial class FunctionMethodCreator
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string imgname = arguments[0]!.GetStrValue(exm);
-			ASprite img = AppContents.GetSprite(imgname);
+			ASprite? img = AppContents.GetSprite(imgname);
 			if (img == null || !img.IsCreated)
 				return 0;
 			AppContents.SpriteDispose(imgname);
@@ -6410,7 +6410,7 @@ internal static partial class FunctionMethodCreator
 				return 0;
 
 			string imgname = arguments[1]!.GetStrValue(exm);
-			ASprite img = AppContents.GetSprite(imgname);
+			ASprite? img = AppContents.GetSprite(imgname);
 			if (img == null || !img.IsCreated)
 				return 0;
 
@@ -6477,7 +6477,7 @@ internal static partial class FunctionMethodCreator
 			if (string.IsNullOrEmpty(imgname))
 				return 0;
 			//リソースチェック・既に存在しているならば失敗
-			ASprite img = AppContents.GetSprite(imgname);
+			ASprite? img = AppContents.GetSprite(imgname);
 			if (img != null && img.IsCreated)
 				return 0;
 			Point pos = ReadPoint(Name, exm, arguments, 1);
@@ -6698,7 +6698,7 @@ internal static partial class FunctionMethodCreator
 			//	throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
 
 			string imgname = arguments[0]!.GetStrValue(exm);
-			ASprite img = AppContents.GetSprite(imgname);
+			ASprite? img = AppContents.GetSprite(imgname);
 			if (img == null || !img.IsCreated)
 				return 0;
 			Point p = ReadPoint(Name, exm, arguments, 1);
@@ -6757,9 +6757,9 @@ internal static partial class FunctionMethodCreator
 			if (b64 < 0 || b64 > 0xFFFFFF)
 				return 0;
 			string imgnameN = arguments[1]!.GetStrValue(exm);
-			ASprite imgN = AppContents.GetSprite(imgnameN);
+			ASprite? imgN = AppContents.GetSprite(imgnameN);
 			string imgnameB = arguments[2]!.GetStrValue(exm);
-			ASprite imgB = AppContents.GetSprite(imgnameB);
+			ASprite? imgB = AppContents.GetSprite(imgnameB);
 
 			Point p = ReadPoint(Name, exm, arguments, 3);
 			long z64 = arguments[5]!.GetIntValue(exm);
@@ -6769,7 +6769,8 @@ internal static partial class FunctionMethodCreator
 			string? tooltip = null;
 			if (arguments.Count > 6)
 				tooltip = arguments[6]!.GetStrValue(exm);
-			if (!exm.Console.CBG_SetButtonImage((int)b64, imgN, imgB, p.X, p.Y, (int)z64, tooltip))
+			// The two images are stored as given; CBG_SetButtonImage has never rejected null.
+			if (!exm.Console.CBG_SetButtonImage((int)b64, imgN!, imgB!, p.X, p.Y, (int)z64, tooltip))
 				return 0;
 			return 1;
 
@@ -6964,7 +6965,7 @@ internal static partial class FunctionMethodCreator
 			}
 			else
 			{
-				filepath = Utils.GetValidPath(arguments[1]!.GetStrValue(exm));
+				filepath = Utils.GetValidPath(arguments[1]!.GetStrValue(exm))!;
 				if (filepath == null) return 0;
 				string tmp = Path.HasExtension(filepath) ? Path.GetExtension(filepath).ToLower().Substring(1) : "";
 				if (!Config.ValidExtension.Contains(tmp))
@@ -7070,7 +7071,7 @@ internal static partial class FunctionMethodCreator
 			}
 			else
 			{
-				filepath = Utils.GetValidPath(arguments[0]!.GetStrValue(exm));
+				filepath = Utils.GetValidPath(arguments[0]!.GetStrValue(exm))!;
 				if (filepath == null) return string.Empty;
 				string tmp = Path.HasExtension(filepath) ? Path.GetExtension(filepath).ToLower().Substring(1) : "";
 				if (!Config.ValidExtension.Contains(tmp))

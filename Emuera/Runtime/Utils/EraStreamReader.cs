@@ -63,7 +63,9 @@ internal sealed partial class EraStreamReader : IDisposable
 		filename = name.ToString();
 		curNo = 0;
 		nextNo = 0;
-		_fileLines = Preload.GetFileLines(path);
+		// A cached entry is null only when the preload reported an encoding error; the dereference in ReadLine
+		// then throws exactly as before, so the cache is asserted non-null here rather than made nullable.
+		_fileLines = Preload.GetFileLines(path)!;
 		return true;
 	}
 

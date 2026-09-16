@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Drawing;
 using System.IO;
 using System.Text.Json;
@@ -11,8 +12,9 @@ internal sealed class ConstImage : AbstractImage
 	{ Name = name; RealIsCreated = false; }
 
 	public readonly string Name;
-	public Bitmap RealBitmap;
-	public string Filepath;
+	// Assigned by CreateFrom/Load; RealBitmap is reset by Dispose.
+	public Bitmap RealBitmap = null!;
+	public string Filepath = null!;
 	public int Width;
 	public int Height;
 	public bool RealIsCreated;
@@ -46,7 +48,7 @@ internal sealed class ConstImage : AbstractImage
 			return;
 		try
 		{
-			RealBitmap = ImgUtils.LoadImage(Filepath);
+			RealBitmap = ImgUtils.LoadImage(Filepath)!;
 			if (RealBitmap == null)
 			{
 				return;
@@ -89,9 +91,9 @@ internal sealed class ConstImage : AbstractImage
 		if (RealBitmap == null || !RealIsCreated)
 			return;
 		g?.Dispose();
-		g = null;
+		g = null!;
 		RealBitmap?.Dispose();
-		RealBitmap = null;
+		RealBitmap = null!;
 	}
 
 	~ConstImage()

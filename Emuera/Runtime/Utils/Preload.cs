@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -9,15 +10,16 @@ using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 namespace MinorShift.Emuera.Runtime.Utils;
 static partial class Preload
 {
-	static Dictionary<string, string[]> files = new(StringComparer.OrdinalIgnoreCase);
+	// A failed read is cached as null
+	static Dictionary<string, string[]?> files = new(StringComparer.OrdinalIgnoreCase);
 
-	public static string[] GetFileLines(string path)
+	public static string[]? GetFileLines(string path)
 	{
 		return files[path];
 	}
 
 	// Opens as UTF8BOM if starts with BOM, else use DetectEncoding
-	private static string[] readAllLinesDetectEncoding(string path)
+	private static string[]? readAllLinesDetectEncoding(string path)
 	{
 		try
 		{

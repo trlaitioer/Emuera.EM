@@ -31,6 +31,7 @@ http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/SFMT/
  */
 
 #define MT19937
+#nullable enable
 using System;
 
 namespace MinorShift.Emuera.Runtime.Utils;
@@ -259,7 +260,8 @@ public sealed class MTRandom
 	/// <summary>
 	/// 内部状態ベクトル。
 	/// </summary>
-	private uint[] sfmt;
+	// Allocated by init_gen_rand, which every constructor calls
+	private uint[] sfmt = null!;
 	/// <summary>
 	/// 内部状態ベクトルのうち、次に乱数として使用するインデックス。
 	/// </summary>

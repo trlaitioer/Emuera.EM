@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Config;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Config;
 using System.Drawing;
 using System.Text;
 
@@ -11,8 +12,9 @@ abstract class AConsoleDisplayNode
 {
 	public bool Error { get; protected set; }
 
-	public string Text { get; protected set; }
-	public string AltText { get; protected set; }
+	// Unset text is a valid state: ToString/BuildString and the derived constructors fall back to ""
+	public string? Text { get; protected set; }
+	public string? AltText { get; protected set; }
 	#region EM_私家版_描画拡張
 	// public int PointX { get; set; }
 	public virtual int PointX { get; set; }
@@ -40,7 +42,8 @@ abstract class AConsoleDisplayNode
 	}
 
 	#region EM_私家版_描画拡張
-	public ConsoleButtonString Parent { get; set; }
+	// Assigned by the print path before the part is read back
+	public ConsoleButtonString Parent { get; set; } = null!;
 	public int Depth { get; set; }
 	public virtual StringBuilder BuildString(StringBuilder sb)
 	{
@@ -51,8 +54,10 @@ abstract class AConsoleDisplayNode
 
 	#region EmuEra-Rikaichan
 	public bool rikaichaned;
-	public int[] Ends;
-	public AConsoleDisplayNode NextLine;
+	// Built by ConsoleStyledString.SetWidth when rikaichan is enabled
+	public int[] Ends = null!;
+	// Linked by the line builders while a line is wrapped
+	public AConsoleDisplayNode NextLine = null!;
 	#endregion
 }
 

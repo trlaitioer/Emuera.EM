@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Threading;
 using System.Diagnostics;
 using NAudio.Wave;
@@ -14,8 +15,8 @@ namespace MinorShift.Emuera.Runtime.Utils
 	{
 		private readonly SynchronizationContext syncContext;
 		private MMDeviceEnumerator enumerator;
-		public MMDevice Device { get; private set; }
-		public event EventHandler<MMDevice> DefaultDeviceChanged;
+		public MMDevice? Device { get; private set; }
+		public event EventHandler<MMDevice?>? DefaultDeviceChanged;
 
 		public AudioDeviceTracker()
 		{
@@ -46,9 +47,9 @@ namespace MinorShift.Emuera.Runtime.Utils
 			syncContext.Post(DispatchDefaultDeviceChanged, defaultDeviceId);
 		}
 
-		private void DispatchDefaultDeviceChanged(object defaultDeviceId)
+		private void DispatchDefaultDeviceChanged(object? defaultDeviceId)
 		{
-			if (Device?.ID != (string)defaultDeviceId)
+			if (Device?.ID != (string?)defaultDeviceId)
 			{
 				if (defaultDeviceId == null)
 					Device = null;
@@ -71,15 +72,17 @@ namespace MinorShift.Emuera.Runtime.Utils
 
 	internal class DummyOut : IWavePlayer
 	{
-		private readonly SynchronizationContext syncContext;
+		private readonly SynchronizationContext? syncContext;
 		private volatile PlaybackState playbackState = PlaybackState.Stopped;
-		private Thread playThread;
-		private ISampleProvider sampleProvider;
+		// Assigned by Play before the state leaves Stopped
+		private Thread playThread = null!;
+		// Assigned by Init before the play thread reads it
+		private ISampleProvider sampleProvider = null!;
 		private int latency;
 		public float Volume { get; set; }
 		public PlaybackState PlaybackState { get => playbackState; }
-		public WaveFormat OutputWaveFormat { get; }
-		public event EventHandler<StoppedEventArgs> PlaybackStopped;
+		public WaveFormat OutputWaveFormat { get; } = null!;
+		public event EventHandler<StoppedEventArgs>? PlaybackStopped;
 
 		public DummyOut(int latency)
 		{
@@ -111,7 +114,7 @@ namespace MinorShift.Emuera.Runtime.Utils
 			{
 				playbackState = PlaybackState.Stopped;
 				playThread.Join();
-				playThread = null;
+				playThread = null!;
 			}
 		}
 		public void Pause()
@@ -130,7 +133,7 @@ namespace MinorShift.Emuera.Runtime.Utils
 
 		private void PlayThread()
 		{
-			Exception exception = null;
+			Exception? exception = null;
 			try
 			{
 				Stopwatch stopwatch = Stopwatch.StartNew();
@@ -273,9 +276,9 @@ namespace MinorShift.Emuera.Runtime.Utils
 		private static bool initialized = false;
 		public static bool Initialized { get => initialized; }
 		public const int SampleRate = 44100;
-		private static AudioDeviceTracker deviceTracker;
-		private static IWavePlayer output;
-		private static MixingSampleProvider mixer;
+		private static AudioDeviceTracker deviceTracker = null!;
+		private static IWavePlayer output = null!;
+		private static MixingSampleProvider mixer = null!;
 
 		public static void Initialize()
 		{
@@ -293,12 +296,12 @@ namespace MinorShift.Emuera.Runtime.Utils
 			initialized = true;
 		}
 
-		private static void SoundEnded(object sender, SampleProviderEventArgs args)
+		private static void SoundEnded(object? sender, SampleProviderEventArgs args)
 		{
 			((Sound)(args.SampleProvider)).Playing = false;
 		}
 
-		private static void InitializeOutput(MMDevice device)
+		private static void InitializeOutput(MMDevice? device)
 		{
 			if (SynchronizationContext.Current == null)
 				throw new Exception("SynchronizationContext.Current is null");
@@ -312,7 +315,7 @@ namespace MinorShift.Emuera.Runtime.Utils
 			output.Play();
 		}
 
-		private static void ChangeOutput(object sender, MMDevice device)
+		private static void ChangeOutput(object? sender, MMDevice? device)
 		{
 			if (output != null)
 				output.Dispose();
@@ -337,8 +340,9 @@ namespace MinorShift.Emuera.Runtime.Utils
 	{
 		private float volume = 1.0f;
 
-		private WaveStream stream;
-		private VolumeSampleProvider volumeProvider;
+		// Both are (re)assigned by play and cleared by stop/close
+		private WaveStream stream = null!;
+		private VolumeSampleProvider volumeProvider = null!;
 		public volatile bool Playing = false;
 		public WaveFormat WaveFormat { get => volumeProvider.WaveFormat; }
 
@@ -402,14 +406,14 @@ namespace MinorShift.Emuera.Runtime.Utils
 			if (stream != null)
 			{
 				stream.Dispose();
-				stream = null;
+				stream = null!;
 			}
 		}
 
 		public void close()
 		{
 			stop();
-			volumeProvider = null;
+			volumeProvider = null!;
 		}
 
 		public bool isPlaying()

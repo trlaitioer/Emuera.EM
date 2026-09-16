@@ -1,4 +1,5 @@
-﻿using WMPLib;
+﻿#nullable enable
+using WMPLib;
 
 namespace MinorShift.Emuera.Runtime.Utils;
 

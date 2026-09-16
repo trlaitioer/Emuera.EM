@@ -1,4 +1,5 @@
-﻿using System.Windows.Forms;
+﻿#nullable enable
+using System.Windows.Forms;
 static class Dialog
 {
 	public enum Result

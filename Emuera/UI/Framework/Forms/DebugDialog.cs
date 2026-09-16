@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.GameProc;
+﻿#nullable enable
+using MinorShift.Emuera.GameProc;
 using MinorShift.Emuera.GameView;
 using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.Runtime.Script.Parser;
@@ -35,8 +36,9 @@ namespace MinorShift.Emuera.Forms
 			checkBoxTopMost.Checked = TopMost;
 			loadWatchList();
 		}
-		private Process emuera;
-		private EmueraConsole mainConsole;
+		//Both are set by SetParent before the dialog is shown
+		private Process emuera = null!;
+		private EmueraConsole mainConsole = null!;
 
 		internal void SetParent(EmueraConsole console, Process process)
 		{
@@ -157,9 +159,10 @@ namespace MinorShift.Emuera.Forms
 			{
 				CharStream st = new(str);
 				WordCollection wc = LexicalAnalyzer.Analyse(st, LexEndWith.EoL, LexAnalyzeFlag.None);
-				AExpression term = ExpressionParser.ReduceExpressionTerm(wc, TermEndWith.EoL);
-				SingleTerm value = term.GetValue(GlobalStatic.EMediator);
-				return value.ToString();
+				AExpression? term = ExpressionParser.ReduceExpressionTerm(wc, TermEndWith.EoL);
+				SingleTerm value = term!.GetValue(GlobalStatic.EMediator);
+				//SingleLongTerm/SingleStrTerm are the only results of GetValue and both format to non-null text
+				return value.ToString()!;
 			}
 			catch (CodeEE e)
 			{
@@ -175,7 +178,7 @@ namespace MinorShift.Emuera.Forms
 			}
 
 		}
-		private void listViewWatch_AfterLabelEdit(object sender, LabelEditEventArgs e)
+		private void listViewWatch_AfterLabelEdit(object? sender, LabelEditEventArgs e)
 		{
 			if (string.IsNullOrEmpty(e.Label))
 			{
@@ -228,7 +231,7 @@ namespace MinorShift.Emuera.Forms
 		{
 			saveWatchList();
 
-			StreamWriter writer = null;
+			StreamWriter? writer = null;
 			//トレースの仕様をいじってるうちに保存する意味が無いものになった
 			//try
 			//{
@@ -264,7 +267,7 @@ namespace MinorShift.Emuera.Forms
 
 		private void saveWatchList()
 		{
-			StreamWriter writer = null;
+			StreamWriter? writer = null;
 			try
 			{
 				writer = new StreamWriter(watchFilepath, false, Config.Encode);
@@ -289,11 +292,11 @@ namespace MinorShift.Emuera.Forms
 				return;
 			List<string> saveStrList = [];
 
-			StreamReader reader = null;
+			StreamReader? reader = null;
 			try
 			{
 				reader = new StreamReader(watchFilepath, Config.Encode);
-				string line = null;
+				string? line = null;
 				while ((line = reader.ReadLine()) != null)
 					if (line.Length > 0)
 						saveStrList.Add(line);
@@ -365,7 +368,7 @@ namespace MinorShift.Emuera.Forms
 
 		private void listViewWatch_MouseUp(object sender, MouseEventArgs e)
 		{
-			ListViewItem item = listViewWatch.GetItemAt(e.X, e.Y);
+			ListViewItem? item = listViewWatch.GetItemAt(e.X, e.Y);
 			if (item != null)
 			{
 				item.Selected = true;

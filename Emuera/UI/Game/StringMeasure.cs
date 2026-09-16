@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Config;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Config;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
@@ -44,13 +45,13 @@ internal sealed class StringMeasure : IDisposable
 	/// and both paths were compared value for value; the shared Graphics must not be touched off its
 	/// thread, which is what an unqualified call would do while parsing folds an expression.
 	/// </summary>
-	private Graphics MeasuringGraphics => Environment.CurrentManagedThreadId == ownerThreadId ? graph : null;
+	private Graphics? MeasuringGraphics => Environment.CurrentManagedThreadId == ownerThreadId ? graph : null;
 
 	/// <summary>
 	/// Measures through the given device context, or through one GDI provides for the call when it is
 	/// null. TextRenderer rejects a null context, so the two overloads must not be chosen by a ternary.
 	/// </summary>
-	private static int MeasureText(Graphics graph, ReadOnlySpan<char> text, Font font, Size layoutSize)
+	private static int MeasureText(Graphics? graph, ReadOnlySpan<char> text, Font font, Size layoutSize)
 	{
 		if (graph == null)
 			return TextRenderer.MeasureText(new string(text), font, layoutSize, TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix).Width;

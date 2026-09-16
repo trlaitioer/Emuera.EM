@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Script.Statements;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Script.Statements;
 using MinorShift.Emuera.Runtime.Script.Statements.Expression;
 
 namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
@@ -18,7 +19,8 @@ namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 		}
 
 		public bool isString;
-		public string strValue;
+		// null for integer parameters
+		public string? strValue;
 		public long intValue;
 	}
 

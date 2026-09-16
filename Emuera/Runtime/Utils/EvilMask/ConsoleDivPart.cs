@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Config;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.UI.Game;
 using System;
 using System.Drawing;
@@ -11,7 +12,7 @@ namespace MinorShift.Emuera.Runtime.Utils.EvilMask;
 
 class ConsoleDivPart : AConsoleDisplayNode
 {
-	public ConsoleDivPart(MixedNum xPos, MixedNum yPos, MixedNum width, MixedNum height, int depth, int color, StyledBoxModel box, bool isRelative, ConsoleDisplayLine[] childs)
+	public ConsoleDivPart(MixedNum xPos, MixedNum yPos, MixedNum width, MixedNum height, int depth, int color, StyledBoxModel? box, bool isRelative, ConsoleDisplayLine[] childs)
 	{
 		backgroundColor = color >= 0 ? Color.FromArgb((int)(color | 0xff000000)) : Color.Transparent;
 		StringBuilder sb = new();
@@ -56,7 +57,7 @@ class ConsoleDivPart : AConsoleDisplayNode
 
 	// Raw tag values are kept so that the geometry can be recomputed when the font size changes
 	readonly MixedNum xPos, yPos, rawWidth, rawHeight;
-	readonly StyledBoxModel box;
+	readonly StyledBoxModel? box;
 
 	/// <summary>
 	/// Recomputes position and size, including the units that depend on the font size, from the tag values.
@@ -130,8 +131,8 @@ class ConsoleDivPart : AConsoleDisplayNode
 	}
 	int PointY;
 	int Height;
-	int[] margin, padding, radius, border;
-	Color[] borderColors;
+	int[]? margin, padding, radius, border;
+	Color[]? borderColors;
 	Color backgroundColor;
 	string altHeadTag;
 	readonly ConsoleDisplayLine[] children;
@@ -142,9 +143,9 @@ class ConsoleDivPart : AConsoleDisplayNode
 	public ConsoleDisplayLine[] Children { get { return children; } }
 
 	public override bool CanDivide => false;
-	public ConsoleButtonString TestChildHitbox(int pointX, int pointY, int relPointY)
+	public ConsoleButtonString? TestChildHitbox(int pointX, int pointY, int relPointY)
 	{
-		ConsoleButtonString pointing = null;
+		ConsoleButtonString? pointing = null;
 		#region EE_div各要素の修正
 		var rect = new Rectangle(PointX + xOffset, relPointY + PointY + yOffset, width, Height);
 		#endregion

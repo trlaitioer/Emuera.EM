@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Config;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.Runtime.Utils.EvilMask;
 using System;
 using System.Drawing;
@@ -65,14 +66,14 @@ namespace MinorShift.Emuera.Forms
 
 		static void setCheckBox(CheckBox checkbox, ConfigCode code)
 		{
-			ConfigItem<bool> item = (ConfigItem<bool>)ConfigData.Instance.GetDebugItem(code);
+			ConfigItem<bool> item = ConfigData.Instance.GetRequiredDebugItem<bool>(code);
 			checkbox.Checked = item.Value;
 			checkbox.Enabled = !item.Fixed;
 		}
 
 		static void setNumericUpDown(NumericUpDown updown, ConfigCode code)
 		{
-			ConfigItem<int> item = (ConfigItem<int>)ConfigData.Instance.GetDebugItem(code);
+			ConfigItem<int> item = ConfigData.Instance.GetRequiredDebugItem<int>(code);
 			decimal value = item.Value;
 			if (updown.Maximum < value)
 				updown.Maximum = value;
@@ -101,13 +102,13 @@ namespace MinorShift.Emuera.Forms
 
 			//ConfigData config = ConfigData.Instance.Copy();
 			ConfigData config = ConfigData.Instance;
-			config.GetDebugItem(ConfigCode.DebugShowWindow).SetValue(checkBoxShowDW.Checked);
-			config.GetDebugItem(ConfigCode.DebugWindowTopMost).SetValue(checkBoxDWTM.Checked);
-			config.GetDebugItem(ConfigCode.DebugSetWindowPos).SetValue(checkBoxSetDWPos.Checked);
-			config.GetDebugItem(ConfigCode.DebugWindowWidth).SetValue((int)numericUpDownDWW.Value);
-			config.GetDebugItem(ConfigCode.DebugWindowHeight).SetValue((int)numericUpDownDWH.Value);
-			config.GetDebugItem(ConfigCode.DebugWindowPosX).SetValue((int)numericUpDownDWX.Value);
-			config.GetDebugItem(ConfigCode.DebugWindowPosY).SetValue((int)numericUpDownDWY.Value);
+			config.GetRequiredDebugItem(ConfigCode.DebugShowWindow).SetValue(checkBoxShowDW.Checked);
+			config.GetRequiredDebugItem(ConfigCode.DebugWindowTopMost).SetValue(checkBoxDWTM.Checked);
+			config.GetRequiredDebugItem(ConfigCode.DebugSetWindowPos).SetValue(checkBoxSetDWPos.Checked);
+			config.GetRequiredDebugItem(ConfigCode.DebugWindowWidth).SetValue((int)numericUpDownDWW.Value);
+			config.GetRequiredDebugItem(ConfigCode.DebugWindowHeight).SetValue((int)numericUpDownDWH.Value);
+			config.GetRequiredDebugItem(ConfigCode.DebugWindowPosX).SetValue((int)numericUpDownDWX.Value);
+			config.GetRequiredDebugItem(ConfigCode.DebugWindowPosY).SetValue((int)numericUpDownDWY.Value);
 			config.SaveDebugConfig();
 		}
 
@@ -117,7 +118,8 @@ namespace MinorShift.Emuera.Forms
 		{
 		}
 
-		DebugDialog dd;
+		// Assigned by SetConfig(DebugDialog) before the dialog is shown.
+		DebugDialog dd = null!;
 		private void button6_Click(object sender, EventArgs e)
 		{
 			if ((dd == null) || (!dd.Created))

@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Config;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Config;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -10,7 +11,7 @@ internal class FontFactory
 
 	static readonly Dictionary<(string fontname, int fontSize, FontStyle fontStyle), Font> fontDic = [];
 
-	public static Font GetFont(string requestFontName, FontStyle style)
+	public static Font? GetFont(string requestFontName, FontStyle style)
 	{
 		/*
 		string fontname = requestFontName;
@@ -61,7 +62,7 @@ internal class FontFactory
 			return existingFont;
 		}
 
-		Font createdFont = CreateFont(requestFontName, fontSize, style);
+		Font? createdFont = CreateFont(requestFontName, fontSize, style);
 		if (createdFont == null)
 		{
 			return null;
@@ -74,11 +75,12 @@ internal class FontFactory
 	/// that gets measured is the font that gets drawn: families of the private font collection take priority,
 	/// the family name is the fallback. Returns null when the font cannot be created.
 	/// </summary>
-	public static Font CreateFont(string requestFontName, int fontSize, FontStyle style)
+	public static Font? CreateFont(string requestFontName, int fontSize, FontStyle style)
 	{
 		try
 		{
-			FontFamily ff = GlobalStatic.Pfc.Families.FirstOrDefault(ff => ff.Name == requestFontName, null);
+			//The null default makes the element type nullable; the predicate only sees the collection's elements
+			FontFamily? ff = GlobalStatic.Pfc.Families.FirstOrDefault(ff => ff!.Name == requestFontName, null);
 			if (ff != null)
 			{
 				return new Font(ff, fontSize, style, GraphicsUnit.Pixel);

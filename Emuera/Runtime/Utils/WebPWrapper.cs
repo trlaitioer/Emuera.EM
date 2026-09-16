@@ -21,6 +21,7 @@
 /// GetInfo(byte[] rawWebP, out int width, out int height, out bool has_alpha, out bool has_animation, out string format) - Get information of WEBP data
 /// float[] PictureDistortion(Bitmap source, Bitmap reference, int metric_type) - Get PSNR, SSIM or LSIM distortion metric between two pictures
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#nullable enable
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -54,8 +55,8 @@ public sealed class WebP : IDisposable
 	/// <returns>Bitmap with the WebP image</returns>
 	public static Bitmap Decode(byte[] rawWebP)
 	{
-		Bitmap bmp = null;
-		BitmapData bmpData = null;
+		Bitmap? bmp = null;
+		BitmapData? bmpData = null;
 		GCHandle pinnedWebP = GCHandle.Alloc(rawWebP, GCHandleType.Pinned);
 
 		try
@@ -85,7 +86,7 @@ public sealed class WebP : IDisposable
 		{
 			//Unlock the pixels
 			if (bmpData != null)
-				bmp.UnlockBits(bmpData);
+				bmp!.UnlockBits(bmpData);
 
 			//Free memory
 			if (pinnedWebP.IsAllocated)
@@ -100,8 +101,8 @@ public sealed class WebP : IDisposable
 	public static Bitmap Decode(byte[] rawWebP, WebPDecoderOptions options, PixelFormat pixelFormat = PixelFormat.DontCare)
 	{
 		GCHandle pinnedWebP = GCHandle.Alloc(rawWebP, GCHandleType.Pinned);
-		Bitmap bmp = null;
-		BitmapData bmpData = null;
+		Bitmap? bmp = null;
+		BitmapData? bmpData = null;
 		VP8StatusCode result;
 		try
 		{
@@ -186,7 +187,7 @@ public sealed class WebP : IDisposable
 		{
 			//Unlock the pixels
 			if (bmpData != null)
-				bmp.UnlockBits(bmpData);
+				bmp!.UnlockBits(bmpData);
 
 			//Free memory
 			if (pinnedWebP.IsAllocated)
@@ -202,8 +203,8 @@ public sealed class WebP : IDisposable
 	public static Bitmap GetThumbnailFast(byte[] rawWebP, int width, int height)
 	{
 		GCHandle pinnedWebP = GCHandle.Alloc(rawWebP, GCHandleType.Pinned);
-		Bitmap bmp = null;
-		BitmapData bmpData = null;
+		Bitmap? bmp = null;
+		BitmapData? bmpData = null;
 
 		try
 		{
@@ -247,7 +248,7 @@ public sealed class WebP : IDisposable
 		{
 			//Unlock the pixels
 			if (bmpData != null)
-				bmp.UnlockBits(bmpData);
+				bmp!.UnlockBits(bmpData);
 
 			//Free memory
 			if (pinnedWebP.IsAllocated)
@@ -263,8 +264,8 @@ public sealed class WebP : IDisposable
 	public static Bitmap GetThumbnailQuality(byte[] rawWebP, int width, int height)
 	{
 		GCHandle pinnedWebP = GCHandle.Alloc(rawWebP, GCHandleType.Pinned);
-		Bitmap bmp = null;
-		BitmapData bmpData = null;
+		Bitmap? bmp = null;
+		BitmapData? bmpData = null;
 
 		try
 		{
@@ -320,7 +321,7 @@ public sealed class WebP : IDisposable
 		{
 			//Unlock the pixels
 			if (bmpData != null)
-				bmp.UnlockBits(bmpData);
+				bmp!.UnlockBits(bmpData);
 
 			//Free memory
 			if (pinnedWebP.IsAllocated)
@@ -363,7 +364,7 @@ public sealed class WebP : IDisposable
 		if (bmp.PixelFormat != PixelFormat.Format24bppRgb && bmp.PixelFormat != PixelFormat.Format32bppArgb)
 			throw new NotSupportedException("Only support Format24bppRgb and Format32bppArgb pixelFormat.");
 
-		BitmapData bmpData = null;
+		BitmapData? bmpData = null;
 		nint unmanagedData = nint.Zero;
 
 		try
@@ -452,7 +453,7 @@ public sealed class WebP : IDisposable
 		if (bmp.PixelFormat != PixelFormat.Format24bppRgb && bmp.PixelFormat != PixelFormat.Format32bppArgb)
 			throw new NotSupportedException("Only support Format24bppRgb and Format32bppArgb pixelFormat.");
 
-		BitmapData bmpData = null;
+		BitmapData? bmpData = null;
 		nint unmanagedData = nint.Zero;
 		try
 		{
@@ -624,8 +625,8 @@ public sealed class WebP : IDisposable
 	{
 		WebPPicture wpicSource = new();
 		WebPPicture wpicReference = new();
-		BitmapData sourceBmpData = null;
-		BitmapData referenceBmpData = null;
+		BitmapData? sourceBmpData = null;
+		BitmapData? referenceBmpData = null;
 		float[] result = new float[5];
 		GCHandle pinnedResult = GCHandle.Alloc(result, GCHandleType.Pinned);
 
@@ -720,10 +721,10 @@ public sealed class WebP : IDisposable
 	/// <returns>Compressed data</returns>
 	private byte[] AdvancedEncode(Bitmap bmp, WebPConfig config, bool info)
 	{
-		byte[] rawWebP = null;
-		byte[] dataWebp = null;
+		byte[]? rawWebP = null;
+		byte[]? dataWebp = null;
 		WebPPicture wpic = new();
-		BitmapData bmpData = null;
+		BitmapData? bmpData = null;
 		WebPAuxStats stats = new();
 		nint ptrStats = nint.Zero;
 		GCHandle pinnedArrayHandle = new();
@@ -796,7 +797,7 @@ public sealed class WebP : IDisposable
 				throw new Exception("Encoding error: " + ((WebPEncodingError)wpic.error_code).ToString());
 
 			//Remove OnCallback
-			UnsafeNativeMethods.OnCallback = null;
+			UnsafeNativeMethods.OnCallback = null!;
 
 			//Unlock the pixels
 			bmp.UnlockBits(bmpData);
@@ -1079,7 +1080,7 @@ internal sealed partial class UnsafeNativeMethods
 	/// <returns></returns>
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 	internal delegate int WebPMemoryWrite([In()] nint data, nuint data_size, ref WebPPicture wpic);
-	internal static WebPMemoryWrite OnCallback;
+	internal static WebPMemoryWrite OnCallback = null!;
 
 	/// <summary>Compress to WebP format</summary>
 	/// <param name="config">The configuration structure for compression parameters</param>

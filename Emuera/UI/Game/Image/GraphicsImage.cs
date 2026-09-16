@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Config;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Config;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -19,16 +20,17 @@ internal sealed class GraphicsImage : AbstractImage
 	public GraphicsImage(int id)
 	{
 		ID = id;
-		g = null;
-		Bitmap = null;
+		g = null!;
+		Bitmap = null!;
 		//created = false;
 		//locked = false;
 	}
 	public readonly int ID;
 	Size size;
-	Brush brush;
-	Pen pen;
-	Font font;
+	// Set by GSetBrush/GSetPen/GSetFont and cleared by GDispose; null means "not set" at runtime.
+	Brush brush = null!;
+	Pen pen = null!;
+	Font font = null!;
 	#region EE_GDRAWTEXT
 	FontStyle style;
 	#endregion
@@ -38,7 +40,8 @@ internal sealed class GraphicsImage : AbstractImage
 	// 当GraphicsImage是完全由图像拼接而成时，此处记录拼接图案的列表。
 	// 可清理图片来减少内存使用。在使用时按照此列表组合
 	public bool useImgList { get { return drawImgList != null; } }
-	public List<Tuple<ASprite, Rectangle>> drawImgList;
+	// Null while the composed image list has been dropped; useImgList reports that state.
+	public List<Tuple<ASprite, Rectangle>> drawImgList = null!;
 
 
 	////bool created;
@@ -59,7 +62,7 @@ internal sealed class GraphicsImage : AbstractImage
 	//	//locked = false;
 	//}
 
-	public Bitmap RealBitmap;
+	public Bitmap RealBitmap = null!;
 	public override Bitmap Bitmap
 	{
 		set { RealBitmap = value; }
@@ -119,7 +122,7 @@ internal sealed class GraphicsImage : AbstractImage
 		g.SetClip(new Rectangle(x, y, w, h), CombineMode.Replace);
 		g.Clear(c);
 		g.ResetClip();
-		drawImgList = null;
+		drawImgList = null!;
 	}
 	#endregion
 
@@ -134,7 +137,7 @@ internal sealed class GraphicsImage : AbstractImage
 		if (g == null)
 			throw new NullReferenceException();
 
-		drawImgList = null;
+		drawImgList = null!;
 
 		Font usingFont = font;
 		var format = new StringFormat(StringFormat.GenericTypographic);
@@ -169,7 +172,7 @@ internal sealed class GraphicsImage : AbstractImage
 		if (g == null)
 			throw new NullReferenceException();
 
-		drawImgList = null;
+		drawImgList = null!;
 
 		Font usingFont = font;
 		if (usingFont == null)
@@ -195,7 +198,7 @@ internal sealed class GraphicsImage : AbstractImage
 		if (g == null)
 			throw new NullReferenceException();
 
-		drawImgList = null;
+		drawImgList = null!;
 
 		if (pen != null)
 		{
@@ -218,7 +221,7 @@ internal sealed class GraphicsImage : AbstractImage
 		if (g == null)
 			throw new NullReferenceException();
 
-		drawImgList = null;
+		drawImgList = null!;
 
 		if (brush != null)
 		{
@@ -244,14 +247,15 @@ internal sealed class GraphicsImage : AbstractImage
 		{
 			if (img as SpriteG != null)
 			{
-				SpriteG imgG = img as SpriteG;
-				if (imgG.useImgList)
+				SpriteG? imgG = img as SpriteG;
+				// The enclosing test guarantees the cast succeeded.
+				if (imgG!.useImgList)
 				{
 					foreach (Tuple<ASprite, Rectangle> img_element in imgG.drawImgList)
 					{
 						if (imgG.isBaseImage(this))
 						{
-							drawImgList = null;
+							drawImgList = null!;
 							break;
 						}
 						drawImgList.Add(new Tuple<ASprite, Rectangle>(
@@ -267,7 +271,7 @@ internal sealed class GraphicsImage : AbstractImage
 				}
 				else
 				{
-					drawImgList = null;
+					drawImgList = null!;
 				}
 			}
 			else if (img as SpriteF != null)
@@ -278,12 +282,12 @@ internal sealed class GraphicsImage : AbstractImage
 
 				if (drawImgList.Count > 50)
 				{
-					drawImgList = null;
+					drawImgList = null!;
 				}
 			}
 			else
 			{
-				drawImgList = null;
+				drawImgList = null!;
 			}
 		}
 		img.GraphicsDraw(g, destRect);
@@ -299,7 +303,7 @@ internal sealed class GraphicsImage : AbstractImage
 		if (g == null)
 			throw new NullReferenceException();
 
-		drawImgList = null;
+		drawImgList = null!;
 
 		ImageAttributes imageAttributes = new();
 		ColorMatrix colorMatrix = new(cm);
@@ -318,7 +322,7 @@ internal sealed class GraphicsImage : AbstractImage
 		if (g == null)
 			throw new NullReferenceException();
 
-		drawImgList = null;
+		drawImgList = null!;
 
 		Bitmap src = srcGra.GetBitmap();
 		g.DrawImage(src, destRect, srcRect, GraphicsUnit.Pixel);
@@ -335,7 +339,7 @@ internal sealed class GraphicsImage : AbstractImage
 		if (g == null)
 			throw new NullReferenceException();
 
-		drawImgList = null;
+		drawImgList = null!;
 
 		Bitmap src = srcGra.GetBitmap();
 		ImageAttributes imageAttributes = new();
@@ -357,7 +361,7 @@ internal sealed class GraphicsImage : AbstractImage
 		if (g == null)
 			throw new NullReferenceException();
 
-		drawImgList = null;
+		drawImgList = null!;
 
 		Bitmap destImg = GetBitmap();
 		byte[] srcBytes = BytesFromBitmap(srcGra.GetBitmap());
@@ -548,8 +552,8 @@ internal sealed class GraphicsImage : AbstractImage
 
 		g?.Dispose();
 		RealBitmap?.Dispose();
-		g = null;
-		RealBitmap = null;
+		g = null!;
+		RealBitmap = null!;
 	}
 
 	/// <summary>
@@ -558,7 +562,7 @@ internal sealed class GraphicsImage : AbstractImage
 	public void GDispose()
 	{
 		size = new Size(0, 0);
-		drawImgList = null;
+		drawImgList = null!;
 		if (RealBitmap == null)
 			return;
 		g?.Dispose();
@@ -566,11 +570,11 @@ internal sealed class GraphicsImage : AbstractImage
 		brush?.Dispose();
 		pen?.Dispose();
 		font?.Dispose();
-		g = null;
-		RealBitmap = null;
-		brush = null;
-		pen = null;
-		font = null;
+		g = null!;
+		RealBitmap = null!;
+		brush = null!;
+		pen = null!;
+		font = null!;
 	}
 
 	public override void Dispose()

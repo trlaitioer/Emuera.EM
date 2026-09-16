@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Config;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.Runtime.Utils;
 using System;
 using System.Collections.Generic;
@@ -42,7 +43,8 @@ internal class HotkeyState
 	private bool enabled = false;
 	private bool availableStateArray = false;
 	private bool availableHotkeyFile = false;
-	private nint[] state;
+	// Allocated by HotkeyStateInit before any state slot is read
+	private nint[] state = null!;
 	private List<int> bytecode = new(0x200);
 
 	public void HotkeyStateInit(nint size)
