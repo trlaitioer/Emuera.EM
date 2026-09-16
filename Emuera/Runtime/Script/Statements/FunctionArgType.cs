@@ -1,4 +1,5 @@
-﻿namespace MinorShift.Emuera.Runtime.Script.Statements;
+﻿#nullable enable
+namespace MinorShift.Emuera.Runtime.Script.Statements;
 
 /// <summary>
 /// 命令の引数タイプ

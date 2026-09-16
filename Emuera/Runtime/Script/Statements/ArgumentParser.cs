@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Script.Statements;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Script.Statements;
 using MinorShift.Emuera.Runtime.Utils;
 using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 
@@ -21,14 +22,15 @@ internal static partial class ArgumentParser
 			return true;
 		}
 
-		Argument arg;
+		Argument? arg;
 		string errmes;
 		try
 		{
 			if (line.Function.ArgBuilder != null)
 				arg = line.Function.ArgBuilder.CreateArgument(line, GlobalStatic.EMediator);
 			else
-				arg = line.Function.Instruction.CreateArgument(line, GlobalStatic.EMediator);
+				// A null ArgBuilder means the identifier was built from an AInstruction, which carries the Instruction.
+				arg = line.Function.Instruction!.CreateArgument(line, GlobalStatic.EMediator);
 		}
 		catch (EmueraException e)
 		{

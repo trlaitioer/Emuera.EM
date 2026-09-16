@@ -445,7 +445,7 @@ internal sealed class ProcessState
 		return;
 	}
 
-	public void IntoFunction(CalledFunction call, UserDefinedFunctionArgument srcArgs, ExpressionMediator exm)
+	public void IntoFunction(CalledFunction call, UserDefinedFunctionArgument? srcArgs, ExpressionMediator exm)
 	{
 
 		if (call.IsEvent)

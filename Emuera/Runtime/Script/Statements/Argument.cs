@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.GameData.Variable;
+﻿#nullable enable
+using MinorShift.Emuera.GameData.Variable;
 using MinorShift.Emuera.GameProc;
 using MinorShift.Emuera.Runtime.Script.Data;
 using MinorShift.Emuera.Runtime.Script.Statements.Expression;
@@ -14,21 +15,21 @@ namespace MinorShift.Emuera.Runtime.Script.Statements;
 #region EM_私家版_INPUT系機能拡張
 internal sealed class SpInputsArgument : Argument
 {
-	public SpInputsArgument(AExpression def, AExpression mouse, AExpression canskip)
+	public SpInputsArgument(AExpression? def, AExpression? mouse, AExpression? canskip)
 	{
 		Def = def;
 		Mouse = mouse;
 		CanSkip = canskip;
 	}
-	readonly public AExpression Def;
-	readonly public AExpression Mouse;
-	readonly public AExpression CanSkip;
+	readonly public AExpression? Def;
+	readonly public AExpression? Mouse;
+	readonly public AExpression? CanSkip;
 }
 #endregion
 #region EM_私家版_HTMLパラメータ拡張
 internal sealed class MixedIntegerExprTerm
 {
-	public AExpression num;
+	public AExpression num = null!;
 	public bool isPx;
 }
 internal sealed class SpPrintShapeArgument : Argument
@@ -41,7 +42,7 @@ internal sealed class SpPrintShapeArgument : Argument
 }
 internal sealed class SpPrintImgArgument : Argument
 {
-	public SpPrintImgArgument(AExpression name, AExpression nameb, AExpression namem, MixedIntegerExprTerm[] param)
+	public SpPrintImgArgument(AExpression name, AExpression? nameb, AExpression? namem, MixedIntegerExprTerm[]? param)
 	{
 		Name = name;
 		Nameb = nameb;
@@ -49,9 +50,9 @@ internal sealed class SpPrintImgArgument : Argument
 		Param = param;
 	}
 	readonly public AExpression Name;
-	readonly public AExpression Nameb;
-	readonly public AExpression Namem;
-	readonly public MixedIntegerExprTerm[] Param;
+	readonly public AExpression? Nameb;
+	readonly public AExpression? Namem;
+	readonly public MixedIntegerExprTerm[]? Param;
 }
 #endregion
 #region EM_DT
@@ -61,14 +62,14 @@ internal sealed class SpDtColumnOptions : Argument
 	{
 		Default,
 	};
-	public SpDtColumnOptions(AExpression dt, AExpression column, DTOptions[] opts, AExpression[] values)
+	public SpDtColumnOptions(AExpression dt, AExpression column, DTOptions[] opts, AExpression?[] values)
 	{
 		Values = values;
 		Options = opts;
 		DT = dt;
 		Column = column;
 	}
-	readonly public AExpression[] Values;
+	readonly public AExpression?[] Values;
 	readonly public DTOptions[] Options;
 	readonly public AExpression DT;
 	readonly public AExpression Column;
@@ -77,19 +78,21 @@ internal sealed class SpDtColumnOptions : Argument
 #region EM_私家版_HTML_PRINT拡張
 internal sealed class SpHtmlPrint : Argument
 {
-	public SpHtmlPrint(AExpression str, AExpression opt)
+	public SpHtmlPrint(AExpression str, AExpression? opt)
 	{
 		Str = str;
 		Opt = opt;
 	}
 	readonly public AExpression Str;
-	readonly public AExpression Opt;
+	readonly public AExpression? Opt;
 }
 #endregion
 internal abstract class Argument
 {
 	public bool IsConst;
-	public string ConstStr;
+	// Set by the ArgumentBuilder of the instruction that owns this argument and read back
+	// by the matching DoInstruction, so it is never null at a read site.
+	public string ConstStr = null!;
 	public long ConstInt;
 }
 
@@ -117,11 +120,12 @@ internal sealed class VoidArgument : Argument
 
 internal sealed class ExpressionArgument : Argument
 {
-	public ExpressionArgument(AExpression termSrc)
+	public ExpressionArgument(AExpression? termSrc)
 	{
 		Term = termSrc;
 	}
-	readonly public AExpression Term;
+	// Null for the empty argument the parser builds when the instruction was given no expression.
+	readonly public AExpression? Term;
 }
 
 internal sealed class ExpressionArrayArgument : Argument
@@ -212,7 +216,7 @@ internal sealed class SpTInputsArgument : Argument
 {
 	#region EM_私家版_INPUT系機能拡張
 	//public SpTInputsArgument(AExpression time, AExpression def, AExpression disp, AExpression timeout)
-	public SpTInputsArgument(AExpression time, AExpression def, AExpression disp, AExpression timeout, AExpression mouse, AExpression canskip)
+	public SpTInputsArgument(AExpression? time, AExpression? def, AExpression? disp, AExpression? timeout, AExpression? mouse, AExpression? canskip)
 	#endregion
 	{
 		Time = time;
@@ -226,15 +230,15 @@ internal sealed class SpTInputsArgument : Argument
 		CanSkip = canskip;
 		#endregion
 	}
-	readonly public AExpression Time;
-	readonly public AExpression Def;
-	readonly public AExpression Disp;
-	readonly public AExpression Timeout;
+	readonly public AExpression? Time;
+	readonly public AExpression? Def;
+	readonly public AExpression? Disp;
+	readonly public AExpression? Timeout;
 	#region EM_私家版_INPUT系機能拡張
-	readonly public AExpression Mouse;
+	readonly public AExpression? Mouse;
 	#endregion
 	#region EE_INPUT機能拡張
-	readonly public AExpression CanSkip;
+	readonly public AExpression? CanSkip;
 	#endregion
 }
 
@@ -269,9 +273,9 @@ internal sealed class SpCallFArgment : Argument
 	readonly public AExpression FuncnameTerm;
 	readonly public List<AExpression?> SubNames;
 	readonly public List<AExpression?> RowArgs;
-	public AExpression FuncTerm;
+	public AExpression? FuncTerm;
 	// Lazily created per-callsite cache for dynamic CALLFORMF name resolution
-	public CallformCache Cache;
+	public CallformCache? Cache;
 }
 
 internal sealed class SpCallArgment : Argument
@@ -285,10 +289,10 @@ internal sealed class SpCallArgment : Argument
 	readonly public AExpression FuncnameTerm;
 	readonly public List<AExpression?> SubNames;
 	readonly public List<AExpression?> RowArgs;
-	public UserDefinedFunctionArgument UDFArgument;
-	public CalledFunction CallFunc;
+	public UserDefinedFunctionArgument? UDFArgument;
+	public CalledFunction? CallFunc;
 	// Lazily created per-callsite cache for dynamic CALLFORM/GOTOFORM name resolution
-	public CallformCache Cache;
+	public CallformCache? Cache;
 }
 
 internal sealed class SpCallSharpArgment : Argument
@@ -303,7 +307,7 @@ internal sealed class SpCallSharpArgment : Argument
 	readonly public List<AExpression?> SubNames;
 	readonly public List<AExpression?> RowArgs;
 	// public UserDefinedFunctionArgument UDFArgument;
-	public IPluginMethod CallFunc;
+	public IPluginMethod? CallFunc;
 }
 
 /// <summary>
@@ -315,11 +319,11 @@ internal sealed class CallformEntry
 {
 	// Built function/label name, retained so error paths on cache hits can report it
 	// without rebuilding the name in long-key mode
-	public string LabelName;
-	public CalledFunction Call;                 // CALL_Instruction
-	public UserDefinedFunctionArgument Arg;     // CALL_Instruction
-	public LogicalLine JumpTo;                  // GOTO_Instruction
-	public AExpression FuncTerm;                // CALLF_Instruction family
+	public string LabelName = null!;
+	public CalledFunction? Call;                 // CALL_Instruction
+	public UserDefinedFunctionArgument? Arg;     // CALL_Instruction
+	public LogicalLine? JumpTo;                  // GOTO_Instruction
+	public AExpression? FuncTerm;                // CALLF_Instruction family
 }
 
 /// <summary>
@@ -345,29 +349,32 @@ internal sealed class CallformCache
 
 	readonly AExpression nameTerm;
 	readonly AExpression? longTerm;
-	readonly Dictionary<long, CallformEntry> longDic;
-	readonly Dictionary<string, CallformEntry> strDic;
+	// The constructor creates exactly one of the two, matching longTerm; every read and
+	// write below is gated on the same condition.
+	readonly Dictionary<long, CallformEntry> longDic = null!;
+	readonly Dictionary<string, CallformEntry> strDic = null!;
 
 	/// <summary>Probe the cache; null means miss. The out params carry the probe key for a later Store.</summary>
-	public CallformEntry Lookup(ExpressionMediator exm, out long longKey, out string strKey)
+	public CallformEntry? Lookup(ExpressionMediator exm, out long longKey, out string? strKey)
 	{
 		if (longTerm != null)
 		{
 			longKey = longTerm.GetIntValue(exm);
 			strKey = null;
-			return longDic.TryGetValue(longKey, out CallformEntry entry) ? entry : null;
+			return longDic.TryGetValue(longKey, out CallformEntry? entry) ? entry : null;
 		}
 		longKey = 0;
 		strKey = nameTerm.GetStrValue(exm);
-		return strDic.TryGetValue(strKey, out CallformEntry entry2) ? entry2 : null;
+		return strDic.TryGetValue(strKey, out CallformEntry? entry2) ? entry2 : null;
 	}
 
-	public void Store(long longKey, string strKey, CallformEntry entry)
+	public void Store(long longKey, string? strKey, CallformEntry entry)
 	{
 		if (longTerm != null)
 			longDic[longKey] = entry;
 		else
-			strDic[strKey] = entry;
+			// Only the string-keyed path reaches here, and its Lookup always filled a non-null key.
+			strDic[strKey!] = entry;
 	}
 
 	/// <summary>
@@ -376,7 +383,7 @@ internal sealed class CallformCache
 	/// (the call site itself for CALL, the list line for TRYCALLLIST).
 	/// Not-found results are cached as null; resolution exceptions are not.
 	/// </summary>
-	public static CalledFunction ResolveCall(Process process, ExpressionMediator exm, SpCallArgment spCallArg, LogicalLine retAddress, out string labelName, out UserDefinedFunctionArgument arg)
+	public static CalledFunction? ResolveCall(Process process, ExpressionMediator exm, SpCallArgment spCallArg, LogicalLine retAddress, out string labelName, out UserDefinedFunctionArgument? arg)
 	{
 		arg = null;
 		if (exm.Console.RunERBFromMemory)
@@ -386,7 +393,7 @@ internal sealed class CallformCache
 			return CalledFunction.CallFunction(process, labelName, retAddress);
 		}
 		CallformCache cache = spCallArg.Cache ??= new CallformCache(spCallArg.FuncnameTerm);
-		CallformEntry entry = cache.Lookup(exm, out long longKey, out string strKey);
+		CallformEntry? entry = cache.Lookup(exm, out long longKey, out string? strKey);
 		if (entry != null)
 		{
 			labelName = entry.LabelName;
@@ -394,7 +401,7 @@ internal sealed class CallformCache
 			return entry.Call;
 		}
 		labelName = strKey ?? spCallArg.FuncnameTerm.GetStrValue(exm);
-		CalledFunction call = CalledFunction.CallFunction(process, labelName, retAddress);
+		CalledFunction? call = CalledFunction.CallFunction(process, labelName, retAddress);
 		if (call != null)
 		{
 			string errMes;
@@ -407,7 +414,7 @@ internal sealed class CallformCache
 	}
 
 	/// <summary>Resolve a GOTOFORM-family $label through the per-callsite cache (see ResolveCall).</summary>
-	public static LogicalLine ResolveGotoForm(Process process, ProcessState state, ExpressionMediator exm, SpCallArgment spCallArg, out string labelName)
+	public static LogicalLine? ResolveGotoForm(Process process, ProcessState state, ExpressionMediator exm, SpCallArgment spCallArg, out string labelName)
 	{
 		if (exm.Console.RunERBFromMemory)
 		{
@@ -415,20 +422,20 @@ internal sealed class CallformCache
 			return state.CurrentCalled.CallLabel(process, labelName);
 		}
 		CallformCache cache = spCallArg.Cache ??= new CallformCache(spCallArg.FuncnameTerm);
-		CallformEntry entry = cache.Lookup(exm, out long longKey, out string strKey);
+		CallformEntry? entry = cache.Lookup(exm, out long longKey, out string? strKey);
 		if (entry != null)
 		{
 			labelName = entry.LabelName;
 			return entry.JumpTo;
 		}
 		labelName = strKey ?? spCallArg.FuncnameTerm.GetStrValue(exm);
-		LogicalLine jumpTo = state.CurrentCalled.CallLabel(process, labelName);
+		LogicalLine? jumpTo = state.CurrentCalled.CallLabel(process, labelName);
 		cache.Store(longKey, strKey, new CallformEntry { LabelName = labelName, JumpTo = jumpTo });
 		return jumpTo;
 	}
 
 	/// <summary>Resolve a CALLFORMF-family #FUNCTION target through the per-callsite cache (see ResolveCall).</summary>
-	public static AExpression ResolveCallF(ExpressionMediator exm, SpCallFArgment spCallArg, out string labelName)
+	public static AExpression? ResolveCallF(ExpressionMediator exm, SpCallFArgment spCallArg, out string labelName)
 	{
 		if (exm.Console.RunERBFromMemory)
 		{
@@ -436,14 +443,14 @@ internal sealed class CallformCache
 			return GlobalStatic.IdentifierDictionary.GetFunctionMethod(GlobalStatic.LabelDictionary, labelName, spCallArg.RowArgs, true);
 		}
 		CallformCache cache = spCallArg.Cache ??= new CallformCache(spCallArg.FuncnameTerm);
-		CallformEntry entry = cache.Lookup(exm, out long longKey, out string strKey);
+		CallformEntry? entry = cache.Lookup(exm, out long longKey, out string? strKey);
 		if (entry != null)
 		{
 			labelName = entry.LabelName;
 			return entry.FuncTerm;
 		}
 		labelName = strKey ?? spCallArg.FuncnameTerm.GetStrValue(exm);
-		AExpression funcTerm = GlobalStatic.IdentifierDictionary.GetFunctionMethod(GlobalStatic.LabelDictionary, labelName, spCallArg.RowArgs, true);
+		AExpression? funcTerm = GlobalStatic.IdentifierDictionary.GetFunctionMethod(GlobalStatic.LabelDictionary, labelName, spCallArg.RowArgs, true);
 		cache.Store(longKey, strKey, new CallformEntry { LabelName = labelName, FuncTerm = funcTerm });
 		return funcTerm;
 	}
@@ -488,11 +495,11 @@ internal sealed class CaseArgument : Argument
 
 internal sealed class PrintDataArgument : Argument
 {
-	public PrintDataArgument(VariableTerm var)
+	public PrintDataArgument(VariableTerm? var)
 	{
 		Var = var;
 	}
-	readonly public VariableTerm Var;
+	readonly public VariableTerm? Var;
 }
 
 internal sealed class StrDataArgument : Argument
@@ -515,18 +522,18 @@ internal sealed class MethodArgument : Argument
 
 internal sealed class BitArgument : Argument
 {
-	public BitArgument(VariableTerm var, AExpression[] termSrc)
+	public BitArgument(VariableTerm var, AExpression?[] termSrc)
 	{
 		VariableDest = var;
 		Term = termSrc;
 	}
 	readonly public VariableTerm VariableDest;
-	readonly public AExpression[] Term;
+	readonly public AExpression?[] Term;
 }
 
 internal sealed class SpVarSetArgument : Argument
 {
-	public SpVarSetArgument(VariableTerm var, AExpression termSrc, AExpression start, AExpression end)
+	public SpVarSetArgument(VariableTerm var, AExpression termSrc, AExpression? start, AExpression? end)
 	{
 		VariableDest = var;
 		Term = termSrc;
@@ -535,13 +542,13 @@ internal sealed class SpVarSetArgument : Argument
 	}
 	readonly public VariableTerm VariableDest;
 	readonly public AExpression Term;
-	readonly public AExpression Start;
-	readonly public AExpression End;
+	readonly public AExpression? Start;
+	readonly public AExpression? End;
 }
 
 internal sealed class SpCVarSetArgument : Argument
 {
-	public SpCVarSetArgument(VariableTerm var, AExpression indexTerm, AExpression termSrc, AExpression start, AExpression end)
+	public SpCVarSetArgument(VariableTerm var, AExpression indexTerm, AExpression termSrc, AExpression? start, AExpression? end)
 	{
 		VariableDest = var;
 		Index = indexTerm;
@@ -552,8 +559,8 @@ internal sealed class SpCVarSetArgument : Argument
 	readonly public VariableTerm VariableDest;
 	readonly public AExpression Index;
 	readonly public AExpression Term;
-	readonly public AExpression Start;
-	readonly public AExpression End;
+	readonly public AExpression? Start;
+	readonly public AExpression? End;
 }
 
 internal sealed class SpButtonArgument : Argument
@@ -580,10 +587,11 @@ internal sealed class SpColorArgument : Argument
 	{
 		RGB = rgb;
 	}
-	readonly public AExpression R;
-	readonly public AExpression G;
-	readonly public AExpression B;
-	readonly public AExpression RGB;
+	// Exactly one of RGB and R/G/B is set, depending on which constructor was used.
+	readonly public AExpression? R;
+	readonly public AExpression? G;
+	readonly public AExpression? B;
+	readonly public AExpression? RGB;
 }
 
 internal sealed class SpSplitArgument : Argument
@@ -638,7 +646,7 @@ internal sealed class SpArrayControlArgument : Argument
 
 internal sealed class SpArrayShiftArgument : Argument
 {
-	public SpArrayShiftArgument(VariableTerm var, AExpression num1, AExpression num2, AExpression num3, AExpression num4)
+	public SpArrayShiftArgument(VariableTerm var, AExpression num1, AExpression num2, AExpression? num3, AExpression? num4)
 	{
 		VarToken = var;
 		Num1 = num1;
@@ -649,13 +657,13 @@ internal sealed class SpArrayShiftArgument : Argument
 	readonly public VariableTerm VarToken;
 	readonly public AExpression Num1;
 	readonly public AExpression Num2;
-	readonly public AExpression Num3;
-	readonly public AExpression Num4;
+	readonly public AExpression? Num3;
+	readonly public AExpression? Num4;
 }
 
 internal sealed class SpArraySortArgument : Argument
 {
-	public SpArraySortArgument(VariableTerm var, SortOrder order, AExpression num1, AExpression num2)
+	public SpArraySortArgument(VariableTerm var, SortOrder order, AExpression? num1, AExpression? num2)
 	{
 		VarToken = var;
 		Order = order;
@@ -664,8 +672,8 @@ internal sealed class SpArraySortArgument : Argument
 	}
 	readonly public VariableTerm VarToken;
 	readonly public SortOrder Order;
-	readonly public AExpression Num1;
-	readonly public AExpression Num2;
+	readonly public AExpression? Num1;
+	readonly public AExpression? Num2;
 }
 
 internal sealed class SpCopyArrayArgument : Argument
@@ -720,13 +728,14 @@ internal sealed class RefArgument : Argument
 		RefVarToken = vt;
 		SrcTerm = src;
 	}
-	readonly public UserDefinedRefMethod RefMethodToken;
-	readonly public UserDefinedRefMethod SrcRefMethodToken;
-	readonly public CalledFunction SrcCalledFunction;
+	// Each constructor sets one reference/destination pair; the others stay null.
+	readonly public UserDefinedRefMethod? RefMethodToken;
+	readonly public UserDefinedRefMethod? SrcRefMethodToken;
+	readonly public CalledFunction? SrcCalledFunction;
 
-	readonly public ReferenceToken RefVarToken;
-	readonly public VariableToken SrcVarToken;
-	readonly public AExpression SrcTerm;
+	readonly public ReferenceToken? RefVarToken;
+	readonly public VariableToken? SrcVarToken;
+	readonly public AExpression? SrcTerm;
 }
 #region EE
 internal sealed class StrDoubleArgument : Argument
@@ -744,13 +753,13 @@ internal sealed class StrDoubleArgument : Argument
 #region set系
 internal sealed class SpSetArgument : Argument
 {
-	public SpSetArgument(VariableTerm var, AExpression termSrc)
+	public SpSetArgument(VariableTerm var, AExpression? termSrc)
 	{
 		VariableDest = var;
 		Term = termSrc;
 	}
 	readonly public VariableTerm VariableDest;
-	readonly public AExpression Term;
+	readonly public AExpression? Term;
 	public bool AddConst;
 }
 
@@ -770,20 +779,21 @@ internal sealed class SpSetArrayArgument : Argument
 	}
 	readonly public VariableTerm VariableDest;
 	readonly public List<AExpression?> TermList;
-	readonly public long[] ConstIntList;
-	readonly public string[] ConstStrList;
+	// Exactly one of the two constant lists is set, matching the variable's type.
+	readonly public long[]? ConstIntList;
+	readonly public string[]? ConstStrList;
 }
 #endregion
 
 #region Emuera.NET VAR命令
 internal sealed class IntAsignArgument : Argument
 {
-	public int[] Lengths;
+	public int[]? Lengths;
 	public IntAsignArgument(string str, int[] lengths)
 	{
 		ConstStr = str;
 	}
-	public AExpression Exp;
+	public AExpression? Exp;
 	public IntAsignArgument(string name, int[] lengths, AExpression exp)
 	{
 		ConstStr = name;
@@ -794,7 +804,7 @@ internal sealed class IntAsignArgument : Argument
 
 internal sealed class StrAsignArgument : Argument
 {
-	public int[] Lengths;
+	public int[]? Lengths;
 	public StrAsignArgument(string str)
 	{
 		ConstStr = str;

@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.GameData.Function;
+﻿#nullable enable
+using MinorShift.Emuera.GameData.Function;
 using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.Runtime.Script.Statements;
 using MinorShift.Emuera.Runtime.Script.Statements.Function;
@@ -496,9 +497,9 @@ internal sealed partial class FunctionIdentifier
 
 	public static FunctionIdentifier SETFunction { get { return setFunc; } }
 
-	internal static string getMatchFunction(FunctionCode func)
+	internal static string? getMatchFunction(FunctionCode func)
 	{
-		if (funcMatch.TryGetValue(func, out string ret))
+		if (funcMatch.TryGetValue(func, out string? ret))
 			return ret;
 		else
 			return null;
@@ -557,14 +558,16 @@ internal sealed partial class FunctionIdentifier
 		Name = methodName;
 		Instruction = instruction;
 	}
-	public readonly AInstruction Instruction;
+	// Both are null for identifiers created from an ArgumentBuilder instead of an AInstruction,
+	// and method stays null for plain instructions.
+	public readonly AInstruction? Instruction;
 	private FunctionCode code;
-	private ArgumentBuilder arg;
+	private ArgumentBuilder? arg;
 	private int flag;
-	private FunctionMethod method;
+	private FunctionMethod? method;
 	public FunctionCode Code { get { return code; } }
-	public ArgumentBuilder ArgBuilder { get { return arg; } }
-	public FunctionMethod Method { get { return method; } }
+	public ArgumentBuilder? ArgBuilder { get { return arg; } }
+	public FunctionMethod? Method { get { return method; } }
 
 	public string Name { get; private set; }
 	internal bool IsFlowContorol()

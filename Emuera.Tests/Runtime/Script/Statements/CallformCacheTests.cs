@@ -43,7 +43,7 @@ public class CallformCacheTests
 		var cache = new CallformCache(ParseFuncname("PRE_{TFLAG}"));
 
 		// miss:long 键模式下 strKey 为 null(未拼接任何名字字符串)
-		Assert.Null(cache.Lookup(Exm, out long key, out string strKey));
+		Assert.Null(cache.Lookup(Exm, out long key, out string? strKey));
 		Assert.Null(strKey);
 		Assert.Equal(1L, key);
 
@@ -63,7 +63,7 @@ public class CallformCacheTests
 		// 无字面前缀的单插值名(语料中 {NO:ARG} 类高频形态)同样命中零拼接键
 		SetTflag(7);
 		var cache = new CallformCache(ParseFuncname("{TFLAG}"));
-		Assert.Null(cache.Lookup(Exm, out long key, out string strKey));
+		Assert.Null(cache.Lookup(Exm, out long key, out string? strKey));
 		Assert.Null(strKey);
 		Assert.Equal(7L, key);
 
@@ -86,7 +86,7 @@ public class CallformCacheTests
 		var negative = new CallformEntry { LabelName = "TRY_9", Call = null };
 		cache.Store(key, null, negative);
 
-		var hit = cache.Lookup(Exm, out _, out _);
+		var hit = cache.Lookup(Exm, out _, out _)!;
 		Assert.Same(negative, hit);
 		Assert.Null(hit.Call);
 		Assert.Equal("TRY_9", hit.LabelName);
@@ -99,11 +99,11 @@ public class CallformCacheTests
 		var cache = new CallformCache(ParseFuncname("A_{TFLAG}_{RESULT}"));
 
 		// str 键模式:lookup 即拼出名字,按名字内容缓存
-		Assert.Null(cache.Lookup(Exm, out long longKey, out string strKey));
+		Assert.Null(cache.Lookup(Exm, out long longKey, out string? strKey));
 		Assert.Equal(0L, longKey);
 		Assert.Equal("A_0_0", strKey);
 
-		var entry = new CallformEntry { LabelName = strKey };
+		var entry = new CallformEntry { LabelName = strKey! };
 		cache.Store(longKey, strKey, entry);
 		Assert.Same(entry, cache.Lookup(Exm, out _, out _));
 
@@ -118,9 +118,9 @@ public class CallformCacheTests
 
 		SetSavestr("abc");
 		var cache = new CallformCache(ParseFuncname("%SAVESTR%"));
-		Assert.Null(cache.Lookup(Exm, out long longKey, out string strKey));
+		Assert.Null(cache.Lookup(Exm, out long longKey, out string? strKey));
 		Assert.Equal("abc", strKey);
-		var entry = new CallformEntry { LabelName = strKey };
+		var entry = new CallformEntry { LabelName = strKey! };
 		cache.Store(longKey, strKey, entry);
 
 		// 内容同、大小写不同时命中,与 LabelDictionary 的查表语义一致

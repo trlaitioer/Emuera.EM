@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Script.Statements.Expression;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Script.Statements.Expression;
 using System;
 
 namespace MinorShift.Emuera.Runtime.Script.Statements;
@@ -12,6 +13,8 @@ internal enum CaseExpressionType
 internal sealed class CaseExpression
 {
 	public CaseExpressionType CaseType = CaseExpressionType.Normal;
+	// Both terms are filled by ExpressionParser before the case is used; a null term is
+	// only possible for a case the parser has already rejected.
 	public AExpression? LeftTerm;
 	public AExpression? RightTerm;
 
@@ -25,21 +28,21 @@ internal sealed class CaseExpression
 
 	public void Reduce(ExpressionMediator exm)
 	{
-		LeftTerm = LeftTerm.Restructure(exm);
+		LeftTerm = LeftTerm!.Restructure(exm);
 		if (CaseType == CaseExpressionType.To)
-			RightTerm = RightTerm.Restructure(exm);
+			RightTerm = RightTerm!.Restructure(exm);
 	}
 
-	public override string ToString()
+	public override string? ToString()
 	{
 		switch (CaseType)
 		{
 			case CaseExpressionType.Normal:
-				return LeftTerm.ToString();
+				return LeftTerm!.ToString();
 			case CaseExpressionType.Is:
-				return "Is " + Operator.ToString() + " " + LeftTerm.ToString();
+				return "Is " + Operator.ToString() + " " + LeftTerm!.ToString();
 			case CaseExpressionType.To:
-				return LeftTerm.ToString() + " To " + RightTerm.ToString();
+				return LeftTerm!.ToString() + " To " + RightTerm!.ToString();
 		}
 
 		return base.ToString();
@@ -48,29 +51,29 @@ internal sealed class CaseExpression
 	public bool GetBool(long Is, ExpressionMediator exm)
 	{
 		if (CaseType == CaseExpressionType.To)
-			return LeftTerm.GetIntValue(exm) <= Is && Is <= RightTerm.GetIntValue(exm);
+			return LeftTerm!.GetIntValue(exm) <= Is && Is <= RightTerm!.GetIntValue(exm);
 		if (CaseType == CaseExpressionType.Is)
 		{
-			if (LeftTerm.IsInteger)
+			if (LeftTerm!.IsInteger)
 				return OperatorMethodManager.ReduceBinaryBool(Operator, Is, LeftTerm.GetIntValue(exm));
 			return OperatorMethodManager.ReduceBinaryTerm(Operator, new SingleLongTerm(Is), LeftTerm).GetIntValue(exm) != 0;
 		}
-		return LeftTerm.GetIntValue(exm) == Is;
+		return LeftTerm!.GetIntValue(exm) == Is;
 	}
 
 	public bool GetBool(string Is, ExpressionMediator exm)
 	{
 		if (CaseType == CaseExpressionType.To)
 		{
-			return string.Compare(LeftTerm.GetStrValue(exm), Is, Config.Config.SCExpression) <= 0
-				&& string.Compare(Is, RightTerm.GetStrValue(exm), Config.Config.SCExpression) <= 0;
+			return string.Compare(LeftTerm!.GetStrValue(exm), Is, Config.Config.SCExpression) <= 0
+				&& string.Compare(Is, RightTerm!.GetStrValue(exm), Config.Config.SCExpression) <= 0;
 		}
 		if (CaseType == CaseExpressionType.Is)
 		{
-			if (LeftTerm.IsString)
+			if (LeftTerm!.IsString)
 				return OperatorMethodManager.ReduceBinaryBool(Operator, Is, LeftTerm.GetStrValue(exm));
 			return OperatorMethodManager.ReduceBinaryTerm(Operator, new SingleStrTerm(Is), LeftTerm).GetIntValue(exm) != 0;
 		}
-		return LeftTerm.GetStrValue(exm) == Is;
+		return LeftTerm!.GetStrValue(exm) == Is;
 	}
 }
