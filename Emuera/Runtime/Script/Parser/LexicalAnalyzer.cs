@@ -1291,7 +1291,7 @@ internal static partial class LexicalAnalyzer
 			if (st.Current != '@')
 				throw new CodeEE(string.Format(trerror.NotFoundCorresponding.Text, "\\@", "#"));
 			st.ShiftNext();
-			ParserMediator.Warn(string.Format(trerror.NotFoundCorresponding.Text, "\\@", "#"), GlobalStatic.Process.GetScaningLine(), 1, false, false);
+			ParserMediator.Warn(string.Format(trerror.NotFoundCorresponding.Text, "\\@", "#"), GlobalStatic.Process.GetScaningLine()!, 1, false, false);
 			return new YenAtSubWord(w, left, null);
 		}
 		st.ShiftNext();

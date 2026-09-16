@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.GameData.Variable;
+﻿#nullable enable
+using MinorShift.Emuera.GameData.Variable;
 using MinorShift.Emuera.GameProc;
 using MinorShift.Emuera.GameView;
 using MinorShift.Emuera.Runtime.Script.Data;
@@ -26,7 +27,7 @@ internal sealed class ErhLoader
 	readonly IdentifierDictionary idDic;
 
 	bool noError = true;
-	Queue<DimLineWC> dimlines;
+	Queue<DimLineWC> dimlines = null!;
 	/// <summary>
 	/// 
 	/// </summary>
@@ -68,7 +69,7 @@ internal sealed class ErhLoader
 		{
 			ParserMediator.FlushWarningList();
 			#region EE_ERD
-			erdFileNames = null;
+			erdFileNames = null!;
 			#endregion
 		}
 		return noError;
@@ -77,7 +78,7 @@ internal sealed class ErhLoader
 
 	private bool loadHeaderFile(string filepath, string filename)
 	{
-		CharStream st;
+		CharStream? st;
 		ScriptPosition? position = null;
 		//EraStreamReader eReader = new EraStreamReader(false);
 		//1815修正 _rename.csvの適用
@@ -192,7 +193,7 @@ internal sealed class ErhLoader
 				throw new CodeEE(trerror.FuncMacroArgIs0.Text, position);
 			while (!wc.EOL)
 			{
-				IdentifierWord word = wc.Current as IdentifierWord;
+				IdentifierWord? word = wc.Current as IdentifierWord;
 				if (word == null)
 					throw new CodeEE(trerror.WrongFormatReplacementSource.Text, position);
 				word.SetIsMacro();
@@ -227,7 +228,7 @@ internal sealed class ErhLoader
 		{
 			while (!destWc.EOL)
 			{
-				IdentifierWord word = destWc.Current as IdentifierWord;
+				IdentifierWord? word = destWc.Current as IdentifierWord;
 				if (word == null)
 				{
 					destWc.ShiftNext();
@@ -282,7 +283,7 @@ internal sealed class ErhLoader
 					UserDefinedVariableData data = UserDefinedVariableData.Create(dimline);
 					if (data.Reference)
 						throw new NotImplCodeEE();
-					VariableToken var = null;
+					VariableToken? var = null;
 					if (data.CharaData)
 						var = parentProcess.VEvaluator.VariableData.CreateUserDefCharaVariable(data, dimline);
 					else
@@ -295,7 +296,7 @@ internal sealed class ErhLoader
 						if (data.Dimension == 1)
 						{
 							key = data.Name.ToUpper();
-							if (erdFileNames.TryGetValue(key, out List<string> info))
+							if (erdFileNames.TryGetValue(key, out List<string>? info))
 							{
 								GlobalStatic.ConstantData.UserDefineLoadData(info, data.Name, data.Lengths[0], Config.Config.DisplayReport, dimline.SC);
 							}
@@ -306,7 +307,7 @@ internal sealed class ErhLoader
 							for (int dim = 1; dim < 3; dim++)
 							{
 								key = data.Name.ToUpper() + "@" + dim;
-								if (erdFileNames.TryGetValue(key, out List<string> info))
+								if (erdFileNames.TryGetValue(key, out List<string>? info))
 								{
 									GlobalStatic.ConstantData.UserDefineLoadData(info, data.Name + "@" + dim, data.Lengths[dim - 1], Config.Config.DisplayReport, dimline.SC);
 								}
@@ -318,7 +319,7 @@ internal sealed class ErhLoader
 							for (int dim = 1; dim < 4; dim++)
 							{
 								key = data.Name.ToUpper() + "@" + dim;
-								if (erdFileNames.TryGetValue(key, out List<string> info))
+								if (erdFileNames.TryGetValue(key, out List<string>? info))
 								{
 									GlobalStatic.ConstantData.UserDefineLoadData(info, data.Name + "@" + dim, data.Lengths[dim - 1], Config.Config.DisplayReport, dimline.SC);
 								}
@@ -356,7 +357,7 @@ internal sealed class ErhLoader
 	}
 	#region EE_ERD
 
-	private Dictionary<string, List<string>> erdFileNames;
+	private Dictionary<string, List<string>> erdFileNames = null!;
 
 	private void PrepareERDFileNames()
 	{
@@ -364,7 +365,7 @@ internal sealed class ErhLoader
 		foreach (var path in Directory.GetFiles(Program.ErbDir, "*.erd", SearchOption.AllDirectories))
 		{
 			var key = Path.GetFileNameWithoutExtension(path).ToUpper();
-			if (!erdFileNames.TryGetValue(key, out List<string> value))
+			if (!erdFileNames.TryGetValue(key, out List<string>? value))
 				erdFileNames[key] = [path];
 			else
 				value.Add(path);
@@ -372,7 +373,7 @@ internal sealed class ErhLoader
 		foreach (var path in Directory.GetFiles(Program.CsvDir, "*.csv", SearchOption.TopDirectoryOnly))
 		{
 			var key = Path.GetFileNameWithoutExtension(path).ToUpper();
-			if (!erdFileNames.TryGetValue(key, out List<string> value))
+			if (!erdFileNames.TryGetValue(key, out List<string>? value))
 				erdFileNames[key] = [path];
 			else
 				value.Add(path);

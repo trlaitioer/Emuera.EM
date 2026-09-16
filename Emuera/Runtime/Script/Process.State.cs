@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.GameData.Variable;
+﻿#nullable enable
+using MinorShift.Emuera.GameData.Variable;
 using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 using trsl = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.SystemLine;
 using System.Diagnostics;
@@ -96,9 +97,9 @@ internal sealed class ProcessState
 		if (Program.DebugMode)//DebugModeでなければ知らなくて良い
 			this.console = console;
 	}
-	readonly EmueraConsole console;
+	readonly EmueraConsole console = null!;
 	readonly List<CalledFunction> functionList = [];
-	private LogicalLine currentLine;
+	private LogicalLine? currentLine;
 	//private LogicalLine nextLine;
 	public int lineCount;
 	public int currentMin;
@@ -124,8 +125,8 @@ internal sealed class ProcessState
 	BeginType begintype = BeginType.NULL;
 	public bool isBegun { get { return begintype != BeginType.NULL; } }
 
-	public LogicalLine CurrentLine { get { return currentLine; } set { currentLine = value; } }
-	public LogicalLine ErrorLine
+	public LogicalLine? CurrentLine { get { return currentLine; } set { currentLine = value; } }
+	public LogicalLine? ErrorLine
 	{
 		get
 		{
@@ -157,7 +158,7 @@ internal sealed class ProcessState
 
 	public void ShiftNextLine()
 	{
-		currentLine = currentLine.NextLine;
+		currentLine = currentLine!.NextLine;
 		//nextLine = nextLine.NextLine;
 		//RunningLine = null;
 		//sequential = true;
@@ -255,7 +256,7 @@ internal sealed class ProcessState
 		if (Program.DebugMode && !isClone && GlobalStatic.Process.MethodStack() == 0)
 			console.DebugClearTraceLog();
 		foreach (CalledFunction called in functionList)
-			if (called.CurrentLabel.hasPrivDynamicVar)
+			if (called.CurrentLabel!.hasPrivDynamicVar)
 				called.CurrentLabel.ScopeOut();
 		functionList.Clear();
 		begintype = BeginType.NULL;
@@ -310,7 +311,7 @@ internal sealed class ProcessState
 			console.DebugAddTraceLog("BEGIN:" + begintype.ToString());
 		}
 		foreach (CalledFunction called in functionList)
-			if (called.CurrentLabel.hasPrivDynamicVar)
+			if (called.CurrentLabel!.hasPrivDynamicVar)
 				called.CurrentLabel.ScopeOut();
 		functionList.Clear();
 		begintype = BeginType.NULL;
@@ -328,7 +329,7 @@ internal sealed class ProcessState
 		Begin();
 	}
 
-	public LogicalLine GetCurrentReturnAddress
+	public LogicalLine? GetCurrentReturnAddress
 	{
 		get
 		{
@@ -338,7 +339,7 @@ internal sealed class ProcessState
 		}
 	}
 
-	public LogicalLine GetReturnAddressSequensial(int curerntDepth)
+	public LogicalLine? GetReturnAddressSequensial(int curerntDepth)
 	{
 		if (functionList.Count == currentMin)
 			return null;
@@ -347,7 +348,7 @@ internal sealed class ProcessState
 		return functionList[functionList.Count - curerntDepth - 1].ReturnAddress;
 	}
 
-	public string Scope
+	public string? Scope
 	{
 		get
 		{
@@ -394,7 +395,7 @@ internal sealed class ProcessState
 		}
 		else
 		{
-			if (called.CurrentLabel.hasPrivDynamicVar)
+			if (called.CurrentLabel!.hasPrivDynamicVar)
 				called.CurrentLabel.ScopeOut();
 			//#Singleフラグ付き関数で1が返された。
 			//1752 非0ではなく1と等価であることを見るように修正
@@ -436,9 +437,9 @@ internal sealed class ProcessState
 		}
 		else if (Program.DebugMode)
 		{
-			FunctionLabelLine label = called.CurrentLabel;
-			long line = currentLine.Position.Value.LineNo;
-			console.DebugAddTraceLog(string.Format(trsl.DebugTraceCall.Text, label.LabelName, label.Position.Value.Filename, label.Position.Value.LineNo, line));
+			FunctionLabelLine label = called.CurrentLabel!;
+			long line = currentLine.Position!.Value.LineNo;
+			console.DebugAddTraceLog(string.Format(trsl.DebugTraceCall.Text, label.LabelName, label.Position!.Value.Filename, label.Position.Value.LineNo, line));
 		}
 		lineCount++;
 		//ShfitNextLine();
@@ -458,24 +459,25 @@ internal sealed class ProcessState
 		}
 		if (Program.DebugMode)
 		{
-			FunctionLabelLine label = call.CurrentLabel;
+			FunctionLabelLine label = call.CurrentLabel!;
 			if (exm != null)
 			{
-				long line = exm.Process.getCurrentLine.Position.Value.LineNo;
+				long line = exm.Process.getCurrentLine!.Position!.Value.LineNo;
 				if (call.IsJump)
-					console.DebugAddTraceLog(string.Format(trsl.DebugTraceJump2.Text, label.LabelName, label.Position.Value.Filename, label.Position.Value.LineNo, line));
+					console.DebugAddTraceLog(string.Format(trsl.DebugTraceJump2.Text, label.LabelName, label.Position!.Value.Filename, label.Position.Value.LineNo, line));
 				else
-					console.DebugAddTraceLog(string.Format(trsl.DebugTraceCall2.Text, label.LabelName, label.Position.Value.Filename, label.Position.Value.LineNo, line));
+					console.DebugAddTraceLog(string.Format(trsl.DebugTraceCall2.Text, label.LabelName, label.Position!.Value.Filename, label.Position.Value.LineNo, line));
 			}
 			else
 			{
 				if (call.IsJump)
-					console.DebugAddTraceLog(string.Format(trsl.DebugTraceJump.Text, label.LabelName, label.Position.Value.Filename, label.Position.Value.LineNo));
+					console.DebugAddTraceLog(string.Format(trsl.DebugTraceJump.Text, label.LabelName, label.Position!.Value.Filename, label.Position.Value.LineNo));
 				else
 				{
-					string trace = $"CALL @{label.LabelName}:{label.Position.Value.Filename}:{label.Position.Value.LineNo}";
-					if (call.ReturnAddress != null)
-						trace += $" at @{call.ReturnAddress.ParentLabelLine.LabelName}:{call.ReturnAddress.ParentLabelLine.Position.Value.Filename}:{call.ReturnAddress.Position.Value.LineNo}";
+					string trace = $"CALL @{label.LabelName}:{label.Position!.Value.Filename}:{label.Position.Value.LineNo}";
+					LogicalLine? retAddress = call.ReturnAddress;
+					if (retAddress != null)
+						trace += $" at @{retAddress.ParentLabelLine!.LabelName}:{retAddress.ParentLabelLine!.Position!.Value.Filename}:{retAddress.Position!.Value.LineNo}";
 					console.DebugAddTraceLog(trace);
 				}
 			}
@@ -483,21 +485,23 @@ internal sealed class ProcessState
 		if (srcArgs != null)
 		{
 			//引数の値を確定させる
-			srcArgs.SetTransporter(exm);
+			// Every caller passing non-null srcArgs also passes non-null exm; the argument-less
+			// system calls pass srcArgs = null and never reach here.
+			srcArgs.SetTransporter(exm!);
 			//プライベート変数更新
 			if (call.TopLabel.hasPrivDynamicVar)
 				call.TopLabel.ScopeIn();
 			//更新した変数へ引数を代入
-			for (int i = 0; i < call.TopLabel.Arg.Length; i++)
+			for (int i = 0; i < call.TopLabel.Arg!.Length; i++)
 			{
 				if (srcArgs.Arguments[i] != null)
 				{
 					if (call.TopLabel.Arg[i].Identifier.IsReference)
 						((ReferenceToken)call.TopLabel.Arg[i].Identifier).SetRef(srcArgs.TransporterRef[i]);
-					else if (srcArgs.Arguments[i].GetOperandType() == typeof(long))
-						call.TopLabel.Arg[i].SetValue(srcArgs.TransporterInt[i], exm);
+					else if (srcArgs.Arguments[i]!.GetOperandType() == typeof(long))
+						call.TopLabel.Arg[i].SetValue(srcArgs.TransporterInt[i], exm!);
 					else
-						call.TopLabel.Arg[i].SetValue(srcArgs.TransporterStr[i], exm);
+						call.TopLabel.Arg[i].SetValue(srcArgs.TransporterStr[i], exm!);
 				}
 			}
 		}
@@ -523,9 +527,9 @@ internal sealed class ProcessState
 		}
 	}
 
-	public SingleTerm MethodReturnValue;
+	public SingleTerm? MethodReturnValue;
 
-	public void ReturnF(SingleTerm ret)
+	public void ReturnF(SingleTerm? ret)
 	{
 		//読み込み時のチェック済みのはず
 		//if (!IsFunctionMethod)

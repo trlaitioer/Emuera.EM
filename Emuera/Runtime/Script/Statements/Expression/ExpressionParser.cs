@@ -451,7 +451,7 @@ internal static class ExpressionParser
 							if (op == OperatorCode.Equal || op == OperatorCode.Greater || op == OperatorCode.Less
 							|| op == OperatorCode.GreaterEqual || op == OperatorCode.LessEqual || op == OperatorCode.NotEqual)
 							{
-								ParserMediator.Warn(trerror.ComparisonOpContinuous.Text, GlobalStatic.Process.GetScaningLine(), 0, false, false);
+								ParserMediator.Warn(trerror.ComparisonOpContinuous.Text, GlobalStatic.Process.GetScaningLine()!, 0, false, false);
 							}
 						}
 						stack.Add(op);

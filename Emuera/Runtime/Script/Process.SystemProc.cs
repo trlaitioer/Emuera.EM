@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime;
 using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.Runtime.Script;
 using MinorShift.Emuera.Runtime.Utils;
@@ -13,7 +14,7 @@ namespace MinorShift.Emuera.GameProc;
 
 internal sealed partial class Process
 {
-	private string[] TrainName;
+	private string?[] TrainName = null!;
 	delegate void SystemProcess();
 	Dictionary<SystemStateCode, SystemProcess> systemProcessDictionary = [];
 	private void initSystemProcess()
@@ -83,7 +84,7 @@ internal sealed partial class Process
 	int lastCalledComable = -1;
 	int lastAddCom = -1;
 	//(Train.csv中の値・定義されていなければ-1) == comAble[(表示されている値)];
-	int[] comAble;//
+	int[] comAble = null!;//
 
 
 	private void runSystemProc()
@@ -151,7 +152,7 @@ internal sealed partial class Process
 
 	private bool callFunction(string functionName, bool force, bool isEvent)
 	{
-		CalledFunction call;
+		CalledFunction? call;
 		if (isEvent)
 			call = CalledFunction.CallEventFunction(this, functionName, null);
 		else
@@ -164,7 +165,7 @@ internal sealed partial class Process
 		//そもそも非イベント関数では関数1個分しか与えないので条件を満たすわけがない
 		//if ((!isEvent) && (call.Count > 1))
 		//    throw new ExeEE("イベント関数でない関数\"@" + functionName + "\"の候補が複数ある");
-		state.IntoFunction(call, null, null);
+		state.IntoFunction(call, null, null!);
 		return true;
 	}
 
@@ -351,7 +352,7 @@ internal sealed partial class Process
 
 	string getTrainComString(int trainCode, int comNo)
 	{
-		string trainName = TrainName[trainCode];
+		string trainName = TrainName[trainCode]!;
 		return string.Format("{0}[{1,3}]", trainName, comNo);
 	}
 
@@ -702,7 +703,7 @@ internal sealed partial class Process
 	{
 		if (saveTarget == AutoSaveIndex)
 		{
-			if (!vEvaluator.SaveTo(saveTarget, vEvaluator.SAVEDATA_TEXT))
+			if (!vEvaluator.SaveTo(saveTarget, vEvaluator.SAVEDATA_TEXT!))
 			{
 				console.PrintError(trerror.AutoSaveError1.Text);
 				console.PrintError(trerror.AutoSaveError2.Text);
@@ -1033,7 +1034,7 @@ internal sealed partial class Process
 
 	void endCallSaveInfo()
 	{
-		if (!vEvaluator.SaveTo(saveTarget, vEvaluator.SAVEDATA_TEXT))
+		if (!vEvaluator.SaveTo(saveTarget, vEvaluator.SAVEDATA_TEXT!))
 		{
 			console.PrintError(trerror.UnexpectedSaveError.Text);
 			console.ReadAnyKey();

@@ -2549,7 +2549,7 @@ internal static partial class FunctionMethodCreator
 				return string.Format(trerror.TooManyFuncArgs.Text, name);
 			if (warn)
 				// ParserMediator.Warn("関数MOUSESKIP()は推奨されません。代わりに関数MESSKIP()を使用してください", GlobalStatic.Process.GetScaningLine(), 1, false, false, null);
-				ParserMediator.Warn(string.Format(trerror.FuncDeprecated.Text, name, "MESSKIP"), GlobalStatic.Process.GetScaningLine(), 1, false, false, null);
+				ParserMediator.Warn(string.Format(trerror.FuncDeprecated.Text, name, "MESSKIP"), GlobalStatic.Process.GetScaningLine()!, 1, false, false, null);
 			return null;
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
@@ -7226,7 +7226,7 @@ internal static partial class FunctionMethodCreator
 			string functionname = arguments[0]!.GetStrValue(exm);
 			if (arguments.Count == 1 || arguments[1]!.GetIntValue(exm) == 0)
 			{
-				FunctionLabelLine func;
+				FunctionLabelLine? func;
 				if (Config.StringComparison == StringComparison.OrdinalIgnoreCase)
 					func = GlobalStatic.LabelDictionary.GetNonEventLabel(functionname.ToUpper());
 				else
@@ -7249,7 +7249,7 @@ internal static partial class FunctionMethodCreator
 				{
 					if (funcname.Equals(functionname, StringComparison.CurrentCultureIgnoreCase))
 					{
-						FunctionLabelLine func = GlobalStatic.LabelDictionary.GetNonEventLabel(funcname);
+						FunctionLabelLine func = GlobalStatic.LabelDictionary.GetNonEventLabel(funcname)!;
 
 						if (func.IsMethod)
 						{
@@ -7407,7 +7407,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			LogicalLine line = exm.Process.GetScaningLine();
+			LogicalLine? line = exm.Process.GetScaningLine();
 			if ((line == null) || (line.ParentLabelLine == null))
 				return "";//システム待機中のデバッグモードから呼び出し
 			return line.ParentLabelLine.LabelName;

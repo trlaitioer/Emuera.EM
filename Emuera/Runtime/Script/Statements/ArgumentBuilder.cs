@@ -2249,7 +2249,7 @@ internal static partial class ArgumentParser
 				{
 					return new RefArgument(refm, srcRef);
 				}
-				FunctionLabelLine label = GlobalStatic.LabelDictionary.GetNonEventLabel(srcCode);
+				FunctionLabelLine? label = GlobalStatic.LabelDictionary.GetNonEventLabel(srcCode);
 				if (label == null)
 				{ warn(string.Format(trerror.NotDefinedUserFunc.Text, srcCode), line, 2, false); return null; }
 				if (!label.IsMethod)

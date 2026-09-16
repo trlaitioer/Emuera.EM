@@ -471,7 +471,7 @@ internal partial class IdentifierDictionary
 		//	key = key.ToUpper();
 		if (allowPrivate)
 		{
-			LogicalLine line = GlobalStatic.Process.GetScaningLine();
+			LogicalLine? line = GlobalStatic.Process.GetScaningLine();
 			if ((line != null) && (line.ParentLabelLine != null))
 			{
 				ret = line.ParentLabelLine.GetPrivateVariable(key);
@@ -489,7 +489,7 @@ internal partial class IdentifierDictionary
 			{
 				throw new CodeEE(string.Format(treer.UsedProhibitedVar.Text, key));
 			}
-			LogicalLine line = GlobalStatic.Process.GetScaningLine();
+			LogicalLine? line = GlobalStatic.Process.GetScaningLine();
 			if (string.IsNullOrEmpty(subKey))
 			{
 				//システムの入力待ち中にデバッグコマンドからLOCALを呼んだとき。
@@ -499,11 +499,11 @@ internal partial class IdentifierDictionary
 			}
 			else
 			{
-				ParserMediator.Warn(treer.CannotRecommendCallLocalVar.Text, line, 1, false, false);
+				ParserMediator.Warn(treer.CannotRecommendCallLocalVar.Text, line!, 1, false, false);
 			}
 			// Only the subKey-less path above proves a parent label exists; with an explicit subKey the
 			// dereference inside keeps its previous behavior
-			LocalVariableToken retLocal = value.GetNewVariableTokenIfAbsent(subKey, line.ParentLabelLine!);
+			LocalVariableToken retLocal = value.GetNewVariableTokenIfAbsent(subKey, line!.ParentLabelLine!);
 			return retLocal;
 		}
 		if (varTokenDic.TryGetValue(key, out ret))
@@ -544,7 +544,7 @@ internal partial class IdentifierDictionary
 		List<string> list = [];
 		foreach (KeyValuePair<string, FunctionMethod> pair in methodDic)
 		{
-			FunctionLabelLine func = labelDic.GetNonEventLabel(pair.Key);
+			FunctionLabelLine? func = labelDic.GetNonEventLabel(pair.Key);
 			if (func == null)
 				continue;
 			if (!func.IsMethod)
@@ -575,7 +575,7 @@ internal partial class IdentifierDictionary
 		{
 			if (refmethodDic.TryGetValue(codeStr, out UserDefinedRefMethod? value))
 				return new UserDefinedRefMethodTerm(value, arguments);
-			FunctionLabelLine func = labelDic.GetNonEventLabel(codeStr);
+			FunctionLabelLine? func = labelDic.GetNonEventLabel(codeStr);
 			if (func != null)
 			{
 				if (userDefinedOnly && !func.IsMethod)

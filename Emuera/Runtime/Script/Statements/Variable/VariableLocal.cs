@@ -54,7 +54,7 @@ internal sealed class VariableLocal
 		else
 		{
 			ret = creater(varCode, subKey, size);
-			LogicalLine line = GlobalStatic.Process.GetScaningLine();
+			LogicalLine? line = GlobalStatic.Process.GetScaningLine();
 			if (line != null)
 			{
 				if (!func.IsSystem)

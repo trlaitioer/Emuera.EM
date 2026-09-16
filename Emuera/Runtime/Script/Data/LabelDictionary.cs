@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Script.Statements;
+﻿#nullable enable
+using MinorShift.Emuera.Runtime.Script.Statements;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,10 +39,10 @@ internal sealed class LabelDictionary
 	/// </summary>
 	public bool Initialized { get; set; }
 	#region Initialized 前用
-	public FunctionLabelLine GetSameNameLabel(FunctionLabelLine point)
+	public FunctionLabelLine? GetSameNameLabel(FunctionLabelLine point)
 	{
 		string id = point.LabelName;
-		if (!labelAtDic.TryGetValue(id, out List<FunctionLabelLine> value))
+		if (!labelAtDic.TryGetValue(id, out List<FunctionLabelLine>? value))
 			return null;
 		if (point.IsError)
 			return null;
@@ -166,7 +167,7 @@ internal sealed class LabelDictionary
 
 		static bool IsMatch(string fname, FunctionLabelLine line)
 		{
-			return string.Equals(line.Position.Value.Filename, fname, Config.Config.SCIgnoreCase);
+			return string.Equals(line.Position!.Value.Filename, fname, Config.Config.SCIgnoreCase);
 		}
 	}
 
@@ -192,7 +193,7 @@ internal sealed class LabelDictionary
 		point.FileIndex = currentFileCount;
 		count++;
 		string id = point.LabelName;
-		if (labelAtDic.TryGetValue(id, out List<FunctionLabelLine> labelList))
+		if (labelAtDic.TryGetValue(id, out List<FunctionLabelLine>? labelList))
 		{
 			labelList.Add(point);
 		}
@@ -207,26 +208,26 @@ internal sealed class LabelDictionary
 		string id = point.LabelName;
 		if (labelDollarList.TryGetValue(id, out var label))
 		{
-			return label.TryAdd(point.ParentLabelLine, point);
+			return label.TryAdd(point.ParentLabelLine!, point);
 		};
-		labelDollarList.TryAdd(id, new() { { point.ParentLabelLine, point }, });
+		labelDollarList.TryAdd(id, new() { { point.ParentLabelLine!, point }, });
 		return true;
 	}
 
 	#endregion
 
 
-	public List<FunctionLabelLine>[] GetEventLabels(string key)
+	public List<FunctionLabelLine>[]? GetEventLabels(string key)
 	{
-		if (eventLabelDic.TryGetValue(key, out List<FunctionLabelLine>[] ret))
+		if (eventLabelDic.TryGetValue(key, out List<FunctionLabelLine>[]? ret))
 			return ret;
 		else
 			return null;
 	}
 
-	public FunctionLabelLine GetNonEventLabel(string key)
+	public FunctionLabelLine? GetNonEventLabel(string key)
 	{
-		if (noneventLabelDic.TryGetValue(key, out FunctionLabelLine ret))
+		if (noneventLabelDic.TryGetValue(key, out FunctionLabelLine? ret))
 			return ret;
 		else
 			return null;
@@ -242,7 +243,7 @@ internal sealed class LabelDictionary
 		return ret;
 	}
 
-	public GotoLabelLine GetLabelDollar(string key, FunctionLabelLine labelAtLine)
+	public GotoLabelLine? GetLabelDollar(string key, FunctionLabelLine labelAtLine)
 	{
 		if (labelDollarList.TryGetValue(key, out var labels))
 		{

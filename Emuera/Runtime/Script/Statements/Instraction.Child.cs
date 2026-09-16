@@ -3078,7 +3078,7 @@ internal sealed partial class FunctionIdentifier
 		{
 			if ((state.SystemState & SystemStateCode.__CAN_SAVE__) != SystemStateCode.__CAN_SAVE__)
 			{
-				string funcName = state.Scope;
+				string? funcName = state.Scope;
 				if (funcName == null)
 					funcName = "";
 				throw new CodeEE(string.Format(trerror.CanNotUseInstruction.Text, funcName, "SAVEGAME/LOADGAME"));
@@ -3657,7 +3657,7 @@ internal sealed partial class FunctionIdentifier
 			}
 			SpCallArgment callArg = (SpCallArgment)func.Argument!;
 			string labelName = callArg.ConstStr;
-			CalledFunction call = CalledFunction.CallFunction(GlobalStatic.Process, labelName, func);
+			CalledFunction? call = CalledFunction.CallFunction(GlobalStatic.Process, labelName, func);
 			if ((call == null) && (!func.Function.IsTry()))
 			{
 				FunctionoNotFoundName = labelName;
@@ -3751,7 +3751,7 @@ internal sealed partial class FunctionIdentifier
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
 			string labelName = func.Argument!.ConstStr;
-			CalledFunction call = CalledFunction.CallEventFunction(GlobalStatic.Process, labelName, func);
+			CalledFunction? call = CalledFunction.CallEventFunction(GlobalStatic.Process, labelName, func);
 			if (call == null)
 				return;
 			state.IntoFunction(call, null, null!);
@@ -3777,7 +3777,7 @@ internal sealed partial class FunctionIdentifier
 
 		public override void SetJumpTo(ref bool useCallForm, InstructionLine func, int currentDepth, ref string FunctionoNotFoundName)
 		{
-			GotoLabelLine jumpto;
+			GotoLabelLine? jumpto;
 			func.JumpTo = null;
 			if (func.Argument!.IsConst)
 			{

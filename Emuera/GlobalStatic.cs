@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.GameData.Variable;
+﻿#nullable enable
+using MinorShift.Emuera.GameData.Variable;
 using MinorShift.Emuera.GameProc;
 using MinorShift.Emuera.GameView;
 using MinorShift.Emuera.Runtime.Script.Data;
@@ -24,18 +25,18 @@ internal static class GlobalStatic
 	//下から上を参照した場合、nullを返されることがある。
 	//Config Replace
 	//public static MainWindow MainWindow;
-	public static EmueraConsole Console;
-	public static Process Process;
+	public static EmueraConsole Console = null!;
+	public static Process Process = null!;
 	//Config.RenameDic
-	public static GameBase GameBaseData;
-	public static ConstantData ConstantData;
-	public static VariableData VariableData;
+	public static GameBase GameBaseData = null!;
+	public static ConstantData ConstantData = null!;
+	public static VariableData VariableData = null!;
 	//StrForm
-	public static VariableEvaluator VEvaluator;
-	public static IdentifierDictionary IdentifierDictionary;
-	public static ExpressionMediator EMediator;
+	public static VariableEvaluator VEvaluator = null!;
+	public static IdentifierDictionary IdentifierDictionary = null!;
+	public static ExpressionMediator EMediator = null!;
 	//
-	public static LabelDictionary LabelDictionary;
+	public static LabelDictionary LabelDictionary = null!;
 
 
 	//ERBloaderに引数解析の結果を渡すための橋渡し変数

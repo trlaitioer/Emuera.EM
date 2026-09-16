@@ -30,7 +30,7 @@ internal abstract class SuperUserDefinedMethodTerm : AExpression
 	}
 	public override SingleTerm GetValue(ExpressionMediator exm)
 	{
-		SingleTerm term = exm.Process.GetValue(this);
+		SingleTerm? term = exm.Process.GetValue(this);
 		if (term == null)
 		{
 			if (GetOperandType() == typeof(long))
@@ -51,7 +51,7 @@ internal sealed class UserDefinedMethodTerm : SuperUserDefinedMethodTerm
 	public static UserDefinedMethodTerm? Create(FunctionLabelLine targetLabel, List<AExpression?> srcArgs, out string errMes)
 	{
 		CalledFunction call = CalledFunction.CreateCalledFunctionMethod(targetLabel, targetLabel.LabelName);
-		UserDefinedFunctionArgument arg = call.ConvertArg(srcArgs, out errMes);
+		UserDefinedFunctionArgument? arg = call.ConvertArg(srcArgs, out errMes);
 		if (arg == null)
 			return null;
 		return new UserDefinedMethodTerm(arg, call.TopLabel.MethodType, call);
@@ -93,7 +93,7 @@ internal sealed class UserDefinedRefMethodTerm : SuperUserDefinedMethodTerm
 		{
 			if (reffunc.CalledFunction == null)
 				throw new CodeEE(string.Format(trerror.EmptyRefFunc.Text, reffunc.Name));
-			UserDefinedFunctionArgument arg = reffunc.CalledFunction.ConvertArg(srcArgs, out string errMes);
+			UserDefinedFunctionArgument? arg = reffunc.CalledFunction.ConvertArg(srcArgs, out string errMes);
 			if (arg == null)
 				throw new CodeEE(errMes);
 			return arg;

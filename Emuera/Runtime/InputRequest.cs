@@ -1,4 +1,5 @@
-﻿namespace MinorShift.Emuera.Runtime;
+﻿#nullable enable
+namespace MinorShift.Emuera.Runtime;
 
 enum InputType
 {
@@ -53,11 +54,11 @@ internal sealed class InputRequest
 
 	public bool HasDefValue;
 	public long DefIntValue;
-	public string DefStrValue;
+	public string DefStrValue = null!;
 
 	public long Timelimit = -1;
 	public bool DisplayTime;
-	public string TimeUpMes;
+	public string TimeUpMes = null!;
 
 	static long LastRequestID;
 }

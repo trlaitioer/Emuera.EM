@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.GameView;
+﻿#nullable enable
+using MinorShift.Emuera.GameView;
 using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.Runtime.Script;
 using MinorShift.Emuera.Runtime.Script.Data;
@@ -25,27 +26,27 @@ namespace MinorShift.Emuera.GameProc;
 
 internal sealed partial class Process(EmueraConsole view)
 {
-	public LogicalLine getCurrentLine { get { return state.CurrentLine; } }
+	public LogicalLine? getCurrentLine { get { return state.CurrentLine; } }
 
 	/// <summary>
 	/// @~~と$~~を集めたもの。CALL命令などで使う
 	/// 実行順序はLogicalLine自身が保持する。
 	/// </summary>
-	LabelDictionary labelDic;
+	LabelDictionary labelDic = null!;
 	public LabelDictionary LabelDictionary { get { return labelDic; } }
 
 	/// <summary>
 	/// 変数全部。スクリプト中で必要になる変数は（ユーザーが直接触れないものも含め）この中にいれる
 	/// </summary>
-	private VariableEvaluator vEvaluator;
+	private VariableEvaluator vEvaluator = null!;
 	public VariableEvaluator VEvaluator { get { return vEvaluator; } }
-	private ExpressionMediator exm;
-	private GameBase gamebase;
+	private ExpressionMediator exm = null!;
+	private GameBase gamebase = null!;
 	public GameBase gameBase { get { return gamebase; } }
 	readonly EmueraConsole console = view;
-	private IdentifierDictionary idDic;
-	ProcessState state;
-	ProcessState originalState;//リセットする時のために
+	private IdentifierDictionary idDic = null!;
+	ProcessState state = null!;
+	ProcessState originalState = null!;//リセットする時のために
 	bool noError;
 	//色々あって復活させてみる
 	bool initialiing;
@@ -215,7 +216,7 @@ internal sealed partial class Process(EmueraConsole view)
 			logWriter?.WriteLine($"Proc:Init:ERB:Start {stopWatch.ElapsedMilliseconds}ms");
 			var loader = new ErbLoader(console, exm, this);
 			if (Program.AnalysisMode)
-				noError = await loader.LoadErbList(Program.AnalysisFiles, labelDic);
+				noError = await loader.LoadErbList(Program.AnalysisFiles!, labelDic);
 			else
 				noError = await loader.LoadErbDir(Program.ErbDir, Config.DisplayReport, labelDic);
 			logWriter?.WriteLine($"Proc:Init:ERB:End {stopWatch.ElapsedMilliseconds}ms");
@@ -347,7 +348,7 @@ internal sealed partial class Process(EmueraConsole view)
 		}
 		catch (Exception ec)
 		{
-			LogicalLine currentLine = state.ErrorLine;
+			LogicalLine? currentLine = state.ErrorLine;
 			if (currentLine != null && currentLine is NullLine)
 				currentLine = null;
 			if (systemProcRunning)
@@ -386,7 +387,7 @@ internal sealed partial class Process(EmueraConsole view)
 		var elapsedTime = startTime.ElapsedMilliseconds;
 		if (elapsedTime < Config.InfiniteLoopAlertTime)
 			return;
-		LogicalLine currentLine = state.CurrentLine;
+		LogicalLine? currentLine = state.CurrentLine;
 		if ((currentLine == null) || (currentLine is NullLine))
 			return;//現在の行が特殊な状態ならスルー
 		if (!console.Enabled)
@@ -394,7 +395,7 @@ internal sealed partial class Process(EmueraConsole view)
 		string caption = string.Format(trmb.InfiniteLoop.Text);
 		string text = string.Format(
 			trmb.TooLongLoop.Text,
-			currentLine.Position.Value.Filename, currentLine.Position.Value.LineNo, state.lineCount, elapsedTime);
+			currentLine.Position!.Value.Filename, currentLine.Position.Value.LineNo, state.lineCount, elapsedTime);
 		if (Dialog.ShowPrompt(text, caption))
 		{
 			throw new CodeEE(trerror.SelectExitInfiniteLoopMB.Text);
@@ -407,7 +408,7 @@ internal sealed partial class Process(EmueraConsole view)
 	}
 
 	int methodStack;
-	public SingleTerm GetValue(SuperUserDefinedMethodTerm udmt)
+	public SingleTerm? GetValue(SuperUserDefinedMethodTerm udmt)
 	{
 		methodStack++;
 		if (methodStack > 100)
@@ -416,7 +417,7 @@ internal sealed partial class Process(EmueraConsole view)
 			//環境によっては100以前にStackOverflowExceptionがでるかも？
 			throw new CodeEE(trerror.OverflowFuncStack.Text);
 		}
-		SingleTerm ret = null;
+		SingleTerm? ret = null;
 		int temp_current = state.currentMin;
 		state.currentMin = state.functionCount;
 		udmt.Call.updateRetAddress(state.CurrentLine);
@@ -451,7 +452,7 @@ internal sealed partial class Process(EmueraConsole view)
 
 	public ScriptPosition? GetRunningPosition()
 	{
-		LogicalLine line = state.ErrorLine;
+		LogicalLine? line = state.ErrorLine;
 		if (line == null)
 			return null;
 		return line.Position;
@@ -471,9 +472,9 @@ internal sealed partial class Process(EmueraConsole view)
 	/// (tests, runtime code) keeps reading this instance field, so paths that do not take part in
 	/// the parallel parse behave exactly as before.
 	/// </summary>
-	public LogicalLine scaningLine;
+	public LogicalLine scaningLine = null!;
 	[ThreadStatic]
-	static LogicalLine scaningLineForThread;
+	static LogicalLine scaningLineForThread = null!;
 	[ThreadStatic]
 	static bool scaningLineForThreadInitialized;
 
@@ -493,20 +494,20 @@ internal sealed partial class Process(EmueraConsole view)
 		scaningLineForThread = line;
 	}
 
-	internal LogicalLine GetScaningLine()
+	internal LogicalLine? GetScaningLine()
 	{
 		if (scaningLineForThreadInitialized && scaningLineForThread != null)
 			return scaningLineForThread;
 		if (scaningLine != null)
 			return scaningLine;
-		LogicalLine line = state.ErrorLine;
+		LogicalLine? line = state.ErrorLine;
 		if (line == null)
-			return default;
+			return null;
 		return line;
 	}
 
 
-	private void handleExceptionInSystemProc(Exception exc, LogicalLine current, bool playSound)
+	private void handleExceptionInSystemProc(Exception exc, LogicalLine? current, bool playSound)
 	{
 		console.ThrowError(playSound);
 		if (exc is CodeEE)
@@ -523,7 +524,7 @@ internal sealed partial class Process(EmueraConsole view)
 		{
 			console.PrintError(string.Format(trerror.FuncEndUnexpectedError.Text, AssemblyData.EmueraVersionText));
 			console.PrintError(exc.GetType().ToString() + ":" + exc.Message);
-			string[] stack = exc.StackTrace.Split('\n');
+			string[] stack = exc.StackTrace!.Split('\n');
 			for (int i = 0; i < stack.Length; i++)
 			{
 				console.PrintError(stack[i]);
@@ -531,7 +532,7 @@ internal sealed partial class Process(EmueraConsole view)
 		}
 	}
 
-	private void handleException(Exception exc, LogicalLine current, bool playSound)
+	private void handleException(Exception exc, LogicalLine? current, bool playSound)
 	{
 		console.ThrowError(playSound);
 		ScriptPosition? position = null;
@@ -564,15 +565,15 @@ internal sealed partial class Process(EmueraConsole view)
 					printRawLine(position);
 					console.PrintError(string.Format(trerror.ErrorMessage.Text, exc.Message));
 				}
-				console.PrintError(string.Format(trerror.ErrorInFunc.Text, current.ParentLabelLine.LabelName, current.ParentLabelLine.Position.Value.Filename, current.ParentLabelLine.Position.Value.LineNo.ToString()));
+				console.PrintError(string.Format(trerror.ErrorInFunc.Text, current!.ParentLabelLine!.LabelName, current.ParentLabelLine.Position!.Value.Filename, current.ParentLabelLine.Position.Value.LineNo.ToString()));
 				console.PrintError(trerror.FuncCallStack.Text);
-				LogicalLine parent;
+				LogicalLine? parent;
 				int depth = 0;
 				while ((parent = state.GetReturnAddressSequensial(depth++)) != null)
 				{
 					if (parent.Position != null)
 					{
-						console.PrintErrorButton(string.Format(trerror.ErrorFuncStack.Text, parent.Position.Value.Filename, parent.Position.Value.LineNo.ToString(), parent.ParentLabelLine.LabelName), parent.Position);
+						console.PrintErrorButton(string.Format(trerror.ErrorFuncStack.Text, parent.Position.Value.Filename, parent.Position.Value.LineNo.ToString(), parent.ParentLabelLine!.LabelName), parent.Position);
 					}
 				}
 			}
@@ -591,7 +592,7 @@ internal sealed partial class Process(EmueraConsole view)
 		{
 			console.PrintError(string.Format(trerror.HasUnexpectedError.Text, posString, AssemblyData.EmueraVersionText));
 			console.PrintError(exc.GetType().ToString() + ":" + exc.Message);
-			string[] stack = exc.StackTrace.Split('\n');
+			string[] stack = exc.StackTrace!.Split('\n');
 			for (int i = 0; i < stack.Length; i++)
 			{
 				console.PrintError(stack[i]);
@@ -608,7 +609,7 @@ internal sealed partial class Process(EmueraConsole view)
 
 	public static string getRawTextFormFilewithLine(ScriptPosition? position)
 	{
-		var filename = position.Value.Filename.AsSpan();
+		var filename = position!.Value.Filename.AsSpan();
 		if (filename.EndsWith(".erb", StringComparison.OrdinalIgnoreCase))
 		{
 			return File.Exists(Program.ErbDir + position.Value.Filename)
