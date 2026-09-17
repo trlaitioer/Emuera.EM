@@ -226,8 +226,7 @@ internal sealed class ErhLoader
 
 			while (!wc.EOL)
 			{
-				IdentifierWord? word = wc.Current as IdentifierWord;
-				if (word == null)
+				if (wc.Current is not IdentifierWord word)
 				{
 					throw new CodeEE(trerror.WrongFormatReplacementSource.Text, position);
 				}
@@ -279,8 +278,7 @@ internal sealed class ErhLoader
 		{
 			while (!destWc.EOL)
 			{
-				IdentifierWord? word = destWc.Current as IdentifierWord;
-				if (word == null)
+				if (destWc.Current is not IdentifierWord word)
 				{
 					destWc.ShiftNext();
 					continue;

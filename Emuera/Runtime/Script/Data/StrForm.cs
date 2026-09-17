@@ -124,8 +124,7 @@ internal sealed class StrForm
 
 			WordCollection wc;
 			AExpression? operand;
-			YenAtSubWord? yenat = SWT as YenAtSubWord;
-			if (yenat != null)
+			if (SWT is YenAtSubWord yenat)
 			{
 				wc = yenat.Words!;
 				if (wc != null)

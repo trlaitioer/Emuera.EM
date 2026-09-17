@@ -966,8 +966,7 @@ internal sealed partial class EmueraConsole : IDisposable
 
 	public void AddBackgroundImage(string name, long depth, float opacity)
 	{
-		SpriteF? spr = AppContents.GetSprite(name) as SpriteF;
-		if (spr == null)
+		if (AppContents.GetSprite(name) is not SpriteF spr)
 		{
 			return;
 		}

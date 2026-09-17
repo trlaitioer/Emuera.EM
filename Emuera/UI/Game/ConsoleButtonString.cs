@@ -214,8 +214,7 @@ internal sealed class ConsoleButtonString
 			int length = strArray[cssIndex].Text!.Length;
 			if (divIndex < index + length)
 			{
-				ConsoleStyledString? oldcss = strArray[cssIndex] as ConsoleStyledString;
-				if (oldcss == null || !oldcss.CanDivide)
+				if (strArray[cssIndex] is not ConsoleStyledString oldcss || !oldcss.CanDivide)
 				{
 					throw new ExeEE(trerror.StringSplitError.Text);
 				}

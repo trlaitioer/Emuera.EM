@@ -950,9 +950,8 @@ internal static partial class ArgumentParser
 				wc.ShiftNext();
 				if (!wc.EOL)
 				{
-					IdentifierWord? nextId = wc.Current as IdentifierWord;
-					if (nextId != null && (nextId.Code.Equals("FORWARD", Config.StringComparison)
-					                       || nextId.Code.Equals("BACK", Config.StringComparison)))
+					if (wc.Current is IdentifierWord nextId && (nextId.Code.Equals("FORWARD", Config.StringComparison)
+					                                            || nextId.Code.Equals("BACK", Config.StringComparison)))
 					{
 						if (nextId.Code.Equals("BACK", Config.StringComparison))
 						{

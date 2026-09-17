@@ -3185,8 +3185,7 @@ internal sealed partial class FunctionIdentifier
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
 			long waittime = -1;
-			ExpressionArgument? arg = func.Argument as ExpressionArgument;
-			if (arg is { Term: not null })
+			if (func.Argument is ExpressionArgument { Term: not null } arg)
 			{
 				waittime = arg.Term.GetIntValue(exm);
 				if (waittime < 0)

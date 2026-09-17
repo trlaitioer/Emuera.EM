@@ -207,8 +207,7 @@ internal sealed class CalledFunction
 					return null;
 				}
 
-				VariableTerm? vTerm = term as VariableTerm;
-				if (vTerm == null || vTerm.Identifier.Dimension == 0)
+				if (term is not VariableTerm vTerm || vTerm.Identifier.Dimension == 0)
 				{
 					errMes = string.Format(trerror.RequireArrayBecauseRefArg.Text, func.LabelName, (i + 1).ToString());
 					return null;

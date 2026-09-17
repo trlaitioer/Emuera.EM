@@ -8696,8 +8696,7 @@ internal static partial class FunctionMethodCreator
 				return 0;
 			}
 
-			SpriteAnime? img = AppContents.GetSprite(imgname) as SpriteAnime;
-			if (img == null || !img.IsCreated)
+			if (AppContents.GetSprite(imgname) is not SpriteAnime img || !img.IsCreated)
 			{
 				return 0;
 			}
