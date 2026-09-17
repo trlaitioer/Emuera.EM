@@ -2,7 +2,7 @@
 
 public interface IPluginMethod
 {
-	abstract string Name { get; }
-	abstract string Description { get; }
-	abstract void Execute(PluginMethodParameter[] args);
+	string Name { get; }
+	string Description { get; }
+	void Execute(PluginMethodParameter[] args);
 }
