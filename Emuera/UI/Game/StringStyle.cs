@@ -4,7 +4,6 @@ using System.Drawing;
 
 namespace MinorShift.Emuera.UI.Game;
 
-#nullable enable
 /// <summary>
 /// 装飾付文字列(ConsoleStyledString)用のスタイル構造体
 /// </summary>

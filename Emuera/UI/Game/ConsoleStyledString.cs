@@ -1,5 +1,4 @@
-﻿#nullable enable
-using MinorShift.Emuera.Runtime.Config;
+﻿using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.Runtime.Config.JSON;
 using System;
 using System.Drawing;

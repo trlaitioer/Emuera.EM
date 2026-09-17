@@ -1,5 +1,4 @@
-﻿#nullable enable
-namespace MinorShift.Emuera.UI.Game.Image;
+﻿namespace MinorShift.Emuera.UI.Game.Image;
 
 internal abstract class AContentItem
 {

@@ -1,5 +1,4 @@
-﻿#nullable enable
-using MinorShift.Emuera.Sub;
+﻿using MinorShift.Emuera.Sub;
 using System;
 using System.IO;
 using trmk = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.KeyMacro;

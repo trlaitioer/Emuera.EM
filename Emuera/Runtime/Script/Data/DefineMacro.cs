@@ -1,5 +1,4 @@
-﻿#nullable enable
-using MinorShift.Emuera.Runtime.Script.Parser;
+﻿using MinorShift.Emuera.Runtime.Script.Parser;
 
 namespace MinorShift.Emuera.Runtime.Script.Data;
 

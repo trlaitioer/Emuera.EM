@@ -1,5 +1,4 @@
-﻿#nullable enable
-using MinorShift.Emuera.GameProc.Function;
+﻿using MinorShift.Emuera.GameProc.Function;
 using MinorShift.Emuera.Runtime.Utils;
 using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 

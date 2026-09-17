@@ -1,5 +1,4 @@
-﻿#nullable enable
-using MinorShift.Emuera.GameData.Variable;
+﻿using MinorShift.Emuera.GameData.Variable;
 using MinorShift.Emuera.GameView;
 using MinorShift.Emuera.Runtime;
 using MinorShift.Emuera.Runtime.Config;

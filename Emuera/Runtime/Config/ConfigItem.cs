@@ -1,5 +1,4 @@
-﻿#nullable enable
-using MinorShift.Emuera.Runtime.Utils;
+﻿using MinorShift.Emuera.Runtime.Utils;
 using MinorShift.Emuera.Runtime.Utils.EvilMask;
 using System;
 using System.Collections.Generic;

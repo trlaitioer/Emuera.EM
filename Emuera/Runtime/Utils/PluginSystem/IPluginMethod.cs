@@ -1,5 +1,4 @@
-﻿#nullable enable
-namespace MinorShift.Emuera.Runtime.Utils.PluginSystem;
+﻿namespace MinorShift.Emuera.Runtime.Utils.PluginSystem;
 
 public interface IPluginMethod
 {

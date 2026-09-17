@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 
 namespace MinorShift.Emuera.Runtime.Utils;

@@ -1,5 +1,4 @@
-﻿#nullable enable
-namespace MinorShift.Emuera.Runtime.Utils;
+﻿namespace MinorShift.Emuera.Runtime.Utils;
 
 internal sealed class WinInput
 {

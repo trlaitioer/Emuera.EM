@@ -1,5 +1,4 @@
-﻿#nullable enable
-namespace MinorShift.Emuera.Runtime;
+﻿namespace MinorShift.Emuera.Runtime;
 
 internal enum InputType
 {

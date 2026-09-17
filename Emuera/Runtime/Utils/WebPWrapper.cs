@@ -22,7 +22,6 @@
 /// float[] PictureDistortion(Bitmap source, Bitmap reference, int metric_type) - Get PSNR, SSIM or LSIM distortion metric between two pictures
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#nullable enable
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;

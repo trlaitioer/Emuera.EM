@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
 
 namespace MinorShift.Emuera.UI.Framework.Forms;
 

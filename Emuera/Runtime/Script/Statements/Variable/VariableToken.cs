@@ -1,5 +1,4 @@
-﻿#nullable enable
-using EnumsNET;
+﻿using EnumsNET;
 using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.Runtime.Script.Data;
 using MinorShift.Emuera.Runtime.Script.Statements;

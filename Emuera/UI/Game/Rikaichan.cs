@@ -1,5 +1,4 @@
-﻿#nullable enable
-using MinorShift.Emuera.Forms;
+﻿using MinorShift.Emuera.Forms;
 using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.UI.Game;
 using System;

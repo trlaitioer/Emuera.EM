@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
 
 internal static class Dialog
 {

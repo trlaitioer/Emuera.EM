@@ -4,7 +4,6 @@
 //* Maybe add ctrl-shift-z hotkey that will undo AND refresh RNG at the end.
 //Wouldn't work, need to store new rng separately, too much work.
 
-#nullable enable
 using System.Collections.Generic;
 
 namespace MinorShift.Emuera.Runtime.Utils;

@@ -16,7 +16,7 @@ using System.Windows.Forms;
 using MinorShift.Emuera.Forms;
 
 namespace MinorShift.Emuera;
-#nullable enable
+
 internal static partial class Program
 {
 	/*

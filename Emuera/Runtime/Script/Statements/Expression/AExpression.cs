@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System;
+﻿using System;
 
 namespace MinorShift.Emuera.Runtime.Script.Statements.Expression;
 

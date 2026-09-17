@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using System.Drawing;
 
 namespace MinorShift.Emuera.UI.Game.Image;

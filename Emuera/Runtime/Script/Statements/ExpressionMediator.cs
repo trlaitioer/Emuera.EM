@@ -1,5 +1,4 @@
-﻿#nullable enable
-using Microsoft.VisualBasic;
+﻿using Microsoft.VisualBasic;
 using MinorShift.Emuera.GameProc;
 using MinorShift.Emuera.GameProc.Function;
 using MinorShift.Emuera.GameView;

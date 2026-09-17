@@ -1,5 +1,4 @@
-﻿#nullable enable
-using MinorShift.Emuera.Runtime.Utils;
+﻿using MinorShift.Emuera.Runtime.Utils;
 using System.Drawing;
 using System.IO;
 

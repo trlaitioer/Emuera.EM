@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-namespace MinorShift.Emuera.Runtime.Script.Parser;
+﻿namespace MinorShift.Emuera.Runtime.Script.Parser;
 
 /// <summary>
 /// FormattedStringWTの中身用のトークン

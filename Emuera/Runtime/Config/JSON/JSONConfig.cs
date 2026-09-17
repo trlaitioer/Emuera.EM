@@ -1,5 +1,4 @@
-﻿#nullable enable
-//新設したコンフィグ設定のロード、セーブ、公開を担当する。
+﻿//新設したコンフィグ設定のロード、セーブ、公開を担当する。
 using System.IO;
 using System.Text.Json;
 

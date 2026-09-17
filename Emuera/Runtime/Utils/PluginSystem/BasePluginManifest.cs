@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace MinorShift.Emuera.Runtime.Utils.PluginSystem;
 
