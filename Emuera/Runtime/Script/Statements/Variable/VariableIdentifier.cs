@@ -230,12 +230,13 @@ internal sealed class VariableIdentifier
 				VariableCode flag = code &
 				                    (VariableCode.__ARRAY_1D__ | VariableCode.__ARRAY_2D__ | VariableCode.__ARRAY_3D__ |
 				                     VariableCode.__CHARACTER_DATA__ | VariableCode.__STRING__ | VariableCode.__INTEGER__);
-				if (!extSaveListDic.ContainsKey(flag))
+				if (!extSaveListDic.TryGetValue(flag, out List<VariableCode>? value))
 				{
-					extSaveListDic.Add(flag, []);
+					value = [];
+					extSaveListDic.Add(flag, value);
 				}
 
-				extSaveListDic[flag].Add(code);
+				value.Add(code);
 			}
 		}
 	}
