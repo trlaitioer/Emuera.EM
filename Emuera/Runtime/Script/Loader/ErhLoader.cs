@@ -146,7 +146,7 @@ internal sealed class ErhLoader
 						//1822 #DIMは保留しておいて後でまとめてやる
 					{
 						WordCollection wc = LexicalAnalyzer.Analyse(st, LexEndWith.EoL, LexAnalyzeFlag.AllowAssignment);
-						dimlines.Enqueue(new DimLineWC(wc, sharpID.SequenceEqual("DIMS"), false, position));
+						dimlines.Enqueue(new DimLineWC(wc, sharpID is "DIMS", false, position));
 					}
 						//analyzeSharpDim(st, position, sharpID == "DIMS");
 						break;
