@@ -548,7 +548,7 @@ internal static partial class FunctionMethodCreator
 				}
 
 				//素ではintの範囲しか扱えないので一工夫
-				sortList.Sort((a, b) => { return (isAscending ? 1 : -1) * Math.Sign(a.Key - b.Key); });
+				sortList.Sort((a, b) => (isAscending ? 1 : -1) * Math.Sign(a.Key - b.Key));
 				sortedArray = [.. sortList.Select(p => p.Value)];
 			}
 			else
@@ -566,7 +566,7 @@ internal static partial class FunctionMethodCreator
 					sortList.Add(new KeyValuePair<string, int>(array[i], i));
 				}
 
-				sortList.Sort((a, b) => { return (isAscending ? 1 : -1) * a.Key.CompareTo(b.Key); });
+				sortList.Sort((a, b) => (isAscending ? 1 : -1) * a.Key.CompareTo(b.Key));
 				sortedArray = [.. sortList.Select(p => p.Value)];
 			}
 
@@ -5533,7 +5533,7 @@ internal static partial class FunctionMethodCreator
 				}
 
 				//素ではintの範囲しか扱えないので一工夫
-				sortList.Sort((a, b) => { return Math.Sign(a.Key - b.Key); });
+				sortList.Sort((a, b) => Math.Sign(a.Key - b.Key));
 				sortedArray = new int[sortList.Count];
 				for (int i = 0; i < sortedArray.Length; i++)
 				{
@@ -5560,7 +5560,7 @@ internal static partial class FunctionMethodCreator
 					sortList.Add(new KeyValuePair<string, int>(array[i], i));
 				}
 
-				sortList.Sort((a, b) => { return a.Key.CompareTo(b.Key); });
+				sortList.Sort((a, b) => a.Key.CompareTo(b.Key));
 				sortedArray = new int[sortList.Count];
 				for (int i = 0; i < sortedArray.Length; i++)
 				{
