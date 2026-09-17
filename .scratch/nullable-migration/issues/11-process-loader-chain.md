@@ -43,7 +43,7 @@ Blocked by: 07, 10
 
 同次构建全库 1,106 条 / 60 个文件,与 issues/09 的收尾记录一致(09 之后无漂移)。范围内 11 个文件全部有条目,不存在「同链零警告文件」。
 
-复测(2026-09-16,HEAD `d67ec33`):本表逐文件码型分布逐字复现;默认构建 CS86xx 为 0(50 个已启用文件);票外 49 个文件 / 798 条逐文件核对全部落在 issues/12 的范围清单内;范围内 308 条的消息文本中无一条引用 UI 或图像类型,「本链无 UI 根因」成立。
+复测(2026-09-16,HEAD `8df80a2`(`refactor(nullable): 参数与指令链可空启用(issues/09)`)):本表逐文件码型分布逐字复现;默认构建 CS86xx 为 0(50 个已启用文件);票外 49 个文件 / 798 条逐文件核对全部落在 issues/12 的范围清单内;范围内 308 条的消息文本中无一条引用 UI 或图像类型,「本链无 UI 根因」成立。
 
 按根因分类:
 
@@ -167,7 +167,7 @@ Blocked by: 07, 10
 - issues/09:`Process.State.IntoFunction` 的 `srcArgs` 已改 `UserDefinedFunctionArgument?`;`CreateArgument` 家族已改 `Argument?`
 - issues/10:`GetVariableToken`/`GetFunctionMethod`/`GetStrValue`/`GetCsvNameList`/`ParserMediator.Initialize` 的可空契约
 
-开工条件:07/08/10 的 Status 仍为 `in-progress`(代码已落地,待真实 era 游戏目录验证)。本票按 issues/09 的先例推进——上游契约已落地即可开工,不等待三票转 `implemented`;若其真实 era 游戏目录验证推翻任一契约,本票基线重测。当前实测与 issues/09 的记录一致(1,106 条 / 60 个文件),可视为暂时稳定。
+开工条件:本票开工时 07/08/10 的 Status 为 `in-progress`(代码已落地),按 issues/09 的先例不等待三者转 `implemented` 即开工;三者现已随运行行为确认转 `implemented`,其间未推翻本票契约,基线无需重测(开工时实测与 issues/09 的记录一致,1,106 条 / 60 个文件)。
 
 ### 下游契约分发
 

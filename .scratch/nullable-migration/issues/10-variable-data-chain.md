@@ -1,6 +1,6 @@
 # Nullable:变量与数据链启用
 
-Status: in-progress
+Status: implemented
 
 Blocked by: 07
 
@@ -139,7 +139,7 @@ token 基类与变量侧:
 - 默认构建(`Debug-NAudio` 不加 `-p:Nullable=enable`)CS86xx 为 0,已启用文件无回归。
 - `dotnet test`(`Debug-NAudio`,x64)全通过:144/144。
 - `Emuera.Tests` 的 CS86xx 由 16 条(按列去重)变为 17 条:本链消掉 2 条、引入 3 条,清尾归 issues/03。
-- 待办:用户 review 改动;按 spec 的完成标准,另需真实 era 游戏目录做一次运行行为确认后本票方可转 `implemented`。
+- 改动已 review;运行行为确认已按 spec 的完成标准执行(真实 era 游戏目录),本票转 `implemented`。
 
 ## 曾考虑的替代方案
 

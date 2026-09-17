@@ -1,6 +1,6 @@
 # Nullable:表达式与方法链启用
 
-Status: in-progress
+Status: implemented
 
 Blocked by: 05, 06, 10
 
@@ -115,11 +115,11 @@ Blocked by: 05, 06, 10
 开工时发现的问题(2026-09-16 处置):
 
 1. `UserDefinedRefMethodTerm.Restructure` 直接解引用 `srcArgs[i]`,而同链的 `FunctionMethodTerm.Restructure` 对 null 元素 `continue`;省略实参的引用函数调用会 NRE。**已就地补 `TODO` 注释**,迁移期不改行为。
-2. `Creator.Method.cs` 的 SPRITEANIME 方法类内 `if (img == null && !img.IsCreated)`:`&&` 在 `img == null` 时仍求值右侧,现状即抛 NRE。该处按同文件其余精灵分支的口径(SPRITE 系为 `img == null || !img.IsCreated`)修正为 `||`,使精灵不存在时返回 0;**运行行为修正不并入本票的注解改动,已拆为独立提交**(`fix(script): 修正 SPRITEANIME 空精灵分支的判空条件`),本票按上述验收标准保持纯注解。
+2. `Creator.Method.cs` 的 SPRITEANIME 方法类内 `if (img == null && !img.IsCreated)`:`&&` 在 `img == null` 时仍求值右侧,现状即抛 NRE。该处按同文件其余精灵分支的口径(SPRITE 系为 `img == null || !img.IsCreated`)修正为 `||`,使 `GetSprite` 返回的既有精灵不是 `SpriteAnime` 时同样返回 0(精灵本身不存在已由紧邻的 `if (AppContents.GetSprite(imgname) == null) return 0;` 覆盖);**运行行为修正不并入本票的注解改动,已拆为独立提交**(`fix(script): 修正 SPRITEANIME 空精灵分支的判空条件`),本票按上述验收标准保持纯注解。
 3. `ExpressionMediator.ConvertStringType` 的 `Strings.StrConv` 返回 `string?`,现以 `!` 断言(唯一调用点按非空打印消费)。**已补 `TODO` 注释**。
 4. `Creator.Method.cs` 打印告警分支只判 `getCurrentLine != null`,未判 `Position`,现以 `!` 断言。**已补 `TODO` 注释**。
 
-待办:按 spec 的完成标准,另需真实 era 游戏目录做一次运行行为确认后本票方可转 `implemented`。
+运行行为确认已按 spec 的完成标准执行(真实 era 游戏目录),本票转 `implemented`。
 
 ## 曾考虑的替代方案
 
