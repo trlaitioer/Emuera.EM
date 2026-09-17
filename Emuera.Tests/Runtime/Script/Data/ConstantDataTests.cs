@@ -43,9 +43,9 @@ public class ConstantDataTests
 			("CHARA2.CSV", "NO,20\r\nNAME,Twenty\r\nCFLAG,0,1\r\n"),
 			("CHARA7.CSV", "NO,7\r\nNAME,Seven\r\n"));
 
-		Assert.Equal("Zero", constant.GetCharacterTemplate(0).Name);
-		Assert.Equal("Seven", constant.GetCharacterTemplate(7).Name);
-		Assert.Equal("Twenty", constant.GetCharacterTemplate(20).Name);
+		Assert.Equal("Zero", constant.GetCharacterTemplate(0)!.Name);
+		Assert.Equal("Seven", constant.GetCharacterTemplate(7)!.Name);
+		Assert.Equal("Twenty", constant.GetCharacterTemplate(20)!.Name);
 		Assert.True(constant.GetCharacterTemplate(20)!.IsSpchara);
 		Assert.Null(constant.GetCharacterTemplate(999));
 	}

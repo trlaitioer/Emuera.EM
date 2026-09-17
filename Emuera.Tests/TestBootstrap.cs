@@ -53,9 +53,9 @@ internal static class TestBootstrap
 
 		VariableParser.Initialize();
 
-		GlobalStatic.EMediator = new ExpressionMediator(null, vEvaluator, null);
+		GlobalStatic.EMediator = new ExpressionMediator(null!, vEvaluator, null!);
 
-		GlobalStatic.Process = new Process(null)
+		GlobalStatic.Process = new Process(null!)
 		{
 			// GetScaningLine 在 scaningLine==null 时会解引用未初始化的 Process.state(仅 Initialize 创建);
 			// 解析期间该字段本就指向当前解析行,以占位行保持等价语义(GetVariableToken 的 private 变量路径依赖)

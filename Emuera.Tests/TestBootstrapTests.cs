@@ -45,6 +45,7 @@ public class TestBootstrapTests
 	{
 		var wc = LexicalAnalyzer.Analyse(new CharStream("1 + (90 / 9 * 2)"), LexEndWith.EoL, LexAnalyzeFlag.None);
 		var term = ExpressionParser.ReduceExpressionTerm(wc, TermEndWith.EoL);
+		Assert.NotNull(term);
 		Assert.Equal(21L, term.GetIntValue(null!));
 	}
 
@@ -54,6 +55,7 @@ public class TestBootstrapTests
 		// 变量引用解析走 IdentifierDictionary,求值走 VEvaluator(FLAG:0 默认 0)
 		var wc = LexicalAnalyzer.Analyse(new CharStream("FLAG:0"), LexEndWith.EoL, LexAnalyzeFlag.None);
 		var term = ExpressionParser.ReduceExpressionTerm(wc, TermEndWith.EoL);
+		Assert.NotNull(term);
 		Assert.Equal(0L, term.GetIntValue(GlobalStatic.EMediator));
 	}
 }

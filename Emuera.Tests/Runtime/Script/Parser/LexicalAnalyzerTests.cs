@@ -144,12 +144,12 @@ public class LexicalAnalyzerTests : IDisposable
 
 		var yenat = Assert.IsType<YenAtSubWord>(sfw.SubWords[0]);
 		// 条件部:LOCAL / 60 > 0
-		Assert.Equal("LOCAL", Assert.IsType<IdentifierWord>(yenat.Words.Collection.First!.Value).Code);
+		Assert.Equal("LOCAL", Assert.IsType<IdentifierWord>(yenat.Words!.Collection.First!.Value).Code);
 		// 左侧 {LOCAL / 60}小时
 		Assert.IsType<CurlyBraceSubWord>(yenat.Left.SubWords[0]);
 		Assert.Equal("小时", yenat.Left.Strs[^1]);
 		// 右侧为空('#' 与闭合 \@ 之间只有空白)
-		Assert.Empty(yenat.Right.SubWords);
+		Assert.Empty(yenat.Right!.SubWords);
 
 		// 三元之后的 {LOCAL % 60}
 		Assert.IsType<CurlyBraceSubWord>(sfw.SubWords[1]);
@@ -206,7 +206,7 @@ public class LexicalAnalyzerTests : IDisposable
 
 		Assert.Equal(2, sfw.Strs.Length);
 		var pw = Assert.IsType<PercentSubWord>(sfw.SubWords[0]);
-		Assert.Equal("CALLNAME", Assert.IsType<IdentifierWord>(pw.Words.Collection.First!.Value).Code);
+		Assert.Equal("CALLNAME", Assert.IsType<IdentifierWord>(pw.Words!.Collection.First!.Value).Code);
 	}
 
 	[Fact]
@@ -221,7 +221,7 @@ public class LexicalAnalyzerTests : IDisposable
 		Assert.Equal("还剩2天结束", sfw.Strs[1]);
 		var yenat = Assert.IsType<YenAtSubWord>(sfw.SubWords[0]);
 		Assert.Equal("危险期", yenat.Left.Strs[^1]);
-		Assert.Equal("发情期", yenat.Right.Strs[^1]);
+		Assert.Equal("发情期", yenat.Right!.Strs[^1]);
 	}
 
 	[Fact]

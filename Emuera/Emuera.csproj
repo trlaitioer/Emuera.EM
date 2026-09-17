@@ -7,7 +7,8 @@
         <Platforms>x64;x86</Platforms>
         <UseWindowsForms>true</UseWindowsForms>
         <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
-        <Nullable>annotations</Nullable>
+        <Nullable>enable</Nullable>
+        <WarningsAsErrors>nullable</WarningsAsErrors>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <Configurations>Debug;Release;Debug-NAudio;Release-NAudio</Configurations>
         <EnableNETAnalyzers>true</EnableNETAnalyzers>

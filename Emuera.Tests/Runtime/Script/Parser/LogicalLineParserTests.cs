@@ -26,7 +26,7 @@ public class LogicalLineParserTests
 
 	/// <summary>解析标签行(@函数 / $跳转标签)。</summary>
 	private static LogicalLine ParseLabelLine(string line)
-		=> LogicalLineParser.ParseLabelLine(new CharStream(line), Pos, null);
+		=> LogicalLineParser.ParseLabelLine(new CharStream(line), Pos, null!);
 
 	[Fact]
 	public void EmptyLine_ReturnsNull()
@@ -139,11 +139,11 @@ public class LogicalLineParserTests
 			var line = raw.Trim();
 			if (line.Length == 0)
 				continue;
-			LogicalLine parsed;
+			LogicalLine? parsed;
 			var st = new CharStream(line);
 			if (st.Current == '@' || st.Current == '$')
 			{
-				parsed = LogicalLineParser.ParseLabelLine(st, Pos, null);
+				parsed = LogicalLineParser.ParseLabelLine(st, Pos, null!);
 				if (parsed is FunctionLabelLine func)
 				{
 					current = func;
@@ -160,6 +160,7 @@ public class LogicalLineParserTests
 			{
 				parsed = LogicalLineParser.ParseLine(st, Pos, null, current);
 			}
+			Assert.NotNull(parsed);
 			Assert.False(parsed is InvalidLine || parsed is InvalidLabelLine,
 				$"行解析失败: {raw} → {parsed?.ErrMes}");
 		}
