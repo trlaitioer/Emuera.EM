@@ -168,7 +168,7 @@ internal class ConsoleDivPart : AConsoleDisplayNode
 
 	private int width;
 
-	public override int PointX
+	public override sealed int PointX
 	{
 		get;
 		set
