@@ -4409,8 +4409,7 @@ internal sealed partial class FunctionIdentifier
 					return;
 				}
 
-				string errMes;
-				callArg.UDFArgument = call.ConvertArg(callArg.RowArgs, out errMes);
+				callArg.UDFArgument = call.ConvertArg(callArg.RowArgs, out string errMes);
 				if (callArg.UDFArgument == null)
 				{
 					ParserMediator.Warn(errMes, func, 2, true, false);
@@ -4456,8 +4455,7 @@ internal sealed partial class FunctionIdentifier
 			call.IsJump = isJump;
 			if (arg == null)
 			{
-				string errMes;
-				arg = call.ConvertArg(spCallArg.RowArgs, out errMes);
+				arg = call.ConvertArg(spCallArg.RowArgs, out string errMes);
 				if (arg == null)
 				{
 					throw new CodeEE(errMes);

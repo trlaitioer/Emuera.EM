@@ -481,8 +481,7 @@ internal sealed class CallformCache
 		CalledFunction? call = CalledFunction.CallFunction(process, labelName, retAddress);
 		if (call != null)
 		{
-			string errMes;
-			arg = call.ConvertArg(spCallArg.RowArgs, out errMes);
+			arg = call.ConvertArg(spCallArg.RowArgs, out string errMes);
 			if (arg == null)
 			{
 				throw new CodeEE(errMes);

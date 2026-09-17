@@ -141,9 +141,8 @@ internal class HotkeyState
 		if (line.StartsWith("KEY == KEYS:"))
 		{
 			line = line.Substring("KEY == KEYS:".Length);
-			Keys keys;
 			//bool success = Enum.TryParse<Keys>("S", out keys);
-			bool success = Enum.TryParse(line, out keys);
+			bool success = Enum.TryParse(line, out Keys keys);
 			if (!success)
 			{
 				return 1;

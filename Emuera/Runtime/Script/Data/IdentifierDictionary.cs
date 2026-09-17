@@ -673,8 +673,7 @@ internal partial class IdentifierDictionary
 
 				if (func.IsMethod)
 				{
-					string errMes;
-					AExpression? ret = UserDefinedMethodTerm.Create(func, arguments, out errMes);
+					AExpression? ret = UserDefinedMethodTerm.Create(func, arguments, out string errMes);
 					if (ret == null)
 					{
 						throw new CodeEE(errMes);

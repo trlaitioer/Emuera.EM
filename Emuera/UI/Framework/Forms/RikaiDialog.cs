@@ -331,7 +331,6 @@ public partial class RikaiDialog : Form
 			foreach (int offset in ie.offsets)
 			{
 				int num = offset;
-				int rem;
 
 				memory.WriteByte(1);
 
@@ -339,7 +338,7 @@ public partial class RikaiDialog : Form
 
 				while (true) //single offset
 				{
-					num = Math.DivRem(num, 0x100, out rem);
+					num = Math.DivRem(num, 0x100, out int rem);
 
 					//if (rem >= 0 && rem <= 2)
 					//if (rem >= 0 && rem <= 3)

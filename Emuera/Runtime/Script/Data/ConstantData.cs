@@ -1772,7 +1772,6 @@ internal sealed class ConstantData
 
 		try
 		{
-			long index = -1;
 			while (eReader.ReadEnabledLine() is { } st)
 			{
 				position = new ScriptPosition(eReader.Filename, eReader.LineNo);
@@ -1798,7 +1797,7 @@ internal sealed class ConstantData
 						continue;
 					}
 
-					if (!long.TryParse(tokens[1].TrimEnd(), out index))
+					if (!long.TryParse(tokens[1].TrimEnd(), out long index))
 					{
 						ParserMediator.Warn(string.Format(trerror.CanNotConvertToInt.Text, tokens[1]), position, 1);
 						continue;

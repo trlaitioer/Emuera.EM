@@ -194,8 +194,7 @@ internal sealed class ConfigItem<T> : AConfigItem
 		}
 		else if (this is ConfigItem<Color>)
 		{
-			Color c;
-			ret = tryStringsToColor(str, out c);
+			ret = tryStringsToColor(str, out Color c);
 			if (ret)
 			{
 				((ConfigItem<Color>)(AConfigItem)this).Value = c;
@@ -207,8 +206,7 @@ internal sealed class ConfigItem<T> : AConfigItem
 		}
 		else if (this is ConfigItem<char>)
 		{
-			char c;
-			ret = char.TryParse(str, out c);
+			ret = char.TryParse(str, out char c);
 			if (ret)
 			{
 				((ConfigItem<char>)(AConfigItem)this).Value = c;
@@ -216,8 +214,7 @@ internal sealed class ConfigItem<T> : AConfigItem
 		}
 		else if (this is ConfigItem<int>)
 		{
-			int i;
-			ret = int.TryParse(str, out i);
+			ret = int.TryParse(str, out int i);
 			if (ret)
 			{
 				((ConfigItem<int>)(AConfigItem)this).Value = i;
@@ -229,8 +226,7 @@ internal sealed class ConfigItem<T> : AConfigItem
 		}
 		else if (this is ConfigItem<long>)
 		{
-			long i;
-			ret = long.TryParse(str, out i);
+			ret = long.TryParse(str, out long i);
 			if (ret)
 			{
 				((ConfigItem<long>)(AConfigItem)this).Value = i;
@@ -243,11 +239,10 @@ internal sealed class ConfigItem<T> : AConfigItem
 		else if (this is ConfigItem<List<long>>)
 		{
 			((ConfigItem<List<long>>)(AConfigItem)this).Value.Clear();
-			long i;
 			string[] strs = str.Split('/');
 			foreach (string st in strs)
 			{
-				ret = long.TryParse(st.Trim(), out i);
+				ret = long.TryParse(st.Trim(), out long i);
 				if (ret)
 				{
 					((ConfigItem<List<long>>)(AConfigItem)this).Value.Add(i);
@@ -391,23 +386,22 @@ internal sealed class ConfigItem<T> : AConfigItem
 	{
 		string[] tokens = str.Split(',');
 		c = Color.Black;
-		int r, g, b;
 		if (tokens.Length < 3)
 		{
 			return false;
 		}
 
-		if (!int.TryParse(tokens[0].Trim(), out r) || r < 0 || r > 255)
+		if (!int.TryParse(tokens[0].Trim(), out int r) || r < 0 || r > 255)
 		{
 			return false;
 		}
 
-		if (!int.TryParse(tokens[1].Trim(), out g) || g < 0 || g > 255)
+		if (!int.TryParse(tokens[1].Trim(), out int g) || g < 0 || g > 255)
 		{
 			return false;
 		}
 
-		if (!int.TryParse(tokens[2].Trim(), out b) || b < 0 || b > 255)
+		if (!int.TryParse(tokens[2].Trim(), out int b) || b < 0 || b > 255)
 		{
 			return false;
 		}

@@ -67,9 +67,8 @@ internal sealed class UserDefinedFunctionData
 			throw new CodeEE(trerror.NotIdentifierArg.Text, sc);
 		}
 
-		string errMes = "";
 		int errLevel = -1;
-		GlobalStatic.IdentifierDictionary.CheckUserLabelName(out errMes, ref errLevel, true, ret.Name);
+		GlobalStatic.IdentifierDictionary.CheckUserLabelName(out string errMes, ref errLevel, true, ret.Name);
 		if (errLevel == 0) //関数と変数の両方からチェック エラーメッセージが微妙だがひとまず気にしない
 		{
 			GlobalStatic.IdentifierDictionary.CheckUserVarName(ref errMes, ref errLevel, ret.Name);

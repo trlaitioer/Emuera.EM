@@ -1858,7 +1858,6 @@ internal sealed partial class EmueraConsole : IDisposable
 		StringBuilder sb = new(20);
 		StringBuilder num = new(20);
 		bool hasRet = false;
-		int res;
 		while (!st.EOS && (!isNest || st.Current != ')'))
 		{
 			if (st.Current == '(')
@@ -1880,7 +1879,7 @@ internal sealed partial class EmueraConsole : IDisposable
 
 						if (num.ToString() != "" && num.ToString() != null)
 						{
-							if (int.TryParse(num.ToString(), out res))
+							if (int.TryParse(num.ToString(), out int res))
 							{
 								for (int i = 0; i < res; i++)
 								{
