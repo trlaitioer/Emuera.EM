@@ -86,7 +86,7 @@ public sealed class MTRandom
 	/// <returns></returns>
 	public double NextDouble()
 	{
-		return NextUInt32() * ((double)1.0 / 4294967296.0);
+		return NextUInt32() * (1.0 / 4294967296.0);
 		/* divided by 2^32 */
 	}
 
