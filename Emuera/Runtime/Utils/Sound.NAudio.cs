@@ -117,8 +117,7 @@ internal class DummyOut : IWavePlayer
 		{
 			if (playbackState == PlaybackState.Stopped)
 			{
-				playThread = new Thread(PlayThread);
-				playThread.IsBackground = true;
+				playThread = new Thread(PlayThread) { IsBackground = true };
 				playbackState = PlaybackState.Playing;
 				playThread.Start();
 			}
@@ -310,8 +309,7 @@ internal static class SoundMixer
 			return;
 		}
 
-		mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(SampleRate, 2));
-		mixer.ReadFully = true;
+		mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(SampleRate, 2)) { ReadFully = true };
 		mixer.MixerInputEnded += SoundEnded;
 
 		deviceTracker = new AudioDeviceTracker();
@@ -404,8 +402,7 @@ internal class Sound : ISampleProvider
 		else
 		{
 			// NOTE: MediaFoundationReader currently seems to only support 16 bit audio files on wine
-			MediaFoundationReader.MediaFoundationReaderSettings settings = new();
-			settings.RequestFloatOutput = true;
+			MediaFoundationReader.MediaFoundationReaderSettings settings = new() { RequestFloatOutput = true };
 			stream = new MediaFoundationReader(filename, settings);
 		}
 
@@ -435,9 +432,7 @@ internal class Sound : ISampleProvider
 			sampleProvider = sampleProvider.ToStereo();
 		}
 
-		volumeProvider = new VolumeSampleProvider(sampleProvider);
-
-		volumeProvider.Volume = volume;
+		volumeProvider = new VolumeSampleProvider(sampleProvider) { Volume = volume };
 
 		SoundMixer.PlaySound(this);
 	}
