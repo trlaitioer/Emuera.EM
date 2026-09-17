@@ -998,8 +998,7 @@ internal static partial class ArgumentParser
 				return null;
 			}
 
-			VariableTerm? varTerm = term.Restructure(exm) as VariableTerm;
-			if (varTerm == null)
+			if (term.Restructure(exm) is not VariableTerm varTerm)
 			{
 				warn(string.Format(trerror.ArgIsNotVariable.Text, "1"), line, 2, false);
 				return null;

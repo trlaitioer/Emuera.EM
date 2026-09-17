@@ -430,8 +430,7 @@ internal static class ExpressionParser
 		{
 			wc.ShiftNext();
 			ret.CaseType = CaseExpressionType.Is;
-			OperatorWord? opWT = wc.Current as OperatorWord;
-			if (opWT == null)
+			if (wc.Current is not OperatorWord opWT)
 			{
 				throw new CodeEE(trerror.NoOpAfterIs.Text);
 			}
