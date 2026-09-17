@@ -320,7 +320,7 @@ internal sealed partial class MainWindow : Form
 				if (doit)
 				{
 					result = openFileDialog.ShowDialog();
-					List<string> filepath = new();
+					List<string> filepath = [];
 					if (result == DialogResult.OK)
 					{
 						foreach (string fname in openFileDialog.FileNames)

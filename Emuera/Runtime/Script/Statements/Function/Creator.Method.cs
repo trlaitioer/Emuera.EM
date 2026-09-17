@@ -276,7 +276,7 @@ internal static partial class FunctionMethodCreator
 				output = exm.VEvaluator.RESULTS_ARRAY;
 			}
 
-			string[] ret = strs.ToArray();
+			string[] ret = [.. strs];
 			int outputlength = Math.Min(output.Length, ret.Length);
 			Array.Copy(ret, output, outputlength);
 			return outputlength;
@@ -310,7 +310,7 @@ internal static partial class FunctionMethodCreator
 			string[] files;
 			try
 			{
-				files = Directory.EnumerateFiles(dir, pattern, option).ToArray();
+				files = [.. Directory.EnumerateFiles(dir, pattern, option)];
 				for (int i = 0; i < files.Length; i++)
 				{
 					files[i] = Path.GetRelativePath(Program.ExeDir, files[i]);
@@ -554,7 +554,7 @@ internal static partial class FunctionMethodCreator
 
 				//素ではintの範囲しか扱えないので一工夫
 				sortList.Sort((a, b) => { return (isAscending ? 1 : -1) * Math.Sign(a.Key - b.Key); });
-				sortedArray = sortList.Select(p => p.Value).ToArray();
+				sortedArray = [.. sortList.Select(p => p.Value)];
 			}
 			else
 			{
@@ -572,7 +572,7 @@ internal static partial class FunctionMethodCreator
 				}
 
 				sortList.Sort((a, b) => { return (isAscending ? 1 : -1) * a.Key.CompareTo(b.Key); });
-				sortedArray = sortList.Select(p => p.Value).ToArray();
+				sortedArray = [.. sortList.Select(p => p.Value)];
 			}
 
 			List<VariableTerm> varTerms = [];
@@ -9925,7 +9925,7 @@ internal static partial class FunctionMethodCreator
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string name = arguments.Required(0).GetStrValue(exm);
-			List<AExpression?> methArgs = new(arguments.Skip(2).ToArray());
+			List<AExpression?> methArgs = [.. arguments.Skip(2).ToArray()];
 			AExpression? term = GlobalStatic.IdentifierDictionary.GetFunctionMethod(GlobalStatic.LabelDictionary, name, methArgs, true);
 
 			if (term == null)
@@ -9966,7 +9966,7 @@ internal static partial class FunctionMethodCreator
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string name = arguments.Required(0).GetStrValue(exm);
-			List<AExpression?> methArgs = new(arguments.Skip(2).ToArray());
+			List<AExpression?> methArgs = [.. arguments.Skip(2).ToArray()];
 			AExpression? term = GlobalStatic.IdentifierDictionary.GetFunctionMethod(GlobalStatic.LabelDictionary, name, methArgs, true);
 
 			if (term == null)
@@ -10006,7 +10006,7 @@ internal static partial class FunctionMethodCreator
 			AExpression? term;
 			try
 			{
-				term = GlobalStatic.IdentifierDictionary.GetFunctionMethod(GlobalStatic.LabelDictionary, name, new List<AExpression?>(), true);
+				term = GlobalStatic.IdentifierDictionary.GetFunctionMethod(GlobalStatic.LabelDictionary, name, [], true);
 			}
 			catch (CodeEE)
 			{

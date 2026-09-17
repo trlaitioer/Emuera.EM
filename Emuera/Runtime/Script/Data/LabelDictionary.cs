@@ -13,7 +13,7 @@ internal sealed class LabelDictionary
 {
 	#region EM_私家版_辞書獲得
 
-	public string[] NoneventKeys => noneventLabelDic.Keys.ToArray();
+	public string[] NoneventKeys => [.. noneventLabelDic.Keys];
 
 	#endregion
 

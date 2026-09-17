@@ -170,7 +170,7 @@ internal sealed class ConsoleButtonString
 	{
 		if (!escapeFilterApplied)
 		{
-			AConsoleDisplayNode[] e = strArray.Where(p => p.Top < 0 || p.Bottom > Config.LineHeight).ToArray();
+			AConsoleDisplayNode[] e = [.. strArray.Where(p => p.Top < 0 || p.Bottom > Config.LineHeight)];
 			foreach (AConsoleDisplayNode p in e)
 			{
 				if (p is ConsoleDivPart div)

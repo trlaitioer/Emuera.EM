@@ -32,8 +32,8 @@ internal partial class IdentifierDictionary
 
 	#region EM_私家版_辞書獲得
 
-	public string[] VarKeys => varTokenDic.Keys.ToArray();
-	public string[] MacroKeys => macroDic.Values.Select(v => v.Keyword).ToArray();
+	public string[] VarKeys => [.. varTokenDic.Keys];
+	public string[] MacroKeys => [.. macroDic.Values.Select(v => v.Keyword)];
 
 	#endregion
 

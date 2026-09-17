@@ -378,7 +378,7 @@ internal static partial class ArgumentParser
 				argCount++;
 			}
 
-			return new SpPrintImgArgument(name, nameb, namem, param.Count > 0 ? param.ToArray() : null);
+			return new SpPrintImgArgument(name, nameb, namem, param.Count > 0 ? [.. param] : null);
 		}
 	}
 
@@ -433,7 +433,7 @@ internal static partial class ArgumentParser
 			}
 			//if (!checkArgumentType(line, exm, terms)) return null;
 
-			return new SpPrintShapeArgument(param.ToArray());
+			return new SpPrintShapeArgument([.. param]);
 		}
 	}
 
@@ -628,7 +628,7 @@ internal static partial class ArgumentParser
 				return null;
 			}
 
-			return new SpDtColumnOptions(dt, colum, opts.ToArray(), values.ToArray());
+			return new SpDtColumnOptions(dt, colum, [.. opts], [.. values]);
 		}
 	}
 
@@ -2291,7 +2291,7 @@ internal static partial class ArgumentParser
 			List<AExpression?> termList = [.. terms];
 			//最初の項はいらない
 			termList.RemoveAt(0);
-			BitArgument ret = new(varTerm, termList.ToArray());
+			BitArgument ret = new(varTerm, [.. termList]);
 			for (int i = 0; i < termList.Count; i++)
 			{
 				if (termList[i] is SingleLongTerm term)

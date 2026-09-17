@@ -607,9 +607,9 @@ internal static class HtmlManager
 
 	public static ConsoleButtonString[] Html2ButtonList(string? str, StringMeasure sm, EmueraConsole? console)
 	{
-		List<ConsoleButtonString> parts = new();
+		List<ConsoleButtonString> parts = [];
 		html2DisplayLine(str, sm, console, null, parts);
-		return parts.ToArray();
+		return [.. parts];
 	}
 
 	private static ConsoleDisplayLine[]? html2DisplayLine(

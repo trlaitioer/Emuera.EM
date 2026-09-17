@@ -947,7 +947,7 @@ internal sealed class ConstantData
 
 	public void isDefinedErd(string varname, ScriptPosition? sc)
 	{
-		List<string> erddic = new(erdNameToIntDics.Keys);
+		List<string> erddic = [.. erdNameToIntDics.Keys];
 		foreach (string erdvarname in erddic)
 		{
 			foreach (string erdname in erdNameToIntDics[erdvarname].Keys)

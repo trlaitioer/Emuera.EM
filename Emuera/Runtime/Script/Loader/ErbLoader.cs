@@ -54,7 +54,7 @@ internal sealed class ErbLoader
 
 		string[] firstDir = Directory.GetDirectories(erbDir, "*#*",
 			Config.Config.SearchSubdirectory ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
-		List<string> loadedFiles = new();
+		List<string> loadedFiles = [];
 
 		#endregion
 

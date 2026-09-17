@@ -1548,7 +1548,7 @@ internal sealed partial class FunctionIdentifier
 
 			// TODO: ConvertTerm rejects null, but an omitted argument reaches this point as null (issues/05);
 			// decide whether the plugin method should receive a default parameter instead.
-			PluginMethodParameter[] pluginArgs = arg.RowArgs.Select((term) => PluginMethodParameterBuilder.ConvertTerm(term!, exm)).ToArray();
+			PluginMethodParameter[] pluginArgs = [.. arg.RowArgs.Select((term) => PluginMethodParameterBuilder.ConvertTerm(term!, exm))];
 			arg.CallFunc!.Execute(pluginArgs);
 			for (int i = 0; i < pluginArgs.Length; ++i)
 			{

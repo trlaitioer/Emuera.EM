@@ -194,7 +194,7 @@ public class PluginManager
 
 	public long[] GetCharacterIDs()
 	{
-		return expressionMediator.VEvaluator.VariableData.CharacterList.Select(v => v.NO).ToArray();
+		return [.. expressionMediator.VEvaluator.VariableData.CharacterList.Select(v => v.NO)];
 	}
 
 	public long GetIntVar(string name, int index = 0)

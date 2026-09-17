@@ -2287,7 +2287,7 @@ internal sealed partial class EmueraConsole : IDisposable
 				ConsoleEscapedParts.GetPartsInRange(topLineNo, bottomLineNo, lastButtonGeneration, escapedParts);
 			}
 
-			int[] edepth = escapedParts.Keys.ToArray();
+			int[] edepth = [.. escapedParts.Keys];
 			Array.Sort(edepth, (int a, int b) => -a.CompareTo(b));
 			int eidx = 0, cidx = 0;
 			int topPointY = pointY;
@@ -3098,7 +3098,7 @@ internal sealed partial class EmueraConsole : IDisposable
 			ConsoleEscapedParts.GetPartsInRange(topLineNo, bottomLineNo, lastButtonGeneration, escapedParts);
 		}
 
-		int[] edepth = escapedParts == null || escapedParts.Keys.Count == 0 ? dummy : escapedParts.Keys.ToArray();
+		int[] edepth = escapedParts == null || escapedParts.Keys.Count == 0 ? dummy : [.. escapedParts.Keys];
 		Array.Sort(edepth);
 		int eidx = 0;
 		bool zeroTested = false;
