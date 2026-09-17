@@ -346,7 +346,6 @@ internal sealed class SpriteAnime : ASprite
 		offset.Offset(frame.Offset);
 		Rectangle destRect = new(offset, frame.SrcRectangle.Size);
 		g.DrawImage(frame.BaseImage.Bitmap, destRect, frame.SrcRectangle, GraphicsUnit.Pixel);
-		return;
 	}
 
 	public override void GraphicsDraw(Graphics g, Rectangle destRect)

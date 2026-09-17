@@ -817,7 +817,6 @@ internal static class ExpressionParser
 			}
 
 			state = 1;
-			return;
 		}
 
 

@@ -67,7 +67,6 @@ internal partial class Rikaichan
 		if (File.Exists(rikaiFilename + ".ind"))
 		{
 			edictind = File.ReadAllBytes(rikaiFilename + ".ind");
-			return;
 		}
 		else
 		{
@@ -835,8 +834,6 @@ internal partial class Rikaichan
 		}
 
 		indexLast = cur;
-
-		return;
 	}
 
 	private static bool EndsWith(byte[] s, byte[] send)
@@ -1061,9 +1058,7 @@ internal partial class Rikaichan
 					s = s.Substring(0, split);
 					len = stringMeasure.GetDisplayLength(s, Config.DefaultFont);
 					if (len > screenWidth - 32)
-					{
-						continue;
-					}
+					{ }
 					else
 					{
 						outputList2.Add(s);

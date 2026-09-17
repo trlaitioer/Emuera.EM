@@ -655,7 +655,6 @@ internal sealed partial class EmueraConsole : IDisposable
 		}
 
 		printBuffer.Append(str, Style, lineEnd: lineEnd);
-		return;
 	}
 
 

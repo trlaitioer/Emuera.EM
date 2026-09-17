@@ -785,7 +785,7 @@ internal sealed class CharacterData : IDisposable
 		}
 
 		whilebreak:
-		return;
+		;
 	}
 
 

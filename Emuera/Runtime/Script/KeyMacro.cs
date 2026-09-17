@@ -141,9 +141,7 @@ internal static class KeyMacro
 			}
 		}
 		catch
-		{
-			return;
-		}
+		{ }
 		finally
 		{
 			eReader.Dispose();

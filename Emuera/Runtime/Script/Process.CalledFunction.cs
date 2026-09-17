@@ -357,7 +357,6 @@ internal sealed class CalledFunction
 		group = 4;
 		counter = -1;
 		CurrentLabel = null;
-		return;
 	}
 
 	public bool IsOnly => CurrentLabel!.IsOnly;

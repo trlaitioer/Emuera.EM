@@ -688,7 +688,6 @@ internal sealed partial class EmueraConsole : IDisposable
 		}
 
 		GlobalStatic.ForceQuitAndRestart = true;
-		return;
 	}
 
 	#endregion
@@ -1849,8 +1848,6 @@ internal sealed partial class EmueraConsole : IDisposable
 			PrintError(trerror.FailedOpenEditor.Text);
 			forceUpdateGeneration();
 		}
-
-		return;
 	}
 
 	private static string parseInput(CharStream st, bool isNest)

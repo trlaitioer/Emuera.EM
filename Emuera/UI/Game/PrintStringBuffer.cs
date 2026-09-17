@@ -549,8 +549,6 @@ internal sealed class PrintStringBuffer
 			subPixel = button.XsubPixel;
 		}
 
-		return;
-
 		//1815 バグバグなのでコメントアウト Width測定の省略はいずれやりたい
 		////1815 alignLeft, nobrを前提にした新方式
 		////PointXの直接指定を可能にし、Width測定を一部省略

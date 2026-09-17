@@ -1726,8 +1726,6 @@ internal sealed class ConstantData
 						{
 							StaticDTs.Add(tokens[i].Trim());
 						}
-
-						continue;
 					}
 				}
 			}
@@ -1850,8 +1848,6 @@ internal sealed class ConstantData
 			{
 				output.PrintError(trerror.UnexpectedError.Text);
 			}
-
-			return;
 		}
 		finally
 		{
@@ -2279,8 +2275,6 @@ internal sealed class ConstantData
 			{
 				output!.PrintError(trerror.UnexpectedError.Text);
 			}
-
-			return;
 		}
 		finally
 		{

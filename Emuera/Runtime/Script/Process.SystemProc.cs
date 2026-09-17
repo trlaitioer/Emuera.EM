@@ -78,7 +78,6 @@ internal sealed partial class Process
 
 
 		systemProcessDictionary.Add(SystemStateCode.Normal, new SystemProcess(endNormal));
-		return;
 	}
 
 
@@ -286,14 +285,12 @@ internal sealed partial class Process
 		console.PrintSingleLine("[0] " + Config.TitleMenuString0);
 		console.PrintSingleLine("[1] " + Config.TitleMenuString1);
 		openingInput();
-		return;
 	}
 
 	private void openingInput()
 	{
 		setWaitInput();
 		state.SystemState = SystemStateCode.Openning;
-		return;
 	}
 
 	private void endOpenning()
@@ -392,7 +389,6 @@ internal sealed partial class Process
 			vEvaluator.NEXTCOM = 0;
 			//-1ではなく0を代入するのでERB側で変更しない限り無限にはまることになるがeramakerからの仕様である。
 			callEventCom();
-			return;
 		}
 		else
 		{
@@ -598,8 +594,6 @@ internal sealed partial class Process
 		{
 			endEventCom();
 		}
-
-		return;
 	}
 
 	private void endEventCom()
@@ -922,7 +916,6 @@ internal sealed partial class Process
 			//購入に失敗した場合、endCallEventShop()に戻す。
 			//endCallEventShop();
 			endCallShowShop();
-			return;
 		}
 		else
 		{
@@ -932,7 +925,6 @@ internal sealed partial class Process
 			//USERSHOPを呼び出しShop_CallEventBuyへ移行
 			callFunction("USERSHOP", true, false);
 			state.SystemState = SystemStateCode.Shop_CallEventBuy;
-			return;
 		}
 	}
 

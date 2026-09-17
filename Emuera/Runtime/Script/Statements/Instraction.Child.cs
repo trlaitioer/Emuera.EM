@@ -1465,8 +1465,6 @@ internal sealed partial class FunctionIdentifier
 				{
 					ParserMediator.Warn(callfArg.ConstStr, func, 2, true, false);
 				}
-
-				return;
 			}
 		}
 
@@ -1609,9 +1607,7 @@ internal sealed partial class FunctionIdentifier
 			}
 
 			if (callfArg.FuncTerm == null)
-			{
-				return;
-			}
+			{ }
 		}
 
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
@@ -2543,7 +2539,6 @@ internal sealed partial class FunctionIdentifier
 			Color fc = Color.FromArgb((int)foreColor >> 16, ((int)foreColor >> 8) & 0xFF, (int)foreColor & 0xFF);
 			Color bc = Color.FromArgb((int)backColor >> 16, ((int)backColor >> 8) & 0xFF, (int)backColor & 0xFF);
 			exm.Console.SetToolTipColor(fc, bc);
-			return;
 		}
 	}
 
@@ -2574,7 +2569,6 @@ internal sealed partial class FunctionIdentifier
 			}
 
 			exm.Console.SetToolTipDelay((int)delay);
-			return;
 		}
 	}
 
@@ -2610,7 +2604,6 @@ internal sealed partial class FunctionIdentifier
 			}
 
 			exm.Console.SetToolTipDuration((int)duration);
-			return;
 		}
 	}
 
@@ -3459,24 +3452,20 @@ internal sealed partial class FunctionIdentifier
 						exm.VEvaluator.RESULT = 2;
 						System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { UseShellExecute = true, FileName = link });
 						//System.Diagnostics.Process.Start(link);
-						return;
 					}
 					else
 					{
 						exm.VEvaluator.RESULT = 1;
-						return;
 					}
 				}
 				else
 				{
 					exm.VEvaluator.RESULT = 0;
-					return;
 				}
 			}
 			catch
 			{
 				exm.VEvaluator.RESULT = 3;
-				return;
 			}
 		}
 	}
@@ -4020,9 +4009,7 @@ internal sealed partial class FunctionIdentifier
 			exm.VEvaluator.SetResultX(termList);
 			state.Return(exm.VEvaluator.RESULT);
 			if (state.ScriptEnd)
-			{
-				return;
-			}
+			{ }
 		}
 	}
 
@@ -4540,9 +4527,7 @@ internal sealed partial class FunctionIdentifier
 						ParserMediator.Warn(string.Format(trerror.NotDefinedLabelName.Text, labelName), func, 2, true, false);
 					}
 					else
-					{
-						return;
-					}
+					{ }
 				}
 				else if (jumpto.IsError)
 				{

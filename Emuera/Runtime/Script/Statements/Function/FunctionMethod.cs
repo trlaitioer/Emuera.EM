@@ -274,21 +274,17 @@ internal abstract class FunctionMethod
 				{
 					errMsg[idx] = string.Format(trerror.ArgsNotNeeded.Text, name);
 				}
-
-				continue;
 			}
 			// 可変長引数
 			else if (!argsNotMoreThanRule)
 			{
 				// 引数が多すぎる
 				errMsg[idx] = string.Format(trerror.TooManyFuncArgs.Text, name);
-				continue;
 			}
 			else
 			{
 				// 引数が足りない
 				errMsg[idx] = string.Format(trerror.NotEnoughArgs.Text, name, list.OmitStart < 0 ? list.ArgTypes.Count : list.OmitStart);
-				continue;
 			}
 		}
 

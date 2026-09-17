@@ -177,8 +177,6 @@ public partial class RikaiDialog : Form
 					}
 				}
 			}
-
-			return;
 		}
 	}
 

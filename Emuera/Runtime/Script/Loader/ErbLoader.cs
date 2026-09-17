@@ -586,7 +586,6 @@ internal sealed class ErbLoader
 		addLine(new NullLine(), lastLine);
 		position = new ScriptPosition(eReader.Filename, -1);
 		ppstate.FileEnd(position);
-		return;
 	}
 
 	private LogicalLine? addLine(LogicalLine? nextLine, LogicalLine? lastLine)
@@ -852,7 +851,6 @@ internal sealed class ErbLoader
 		return;
 		err:
 		ParserMediator.Warn(string.Format(trerror.FuncArgError.Text, label.LabelName, errMes), label, 2, true, false);
-		return;
 	}
 
 

@@ -224,7 +224,6 @@ internal abstract class VariableToken
 	public virtual void IsArrayRangeValid(long[] arguments, long index1, long index2, string funcName, long i1, long i2)
 	{
 		CheckElement(arguments, [true, true, true]);
-		return;
 	}
 
 	public int CodeInt => VarCodeInt;

@@ -41,14 +41,11 @@ internal sealed class ConstImage : AbstractImage
 			}
 
 			RealIsCreated = true;
-			return;
 		}
 		catch (Exception e)
 		{
 			File.WriteAllText("img_err.log", e.ToString());
 		}
-
-		return;
 	}
 
 	public void Load()
@@ -72,11 +69,7 @@ internal sealed class ConstImage : AbstractImage
 			}
 		}
 		catch
-		{
-			return;
-		}
-
-		return;
+		{ }
 	}
 	//public void Load(bool useGDI)
 	//{

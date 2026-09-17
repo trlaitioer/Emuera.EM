@@ -100,9 +100,7 @@ internal sealed class VariableEvaluator : IDisposable
 		//if (p.Identifier.Readonly)
 		//    throw new CodeEE("読み取り専用の変数" + p.Identifier.Name + "に代入しようとしました");
 		if (p.Identifier.IsCalc)
-		{
-			return;
-		}
+		{ }
 		//一応チェック済み
 		//throw new ExeEE("READONLYでないCALC変数の代入処理が設定されていない");
 
@@ -125,7 +123,6 @@ internal sealed class VariableEvaluator : IDisposable
 			}
 
 			p.Identifier.SetValueAll(srcValue, start, end, (int)p.Index1);
-			return;
 		}
 	}
 
@@ -141,10 +138,8 @@ internal sealed class VariableEvaluator : IDisposable
 			if (p.Identifier.Code == VariableCode.WINDOW_TITLE)
 			{
 				GlobalStatic.Console.SetWindowTitle(srcValue);
-				return;
 			}
 
-			return;
 			//一応チェック済み
 			//throw new ExeEE("READONLYでないCALC変数の代入処理が設定されていない");
 		}
@@ -167,7 +162,6 @@ internal sealed class VariableEvaluator : IDisposable
 			}
 
 			p.Identifier.SetValueAll(srcValue, start, end, (int)p.Index1);
-			return;
 		}
 	}
 
@@ -241,7 +235,6 @@ internal sealed class VariableEvaluator : IDisposable
 			if (p.Identifier.Code == VariableCode.WINDOW_TITLE)
 			{
 				GlobalStatic.Console.SetWindowTitle(srcValue);
-				return;
 			}
 
 			//一応チェック済み
@@ -2896,7 +2889,6 @@ internal sealed class VariableEvaluator : IDisposable
 
 			bWriter.WriteEOF();
 			//RESULT = 1;
-			return;
 		}
 		//catch (Exception)
 		//{
@@ -2963,7 +2955,6 @@ internal sealed class VariableEvaluator : IDisposable
 
 			varData.CharacterList.AddRange(addCharaList);
 			RESULT = 1;
-			return;
 		}
 		//catch (Exception)
 		//{
@@ -3007,7 +2998,6 @@ internal sealed class VariableEvaluator : IDisposable
 
 			bWriter.WriteEOF();
 			//RESULT = 1;
-			return;
 		}
 		//catch (Exception)
 		//{
@@ -3067,7 +3057,6 @@ internal sealed class VariableEvaluator : IDisposable
 			{ }
 
 			RESULT = 1;
-			return;
 		}
 		//catch (Exception)
 		//{
@@ -3479,7 +3468,6 @@ internal sealed class VariableEvaluator : IDisposable
 		//    return;
 		//}
 		File.Delete(filepath);
-		return;
 	}
 
 	#endregion

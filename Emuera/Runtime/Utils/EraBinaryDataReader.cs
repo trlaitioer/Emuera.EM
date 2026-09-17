@@ -435,8 +435,6 @@ internal abstract class EraBinaryDataReader : IDisposable
 					oriArray[x] = refArray[x];
 				}
 			}
-
-			return;
 		}
 
 		public override void ReadIntArray2D(long[,]? refArray, bool needInit)
@@ -565,8 +563,6 @@ internal abstract class EraBinaryDataReader : IDisposable
 					oriArray[x, y] = refArray[x, y];
 				}
 			}
-
-			return;
 		}
 
 		/// <summary>
@@ -750,8 +746,6 @@ internal abstract class EraBinaryDataReader : IDisposable
 					oriArray[x, y, z] = refArray[x, y, z];
 				}
 			}
-
-			return;
 		}
 
 		public override void ReadStrArray(string?[]? refArray, bool needInit)
@@ -827,8 +821,6 @@ internal abstract class EraBinaryDataReader : IDisposable
 					oriArray[x] = refArray[x];
 				}
 			}
-
-			return;
 		}
 
 		public override void ReadStrArray2D(string?[,]? refArray, bool needInit)
@@ -945,8 +937,6 @@ internal abstract class EraBinaryDataReader : IDisposable
 					oriArray[x, y] = refArray[x, y];
 				}
 			}
-
-			return;
 		}
 
 		public override void ReadStrArray3D(string?[,,]? refArray, bool needInit)
@@ -1113,8 +1103,6 @@ internal abstract class EraBinaryDataReader : IDisposable
 					oriArray[x, y, z] = refArray[x, y, z];
 				}
 			}
-
-			return;
 		}
 	}
 }

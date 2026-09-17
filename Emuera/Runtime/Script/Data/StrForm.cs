@@ -278,7 +278,6 @@ internal sealed class StrForm
 
 		strs = [.. strList];
 		terms = [.. termList];
-		return;
 	}
 
 	public string GetString(ExpressionMediator exm)

@@ -260,7 +260,6 @@ internal sealed class ProcessState
 		}
 
 		//ClearFunctionList();
-		return;
 	}
 
 	public void ClearFunctionList()
@@ -350,7 +349,6 @@ internal sealed class ProcessState
 
 		functionList.Clear();
 		begintype = BeginType.NULL;
-		return;
 	}
 
 	/// <summary>
@@ -522,7 +520,6 @@ internal sealed class ProcessState
 
 		lineCount++;
 		//ShfitNextLine();
-		return;
 	}
 
 	public void IntoFunction(CalledFunction call, UserDefinedFunctionArgument? srcArgs, ExpressionMediator exm)
@@ -654,7 +651,6 @@ internal sealed class ProcessState
 		functionList.RemoveAt(functionList.Count - 1);
 		//nextLine = null;
 		MethodReturnValue = ret;
-		return;
 	}
 
 	#endregion

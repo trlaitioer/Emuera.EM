@@ -1119,8 +1119,6 @@ internal sealed partial class Process
 				throw new ExeEE(trerror.UndefinedFunc.Text);
 #endif
 		}
-
-		return;
 	}
 
 	private bool saveSkip;

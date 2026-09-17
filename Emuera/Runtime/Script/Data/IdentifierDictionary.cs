@@ -290,8 +290,6 @@ internal partial class IdentifierDictionary
 					break;
 			}
 		}
-
-		return;
 	}
 
 	public void CheckUserVarName(ref string errMes, ref int warnLevel, string varName)

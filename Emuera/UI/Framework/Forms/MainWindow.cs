@@ -1072,7 +1072,6 @@ internal sealed partial class MainWindow : Form
 			console.inputReq.Timelimit = 0;
 
 			PressEnterKey(false, true);
-			return;
 		}
 
 		#endregion
@@ -1103,8 +1102,6 @@ internal sealed partial class MainWindow : Form
 			{
 				PressEnterKey(false, true);
 			}
-
-			return;
 		}
 	}
 
@@ -1231,7 +1228,6 @@ internal sealed partial class MainWindow : Form
 		richTextBox1.Text = prevInputs[next];
 		richTextBox1.SelectionStart = 0;
 		richTextBox1.SelectionLength = richTextBox1.Text.Length;
-		return;
 	}
 
 	private void exitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1444,7 +1440,6 @@ internal sealed partial class MainWindow : Form
 		catch (Exception)
 		{
 			MessageBox.Show(trmb.CanNotOpenClipboard.Text);
-			return;
 		}
 	}
 
@@ -1902,7 +1897,6 @@ internal sealed partial class MainWindow : Form
 		if (e.KeyCode == Keys.Insert)
 		{
 			e.SuppressKeyPress = true;
-			return;
 		}
 	}
 
@@ -2005,9 +1999,7 @@ internal sealed partial class MainWindow : Form
 	private void コピー_Click(object sender, EventArgs e)
 	{
 		if (console == null || console.IsInProcess || !コピー.Enabled)
-		{
-			return;
-		}
+		{ }
 		else if (richTextBox1.SelectedText.Length > 0)
 		{
 			richTextBox1.Copy();

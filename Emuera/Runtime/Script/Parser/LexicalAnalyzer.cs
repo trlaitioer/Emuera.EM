@@ -1384,8 +1384,6 @@ internal static partial class LexicalAnalyzer
 			{
 				throw new CodeEE(string.Format(trerror.CanNotOmitMacroArg.Text, macro.Keyword));
 			}
-
-			continue;
 		}
 
 		//引数部読み取りループ終端

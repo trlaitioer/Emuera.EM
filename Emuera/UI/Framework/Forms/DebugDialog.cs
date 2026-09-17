@@ -279,7 +279,6 @@ public partial class DebugDialog : Form
 		catch
 		{
 			MessageBox.Show(trmb.ConsoleLogSaveFailed.Text, trmb.DebugWindow.Text);
-			return;
 		}
 		finally
 		{
@@ -304,7 +303,6 @@ public partial class DebugDialog : Form
 		catch
 		{
 			MessageBox.Show(trmb.WatchListSaveFailed.Text, trmb.DebugWindow.Text);
-			return;
 		}
 		finally
 		{
@@ -462,7 +460,6 @@ public partial class DebugDialog : Form
 			}
 
 			movePrev(1);
-			return;
 		}
 	}
 
@@ -503,7 +500,6 @@ public partial class DebugDialog : Form
 
 		textBoxCommand.SelectionStart = 0;
 		textBoxCommand.SelectionLength = textBoxCommand.Text.Length;
-		return;
 	}
 
 	private void 設定ToolStripMenuItem1_Click(object sender, EventArgs e)

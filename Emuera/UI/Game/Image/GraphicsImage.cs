@@ -897,7 +897,5 @@ internal sealed class GraphicsImage : AbstractImage
 		{
 			AppContents.tempLoadedGraphicsImages.Add(this);
 		}
-
-		return;
 	}
 }
