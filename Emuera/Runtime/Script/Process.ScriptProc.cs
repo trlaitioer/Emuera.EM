@@ -81,7 +81,7 @@ internal sealed partial class Process
 					doNormalFunction(func);
 				}
 			}
-			else if (line is NullLine || line is FunctionLabelLine)
+			else if (line is NullLine or FunctionLabelLine)
 			{
 				//（関数終端） or ファイル終端
 				//if (sequential)
@@ -485,7 +485,7 @@ internal sealed partial class Process
 				{
 					throw new CodeEE(trerror.PowerResultInfinite.Text);
 				}
-				else if (pow >= long.MaxValue || pow <= long.MinValue)
+				else if (pow is >= long.MaxValue or <= long.MinValue)
 				{
 					throw new CodeEE(string.Format(trerror.PowerResultOverflow.Text, pow.ToString()));
 				}

@@ -26,7 +26,7 @@ internal abstract class VariableToken
 		IsPrivate = false;
 		IsReference = false;
 		Dimension = 0;
-		IsGlobal = Code == VariableCode.GLOBAL || Code == VariableCode.GLOBALS;
+		IsGlobal = Code is VariableCode.GLOBAL or VariableCode.GLOBALS;
 		if ((Code & VariableCode.__ARRAY_1D__) == VariableCode.__ARRAY_1D__)
 		{
 			Dimension = 1;
@@ -44,7 +44,7 @@ internal abstract class VariableToken
 
 
 		IsSavedata = false;
-		if (Code == VariableCode.GLOBAL || Code == VariableCode.GLOBALS)
+		if (Code is VariableCode.GLOBAL or VariableCode.GLOBALS)
 		{
 			IsSavedata = true;
 		}
@@ -911,7 +911,7 @@ internal sealed partial class VariableData
 
 		public override int GetLength(int dimension)
 		{
-			if (dimension == 0 || dimension == 1)
+			if (dimension is 0 or 1)
 			{
 				return array.GetLength(dimension);
 			}
@@ -1010,7 +1010,7 @@ internal sealed partial class VariableData
 
 		public override int GetLength(int dimension)
 		{
-			if (dimension == 0 || dimension == 1 || dimension == 2)
+			if (dimension is 0 or 1 or 2)
 			{
 				return array.GetLength(dimension);
 			}

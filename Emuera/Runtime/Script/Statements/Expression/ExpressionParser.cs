@@ -305,7 +305,7 @@ internal static class ExpressionParser
 			//名前空間
 			throw new NotImplCodeEE();
 		}
-		else if (symbol != null && (symbol.Type == '(' || symbol.Type == '['))
+		else if (symbol != null && symbol.Type is '(' or '[')
 		{
 			//関数
 			wc.ShiftNext();
@@ -554,7 +554,7 @@ internal static class ExpressionParser
 					#region EM_私家版_HTMLパラメータ拡張
 
 					if ((endWith & TermEndWith.KeyWordPx) == TermEndWith.KeyWordPx && idStr.Equals("px", StringComparison.OrdinalIgnoreCase) &&
-					    (wc.Next.Type == ',' || wc.Next.Type == '\0'))
+					    wc.Next.Type is ',' or '\0')
 					{
 						return end(stack, ternaryCount);
 					}
@@ -589,11 +589,9 @@ internal static class ExpressionParser
 						throw new CodeEE(trerror.EqualInExpression.Text);
 					}
 
-					if (formerOp == OperatorCode.Equal || formerOp == OperatorCode.Greater || formerOp == OperatorCode.Less
-					    || formerOp == OperatorCode.GreaterEqual || formerOp == OperatorCode.LessEqual || formerOp == OperatorCode.NotEqual)
+					if (formerOp is OperatorCode.Equal or OperatorCode.Greater or OperatorCode.Less or OperatorCode.GreaterEqual or OperatorCode.LessEqual or OperatorCode.NotEqual)
 					{
-						if (op == OperatorCode.Equal || op == OperatorCode.Greater || op == OperatorCode.Less
-						    || op == OperatorCode.GreaterEqual || op == OperatorCode.LessEqual || op == OperatorCode.NotEqual)
+						if (op is OperatorCode.Equal or OperatorCode.Greater or OperatorCode.Less or OperatorCode.GreaterEqual or OperatorCode.LessEqual or OperatorCode.NotEqual)
 						{
 							ParserMediator.Warn(trerror.ComparisonOpContinuous.Text, GlobalStatic.Process.GetScaningLine()!, 0, false, false);
 						}
@@ -700,7 +698,7 @@ internal static class ExpressionParser
 
 		public void Add(OperatorCode op)
 		{
-			if (state == 2 || state == 3)
+			if (state is 2 or 3)
 			{
 				throw new CodeEE(trerror.UnrecognizedSyntax.Text);
 			}
@@ -713,7 +711,7 @@ internal static class ExpressionParser
 				}
 
 				stack.Push(op);
-				if (op == OperatorCode.Plus || op == OperatorCode.Minus || op == OperatorCode.BitNot)
+				if (op is OperatorCode.Plus or OperatorCode.Minus or OperatorCode.BitNot)
 				{
 					state = 2;
 				}

@@ -614,7 +614,7 @@ internal partial class Rikaichan
 			while (true)
 			{
 				rem = edictind[cur++];
-				if (rem == 0 || rem == 1)
+				if (rem is 0 or 1)
 				{
 					break;
 				}
@@ -768,7 +768,7 @@ internal partial class Rikaichan
 			while (true)
 			{
 				rem = edictind[cur++];
-				if (rem == 0 || rem == 1)
+				if (rem is 0 or 1)
 				{
 					break;
 				}

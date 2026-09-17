@@ -741,7 +741,7 @@ internal partial class IdentifierDictionary
 		}
 
 		if (!JSONConfig.Data.UseScopedVariableInstruction &&
-		    (idStr == "VARS" || idStr == "VARI"))
+		    idStr is "VARS" or "VARI")
 		{
 			throw new CodeEE(string.Format(treer.CanNotUseVAR.Text, idStr));
 		}

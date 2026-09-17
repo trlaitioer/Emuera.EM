@@ -461,7 +461,7 @@ internal sealed class ErbLoader
 				continue;
 			}
 
-			if (st.Current == '$' || st.Current == '@')
+			if (st.Current is '$' or '@')
 			{
 				bool isFunction = st.Current == '@';
 				nextLine = LogicalLineParser.ParseLabelLine(st, position, output);
@@ -1338,20 +1338,7 @@ internal sealed class ErbLoader
 					InstructionLine? currentBaseFunc = nestStack.Count == 0 ? null : nestStack.Peek();
 					if (currentBaseFunc != null)
 					{
-						if (currentBaseFunc.FunctionCode == FunctionCode.PRINTDATA
-						    || currentBaseFunc.FunctionCode == FunctionCode.PRINTDATAL
-						    || currentBaseFunc.FunctionCode == FunctionCode.PRINTDATAW
-						    || currentBaseFunc.FunctionCode == FunctionCode.PRINTDATAD
-						    || currentBaseFunc.FunctionCode == FunctionCode.PRINTDATADL
-						    || currentBaseFunc.FunctionCode == FunctionCode.PRINTDATADW
-						    || currentBaseFunc.FunctionCode == FunctionCode.PRINTDATAK
-						    || currentBaseFunc.FunctionCode == FunctionCode.PRINTDATAKL
-						    || currentBaseFunc.FunctionCode == FunctionCode.PRINTDATAKW
-						    || currentBaseFunc.FunctionCode == FunctionCode.STRDATA
-						    || currentBaseFunc.FunctionCode == FunctionCode.DATALIST
-						    || currentBaseFunc.FunctionCode == FunctionCode.TRYCALLLIST
-						    || currentBaseFunc.FunctionCode == FunctionCode.TRYJUMPLIST
-						    || currentBaseFunc.FunctionCode == FunctionCode.TRYGOTOLIST)
+						if (currentBaseFunc.FunctionCode is FunctionCode.PRINTDATA or FunctionCode.PRINTDATAL or FunctionCode.PRINTDATAW or FunctionCode.PRINTDATAD or FunctionCode.PRINTDATADL or FunctionCode.PRINTDATADW or FunctionCode.PRINTDATAK or FunctionCode.PRINTDATAKL or FunctionCode.PRINTDATAKW or FunctionCode.STRDATA or FunctionCode.DATALIST or FunctionCode.TRYCALLLIST or FunctionCode.TRYJUMPLIST or FunctionCode.TRYGOTOLIST)
 							//|| (currentBaseFunc.FunctionCode == FunctionCode.SELECTCASE))
 						{
 							ParserMediator.Warn(string.Format(trerror.CanNotLabelDefineInSyntax.Text, currentBaseFunc.Function.Name), nextLine, 2,
@@ -1387,8 +1374,7 @@ internal sealed class ErbLoader
 						continue;
 					}
 				}
-				else if (baseFunc.FunctionCode == FunctionCode.TRYCALLLIST || baseFunc.FunctionCode == FunctionCode.TRYJUMPLIST ||
-				         baseFunc.FunctionCode == FunctionCode.TRYGOTOLIST)
+				else if (baseFunc.FunctionCode is FunctionCode.TRYCALLLIST or FunctionCode.TRYJUMPLIST or FunctionCode.TRYGOTOLIST)
 				{
 					if (func.FunctionCode != FunctionCode.FUNC && func.FunctionCode != FunctionCode.ENDFUNC)
 					{
@@ -1851,8 +1837,7 @@ internal sealed class ErbLoader
 				case FunctionCode.TRYGOTOLIST:
 					foreach (InstructionLine iLine in nestStack)
 					{
-						if (iLine.FunctionCode == FunctionCode.TRYCALLLIST || iLine.FunctionCode == FunctionCode.TRYJUMPLIST ||
-						    iLine.FunctionCode == FunctionCode.TRYGOTOLIST)
+						if (iLine.FunctionCode is FunctionCode.TRYCALLLIST or FunctionCode.TRYJUMPLIST or FunctionCode.TRYGOTOLIST)
 						{
 							ParserMediator.Warn(trerror.NestedTrycalllist.Text, func, 2, true, false);
 							break;
@@ -1985,7 +1970,7 @@ internal sealed class ErbLoader
 			nextLine = nextLine.NextLine;
 			if (nextLine is not InstructionLine func)
 			{
-				if (nextLine is NullLine || nextLine is FunctionLabelLine)
+				if (nextLine is NullLine or FunctionLabelLine)
 				{
 					break;
 				}
@@ -2028,7 +2013,7 @@ internal sealed class ErbLoader
 				continue;
 			}
 
-			if (func.FunctionCode == FunctionCode.TRYCALLLIST || func.FunctionCode == FunctionCode.TRYJUMPLIST)
+			if (func.FunctionCode is FunctionCode.TRYCALLLIST or FunctionCode.TRYJUMPLIST)
 			{
 				useCallForm = true;
 			}

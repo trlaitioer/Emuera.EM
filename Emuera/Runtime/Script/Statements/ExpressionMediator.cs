@@ -32,7 +32,7 @@ internal sealed class ExpressionMediator
 
 	public void ForceKana(long flag)
 	{
-		if (flag < 0 || flag > 3)
+		if (flag is < 0 or > 3)
 		{
 			throw new CodeEE(trerror.OoRForcekanaArg.Text);
 		}

@@ -451,7 +451,7 @@ internal sealed partial class Process(EmueraConsole view)
 		}
 
 		LogicalLine? currentLine = state.CurrentLine;
-		if (currentLine == null || currentLine is NullLine)
+		if (currentLine is null or NullLine)
 		{
 			return; //現在の行が特殊な状態ならスルー
 		}

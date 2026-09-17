@@ -1214,7 +1214,7 @@ internal static partial class FunctionMethodCreator
 
 			bool setAllNodes = arguments.Count >= 4 && arguments.Required(3).GetIntValue(exm) != 0;
 			long style = arguments.Count == 5 ? arguments.Required(4).GetIntValue(exm) : 0;
-			if (style > 2 || style < 0)
+			if (style is > 2 or < 0)
 			{
 				style = 0;
 			}
@@ -1453,7 +1453,7 @@ internal static partial class FunctionMethodCreator
 			XmlDocument doc;
 			int methodPos = op == Operation.Node ? 4 : 5;
 			int method = arguments.Count >= methodPos ? (int)arguments.Required(methodPos - 1).GetIntValue(exm) : 0;
-			if (method > 2 || method < 0)
+			if (method is > 2 or < 0)
 			{
 				method = 0;
 			}
@@ -1623,7 +1623,7 @@ internal static partial class FunctionMethodCreator
 		{
 			XmlDocument doc;
 			int method = arguments.Count >= 4 ? (int)arguments.Required(3).GetIntValue(exm) : 0;
-			if (method > 2 || method < 0)
+			if (method is > 2 or < 0)
 			{
 				method = 0;
 			}
@@ -3888,21 +3888,21 @@ internal static partial class FunctionMethodCreator
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long r = arguments.Required(0).GetIntValue(exm);
-			if (r < 0 || r > 255)
+			if (r is < 0 or > 255)
 				// throw new CodeEE("第１引数が0から255の範囲外です");
 			{
 				throw new CodeEE(string.Format(trerror.ArgIsOutOfRange.Text, Name, 1, r, 0, 255));
 			}
 
 			long g = arguments.Required(1).GetIntValue(exm);
-			if (g < 0 || g > 255)
+			if (g is < 0 or > 255)
 				// throw new CodeEE("第２引数が0から255の範囲外です");
 			{
 				throw new CodeEE(string.Format(trerror.ArgIsOutOfRange.Text, Name, 2, g, 0, 255));
 			}
 
 			long b = arguments.Required(2).GetIntValue(exm);
-			if (b < 0 || b > 255)
+			if (b is < 0 or > 255)
 				// throw new CodeEE("第３引数が0から255の範囲外です");
 			{
 				throw new CodeEE(string.Format(trerror.ArgIsOutOfRange.Text, Name, 3, b, 0, 255));
@@ -4302,7 +4302,7 @@ internal static partial class FunctionMethodCreator
 			{
 				throw new CodeEE(string.Format(trerror.ResultIsInfinity.Text, Name));
 			}
-			else if (pow >= long.MaxValue || pow <= long.MinValue)
+			else if (pow is >= long.MaxValue or <= long.MinValue)
 				//throw new CodeEE("累乗結果(" + pow.ToString() + ")が64ビット符号付き整数の範囲外です");
 			{
 				throw new CodeEE(string.Format(trerror.ResultIsOutOfTheRangeOfInt64.Text, Name, pow));
@@ -4408,7 +4408,7 @@ internal static partial class FunctionMethodCreator
 			{
 				throw new CodeEE(string.Format(trerror.ResultIsInfinity.Text, Name));
 			}
-			else if (dret >= long.MaxValue || dret <= long.MinValue)
+			else if (dret is >= long.MaxValue or <= long.MinValue)
 				// throw new CodeEE("計算結果(" + dret.ToString() + ")が64ビット符号付き整数の範囲外です");
 			{
 				throw new CodeEE(string.Format(trerror.ResultIsOutOfTheRangeOfInt64.Text, Name, dret));
@@ -4441,7 +4441,7 @@ internal static partial class FunctionMethodCreator
 			{
 				throw new CodeEE(string.Format(trerror.ResultIsInfinity.Text, Name));
 			}
-			else if (dret >= long.MaxValue || dret <= long.MinValue)
+			else if (dret is >= long.MaxValue or <= long.MinValue)
 				// throw new CodeEE("計算結果(" + dret.ToString() + ")が64ビット符号付き整数の範囲外です");
 			{
 				throw new CodeEE(string.Format(trerror.ResultIsOutOfTheRangeOfInt64.Text, Name, dret));
@@ -5034,7 +5034,7 @@ internal static partial class FunctionMethodCreator
 		{
 			long n = arguments.Required(0).GetIntValue(exm);
 			long m = arguments.Required(1).GetIntValue(exm);
-			if (m < 0 || m > 63)
+			if (m is < 0 or > 63)
 				// throw new CodeEE("GETBIT関数の第２引数(" + m.ToString() + ")が範囲(０～６３)を超えています");
 			{
 				throw new CodeEE(string.Format(trerror.ArgIsOutOfRange.Text, Name, 2, m, 0, 63));
@@ -6033,7 +6033,7 @@ internal static partial class FunctionMethodCreator
 			{
 				return 0;
 			}
-			else if ((st.Current == '+' || st.Current == '-') && !char.IsDigit(st.Next))
+			else if (st.Current is '+' or '-' && !char.IsDigit(st.Next))
 			{
 				return 0;
 			}
@@ -6238,7 +6238,7 @@ internal static partial class FunctionMethodCreator
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long i = arguments.Required(0).GetIntValue(exm);
-			if (i < 0 || i > 0xFFFF)
+			if (i is < 0 or > 0xFFFF)
 				// throw new CodeEE("UNICODE関数に範囲外の値(" + i.ToString() + ")が渡されました");
 			{
 				throw new CodeEE(string.Format(trerror.ArgIsOutOfRange.Text, Name, 1, i, 0, 0xFFFF));
@@ -6340,7 +6340,7 @@ internal static partial class FunctionMethodCreator
 			{
 				return 0;
 			}
-			else if ((st.Current == '+' || st.Current == '-') && !char.IsDigit(st.Next))
+			else if (st.Current is '+' or '-' && !char.IsDigit(st.Next))
 			{
 				return 0;
 			}
@@ -6872,7 +6872,7 @@ internal static partial class FunctionMethodCreator
 	private static Color ReadColor(string Name, ExpressionMediator exm, List<AExpression?> arguments, int argNo)
 	{
 		long c64 = arguments.Required(argNo).GetIntValue(exm);
-		if (c64 < 0 || c64 > 0xFFFFFFFF)
+		if (c64 is < 0 or > 0xFFFFFFFF)
 			// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodColorARGB0, Name, c64));
 		{
 			throw new CodeEE(string.Format(trerror.InvalidColorARGB.Text, Name, c64));
@@ -6887,14 +6887,14 @@ internal static partial class FunctionMethodCreator
 	private static Point ReadPoint(string Name, ExpressionMediator exm, List<AExpression?> arguments, int argNo)
 	{
 		long x64 = arguments.Required(argNo).GetIntValue(exm);
-		if (x64 < int.MinValue || x64 > int.MaxValue)
+		if (x64 is < int.MinValue or > int.MaxValue)
 			// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodDefaultArgumentOutOfRange0, Name,x64, argNo+1));
 		{
 			throw new CodeEE(string.Format(trerror.ArgIsOutOfRange.Text, Name, argNo + 1, x64, int.MinValue, int.MaxValue));
 		}
 
 		long y64 = arguments.Required(argNo + 1).GetIntValue(exm);
-		if (y64 < int.MinValue || y64 > int.MaxValue)
+		if (y64 is < int.MinValue or > int.MaxValue)
 			// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodDefaultArgumentOutOfRange0, Name,y64, argNo+1+1));
 		{
 			throw new CodeEE(string.Format(trerror.ArgIsOutOfRange.Text, Name, argNo + 2, y64, int.MinValue, int.MaxValue));
@@ -6909,28 +6909,28 @@ internal static partial class FunctionMethodCreator
 	private static Rectangle ReadRectangle(string Name, ExpressionMediator exm, List<AExpression?> arguments, int argNo)
 	{
 		long x64 = arguments.Required(argNo).GetIntValue(exm);
-		if (x64 < int.MinValue || x64 > int.MaxValue)
+		if (x64 is < int.MinValue or > int.MaxValue)
 			// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodDefaultArgumentOutOfRange0, Name, x64, argNo + 1));
 		{
 			throw new CodeEE(string.Format(trerror.ArgIsOutOfRange.Text, Name, argNo + 1, x64, int.MinValue, int.MaxValue));
 		}
 
 		long y64 = arguments.Required(argNo + 1).GetIntValue(exm);
-		if (y64 < int.MinValue || y64 > int.MaxValue)
+		if (y64 is < int.MinValue or > int.MaxValue)
 			// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodDefaultArgumentOutOfRange0, Name, y64, argNo + 1 + 1));
 		{
 			throw new CodeEE(string.Format(trerror.ArgIsOutOfRange.Text, Name, argNo + 2, y64, int.MinValue, int.MaxValue));
 		}
 
 		long w64 = arguments.Required(argNo + 2).GetIntValue(exm);
-		if (w64 < int.MinValue || w64 > int.MaxValue || w64 == 0)
+		if (w64 is < int.MinValue or > int.MaxValue or 0)
 			// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodDefaultArgumentOutOfRange0, Name, w64, argNo + 2 + 1));
 		{
 			throw new CodeEE(string.Format(trerror.ArgIsOutOfRangeExcept.Text, Name, argNo + 3, w64, int.MinValue, int.MaxValue, 0));
 		}
 
 		long h64 = arguments.Required(argNo + 3).GetIntValue(exm);
-		if (h64 < int.MinValue || h64 > int.MaxValue || h64 == 0)
+		if (h64 is < int.MinValue or > int.MaxValue or 0)
 			// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodDefaultArgumentOutOfRange0, Name, h64, argNo + 3 + 1));
 		{
 			throw new CodeEE(string.Format(trerror.ArgIsOutOfRangeExcept.Text, Name, argNo + 4, h64, int.MinValue, int.MaxValue, 0));
@@ -8712,7 +8712,7 @@ internal static partial class FunctionMethodCreator
 			//throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodCIMGCreateOutOfRange0, Name));
 			Point offset = ReadPoint(Name, exm, arguments, 6);
 			long delay = arguments.Required(8).GetIntValue(exm);
-			if (delay <= 0 || delay > int.MaxValue)
+			if (delay is <= 0 or > int.MaxValue)
 			{
 				return 0;
 			}
@@ -8839,7 +8839,7 @@ internal static partial class FunctionMethodCreator
 
 			Point p = ReadPoint(Name, exm, arguments, 1);
 			long z64 = arguments.Required(3).GetIntValue(exm);
-			if (z64 < int.MinValue || z64 > int.MaxValue || z64 == 0)
+			if (z64 is < int.MinValue or > int.MaxValue or 0)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodDefaultArgumentOutOfRange0, Name, z64, 3 + 1));
 			{
 				throw new CodeEE(string.Format(trerror.ArgIsOutOfRangeExcept.Text, Name, 4, z64, int.MinValue, int.MaxValue, 0));
@@ -8907,7 +8907,7 @@ internal static partial class FunctionMethodCreator
 
 			Point p = ReadPoint(Name, exm, arguments, 1);
 			long z64 = arguments.Required(3).GetIntValue(exm);
-			if (z64 < int.MinValue || z64 > int.MaxValue || z64 == 0)
+			if (z64 is < int.MinValue or > int.MaxValue or 0)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodDefaultArgumentOutOfRange0, Name, z64, 3 + 1));
 			{
 				throw new CodeEE(string.Format(trerror.ArgIsOutOfRangeExcept.Text, Name, 4, z64, int.MinValue, int.MaxValue, 0));
@@ -8979,7 +8979,7 @@ internal static partial class FunctionMethodCreator
 			}
 
 			long b64 = arguments.Required(0).GetIntValue(exm);
-			if (b64 < 0 || b64 > 0xFFFFFF)
+			if (b64 is < 0 or > 0xFFFFFF)
 			{
 				return 0;
 			}
@@ -8991,7 +8991,7 @@ internal static partial class FunctionMethodCreator
 
 			Point p = ReadPoint(Name, exm, arguments, 3);
 			long z64 = arguments.Required(5).GetIntValue(exm);
-			if (z64 < int.MinValue || z64 > int.MaxValue || z64 == 0)
+			if (z64 is < int.MinValue or > int.MaxValue or 0)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodDefaultArgumentOutOfRange0, Name, z64, 5 + 1));
 			{
 				throw new CodeEE(string.Format(trerror.ArgIsOutOfRangeExcept.Text, Name, 6, z64, int.MinValue, int.MaxValue, 0));
@@ -9032,7 +9032,7 @@ internal static partial class FunctionMethodCreator
 			}
 
 			long keycode = arguments.Required(0).GetIntValue(exm);
-			if (keycode < 0 || keycode > 255)
+			if (keycode is < 0 or > 255)
 			{
 				return 0;
 			}
@@ -9144,7 +9144,7 @@ internal static partial class FunctionMethodCreator
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long i64 = arguments.Required(0).GetIntValue(exm);
-			if (i64 < int.MinValue || i64 > short.MaxValue)
+			if (i64 is < int.MinValue or > short.MaxValue)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodDefaultArgumentOutOfRange0, Name, i64, 1));
 			{
 				throw new CodeEE(string.Format(trerror.ArgIsOutOfRange.Text, Name, 1, i64, int.MinValue, int.MaxValue));
@@ -9224,7 +9224,7 @@ internal static partial class FunctionMethodCreator
 			if (arguments.Required(1).GetOperandType() == typeof(long))
 			{
 				i64 = arguments.Required(1).GetIntValue(exm);
-				if (i64 < 0 || i64 > int.MaxValue)
+				if (i64 is < 0 or > int.MaxValue)
 				{
 					return 0;
 				}
@@ -9352,7 +9352,7 @@ internal static partial class FunctionMethodCreator
 			if (arguments.Required(0).GetOperandType() == typeof(long))
 			{
 				i64 = arguments.Required(0).GetIntValue(exm);
-				if (i64 < 0 || i64 > int.MaxValue)
+				if (i64 is < 0 or > int.MaxValue)
 				{
 					return "";
 				}
@@ -9434,7 +9434,7 @@ internal static partial class FunctionMethodCreator
 			}
 
 			long i64 = arguments.Required(1).GetIntValue(exm);
-			if (i64 < 0 || i64 > int.MaxValue)
+			if (i64 is < 0 or > int.MaxValue)
 			{
 				return 0;
 			}
@@ -9481,7 +9481,7 @@ internal static partial class FunctionMethodCreator
 			}
 
 			long i64 = arguments.Required(1).GetIntValue(exm);
-			if (i64 < 0 || i64 > int.MaxValue)
+			if (i64 is < 0 or > int.MaxValue)
 			{
 				return 0;
 			}

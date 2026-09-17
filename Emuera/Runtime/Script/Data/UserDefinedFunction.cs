@@ -100,12 +100,12 @@ internal sealed class UserDefinedFunctionData
 				case '\0':
 					throw new CodeEE(trerror.NotCloseBrackets.Text, sc);
 				case ')':
-					if (state == 0 || state == 1)
+					if (state is 0 or 1)
 					{
 						goto argend;
 					}
 
-					if (state == 4 || state == 5)
+					if (state is 4 or 5)
 					{
 						if ((argType & UserDifinedFunctionDataArgType.__Dimention) == 0)
 						{
@@ -132,7 +132,7 @@ internal sealed class UserDefinedFunctionData
 
 					goto argerr;
 				case ':':
-					if (state == 4 || state == 5)
+					if (state is 4 or 5)
 					{
 						state = 5;
 						argType++;
@@ -152,7 +152,7 @@ internal sealed class UserDefinedFunctionData
 						continue;
 					}
 
-					if (state == 4 || state == 5)
+					if (state is 4 or 5)
 					{
 						if ((argType & UserDifinedFunctionDataArgType.__Dimention) == 0)
 						{
@@ -170,7 +170,7 @@ internal sealed class UserDefinedFunctionData
 					string str = ((IdentifierWord)wc.Current).Code;
 					if (str == "REF")
 					{
-						if (state == 0 || state == 2)
+						if (state is 0 or 2)
 						{
 							state = 3;
 							continue;
@@ -178,7 +178,7 @@ internal sealed class UserDefinedFunctionData
 
 						goto argerr;
 					}
-					else if (str == "INT" || str == "STR")
+					else if (str is "INT" or "STR")
 					{
 						if (str == "INT")
 						{
@@ -189,7 +189,7 @@ internal sealed class UserDefinedFunctionData
 							argType = UserDifinedFunctionDataArgType.Str;
 						}
 
-						if (state == 0 || state == 2)
+						if (state is 0 or 2)
 						{
 							state = 1;
 							argList.Add(argType);

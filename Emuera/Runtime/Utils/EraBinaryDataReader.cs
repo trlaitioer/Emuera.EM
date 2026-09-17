@@ -326,8 +326,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 			#region EM_私家版_セーブ拡張
 
 			//if (type == EraSaveDataType.EOC || type == EraSaveDataType.EOF || type == EraSaveDataType.Separator)
-			if (type == EraSaveDataType.EOC || type == EraSaveDataType.EOF || type == EraSaveDataType.Separator || type == EraSaveDataType.Map ||
-			    type == EraSaveDataType.Xml || type == EraSaveDataType.DT)
+			if (type is EraSaveDataType.EOC or EraSaveDataType.EOF or EraSaveDataType.Separator or EraSaveDataType.Map or EraSaveDataType.Xml or EraSaveDataType.DT)
 			{
 				return new KeyValuePair<string?, EraSaveDataType>(null, type);
 			}

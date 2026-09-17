@@ -918,7 +918,7 @@ internal sealed partial class FunctionIdentifier
 			for (int i = 0; i < terms.Length; i++)
 			{
 				long x = terms.Required(i).GetIntValue(exm);
-				if (x < 0 || x > 63)
+				if (x is < 0 or > 63)
 				{
 					throw new CodeEE(string.Format(trerror.ArgIsOoRBit.Text, "2"));
 				}
@@ -2518,12 +2518,12 @@ internal sealed partial class FunctionIdentifier
 			SpSwapCharaArgument arg = (SpSwapCharaArgument)func.BuiltArgument;
 			long foreColor = arg.X.GetIntValue(exm);
 			long backColor = arg.Y.GetIntValue(exm);
-			if (foreColor < 0 || foreColor > 0xFFFFFF)
+			if (foreColor is < 0 or > 0xFFFFFF)
 			{
 				throw new CodeEE(string.Format(trerror.ArgIsOoRColorCode.Text, "1"));
 			}
 
-			if (backColor < 0 || backColor > 0xFFFFFF)
+			if (backColor is < 0 or > 0xFFFFFF)
 			{
 				throw new CodeEE(string.Format(trerror.ArgIsOoRColorCode.Text, "2"));
 			}
@@ -2555,7 +2555,7 @@ internal sealed partial class FunctionIdentifier
 				delay = arg.Term!.GetIntValue(exm);
 			}
 
-			if (delay < 0 || delay > int.MaxValue)
+			if (delay is < 0 or > int.MaxValue)
 			{
 				throw new CodeEE(trerror.ArgIsOoR.Text);
 			}
@@ -2585,7 +2585,7 @@ internal sealed partial class FunctionIdentifier
 				duration = arg.Term!.GetIntValue(exm);
 			}
 
-			if (duration < 0 || duration > int.MaxValue)
+			if (duration is < 0 or > int.MaxValue)
 			{
 				throw new CodeEE(trerror.ArgIsOoR.Text);
 			}
@@ -3396,7 +3396,7 @@ internal sealed partial class FunctionIdentifier
 			}
 
 			string url = GlobalStatic.GameBaseData.UpdateCheckURL;
-			if (url == null || url == "")
+			if (url is null or "")
 			{
 				exm.VEvaluator.RESULT = 3;
 				return;
@@ -3414,13 +3414,13 @@ internal sealed partial class FunctionIdentifier
 				using StreamReader sr = new(st);
 				string? version = sr.ReadLine();
 				string? link = sr.ReadLine();
-				if (version == null || version == "")
+				if (version is null or "")
 				{
 					exm.VEvaluator.RESULT = 3;
 					return;
 				}
 
-				if (link == null || link == "")
+				if (link is null or "")
 				{
 					exm.VEvaluator.RESULT = 3;
 					return;
@@ -4103,7 +4103,7 @@ internal sealed partial class FunctionIdentifier
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
 			InstructionLine jumpTo = (InstructionLine)func.JumpTo!;
-			if (jumpTo.FunctionCode == FunctionCode.REPEAT || jumpTo.FunctionCode == FunctionCode.FOR)
+			if (jumpTo.FunctionCode is FunctionCode.REPEAT or FunctionCode.FOR)
 			{
 				//ループ変数が不明(REPEAT、FORを経由せずにループしようとした場合は無視してループを抜ける(eramakerがこういう仕様だったりする))
 				if (jumpTo.LoopCounter == null)

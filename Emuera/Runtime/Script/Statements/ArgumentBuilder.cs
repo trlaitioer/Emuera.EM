@@ -805,7 +805,7 @@ internal static partial class ArgumentParser
 				rowStr = st.Substring();
 			}
 
-			if (line.FunctionCode == FunctionCode.SETCOLORBYNAME || line.FunctionCode == FunctionCode.SETBGCOLORBYNAME)
+			if (line.FunctionCode is FunctionCode.SETCOLORBYNAME or FunctionCode.SETBGCOLORBYNAME)
 			{
 				Color c = Color.FromName(rowStr);
 				if (c.A == 0)
@@ -1128,7 +1128,7 @@ internal static partial class ArgumentParser
 				}
 			}
 
-			if (cur == '(' || cur == ',')
+			if (cur is '(' or ',')
 			{
 				if (cur == '(')
 				{
@@ -1225,7 +1225,7 @@ internal static partial class ArgumentParser
 				}
 			}
 
-			if (cur == '(' || cur == ',')
+			if (cur is '(' or ',')
 			{
 				if (cur == '(')
 				{
@@ -1350,7 +1350,7 @@ internal static partial class ArgumentParser
 					return null;
 				}
 
-				if (op == OperatorCode.Increment || op == OperatorCode.Decrement)
+				if (op is OperatorCode.Increment or OperatorCode.Decrement)
 				{
 					LexicalAnalyzer.SkipWhiteSpace(st);
 					if (!st.EOS)
@@ -1439,7 +1439,7 @@ internal static partial class ArgumentParser
 					return ret;
 				}
 
-				if (op == OperatorCode.Plus || op == OperatorCode.Minus)
+				if (op is OperatorCode.Plus or OperatorCode.Minus)
 				{
 					if (src is SingleTerm)
 					{
@@ -1479,7 +1479,7 @@ internal static partial class ArgumentParser
 
 					return ret;
 				}
-				else if (op == OperatorCode.Mult || op == OperatorCode.Plus || op == OperatorCode.AssignmentStr)
+				else if (op is OperatorCode.Mult or OperatorCode.Plus or OperatorCode.AssignmentStr)
 				{
 					WordCollection srcWc = LexicalAnalyzer.Analyse(st, LexEndWith.EoL, LexAnalyzeFlag.None);
 					List<AExpression?> srcTerms = ExpressionParser.ReduceArguments(srcWc, ArgsEndWith.EoL, false);
@@ -2291,7 +2291,7 @@ internal static partial class ArgumentParser
 				if (termList[i] is SingleLongTerm term)
 				{
 					long bit = term.Int;
-					if (bit < 0 || bit > 63)
+					if (bit is < 0 or > 63)
 					{
 						warn(string.Format(trerror.ArgIsOoRBit.Text, i + 2, bit.ToString()), line, 2, false);
 						return null;

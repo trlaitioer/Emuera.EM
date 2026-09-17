@@ -1080,7 +1080,7 @@ internal sealed partial class EmueraConsole : IDisposable
 	public bool OutputLog(string? filename, bool hideInfo)
 	{
 		// if (filename == null)
-		if (filename == "" || filename == null)
+		if (filename is "" or null)
 		{
 			filename = Program.ExeDir + "emuera.log";
 		}
@@ -1119,7 +1119,7 @@ internal sealed partial class EmueraConsole : IDisposable
 
 	public bool OutputSystemLog(string filename)
 	{
-		if (filename == "" || filename == null)
+		if (filename is "" or null)
 		{
 			filename = Program.ExeDir + "emuera.log";
 		}

@@ -1393,7 +1393,7 @@ internal sealed class ConstantData
 
 						errPos = varname + ".csv";
 						allowIndex = 0;
-						if (code == VariableCode.CVAR || code == VariableCode.CVARS)
+						if (code is VariableCode.CVAR or VariableCode.CVARS)
 						{
 							allowIndex = 1;
 						}
@@ -1404,7 +1404,7 @@ internal sealed class ConstantData
 					case VariableCode.CVAR2D:
 					case VariableCode.CVARS2D:
 					{
-						if ((code == VariableCode.VAR2D || code == VariableCode.VARS2D) && index == 0)
+						if (code is VariableCode.VAR2D or VariableCode.VARS2D && index == 0)
 						{
 							string varnamed = varname + "@1";
 							if (erdNameToIntDics.TryGetValue(varnamed, out Dictionary<string, int>? value1))
@@ -1418,7 +1418,7 @@ internal sealed class ConstantData
 
 							errPos = varnamed + ".csv";
 							allowIndex = 0;
-							if (code == VariableCode.CVAR2D || code == VariableCode.CVARS2D)
+							if (code is VariableCode.CVAR2D or VariableCode.CVARS2D)
 							{
 								allowIndex = 1;
 							}
@@ -1438,7 +1438,7 @@ internal sealed class ConstantData
 
 							errPos = varnamed + ".csv";
 							allowIndex = 1;
-							if (code == VariableCode.CVAR2D || code == VariableCode.CVARS2D)
+							if (code is VariableCode.CVAR2D or VariableCode.CVARS2D)
 							{
 								allowIndex = 2;
 							}

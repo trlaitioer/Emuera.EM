@@ -464,7 +464,7 @@ internal static class LogicalLineParser
 			#region 前置インクリメント、デクリメント行
 
 			char op = stream.Current;
-			if (op == '+' || op == '-')
+			if (op is '+' or '-')
 			{
 				WordCollection wc = LexicalAnalyzer.Analyse(stream, LexEndWith.EoL, LexAnalyzeFlag.None);
 				if (wc.Current is not OperatorWord opWT || (opWT.Code != OperatorCode.Increment && opWT.Code != OperatorCode.Decrement))
@@ -500,7 +500,7 @@ internal static class LogicalLineParser
 				//命令文
 				if (func != null) //関数文
 				{
-					if (func.Code == FunctionCode.VARI || func.Code == FunctionCode.VARS)
+					if (func.Code is FunctionCode.VARI or FunctionCode.VARS)
 					{
 						InstructionLine line = new(position, func, stream) { ParentLabelLine = parentLine };
 						ReadOnlySpan<char> statementsSpan = line.PopArgumentPrimitive()!.SubstringROS();

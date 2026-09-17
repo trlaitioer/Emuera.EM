@@ -45,9 +45,7 @@ internal sealed class InputRequest
 		{
 			#region EE_INPUTANY
 
-			return InputType == InputType.IntValue || InputType == InputType.StrValue
-			                                       || InputType == InputType.PrimitiveMouseKey || InputType == InputType.AnyValue
-			                                       || InputType == InputType.IntButton || InputType == InputType.StrButton;
+			return InputType is InputType.IntValue or InputType.StrValue or InputType.PrimitiveMouseKey or InputType.AnyValue or InputType.IntButton or InputType.StrButton;
 
 			#endregion
 		}

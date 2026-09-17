@@ -494,7 +494,7 @@ internal sealed partial class EmueraConsole : IDisposable
 	{
 		get
 		{
-			if (state == ConsoleState.Quit || state == ConsoleState.Error)
+			if (state is ConsoleState.Quit or ConsoleState.Error)
 			{
 				GlobalStatic.ForceQuitAndRestart = false;
 				return true;
@@ -503,7 +503,7 @@ internal sealed partial class EmueraConsole : IDisposable
 			if (state == ConsoleState.WaitInput)
 			{
 				GlobalStatic.ForceQuitAndRestart = false;
-				return inputReq.InputType == InputType.AnyKey || inputReq.InputType == InputType.EnterKey;
+				return inputReq.InputType is InputType.AnyKey or InputType.EnterKey;
 			}
 
 			return false;
@@ -559,12 +559,12 @@ internal sealed partial class EmueraConsole : IDisposable
 
 			#region EE_BINPUT
 
-			if ((inputReq.InputType == InputType.IntValue || inputReq.InputType == InputType.IntButton) && selectingButton.IsInteger)
+			if (inputReq.InputType is InputType.IntValue or InputType.IntButton && selectingButton.IsInteger)
 			{
 				return selectingButton.Input.ToString();
 			}
 
-			if (inputReq.InputType == InputType.StrValue || inputReq.InputType == InputType.StrButton)
+			if (inputReq.InputType is InputType.StrValue or InputType.StrButton)
 			{
 				return selectingButton.Inputs;
 			}
@@ -1620,7 +1620,7 @@ internal sealed partial class EmueraConsole : IDisposable
 	public void PressEnterKey(bool keySkip, string input, bool changedByMouse)
 	{
 		MesSkip = keySkip;
-		if (state == ConsoleState.Running || state == ConsoleState.Initializing)
+		if (state is ConsoleState.Running or ConsoleState.Initializing)
 		{
 			return;
 		}
@@ -1682,7 +1682,7 @@ internal sealed partial class EmueraConsole : IDisposable
 				}
 
 				if (genericTimer.Enabled &&
-				    (inputReq.InputType == InputType.AnyKey || inputReq.InputType == InputType.EnterKey))
+				    inputReq.InputType is InputType.AnyKey or InputType.EnterKey)
 				{
 					stopTimer();
 				}
@@ -2138,7 +2138,7 @@ internal sealed partial class EmueraConsole : IDisposable
 
 			//まだ書き換えるタイミングでないなら次の更新を待ってみる
 			//ただし、入力待ちなど、しばらく更新のタイミングがない場合には強制的に書き換えてみる
-			if (_frameDeltaTimer.ElapsedMilliseconds < msPerFrame && (state == ConsoleState.Running || state == ConsoleState.Initializing))
+			if (_frameDeltaTimer.ElapsedMilliseconds < msPerFrame && state is ConsoleState.Running or ConsoleState.Initializing)
 			{
 				return;
 			}
@@ -2819,7 +2819,7 @@ internal sealed partial class EmueraConsole : IDisposable
 				line = LogicalLineParser.ParseLine(com, null);
 			}
 
-			if (line == null || line is InvalidLine)
+			if (line is null or InvalidLine)
 			{
 				WordCollection wc = LexicalAnalyzer.Analyse(new CharStream(com), LexEndWith.EoL, LexAnalyzeFlag.None);
 				AExpression? term = ExpressionParser.ReduceExpressionTerm(wc, TermEndWith.EoL);
@@ -3129,7 +3129,7 @@ internal sealed partial class EmueraConsole : IDisposable
 							//}
 							foreach (AConsoleDisplayNode part in button.StrArray)
 							{
-								if (part == null || part is ConsoleDivPart)
+								if (part is null or ConsoleDivPart)
 								{
 									continue;
 								}
@@ -3245,7 +3245,7 @@ internal sealed partial class EmueraConsole : IDisposable
 				}
 				else if (state == ConsoleState.WaitInput && !p.IsInteger)
 				{
-					if (inputReq.InputType == InputType.IntValue || inputReq.InputType == InputType.IntButton)
+					if (inputReq.InputType is InputType.IntValue or InputType.IntButton)
 					{
 						continue;
 					}
@@ -3269,7 +3269,7 @@ internal sealed partial class EmueraConsole : IDisposable
 			}
 			else if (state == ConsoleState.WaitInput && !pointing.IsInteger)
 			{
-				if (inputReq.InputType == InputType.IntValue || inputReq.InputType == InputType.IntButton)
+				if (inputReq.InputType is InputType.IntValue or InputType.IntButton)
 				{
 					canSelect = false;
 				}

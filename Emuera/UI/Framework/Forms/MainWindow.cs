@@ -944,7 +944,7 @@ internal sealed partial class MainWindow : Form
 
 		if (isBacklog)
 		{
-			if (e.Button == MouseButtons.Left || e.Button == MouseButtons.Right)
+			if (e.Button is MouseButtons.Left or MouseButtons.Right)
 			{
 				vScrollBar.Value = vScrollBar.Maximum;
 				console.RefreshStrings(true);
@@ -983,7 +983,7 @@ internal sealed partial class MainWindow : Form
 
 		else if (console.IsWaintingInputWithMouse && !console.IsError && str != null)
 		{
-			if (e.Button == MouseButtons.Left || e.Button == MouseButtons.Right || e.Button == MouseButtons.Middle)
+			if (e.Button is MouseButtons.Left or MouseButtons.Right or MouseButtons.Middle)
 			{
 				if (!isBacklog)
 					//A selected string implies a selected button
@@ -1022,7 +1022,7 @@ internal sealed partial class MainWindow : Form
 		#region EE_INPUT第二引数修正
 
 		if (console.IsWaintingInputWithMouse && !console.IsError &&
-		    (e.Button == MouseButtons.Left || e.Button == MouseButtons.Right || e.Button == MouseButtons.Middle))
+		    e.Button is MouseButtons.Left or MouseButtons.Right or MouseButtons.Middle)
 		{
 			//念のため
 			if (console.IsWaintingOnePhrase)
@@ -1852,7 +1852,7 @@ internal sealed partial class MainWindow : Form
 			return;
 		}
 
-		if (e.KeyCode == Keys.Left || e.KeyCode == Keys.Home || e.KeyCode == Keys.Back)
+		if (e.KeyCode is Keys.Left or Keys.Home or Keys.Back)
 		{
 			if ((richTextBox1.SelectionStart == 0 && richTextBox1.SelectedText.Length == 0) || richTextBox1.Text.Length == 0)
 			{
@@ -1861,7 +1861,7 @@ internal sealed partial class MainWindow : Form
 			}
 		}
 
-		if (e.KeyCode == Keys.Right || e.KeyCode == Keys.End)
+		if (e.KeyCode is Keys.Right or Keys.End)
 		{
 			if (richTextBox1.SelectionStart == richTextBox1.Text.Length || richTextBox1.Text.Length == 0)
 			{

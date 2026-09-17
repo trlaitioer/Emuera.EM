@@ -86,7 +86,7 @@ internal static class OperatorMethodManager
 	public static AExpression ReduceUnaryTerm(OperatorCode op, AExpression o1)
 	{
 		OperatorMethod? method = null;
-		if (op == OperatorCode.Increment || op == OperatorCode.Decrement)
+		if (op is OperatorCode.Increment or OperatorCode.Decrement)
 		{
 			if (!(o1 is VariableTerm var))
 			{
@@ -138,7 +138,7 @@ internal static class OperatorMethodManager
 	public static AExpression ReduceUnaryAfterTerm(OperatorCode op, AExpression o1)
 	{
 		OperatorMethod? method = null;
-		if (op == OperatorCode.Increment || op == OperatorCode.Decrement)
+		if (op is OperatorCode.Increment or OperatorCode.Decrement)
 		{
 			if (!(o1 is VariableTerm var))
 			{

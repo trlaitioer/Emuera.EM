@@ -146,13 +146,13 @@ internal static class LexicalAnalyzer
 		if (st.Current == '0')
 		{
 			char c = st.Next;
-			if (c == 'x' || c == 'X')
+			if (c is 'x' or 'X')
 			{
 				fromBase = 16;
 				st.ShiftNext();
 				st.ShiftNext();
 			}
-			else if (c == 'b' || c == 'B')
+			else if (c is 'b' or 'B')
 			{
 				fromBase = 2;
 				st.ShiftNext();
@@ -179,11 +179,11 @@ internal static class LexicalAnalyzer
 		}
 
 		long significand = readDigits(st, fromBase);
-		if (st.Current == 'p' || st.Current == 'P')
+		if (st.Current is 'p' or 'P')
 		{
 			expBase = 2;
 		}
-		else if (st.Current == 'e' || st.Current == 'E')
+		else if (st.Current is 'e' or 'E')
 		{
 			expBase = 10;
 		}
@@ -220,7 +220,7 @@ internal static class LexicalAnalyzer
 		//Match m = reg.Match(st.RowString, st.CurrentPosition);
 		//st.Jump(m.Length);
 		char c = st.Current;
-		if (c == '-' || c == '+')
+		if (c is '-' or '+')
 		{
 			st.ShiftNext();
 		}
@@ -312,13 +312,13 @@ internal static class LexicalAnalyzer
 		if (st.Current == '0')
 		{
 			char c = st.Next;
-			if (c == 'x' || c == 'X')
+			if (c is 'x' or 'X')
 			{
 				fromBase = 16;
 				st.ShiftNext();
 				st.ShiftNext();
 			}
-			else if (c == 'b' || c == 'B')
+			else if (c is 'b' or 'B')
 			{
 				fromBase = 2;
 				st.ShiftNext();
@@ -339,11 +339,11 @@ internal static class LexicalAnalyzer
 		}
 
 		long significand = readDigits(st, fromBase);
-		if (st.Current == 'p' || st.Current == 'P')
+		if (st.Current is 'p' or 'P')
 		{
 			expBase = 2;
 		}
-		else if (st.Current == 'e' || st.Current == 'E')
+		else if (st.Current is 'e' or 'E')
 		{
 			expBase = 10;
 		}
@@ -387,7 +387,7 @@ internal static class LexicalAnalyzer
 		//大雑把に読み込んでエラー処理はConvertクラスに任せる。
 		//仮数小数部
 
-		if (st.Current == '-' || st.Current == '+')
+		if (st.Current is '-' or '+')
 		{
 			st.ShiftNext();
 		}
@@ -405,7 +405,7 @@ internal static class LexicalAnalyzer
 			break;
 		}
 
-		if (st.Current == 'e' || st.Current == 'E')
+		if (st.Current is 'e' or 'E')
 		{
 			st.ShiftNext();
 			if (st.Current == '-')
@@ -570,7 +570,7 @@ internal static class LexicalAnalyzer
 
 						break;
 					case ',':
-						if (endWith == StrEndWith.Comma || endWith == StrEndWith.LeftParenthesis_Bracket_Comma_Semicolon)
+						if (endWith is StrEndWith.Comma or StrEndWith.LeftParenthesis_Bracket_Comma_Semicolon)
 						{
 							return;
 						}
@@ -897,7 +897,7 @@ internal static class LexicalAnalyzer
 
 	public static bool IsWhiteSpace(char c)
 	{
-		return c == ' ' || c == '\t' || c == '　';
+		return c is ' ' or '\t' or '　';
 	}
 
 	/// <summary>
@@ -1451,7 +1451,7 @@ internal static class LexicalAnalyzer
 					buffer.Append(cur);
 					break;
 				case ',':
-					if (endWith == FormStrEndWith.Comma || endWith == FormStrEndWith.LeftParenthesis_Bracket_Comma_Semicolon)
+					if (endWith is FormStrEndWith.Comma or FormStrEndWith.LeftParenthesis_Bracket_Comma_Semicolon)
 					{
 						goto end;
 					}
@@ -1524,7 +1524,7 @@ internal static class LexicalAnalyzer
 						case 'n': buffer.Append('\n'); break;
 						case '@': //\@～～?～～#～～\@
 						{
-							if (endWith == FormStrEndWith.YenAt || endWith == FormStrEndWith.Sharp)
+							if (endWith is FormStrEndWith.YenAt or FormStrEndWith.Sharp)
 							{
 								goto end;
 							}

@@ -387,7 +387,7 @@ internal sealed class UserDefinedVariableData
 
 					continue;
 				}
-				else if (sizeTerm.Int <= 0 || sizeTerm.Int > 1000000)
+				else if (sizeTerm.Int is <= 0 or > 1000000)
 				{
 					throw new CodeEE(trerror.OoRDefinable.Text, sc);
 				}
@@ -536,7 +536,7 @@ internal sealed class UserDefinedVariableData
 			totalBytes *= ret.Lengths[i];
 		}
 
-		if (totalBytes <= 0 || totalBytes > 1000000)
+		if (totalBytes is <= 0 or > 1000000)
 		{
 			throw new CodeEE(trerror.OoRDefinable.Text, sc);
 		}

@@ -59,7 +59,7 @@ internal sealed class VariableLocal
 
 		if (newSize > 0)
 		{
-			if (newSize < size && (varCode == VariableCode.ARG || varCode == VariableCode.ARGS))
+			if (newSize < size && varCode is VariableCode.ARG or VariableCode.ARGS)
 			{
 				newSize = size;
 			}

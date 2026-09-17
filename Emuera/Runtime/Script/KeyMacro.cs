@@ -117,7 +117,7 @@ internal static class KeyMacro
 					}
 
 					int num = line[gID.Length] - '0';
-					if (num < 0 || num > 9)
+					if (num is < 0 or > 9)
 					{
 						continue;
 					}

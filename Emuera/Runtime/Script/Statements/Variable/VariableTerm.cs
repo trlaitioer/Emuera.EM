@@ -67,7 +67,7 @@ internal class VariableTerm : AExpression
 		}
 		catch (Exception e)
 		{
-			if (e is IndexOutOfRangeException || e is ArgumentOutOfRangeException || e is OverflowException)
+			if (e is IndexOutOfRangeException or ArgumentOutOfRangeException or OverflowException)
 			{
 				Identifier.CheckElement(transporter);
 			}
@@ -98,7 +98,7 @@ internal class VariableTerm : AExpression
 		}
 		catch (Exception e)
 		{
-			if (e is IndexOutOfRangeException || e is ArgumentOutOfRangeException || e is OverflowException)
+			if (e is IndexOutOfRangeException or ArgumentOutOfRangeException or OverflowException)
 			{
 				Identifier.CheckElement(transporter);
 			}
@@ -123,7 +123,7 @@ internal class VariableTerm : AExpression
 		}
 		catch (Exception e)
 		{
-			if (e is IndexOutOfRangeException || e is ArgumentOutOfRangeException || e is OverflowException)
+			if (e is IndexOutOfRangeException or ArgumentOutOfRangeException or OverflowException)
 			{
 				Identifier.CheckElement(transporter);
 			}
@@ -148,7 +148,7 @@ internal class VariableTerm : AExpression
 		}
 		catch (Exception e)
 		{
-			if (e is IndexOutOfRangeException || e is ArgumentOutOfRangeException || e is OverflowException)
+			if (e is IndexOutOfRangeException or ArgumentOutOfRangeException or OverflowException)
 			{
 				Identifier.CheckElement(transporter);
 			}
@@ -173,7 +173,7 @@ internal class VariableTerm : AExpression
 		}
 		catch (Exception e)
 		{
-			if (e is IndexOutOfRangeException || e is ArgumentOutOfRangeException || e is OverflowException)
+			if (e is IndexOutOfRangeException or ArgumentOutOfRangeException or OverflowException)
 			{
 				Identifier.CheckElement(transporter);
 				throw new CodeEE(string.Format(trerror.AssignToVarOoR.Text, Identifier.Name));
@@ -199,7 +199,7 @@ internal class VariableTerm : AExpression
 		}
 		catch (Exception e)
 		{
-			if (e is IndexOutOfRangeException || e is ArgumentOutOfRangeException || e is OverflowException)
+			if (e is IndexOutOfRangeException or ArgumentOutOfRangeException or OverflowException)
 			{
 				Identifier.CheckElement(transporter);
 				throw new CodeEE(string.Format(trerror.AssignToVarOoR.Text, Identifier.Name));
@@ -225,7 +225,7 @@ internal class VariableTerm : AExpression
 		}
 		catch (Exception e)
 		{
-			if (e is IndexOutOfRangeException || e is ArgumentOutOfRangeException || e is OverflowException)
+			if (e is IndexOutOfRangeException or ArgumentOutOfRangeException or OverflowException)
 			{
 				Identifier.CheckElement(transporter);
 			}
@@ -478,7 +478,7 @@ internal sealed class FixedVariableTerm : VariableTerm
 		}
 		catch (Exception e)
 		{
-			if (e is IndexOutOfRangeException || e is ArgumentOutOfRangeException || e is OverflowException)
+			if (e is IndexOutOfRangeException or ArgumentOutOfRangeException or OverflowException)
 			{
 				Identifier.CheckElement(transporter);
 			}
@@ -501,7 +501,7 @@ internal sealed class FixedVariableTerm : VariableTerm
 		}
 		catch (Exception e)
 		{
-			if (e is IndexOutOfRangeException || e is ArgumentOutOfRangeException || e is OverflowException)
+			if (e is IndexOutOfRangeException or ArgumentOutOfRangeException or OverflowException)
 			{
 				Identifier.CheckElement(transporter);
 			}
@@ -518,7 +518,7 @@ internal sealed class FixedVariableTerm : VariableTerm
 		}
 		catch (Exception e)
 		{
-			if (e is IndexOutOfRangeException || e is ArgumentOutOfRangeException || e is OverflowException)
+			if (e is IndexOutOfRangeException or ArgumentOutOfRangeException or OverflowException)
 			{
 				Identifier.CheckElement(transporter);
 			}
@@ -535,7 +535,7 @@ internal sealed class FixedVariableTerm : VariableTerm
 		}
 		catch (Exception e)
 		{
-			if (e is IndexOutOfRangeException || e is ArgumentOutOfRangeException || e is OverflowException)
+			if (e is IndexOutOfRangeException or ArgumentOutOfRangeException or OverflowException)
 			{
 				Identifier.CheckElement(transporter);
 			}
@@ -552,7 +552,7 @@ internal sealed class FixedVariableTerm : VariableTerm
 		}
 		catch (Exception e)
 		{
-			if (e is IndexOutOfRangeException || e is ArgumentOutOfRangeException || e is OverflowException)
+			if (e is IndexOutOfRangeException or ArgumentOutOfRangeException or OverflowException)
 			{
 				Identifier.CheckElement(transporter);
 			}

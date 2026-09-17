@@ -198,7 +198,7 @@ internal static class HtmlManager
 				}
 				else
 				{
-					bool ist = tag == "b" || tag == "i" || tag == "s";
+					bool ist = tag is "b" or "i" or "s";
 					beginStack.Push(new HTMLI(string.Concat("<", str.AsSpan(last, found - last), ">"), ist));
 					endStack.Push(new HTMLI("</" + tag + '>', ist));
 				}
@@ -996,7 +996,7 @@ internal static class HtmlManager
 						throw new CodeEE(string.Format(trerror.InvalidCharacterReference.Text, escWordRow));
 					}
 
-					if (unicode < 0 || unicode > 0xFFFF)
+					if (unicode is < 0 or > 0xFFFF)
 					{
 						throw new CodeEE(string.Format(trerror.OoRUnicodeHtml.Text, escWordRow));
 					}
@@ -2038,7 +2038,7 @@ internal static class HtmlManager
 			try
 			{
 				i = Convert.ToInt32(colorvalue, 16);
-				if (i < 0 || i > 0xFFFFFF)
+				if (i is < 0 or > 0xFFFFFF)
 				{
 					throw new CodeEE(string.Format(trerror.OoRColorValue.Text, colorvalue));
 				}
