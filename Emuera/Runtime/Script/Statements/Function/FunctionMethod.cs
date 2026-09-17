@@ -11,7 +11,7 @@ namespace MinorShift.Emuera.Runtime.Script.Statements.Function;
 
 internal abstract class FunctionMethod
 {
-	public Type ReturnType { get; protected set; } = null!;
+	public Type ReturnType { get; protected init; } = null!;
 	protected Type[]? argumentTypeArray;
 	protected string Name { get; private set; } = null!;
 
@@ -96,8 +96,8 @@ internal abstract class FunctionMethod
 	protected sealed class ArgTypeList
 	{
 		public List<_ArgType> ArgTypes { get; set; } = [];
-		public int OmitStart { get; set; } = -1;
-		public bool MatchVariadicGroup { get; set; }
+		public int OmitStart { get; init; } = -1;
+		public bool MatchVariadicGroup { get; init; }
 
 		public _ArgType[]? LastVariadics
 		{

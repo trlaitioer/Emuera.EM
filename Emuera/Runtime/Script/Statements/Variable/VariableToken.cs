@@ -127,7 +127,7 @@ internal abstract class VariableToken
 	protected readonly VariableData varData;
 	protected string varName;
 	public Type VariableType { get; protected set; }
-	public bool CanRestructure { get; protected set; }
+	public bool CanRestructure { get; protected init; }
 	public string Name => varName;
 
 
@@ -254,11 +254,11 @@ internal abstract class VariableToken
 	public bool IsLocal => (Code & VariableCode.__LOCAL__) == VariableCode.__LOCAL__;
 
 	public bool CanForbid => (Code & VariableCode.__CAN_FORBID__) == VariableCode.__CAN_FORBID__;
-	public bool IsForbid { get; protected set; }
-	public bool IsPrivate { get; protected set; }
-	public bool IsGlobal { get; protected set; }
-	public bool IsSavedata { get; protected set; }
-	public bool IsReference { get; protected set; }
+	public bool IsForbid { get; protected init; }
+	public bool IsPrivate { get; protected init; }
+	public bool IsGlobal { get; protected init; }
+	public bool IsSavedata { get; protected init; }
+	public bool IsReference { get; protected init; }
 	public int Dimension { get; protected set; }
 }
 
@@ -465,7 +465,7 @@ internal abstract class UserDefinedVariableToken : VariableToken
 
 	public abstract void ScopeIn();
 	public abstract void ScopeOut();
-	public bool IsStatic { get; protected set; }
+	public bool IsStatic { get; protected init; }
 }
 
 internal abstract class UserDefinedCharaVariableToken : CharaVariableToken

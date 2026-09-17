@@ -62,7 +62,7 @@ internal abstract class AConsoleDisplayNode
 
 	// Assigned by the print path before the part is read back
 	public ConsoleButtonString Parent { get; set; } = null!;
-	public int Depth { get; set; }
+	public int Depth { get; init; }
 
 	public virtual StringBuilder BuildString(StringBuilder sb)
 	{

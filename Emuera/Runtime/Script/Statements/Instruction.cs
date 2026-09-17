@@ -11,7 +11,7 @@ internal abstract class AInstruction
 
 	// Left null on purpose by the instructions that build their argument in the parser
 	// (VARI/VARS) or take no argument at all (CUSTOMDRAWLINE).
-	public ArgumentBuilder? ArgBuilder { get; protected set; }
+	public ArgumentBuilder? ArgBuilder { get; protected init; }
 
 	public virtual void SetJumpTo(ref bool useCallForm, InstructionLine func, int currentDepth, ref string FunctionoNotFoundName)
 	{ }

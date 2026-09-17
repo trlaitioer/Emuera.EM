@@ -41,7 +41,7 @@ internal sealed class ConsoleStyledString : AConsoleColoredPart
 
 	// Null exactly when Error is set, which every reader checks before touching the font
 	public Font? Font { get; private set; }
-	public StringStyle StringStyle { get; private set; }
+	public StringStyle StringStyle { get; private init; }
 	public override bool CanDivide => true;
 
 	//単一のボタンフラグ

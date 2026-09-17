@@ -233,7 +233,7 @@ internal class FunctionLabelLine : LogicalLine, IComparable<FunctionLabelLine>
 		return ret;
 	}
 
-	public string LabelName { get; protected set; } = null!;
+	public string LabelName { get; protected init; } = null!;
 	public bool IsEvent { get; set; }
 	public bool IsSystem { get; set; }
 	public bool IsSingle { get; set; }
