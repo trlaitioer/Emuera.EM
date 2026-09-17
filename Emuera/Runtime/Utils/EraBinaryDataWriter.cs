@@ -24,8 +24,8 @@ internal sealed class EraBinaryDataWriter : IDisposable
 		// writer = new BinaryWriter(fs, Encoding.Unicode);
 		if (Config.Config.SystemSaveInBinary && Config.Config.ZipSaveData)
 		{
-			ms = new MemoryStream();
-			writer = new BinaryWriter(ms, Encoding.Unicode, true);
+			MemoryStream? ms1 = new();
+			writer = new BinaryWriter(ms1, Encoding.Unicode, true);
 			fileWriter = new BinaryWriter(fs, Encoding.Unicode, true);
 		}
 		else
@@ -42,9 +42,6 @@ internal sealed class EraBinaryDataWriter : IDisposable
 	#region EM_私家版_セーブ圧縮
 
 	private BinaryWriter fileWriter;
-
-	// Only allocated when the save data is zipped
-	private readonly MemoryStream? ms;
 
 	#endregion
 

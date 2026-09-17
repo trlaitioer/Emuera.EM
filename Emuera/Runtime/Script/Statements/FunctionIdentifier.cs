@@ -48,7 +48,6 @@ internal sealed partial class FunctionIdentifier
 
 	private readonly static Dictionary<FunctionCode, string> funcMatch = [];
 	private readonly static Dictionary<FunctionCode, FunctionCode> funcParent = [];
-	private readonly static AInstruction methodInstruction;
 
 	private static void addFunction(FunctionCode code, AInstruction inst)
 	{
@@ -90,7 +89,7 @@ internal sealed partial class FunctionIdentifier
 	static FunctionIdentifier()
 	{
 		Dictionary<FunctionArgType, ArgumentBuilder> argb = ArgumentParser.GetArgumentBuilderDictionary();
-		methodInstruction = new METHOD_Instruction();
+		AInstruction methodInstruction1 = new METHOD_Instruction();
 		SETFunction = new FunctionIdentifier("SET", FunctionCode.SET, new SET_Instruction()); //代入文
 
 		#region PRINT or INPUT
@@ -487,7 +486,7 @@ internal sealed partial class FunctionIdentifier
 			string key = pair.Key;
 			if (!funcDic.ContainsKey(key))
 			{
-				funcDic.Add(key, new FunctionIdentifier(key, pair.Value, methodInstruction));
+				funcDic.Add(key, new FunctionIdentifier(key, pair.Value, methodInstruction1));
 			}
 		}
 
