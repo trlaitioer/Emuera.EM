@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Runtime.Config;
+﻿using System;
+using MinorShift.Emuera.Runtime.Config;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 
@@ -7,7 +8,7 @@ namespace MinorShift.Emuera.UI.Game;
 /// <summary>
 /// 装飾付文字列(ConsoleStyledString)用のスタイル構造体
 /// </summary>
-internal struct StringStyle
+internal struct StringStyle : IEquatable<StringStyle>
 {
 	public StringStyle(Color color, FontStyle fontStyle, string? fontname)
 	{
@@ -57,13 +58,12 @@ internal struct StringStyle
 			return false;
 		}
 
-		return Color == ss.Color && ButtonColor == ss.ButtonColor && ColorChanged == ss.ColorChanged && FontStyle == ss.FontStyle &&
-		       Fontname.Equals(ss.Fontname, Config.SCIgnoreCase);
+		return this == ss;
 	}
 
 	public override int GetHashCode()
 	{
-		return Color.GetHashCode() ^ ButtonColor.GetHashCode() ^ ColorChanged.GetHashCode() ^ FontStyle.GetHashCode() ^ Fontname.GetHashCode();
+		return Color.GetHashCode() ^ ButtonColor.GetHashCode() ^ ColorChanged.GetHashCode() ^ FontStyle.GetHashCode() ^ Fontname.GetHashCode(Config.SCIgnoreCase);
 	}
 
 	public static bool operator ==(StringStyle x, StringStyle y)
@@ -75,5 +75,10 @@ internal struct StringStyle
 	public static bool operator !=(StringStyle x, StringStyle y)
 	{
 		return !(x == y);
+	}
+
+	public bool Equals(StringStyle other)
+	{
+		return this == other;
 	}
 }
