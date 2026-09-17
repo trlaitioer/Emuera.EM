@@ -307,7 +307,7 @@ public class PluginManager
 		foreach (string pluginPath in plugins)
 		{
 			Assembly DLL = Assembly.LoadFrom(pluginPath);
-			Type? manifestType = DLL.GetTypes().Where((v) => v.Name == "PluginManifest").FirstOrDefault();
+			Type? manifestType = DLL.GetTypes().FirstOrDefault(v => v.Name == "PluginManifest");
 			if (manifestType == null)
 			{
 				//TODO: throw warning
