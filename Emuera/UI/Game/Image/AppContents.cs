@@ -122,28 +122,25 @@ internal static class AppContents
 
 		try
 		{
-			//resourcesフォルダ内の全てのcsvファイルを探索する
-			IEnumerable<string> csvFiles = Directory.EnumerateFiles(Program.ContentDir, "*.csv", SearchOption.AllDirectories);
-			foreach (string filepath in csvFiles)
+			if (reload)
 			{
-				if (reload)
+				foreach (string key in resourceImageDictionary.Keys)
 				{
-					foreach (string key in resourceImageDictionary.Keys)
-					{
-						imageDictionary.TryRemove(key, out _);
-					}
-
-					resourceImageDictionary.Clear();
-					foreach (AbstractImage img in resourceDic.Values)
-					{
-						img.Dispose();
-					}
-
-					resourceDic.Clear();
+					imageDictionary.TryRemove(key, out _);
 				}
+
+				resourceImageDictionary.Clear();
+				foreach (AbstractImage img in resourceDic.Values)
+				{
+					img.Dispose();
+				}
+
+				resourceDic.Clear();
 			}
 
-			csvFiles.AsParallel()
+			//resourcesフォルダ内の全てのcsvファイルを探索する
+			Directory.EnumerateFiles(Program.ContentDir, "*.csv", SearchOption.AllDirectories)
+				.AsParallel()
 				.Where(path => Path.GetExtension(path).Equals(".csv", StringComparison.OrdinalIgnoreCase))
 				.ForAll(path =>
 				{
