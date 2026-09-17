@@ -121,53 +121,53 @@ internal sealed class EraBinaryDataWriter : IDisposable
 
 	public void WriteWithKey(string key, object? v)
 	{
-		if (v is long)
+		if (v is long l)
 		{
 			writer.Write((byte)EraSaveDataType.Int);
 			writer.Write(key);
-			writeData((long)v);
+			writeData(l);
 		}
-		else if (v is long[])
+		else if (v is long[] longs)
 		{
 			writer.Write((byte)EraSaveDataType.IntArray);
 			writer.Write(key);
-			writeData((long[])v);
+			writeData(longs);
 		}
-		else if (v is long[,])
+		else if (v is long[,] longs1)
 		{
 			writer.Write((byte)EraSaveDataType.IntArray2D);
 			writer.Write(key);
-			writeData((long[,])v);
+			writeData(longs1);
 		}
-		else if (v is long[,,])
+		else if (v is long[,,] longs2)
 		{
 			writer.Write((byte)EraSaveDataType.IntArray3D);
 			writer.Write(key);
-			writeData((long[,,])v);
+			writeData(longs2);
 		}
-		else if (v is string)
+		else if (v is string s)
 		{
 			writer.Write((byte)EraSaveDataType.Str);
 			writer.Write(key);
-			writeData((string)v);
+			writeData(s);
 		}
-		else if (v is string[])
+		else if (v is string[] strings)
 		{
 			writer.Write((byte)EraSaveDataType.StrArray);
 			writer.Write(key);
-			writeData((string[])v);
+			writeData(strings);
 		}
-		else if (v is string[,])
+		else if (v is string[,] strings1)
 		{
 			writer.Write((byte)EraSaveDataType.StrArray2D);
 			writer.Write(key);
-			writeData((string[,])v);
+			writeData(strings1);
 		}
-		else if (v is string[,,])
+		else if (v is string[,,] strings2)
 		{
 			writer.Write((byte)EraSaveDataType.StrArray3D);
 			writer.Write(key);
-			writeData((string[,,])v);
+			writeData(strings2);
 		}
 
 		#region EM_私家版_セーブ拡張

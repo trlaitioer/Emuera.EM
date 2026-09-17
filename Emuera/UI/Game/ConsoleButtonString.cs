@@ -401,15 +401,14 @@ internal sealed class ConsoleButtonString
 				int xOffset = 0;
 				foreach (AConsoleDisplayNode css in strArray)
 				{
-					if (css is not ConsoleStyledString)
+					if (css is not ConsoleStyledString willDrawHere)
 					{
 						continue;
 					}
 
-					ConsoleStyledString? willDrawHere = css as ConsoleStyledString;
 					// the check above guarantees the cast succeeded
-					willDrawHere!.DrawToBitmap(g, isSelecting, isBackLog, mode, xOffset, css.XsubPixel);
-					xOffset += css.Width;
+					willDrawHere!.DrawToBitmap(g, isSelecting, isBackLog, mode, xOffset, willDrawHere.XsubPixel);
+					xOffset += willDrawHere.Width;
 				}
 
 				nint index = GlobalStatic.Console.bitmapCacheArrayIndex;

@@ -1546,9 +1546,8 @@ internal sealed partial class FunctionIdentifier
 			for (int i = 0; i < pluginArgs.Length; ++i)
 			{
 				AExpression? rowArg = arg.RowArgs[i];
-				if (rowArg is VariableTerm)
+				if (rowArg is VariableTerm varTerm)
 				{
-					VariableTerm varTerm = (VariableTerm)rowArg;
 					if (varTerm.IsString)
 					{
 						varTerm.SetValue(pluginArgs[i].strValue!, exm);
@@ -3743,9 +3742,8 @@ internal sealed partial class FunctionIdentifier
 				ParserMediator.Warn(trerror.NothingAfterSif.Text, func, 2, true, false);
 				return;
 			}
-			else if (jumpto is InstructionLine)
+			else if (jumpto is InstructionLine sifFunc)
 			{
-				InstructionLine sifFunc = (InstructionLine)jumpto;
 				if (sifFunc.Function.IsPartial())
 				{
 					ParserMediator.Warn(string.Format(trerror.FuncCanNotAfterSif.Text, sifFunc.Function.Name), func, 2, true, false);

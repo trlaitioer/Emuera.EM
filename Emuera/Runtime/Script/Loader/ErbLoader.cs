@@ -1331,7 +1331,7 @@ internal sealed class ErbLoader
 				break;
 			}
 
-			if (nextLine is not InstructionLine)
+			if (nextLine is not InstructionLine func)
 			{
 				if (nextLine is GotoLabelLine)
 				{
@@ -1363,7 +1363,6 @@ internal sealed class ErbLoader
 				continue;
 			}
 
-			InstructionLine func = (nextLine as InstructionLine)!;
 			InstructionLine? baseFunc = nestStack.Count == 0 ? null : nestStack.Peek();
 			if (baseFunc != null)
 			{

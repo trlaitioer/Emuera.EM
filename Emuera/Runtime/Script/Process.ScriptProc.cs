@@ -368,9 +368,9 @@ internal sealed partial class Process
 				{
 					AExpression term_i = intExpArg.TermList[i];
 					NoList[i] = term_i.GetIntValue(exm);
-					if (!(term_i is VariableTerm) || (((VariableTerm)term_i).Identifier.Code != VariableCode.MASTER &&
-					                                  ((VariableTerm)term_i).Identifier.Code != VariableCode.ASSI &&
-					                                  ((VariableTerm)term_i).Identifier.Code != VariableCode.TARGET))
+					if (!(term_i is VariableTerm variableTerm) || (variableTerm.Identifier.Code != VariableCode.MASTER &&
+					                                               variableTerm.Identifier.Code != VariableCode.ASSI &&
+					                                               variableTerm.Identifier.Code != VariableCode.TARGET))
 					{
 						if (NoList[i] < 0 || NoList[i] >= charaNum)
 						{

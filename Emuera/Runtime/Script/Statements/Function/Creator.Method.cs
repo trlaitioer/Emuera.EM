@@ -351,10 +351,8 @@ internal static partial class FunctionMethodCreator
 			WordCollection wc = LexicalAnalyzer.Analyse(new CharStream(arguments.Required(0).GetStrValue(exm)), LexEndWith.EoL, LexAnalyzeFlag.None);
 			AExpression? term = ExpressionParser.ReduceExpressionTerm(wc, TermEndWith.EoL);
 
-			if (term is VariableTerm)
+			if (term is VariableTerm var)
 			{
-				VariableTerm var = (VariableTerm)term;
-
 				if (var.Identifier == null)
 				{
 					throw new CodeEE(string.Format(trerror.IsNotVar.Text, name));
@@ -389,10 +387,8 @@ internal static partial class FunctionMethodCreator
 			WordCollection wc = LexicalAnalyzer.Analyse(new CharStream(arguments.Required(0).GetStrValue(exm)), LexEndWith.EoL, LexAnalyzeFlag.None);
 			AExpression? term = ExpressionParser.ReduceExpressionTerm(wc, TermEndWith.EoL);
 
-			if (term is VariableTerm)
+			if (term is VariableTerm var)
 			{
-				VariableTerm var = (VariableTerm)term;
-
 				if (var.Identifier == null)
 				{
 					throw new CodeEE(string.Format(trerror.IsNotVar.Text, name));

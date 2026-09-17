@@ -2864,12 +2864,11 @@ internal sealed partial class EmueraConsole : IDisposable
 				throw new CodeEE(line.ErrMes);
 			}
 
-			if (!(line is InstructionLine))
+			if (!(line is InstructionLine func))
 			{
 				throw new CodeEE(trerror.InvalidDebugCommand.Text);
 			}
 
-			InstructionLine func = (InstructionLine)line;
 			if (func.Function.IsFlowContorol())
 			{
 				throw new CodeEE(trerror.CanNotUseFlowInstruction.Text);

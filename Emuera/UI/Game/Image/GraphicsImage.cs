@@ -297,9 +297,8 @@ internal sealed class GraphicsImage : AbstractImage
 
 		if (useImgList)
 		{
-			if (img as SpriteG != null)
+			if (img is SpriteG imgG)
 			{
-				SpriteG? imgG = img as SpriteG;
 				// The enclosing test guarantees the cast succeeded.
 				if (imgG!.useImgList)
 				{
@@ -327,7 +326,7 @@ internal sealed class GraphicsImage : AbstractImage
 					drawImgList = null!;
 				}
 			}
-			else if (img as SpriteF != null)
+			else if (img is SpriteF)
 			{
 				drawImgList.Add(
 					new Tuple<ASprite, Rectangle>(img, destRect)
