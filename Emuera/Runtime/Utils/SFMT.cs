@@ -404,7 +404,6 @@ public sealed class MTRandom
 	/// </summary>
 	private void gen_rand_all_19937()
 	{
-		int a, b, c, d;
 		uint[] p = sfmt;
 
 		const int cMEXP = 19937;
@@ -418,10 +417,10 @@ public sealed class MTRandom
 		const int cN = (cMEXP / 128) + 1;
 		const int cN32 = cN * 4;
 
-		a = 0;
-		b = cPOS1 * 4;
-		c = (cN - 2) * 4;
-		d = (cN - 1) * 4;
+		int a = 0;
+		int b = cPOS1 * 4;
+		int c = (cN - 2) * 4;
+		int d = (cN - 1) * 4;
 		do
 		{
 			p[a + 3] = p[a + 3] ^ (p[a + 3] << 8) ^ (p[a + 2] >> 24) ^ (p[c + 3] >> 8) ^ ((p[b + 3] >> cSR1) & cMSK4) ^ (p[d + 3] << cSL1);

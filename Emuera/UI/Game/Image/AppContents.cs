@@ -327,7 +327,6 @@ internal static class AppContents
 		if (!resourceDic.TryGetValue(parentName, out AbstractImage? value))
 		{
 			string filepath = parentName;
-			Bitmap bmp;
 
 			#region EM_私家版_webp
 
@@ -342,7 +341,7 @@ internal static class AppContents
 				return null;
 			}
 
-			bmp = webpbmp;
+			Bitmap bmp = webpbmp;
 
 			if (bmp.Width > AbstractImage.MAX_IMAGESIZE || bmp.Height > AbstractImage.MAX_IMAGESIZE)
 			{

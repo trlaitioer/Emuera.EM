@@ -1432,13 +1432,12 @@ internal static partial class FunctionMethodCreator
 			{
 				if (child is XmlAttribute newAttr)
 				{
-					XmlAttribute? attr;
 					if (method > 0 && !(node is XmlAttribute))
 					{
 						return false;
 					}
 
-					attr = method == 0 ? null : node as XmlAttribute;
+					XmlAttribute? attr = method == 0 ? null : node as XmlAttribute;
 					switch (method)
 					{
 						case 0: node.Attributes!.Append(newAttr); break;
@@ -2947,10 +2946,9 @@ internal static partial class FunctionMethodCreator
 
 			for (int i = 0; i < nodes.Count; i++)
 			{
-				XmlNodeList key, val;
 				XmlNode node = nodes[i]!;
-				key = node.SelectNodes("./k")!;
-				val = node.SelectNodes("./v")!;
+				XmlNodeList key = node.SelectNodes("./k")!;
+				XmlNodeList val = node.SelectNodes("./v")!;
 				if (key.Count != 1 || val.Count != 1)
 				{
 					continue;

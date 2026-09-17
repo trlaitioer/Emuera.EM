@@ -46,13 +46,12 @@ internal static class ButtonStringCreator
 			goto nonButton;
 		}
 
-		List<string>? strs;
 		if (!printString.Contains('[') || !printString.Contains(']'))
 		{
 			goto nonButton;
 		}
 
-		strs = lex(new CharStream(printString));
+		List<string>? strs = lex(new CharStream(printString));
 		if (strs == null)
 		{
 			goto nonButton;

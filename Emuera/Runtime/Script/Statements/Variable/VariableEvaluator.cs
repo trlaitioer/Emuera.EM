@@ -734,10 +734,9 @@ internal sealed class VariableEvaluator : IDisposable
 
 	public static long GetMaxArrayChara(FixedVariableTerm p, long start, long end, bool isMax)
 	{
-		long ret;
 		long value;
 		long[] idx = [start, p.Index2, p.Index3];
-		ret = p.Identifier.GetIntValue(GlobalStatic.EMediator, idx);
+		long ret = p.Identifier.GetIntValue(GlobalStatic.EMediator, idx);
 		for (int i = (int)start + 1; i < (int)end; i++)
 		{
 			idx[0] = i;
@@ -2108,15 +2107,13 @@ internal sealed class VariableEvaluator : IDisposable
 		ASSIPLAY = 0;
 		PREVCOM = -1;
 		NEXTCOM = -1;
-		long[] array;
-		string?[] sarray;
-		array = varData.DataIntegerArray[(int)(VariableCode.TFLAG & VariableCode.__LOWERCASE__)];
+		long[] array = varData.DataIntegerArray[(int)(VariableCode.TFLAG & VariableCode.__LOWERCASE__)];
 		for (int i = 0; i < array.Length; i++)
 		{
 			array[i] = 0;
 		}
 
-		sarray = varData.DataStringArray[(int)(VariableCode.TSTR & VariableCode.__LOWERCASE__)];
+		string?[] sarray = varData.DataStringArray[(int)(VariableCode.TSTR & VariableCode.__LOWERCASE__)];
 		for (int i = 0; i < sarray.Length; i++)
 		{
 			sarray[i] = "";
@@ -2171,8 +2168,7 @@ internal sealed class VariableEvaluator : IDisposable
 	public void UpdateAfterShowUsercom()
 	{
 		//UP = 0,DOWN = 0,LOSEBASE = 0
-		long[] array;
-		array = varData.DataIntegerArray[(int)(VariableCode.UP & VariableCode.__LOWERCASE__)];
+		long[] array = varData.DataIntegerArray[(int)(VariableCode.UP & VariableCode.__LOWERCASE__)];
 		for (int i = 0; i < array.Length; i++)
 		{
 			array[i] = 0;
@@ -2252,10 +2248,9 @@ internal sealed class VariableEvaluator : IDisposable
 	//1756 ↑だったのは今は昔の話である
 	public void UpdateInUpcheck(EmueraConsole window, bool skipPrint)
 	{
-		long[] up, down, param;
 		string?[] paramname = constant.GetCsvNameList(VariableCode.PALAMNAME);
-		up = varData.DataIntegerArray[(int)(VariableCode.UP & VariableCode.__LOWERCASE__)];
-		down = varData.DataIntegerArray[(int)(VariableCode.DOWN & VariableCode.__LOWERCASE__)];
+		long[] up = varData.DataIntegerArray[(int)(VariableCode.UP & VariableCode.__LOWERCASE__)];
+		long[] down = varData.DataIntegerArray[(int)(VariableCode.DOWN & VariableCode.__LOWERCASE__)];
 		long target = TARGET;
 		if (target < 0 || target >= varData.CharacterList.Count)
 		{
@@ -2263,7 +2258,7 @@ internal sealed class VariableEvaluator : IDisposable
 		}
 
 		CharacterData chara = varData.CharacterList[(int)target];
-		param = chara.DataIntegerArray[(int)(VariableCode.PALAM & VariableCode.__LOWERCASE__)];
+		long[] param = chara.DataIntegerArray[(int)(VariableCode.PALAM & VariableCode.__LOWERCASE__)];
 		int length = param.Length;
 		if (param.Length > up.Length)
 		{
@@ -2330,7 +2325,6 @@ internal sealed class VariableEvaluator : IDisposable
 
 	public void CUpdateInUpcheck(EmueraConsole window, long target, bool skipPrint)
 	{
-		long[] up, down, param;
 		string?[] paramname = constant.GetCsvNameList(VariableCode.PALAMNAME);
 		if (target < 0 || target >= varData.CharacterList.Count)
 		{
@@ -2338,9 +2332,9 @@ internal sealed class VariableEvaluator : IDisposable
 		}
 
 		CharacterData chara = varData.CharacterList[(int)target];
-		up = chara.DataIntegerArray[(int)(VariableCode.CUP & VariableCode.__LOWERCASE__)];
-		down = chara.DataIntegerArray[(int)(VariableCode.CDOWN & VariableCode.__LOWERCASE__)];
-		param = chara.DataIntegerArray[(int)(VariableCode.PALAM & VariableCode.__LOWERCASE__)];
+		long[] up = chara.DataIntegerArray[(int)(VariableCode.CUP & VariableCode.__LOWERCASE__)];
+		long[] down = chara.DataIntegerArray[(int)(VariableCode.CDOWN & VariableCode.__LOWERCASE__)];
+		long[] param = chara.DataIntegerArray[(int)(VariableCode.PALAM & VariableCode.__LOWERCASE__)];
 		int length = param.Length;
 		if (param.Length > up.Length)
 		{

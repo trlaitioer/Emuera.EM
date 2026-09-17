@@ -1036,8 +1036,7 @@ internal sealed partial class FunctionIdentifier
 
 			if (arg.Def != null)
 			{
-				long def;
-				def = arg.Def.GetIntValue(exm);
+				long def = arg.Def.GetIntValue(exm);
 				req.HasDefValue = true;
 				req.DefIntValue = def;
 			}
@@ -1102,8 +1101,7 @@ internal sealed partial class FunctionIdentifier
 			InputRequest req = new() { InputType = InputType.StrValue };
 			if (arg.Def != null)
 			{
-				string def;
-				def = arg.Def.GetStrValue(exm);
+				string def = arg.Def.GetStrValue(exm);
 				req.HasDefValue = true;
 				req.DefStrValue = def;
 			}
@@ -1176,8 +1174,7 @@ internal sealed partial class FunctionIdentifier
 			InputRequest req = new() { InputType = InputType.IntValue, OneInput = true };
 			if (arg.Def != null)
 			{
-				long def;
-				def = arg.Def.GetIntValue(exm);
+				long def = arg.Def.GetIntValue(exm);
 				req.HasDefValue = true;
 				req.DefIntValue = def;
 			}
@@ -1248,8 +1245,7 @@ internal sealed partial class FunctionIdentifier
 			InputRequest req = new() { InputType = InputType.StrValue, OneInput = true };
 			if (arg.Def != null)
 			{
-				string def;
-				def = arg.Def.GetStrValue(exm);
+				string def = arg.Def.GetStrValue(exm);
 				req.HasDefValue = true;
 				req.DefStrValue = def;
 			}
@@ -1892,9 +1888,8 @@ internal sealed partial class FunctionIdentifier
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
 			ExpressionArrayArgument arg = (ExpressionArrayArgument)func.BuiltArgument;
-			string bgName;
 			long bgDepth = 0;
-			bgName = arg.TermList[0].GetStrValue(exm);
+			string bgName = arg.TermList[0].GetStrValue(exm);
 			float opacity = 1.0f;
 			if (arg.TermList.Length >= 2)
 			{
@@ -1921,8 +1916,7 @@ internal sealed partial class FunctionIdentifier
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
 			ExpressionArrayArgument arg = (ExpressionArrayArgument)func.BuiltArgument;
-			string bgName;
-			bgName = arg.TermList[0].GetStrValue(exm);
+			string bgName = arg.TermList[0].GetStrValue(exm);
 			exm.Console.RemoveBackground(bgName);
 		}
 	}
@@ -2679,8 +2673,7 @@ internal sealed partial class FunctionIdentifier
 			InputRequest req = new() { InputType = InputType.IntButton };
 			if (arg.Def != null)
 			{
-				long def;
-				def = arg.Def.GetIntValue(exm);
+				long def = arg.Def.GetIntValue(exm);
 				req.HasDefValue = true;
 				req.DefIntValue = def;
 			}
@@ -2797,8 +2790,7 @@ internal sealed partial class FunctionIdentifier
 			InputRequest req = new() { InputType = InputType.StrButton };
 			if (arg.Def != null)
 			{
-				string def;
-				def = arg.Def.GetStrValue(exm);
+				string def = arg.Def.GetStrValue(exm);
 				req.HasDefValue = true;
 				req.DefStrValue = def;
 			}
@@ -2906,8 +2898,7 @@ internal sealed partial class FunctionIdentifier
 			InputRequest req = new() { InputType = InputType.IntButton, OneInput = true };
 			if (arg.Def != null)
 			{
-				long def;
-				def = arg.Def.GetIntValue(exm);
+				long def = arg.Def.GetIntValue(exm);
 				req.HasDefValue = true;
 				req.DefIntValue = def;
 			}
@@ -3024,8 +3015,7 @@ internal sealed partial class FunctionIdentifier
 			InputRequest req = new() { InputType = InputType.StrButton, OneInput = true };
 			if (arg.Def != null)
 			{
-				string def;
-				def = arg.Def.GetStrValue(exm);
+				string def = arg.Def.GetStrValue(exm);
 				req.HasDefValue = true;
 				req.DefStrValue = def;
 			}

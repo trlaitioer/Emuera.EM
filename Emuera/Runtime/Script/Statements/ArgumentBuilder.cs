@@ -991,7 +991,6 @@ internal static partial class ArgumentParser
 				return null;
 			}
 
-			VariableTerm? varTerm;
 			AExpression? term = ExpressionParser.ReduceExpressionTerm(wc, TermEndWith.Comma);
 			if (term == null)
 			{
@@ -999,7 +998,7 @@ internal static partial class ArgumentParser
 				return null;
 			}
 
-			varTerm = term.Restructure(exm) as VariableTerm;
+			VariableTerm? varTerm = term.Restructure(exm) as VariableTerm;
 			if (varTerm == null)
 			{
 				warn(string.Format(trerror.ArgIsNotVariable.Text, "1"), line, 2, false);
@@ -1204,10 +1203,9 @@ internal static partial class ArgumentParser
 		public override Argument? CreateArgument(InstructionLine line, ExpressionMediator exm)
 		{
 			CharStream st = line.PopArgumentPrimitive()!;
-			SingleStrTerm funcname;
 			string str = LexicalAnalyzer.ReadString(st, StrEndWith.LeftParenthesis_Bracket_Comma_Semicolon);
 			str = str.Trim([' ', '\t']);
-			funcname = new SingleStrTerm(str);
+			SingleStrTerm funcname = new(str);
 			char cur = st.Current;
 			WordCollection wc = LexicalAnalyzer.Analyse(st, LexEndWith.EoL, LexAnalyzeFlag.None);
 			wc.ShiftNext();
@@ -1269,8 +1267,7 @@ internal static partial class ArgumentParser
 				}
 			}
 
-			Argument ret;
-			ret = new SpCallSharpArgment(funcname, subNames, args);
+			Argument ret = new SpCallSharpArgment(funcname, subNames, args);
 			if (funcname is SingleTerm)
 			{
 				ret.IsConst = true;

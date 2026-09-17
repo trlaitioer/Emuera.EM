@@ -476,10 +476,10 @@ internal partial class Rikaichan
 		}
 
 		byte[] search = eucjp.GetBytes(output.Substring(0, 1));
-		int start, end, cur, curprev;
-		start = 0;
-		end = edictind.Length;
-		curprev = cur = (start + end) / 2;
+		int cur;
+		int start = 0;
+		int end = edictind.Length;
+		int curprev = cur = (start + end) / 2;
 		goto search_to_right;
 
 		search_again:
@@ -1046,9 +1046,8 @@ internal partial class Rikaichan
 		{
 			string s = output2;
 			string sprev = s;
-			int len;
 			do_it_again:
-			len = stringMeasure.GetDisplayLength(s, Config.DefaultFont);
+			int len = stringMeasure.GetDisplayLength(s, Config.DefaultFont);
 			if (len > screenWidth - 32)
 			{
 				int split;

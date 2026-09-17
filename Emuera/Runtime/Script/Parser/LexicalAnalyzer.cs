@@ -139,11 +139,9 @@ internal static class LexicalAnalyzer
 
 	public static long ReadInt64(CharStream st, bool retZero)
 	{
-		long significand;
 		int expBase = 0;
 		int exponent = 0;
 		int stStartPos = st.CurrentPosition;
-		int stEndPos;
 		int fromBase = 10;
 		if (st.Current == '0')
 		{
@@ -180,7 +178,7 @@ internal static class LexicalAnalyzer
 			}
 		}
 
-		significand = readDigits(st, fromBase);
+		long significand = readDigits(st, fromBase);
 		if (st.Current == 'p' || st.Current == 'P')
 		{
 			expBase = 2;
@@ -199,7 +197,7 @@ internal static class LexicalAnalyzer
 			}
 		}
 
-		stEndPos = st.CurrentPosition;
+		int stEndPos = st.CurrentPosition;
 		if (expBase != 0 && exponent != 0)
 		{
 			double d = significand * Math.Pow(expBase, exponent);
@@ -307,11 +305,9 @@ internal static class LexicalAnalyzer
 	//IsNumericにReadInt64を使うと、本来falseになるべき文字列の一部がCodeEEになってしまうので、新規に追加
 	public static bool NumericCheck(CharStream st)
 	{
-		long significand;
 		int expBase = 0;
 		int exponent = 0;
 		int stStartPos = st.CurrentPosition;
-		int stEndPos;
 		int fromBase = 10;
 		if (st.Current == '0')
 		{
@@ -342,7 +338,7 @@ internal static class LexicalAnalyzer
 			}
 		}
 
-		significand = readDigits(st, fromBase);
+		long significand = readDigits(st, fromBase);
 		if (st.Current == 'p' || st.Current == 'P')
 		{
 			expBase = 2;
@@ -366,7 +362,7 @@ internal static class LexicalAnalyzer
 			}
 		}
 
-		stEndPos = st.CurrentPosition;
+		int stEndPos = st.CurrentPosition;
 		if (expBase != 0 && exponent != 0)
 		{
 			double d = significand * Math.Pow(expBase, exponent);

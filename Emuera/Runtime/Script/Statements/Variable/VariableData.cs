@@ -761,8 +761,7 @@ internal sealed partial class VariableData : IDisposable
 
 		//dataIntegerArray[(int)VariableCode.__LOWERCASE__ & (int)VariableCode.ASSIPLAY][0] = 0;
 		//dataIntegerArray[(int)VariableCode.__LOWERCASE__ & (int)VariableCode.MASTER][0] = 0;
-		long[] array;
-		array = dataIntegerArray[(int)VariableCode.__LOWERCASE__ & (int)VariableCode.ASSI];
+		long[] array = dataIntegerArray[(int)VariableCode.__LOWERCASE__ & (int)VariableCode.ASSI];
 		if (array.Length > 0)
 		{
 			array[0] = -1;
@@ -845,10 +844,9 @@ internal sealed partial class VariableData : IDisposable
 
 	public void SaveToStreamExtended(EraDataWriter writer)
 	{
-		List<VariableCode> codeList;
-
-		//dataString
-		codeList = VariableIdentifier.GetExtSaveList(VariableCode.__STRING__);
+		List<VariableCode> codeList =
+			//dataString
+			VariableIdentifier.GetExtSaveList(VariableCode.__STRING__);
 		foreach (VariableCode code in codeList)
 		{
 			writer.WriteExtended(code.ToString(), dataString[(int)VariableCode.__LOWERCASE__ & (int)code]);
@@ -952,9 +950,8 @@ internal sealed partial class VariableData : IDisposable
 		Dictionary<string, List<long[]>> int2DListDic = reader.ReadInt64Array2DExtended();
 		Dictionary<string, List<List<string[]>>> str3DListDic = reader.ReadStringArray3DExtended();
 		Dictionary<string, List<List<long[]>>> int3DListDic = reader.ReadInt64Array3DExtended();
-		List<VariableCode> codeList;
 
-		codeList = VariableIdentifier.GetExtSaveList(VariableCode.__STRING__);
+		List<VariableCode> codeList = VariableIdentifier.GetExtSaveList(VariableCode.__STRING__);
 		foreach (VariableCode code in codeList)
 		{
 			if (strDic.ContainsKey(code.ToString()))
@@ -1038,10 +1035,9 @@ internal sealed partial class VariableData : IDisposable
 		int2DListDic = reader.ReadInt64Array2DExtended();
 		str3DListDic = reader.ReadStringArray3DExtended();
 		int3DListDic = reader.ReadInt64Array3DExtended();
-		List<UserDefinedVariableToken> varList;
 
 		int i = 0;
-		varList = userDefinedSaveVarList[i];
+		List<UserDefinedVariableToken> varList = userDefinedSaveVarList[i];
 		i++;
 		foreach (UserDefinedVariableToken var in varList)
 		{
@@ -1190,10 +1186,8 @@ internal sealed partial class VariableData : IDisposable
 		Dictionary<string, List<List<string[]>>> str3DListDic = reader.ReadStringArray3DExtended();
 		Dictionary<string, List<List<long[]>>> int3DListDic = reader.ReadInt64Array3DExtended();
 
-		List<UserDefinedVariableToken> varList;
-
 		int i = 0;
-		varList = userDefinedGlobalSaveVarList[i];
+		List<UserDefinedVariableToken> varList = userDefinedGlobalSaveVarList[i];
 		i++;
 		foreach (UserDefinedVariableToken var in varList)
 		{

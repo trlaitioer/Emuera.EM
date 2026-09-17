@@ -112,9 +112,8 @@ internal sealed class CharacterData : IDisposable
 		dataString[(int)VariableCode.__LOWERCASE__ & (int)VariableCode.CALLNAME] = tmpl.Callname;
 		dataString[(int)VariableCode.__LOWERCASE__ & (int)VariableCode.NICKNAME] = tmpl.Nickname;
 		dataString[(int)VariableCode.__LOWERCASE__ & (int)VariableCode.MASTERNAME] = tmpl.Mastername;
-		long[] array, array2;
-		array = dataIntegerArray[(int)VariableCode.__LOWERCASE__ & (int)VariableCode.MAXBASE];
-		array2 = dataIntegerArray[(int)VariableCode.__LOWERCASE__ & (int)VariableCode.BASE];
+		long[] array = dataIntegerArray[(int)VariableCode.__LOWERCASE__ & (int)VariableCode.MAXBASE];
+		long[] array2 = dataIntegerArray[(int)VariableCode.__LOWERCASE__ & (int)VariableCode.BASE];
 		foreach (KeyValuePair<int, long> pair in tmpl.Maxbase)
 		{
 			array[pair.Key] = pair.Value;
@@ -407,10 +406,9 @@ internal sealed class CharacterData : IDisposable
 
 	public void SaveToStreamExtended(EraDataWriter writer)
 	{
-		List<VariableCode> codeList;
-
-		//dataString
-		codeList = VariableIdentifier.GetExtSaveList(VariableCode.__CHARACTER_DATA__ | VariableCode.__STRING__);
+		List<VariableCode> codeList =
+			//dataString
+			VariableIdentifier.GetExtSaveList(VariableCode.__CHARACTER_DATA__ | VariableCode.__STRING__);
 		foreach (VariableCode code in codeList)
 		{
 			writer.WriteExtended(code.ToString(), dataString[(int)VariableCode.__LOWERCASE__ & (int)code]);
@@ -473,9 +471,7 @@ internal sealed class CharacterData : IDisposable
 		Dictionary<string, List<string[]>> str2DListDic = reader.ReadStringArray2DExtended();
 		Dictionary<string, List<long[]>> int2DListDic = reader.ReadInt64Array2DExtended();
 
-		List<VariableCode> codeList;
-
-		codeList = VariableIdentifier.GetExtSaveList(VariableCode.__CHARACTER_DATA__ | VariableCode.__STRING__);
+		List<VariableCode> codeList = VariableIdentifier.GetExtSaveList(VariableCode.__CHARACTER_DATA__ | VariableCode.__STRING__);
 		foreach (VariableCode code in codeList)
 		{
 			if (strDic.ContainsKey(code.ToString()))
@@ -540,9 +536,7 @@ internal sealed class CharacterData : IDisposable
 		Dictionary<string, List<string>> strListDic = reader.ReadStringArrayExtended();
 		Dictionary<string, List<long>> intListDic = reader.ReadInt64ArrayExtended();
 
-		List<VariableCode> codeList;
-
-		codeList = VariableIdentifier.GetExtSaveList(VariableCode.__CHARACTER_DATA__ | VariableCode.__STRING__);
+		List<VariableCode> codeList = VariableIdentifier.GetExtSaveList(VariableCode.__CHARACTER_DATA__ | VariableCode.__STRING__);
 		foreach (VariableCode code in codeList)
 		{
 			if (strDic.ContainsKey(code.ToString()))
