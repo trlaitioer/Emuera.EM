@@ -21,7 +21,7 @@ internal enum ConfigDialogResult
 
 internal sealed partial class ConfigDialog : Form
 {
-	private FlowLayoutPanel[] pages;
+	private readonly FlowLayoutPanel[] pages;
 
 	public ConfigDialog()
 	{

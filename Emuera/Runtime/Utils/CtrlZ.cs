@@ -15,9 +15,9 @@ internal class CtrlZ
 	private int mLastSaveExpected = -1;
 
 	//^ only exists because save can have a "confirm" dialogue.
-	public List<string> mInputs = new(0x40);
+	public readonly List<string> mInputs = new(0x40);
 
-	public long[] mRandomSeed = new long[MTRandom.N32 + 1];
+	public readonly long[] mRandomSeed = new long[MTRandom.N32 + 1];
 
 	public bool mRewindInProgress = false;
 	public bool mRepeatedUndoRequested = false;

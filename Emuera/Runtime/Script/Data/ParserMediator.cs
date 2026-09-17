@@ -146,7 +146,7 @@ internal partial class ParserMediator
 
 	#endregion
 
-	private static object warningListLock = new();
+	private readonly static object warningListLock = new();
 
 	public static void Warn(string str, ScriptPosition? pos, int level)
 	{
@@ -213,7 +213,7 @@ internal partial class ParserMediator
 		//				console.PrintWarning(str, line.Position, level);
 	}
 
-	private static List<ParserWarning> warningList = [];
+	private readonly static List<ParserWarning> warningList = [];
 
 	public static bool HasWarning
 	{
@@ -269,10 +269,10 @@ internal partial class ParserMediator
 			StackTrace = stackTrace;
 		}
 
-		public string WarningMes;
-		public ScriptPosition? WarningPos;
-		public int WarningLevel;
-		public string? StackTrace;
+		public readonly string WarningMes;
+		public readonly ScriptPosition? WarningPos;
+		public readonly int WarningLevel;
+		public readonly string? StackTrace;
 	}
 
 	[GeneratedRegex(@"(?<!\\),")]

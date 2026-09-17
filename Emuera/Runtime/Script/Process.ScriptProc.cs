@@ -1282,7 +1282,7 @@ internal sealed partial class Process
 	}
 
 
-	private List<ProcessState> prevStateList = [];
+	private readonly List<ProcessState> prevStateList = [];
 
 	public void saveCurrentState(bool single)
 	{

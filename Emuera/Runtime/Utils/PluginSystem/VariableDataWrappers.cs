@@ -51,9 +51,9 @@ public class GlobalInt1dWrapper
 		token.SetValue(value, [key]);
 	}
 
-	private VariableToken token;
-	private ExpressionMediator exm;
-	private VariableCode variableCode;
+	private readonly VariableToken token;
+	private readonly ExpressionMediator exm;
+	private readonly VariableCode variableCode;
 }
 
 public class GlobalString1dWrapper
@@ -103,9 +103,9 @@ public class GlobalString1dWrapper
 		token.SetValue(value, [key]);
 	}
 
-	private VariableToken token;
-	private ExpressionMediator exm;
-	private VariableCode variableCode;
+	private readonly VariableToken token;
+	private readonly ExpressionMediator exm;
+	private readonly VariableCode variableCode;
 }
 
 public class GlobalConstString1dWrapper
@@ -133,9 +133,9 @@ public class GlobalConstString1dWrapper
 		return token.GetStrValue(exm, [key]);
 	}
 
-	private VariableToken token;
-	private ExpressionMediator exm;
-	private VariableCode variableCode;
+	private readonly VariableToken token;
+	private readonly ExpressionMediator exm;
+	private readonly VariableCode variableCode;
 }
 
 public class GlobalConstInt1dWrapper
@@ -163,9 +163,9 @@ public class GlobalConstInt1dWrapper
 		return token.GetIntValue(exm, [key]);
 	}
 
-	private VariableToken token;
-	private ExpressionMediator exm;
-	private VariableCode variableCode;
+	private readonly VariableToken token;
+	private readonly ExpressionMediator exm;
+	private readonly VariableCode variableCode;
 }
 
 public class CharInt1dWrapper
@@ -214,10 +214,10 @@ public class CharInt1dWrapper
 		token.SetValue(value, [charId, key]);
 	}
 
-	private long charId;
-	private VariableToken token;
-	private ExpressionMediator exm;
-	private VariableCode variableCode;
+	private readonly long charId;
+	private readonly VariableToken token;
+	private readonly ExpressionMediator exm;
+	private readonly VariableCode variableCode;
 }
 
 public class CharInt2dWrapper
@@ -308,10 +308,10 @@ public class CharInt2dWrapper
 		token.SetValue(value, [charId, keyA, keyB]);
 	}
 
-	private long charId;
-	private VariableToken token;
-	private ExpressionMediator exm;
-	private VariableCode variableCode;
+	private readonly long charId;
+	private readonly VariableToken token;
+	private readonly ExpressionMediator exm;
+	private readonly VariableCode variableCode;
 }
 
 public class CharUserdefinedInt1dWrapper
@@ -356,9 +356,9 @@ public class CharUserdefinedInt1dWrapper
 		tokens[key].SetValue(value, [charId, idx]);
 	}
 
-	private long charId;
-	private Dictionary<string, VariableToken> tokens;
-	private ExpressionMediator exm;
+	private readonly long charId;
+	private readonly Dictionary<string, VariableToken> tokens;
+	private readonly ExpressionMediator exm;
 	private VariableCode variableCode;
 }
 
@@ -382,9 +382,9 @@ public class CharStringWrapper
 		token.SetValue(value, [charId]);
 	}
 
-	private long charId;
-	private VariableToken token;
-	private ExpressionMediator exm;
+	private readonly long charId;
+	private readonly VariableToken token;
+	private readonly ExpressionMediator exm;
 	private VariableCode variableCode;
 }
 
@@ -436,8 +436,8 @@ public class CharString1dWrapper
 		token.SetValue(value, [charId, key]);
 	}
 
-	private long charId;
-	private VariableToken token;
-	private ExpressionMediator exm;
-	private VariableCode variableCode;
+	private readonly long charId;
+	private readonly VariableToken token;
+	private readonly ExpressionMediator exm;
+	private readonly VariableCode variableCode;
 }

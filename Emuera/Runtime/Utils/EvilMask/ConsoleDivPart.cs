@@ -190,9 +190,9 @@ internal class ConsoleDivPart : AConsoleDisplayNode
 	private int PointY;
 	private int Height;
 	private int[]? margin, padding, radius, border;
-	private Color[]? borderColors;
-	private Color backgroundColor;
-	private string altHeadTag;
+	private readonly Color[]? borderColors;
+	private readonly Color backgroundColor;
+	private readonly string altHeadTag;
 	private readonly ConsoleDisplayLine[] children;
 	public bool IsEscaped { get; set; }
 	public override int Top => PointY;

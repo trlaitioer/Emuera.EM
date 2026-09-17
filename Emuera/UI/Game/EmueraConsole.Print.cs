@@ -81,7 +81,7 @@ internal sealed partial class EmueraConsole : IDisposable
 	//private bool useUserStyle = true;
 	public bool UseUserStyle { get; set; }
 	public bool UseSetColorStyle { get; set; }
-	private StringStyle defaultStyle = new(Config.ForeColor, FontStyle.Regular, null);
+	private readonly StringStyle defaultStyle = new(Config.ForeColor, FontStyle.Regular, null);
 
 	private StringStyle userStyle = new(Config.ForeColor, FontStyle.Regular, null);
 

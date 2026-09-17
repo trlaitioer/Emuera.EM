@@ -46,7 +46,7 @@ internal class HotkeyState
 
 	// Allocated by HotkeyStateInit before any state slot is read
 	private nint[] state = null!;
-	private List<int> bytecode = new(0x200);
+	private readonly List<int> bytecode = new(0x200);
 
 	public void HotkeyStateInit(nint size)
 	{

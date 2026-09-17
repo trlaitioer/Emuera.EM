@@ -37,7 +37,7 @@ internal sealed class SingleStrTerm : SingleTerm
 		sValue = s;
 	}
 
-	private string sValue;
+	private readonly string sValue;
 
 	public override string GetStrValue(ExpressionMediator exm)
 	{

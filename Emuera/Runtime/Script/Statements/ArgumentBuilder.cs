@@ -391,7 +391,7 @@ internal static partial class ArgumentParser
 			maxArg = max;
 		}
 
-		private int maxArg;
+		private readonly int maxArg;
 
 		public override Argument? CreateArgument(InstructionLine line, ExpressionMediator exm)
 		{

@@ -560,9 +560,9 @@ internal sealed class UserDefinedVariableData
 
 internal sealed class DimLineWC
 {
-	public WordCollection WC;
-	public bool Dims;
-	public bool IsPrivate;
+	public readonly WordCollection WC;
+	public readonly bool Dims;
+	public readonly bool IsPrivate;
 	public ScriptPosition? SC;
 
 	public DimLineWC(WordCollection wc, bool isString, bool isPrivate, ScriptPosition? position)

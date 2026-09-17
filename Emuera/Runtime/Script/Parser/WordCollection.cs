@@ -16,10 +16,10 @@ internal sealed class WordCollection
 		Pointer = Collection.First;
 	}
 
-	public LinkedList<Word> Collection;
+	public readonly LinkedList<Word> Collection;
 	public LinkedListNode<Word>? Pointer;
 	private int index = 0;
-	private static Word nullToken = new NullWord();
+	private readonly static Word nullToken = new NullWord();
 
 	public void PointerReset()
 	{

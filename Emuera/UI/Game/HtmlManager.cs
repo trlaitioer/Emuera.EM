@@ -88,8 +88,8 @@ internal static class HtmlManager
 
 	private struct HTMLI
 	{
-		public string tag;
-		public bool isStyleTag;
+		public readonly string tag;
+		public readonly bool isStyleTag;
 
 		public HTMLI(string v1, bool v2) : this()
 		{
@@ -292,14 +292,14 @@ internal static class HtmlManager
 
 		// Set by the div parsing path once the subdivision that owns this tag is parsed
 		public ConsoleDisplayLine[] Lines = null!;
-		public MixedNum Width;
-		public MixedNum Height;
-		public MixedNum X;
-		public MixedNum Y;
-		public int Color;
-		public int Depth;
-		public StyledBoxModel? StyledBox;
-		public bool IsRelative;
+		public readonly MixedNum Width;
+		public readonly MixedNum Height;
+		public readonly MixedNum X;
+		public readonly MixedNum Y;
+		public readonly int Color;
+		public readonly int Depth;
+		public readonly StyledBoxModel? StyledBox;
+		public readonly bool IsRelative;
 	}
 
 	#endregion
@@ -347,7 +347,7 @@ internal static class HtmlManager
 	{
 		public bool LineHead = true; //行頭フラグ。一度もテキストが出てきてない状態
 		public FontStyle FontStyle = FontStyle.Regular;
-		public List<HtmlAnalzeStateFontTag> FonttagList = [];
+		public readonly List<HtmlAnalzeStateFontTag> FonttagList = [];
 		public bool FlagNobr; //falseの時に</nobr>するとエラー
 		public bool FlagP; //falseの時に</p>するとエラー
 		public bool FlagNobrClosed; //trueの時に</nobr>するとエラー

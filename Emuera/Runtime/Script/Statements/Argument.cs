@@ -920,7 +920,7 @@ internal sealed class IntAsignArgument : Argument
 		ConstStr = str;
 	}
 
-	public AExpression? Exp;
+	public readonly AExpression? Exp;
 
 	public IntAsignArgument(string name, int[] lengths, AExpression exp)
 	{
@@ -939,7 +939,7 @@ internal sealed class StrAsignArgument : Argument
 		ConstStr = str;
 	}
 
-	public string? Value;
+	public readonly string? Value;
 
 	public StrAsignArgument(string str, int[] lengths, string? value)
 	{

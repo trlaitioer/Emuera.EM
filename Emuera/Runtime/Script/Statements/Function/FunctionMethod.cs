@@ -65,7 +65,7 @@ internal abstract class FunctionMethod
 		}
 
 		public Type Type => Int ? typeof(long) : typeof(string);
-		public ArgType type = ArgType.Invalid;
+		public readonly ArgType type = ArgType.Invalid;
 		public bool AllowConstRef => (type & ArgType.AllowConstRef) != 0;
 		public bool DisallowVoid => (type & ArgType.DisallowVoid) != 0;
 		public bool Ref => (type & ArgType.Ref) != 0;

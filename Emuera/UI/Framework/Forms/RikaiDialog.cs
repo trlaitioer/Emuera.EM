@@ -10,17 +10,17 @@ namespace MinorShift.Emuera.Forms;
 
 public partial class RikaiDialog : Form
 {
-	private byte[] mEdict;
+	private readonly byte[] mEdict;
 
 	//Built by the worker and only read back from bwRunWorkerCompleted
 	private byte[] mEdictIndex = null!;
 
 	public delegate void RikaiSendIndex(byte[] edictind);
 
-	private RikaiSendIndex rikaiSendIndex;
+	private readonly RikaiSendIndex rikaiSendIndex;
 	public Encoding eucjp = Encoding.GetEncoding(20932);
-	private List<string> dialogLines = new(16);
-	private DateTime start = DateTime.Now;
+	private readonly List<string> dialogLines = new(16);
+	private readonly DateTime start = DateTime.Now;
 
 	public RikaiDialog(byte[] edict, RikaiSendIndex rikaiSendIndex)
 	{
@@ -92,8 +92,8 @@ public partial class RikaiDialog : Form
 
 	private class EdictParser
 	{
-		public byte[] mEdict;
-		public ReadOnlyMemory<byte> mEdictMemory;
+		public readonly byte[] mEdict;
+		public readonly ReadOnlyMemory<byte> mEdictMemory;
 		public int mStart, mEnd;
 		public bool mFinished;
 		public const long mTickDelta = 4000;
@@ -184,7 +184,7 @@ public partial class RikaiDialog : Form
 
 	private class IndexEntryList
 	{
-		public List<IndexEntry> mList = new(0x10000); //TODO: get final size and add it here, rounded up just in case
+		public readonly List<IndexEntry> mList = new(0x10000); //TODO: get final size and add it here, rounded up just in case
 
 		public void Add(ReadOnlyMemory<byte> aWord, int offset)
 		{
@@ -227,8 +227,8 @@ public partial class RikaiDialog : Form
 
 	private class IndexEntry : IComparable<IndexEntry>
 	{
-		public ReadOnlyMemory<byte> mWord;
-		public List<int> offsets;
+		public readonly ReadOnlyMemory<byte> mWord;
+		public readonly List<int> offsets;
 
 		public IndexEntry(ReadOnlyMemory<byte> aWord)
 		{

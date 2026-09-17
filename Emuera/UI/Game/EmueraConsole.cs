@@ -75,13 +75,13 @@ internal sealed partial class EmueraConsole : IDisposable
 {
 	#region EmuEra-Rikaichan
 
-	public Rikaichan rikaichan = new();
+	public readonly Rikaichan rikaichan = new();
 
 	#endregion
 
 	//Bitmap Cache
 	public const nint bitmapCacheArrayCap = 256;
-	public ConsoleButtonString[] bitmapCacheArray = new ConsoleButtonString[bitmapCacheArrayCap];
+	public readonly ConsoleButtonString[] bitmapCacheArray = new ConsoleButtonString[bitmapCacheArrayCap];
 	public nint bitmapCacheArrayIndex = 0;
 	public bool bitmapCacheEnabledForNextLine;
 
@@ -327,7 +327,7 @@ internal sealed partial class EmueraConsole : IDisposable
 
 	#endregion
 
-	private List<KeyValuePair<long, ConsoleBackground>> backgroundList = [];
+	private readonly List<KeyValuePair<long, ConsoleBackground>> backgroundList = [];
 
 	// null until ValidateBackground creates it for the current canvas size
 	private Bitmap? bakedBackground;
@@ -852,7 +852,7 @@ internal sealed partial class EmueraConsole : IDisposable
 	private ConsoleButtonString? pointingString;
 
 	// pointingStrings记录鼠标下所有Button图像。当多个Button重叠时，被鼠标划到的图像都会变化
-	private HashSet<ConsoleButtonString> pointingStrings = [];
+	private readonly HashSet<ConsoleButtonString> pointingStrings = [];
 
 	#region EE_MOUSEB
 
@@ -1034,7 +1034,7 @@ internal sealed partial class EmueraConsole : IDisposable
 	/// <summary>
 	/// INPUT中のアニメーション用タイマー
 	/// </summary>
-	private Timer redrawTimer;
+	private readonly Timer redrawTimer;
 
 	private void tickRedrawTimer(object? sender, EventArgs e)
 	{
@@ -1073,7 +1073,7 @@ internal sealed partial class EmueraConsole : IDisposable
 	}
 
 
-	private System.Timers.Timer genericTimer = new();
+	private readonly System.Timers.Timer genericTimer = new();
 	private long timerID = -1;
 	private readonly Stopwatch _genericTimerStopwatch = new(); //現在のタイマーを開始した時のミリ秒数（WinmmTimer.TickCount基準）
 	private long timer_endTime; //現在のタイマーを終了する時のTickCountミリ秒数
@@ -2044,8 +2044,8 @@ internal sealed partial class EmueraConsole : IDisposable
 
 	#region 描画系
 
-	private Stopwatch _frameDeltaTimer = Stopwatch.StartNew();
-	private uint msPerFrame = 1000 / 60; //60FPS
+	private readonly Stopwatch _frameDeltaTimer = Stopwatch.StartNew();
+	private readonly uint msPerFrame = 1000 / 60; //60FPS
 	private ConsoleRedraw redraw = ConsoleRedraw.Normal;
 	public ConsoleRedraw Redraw => redraw;
 
@@ -2207,7 +2207,7 @@ internal sealed partial class EmueraConsole : IDisposable
 
 	#endregion
 
-	private List<ConsoleDisplayLine> _htmlElementList = new(10);
+	private readonly List<ConsoleDisplayLine> _htmlElementList = new(10);
 
 	/// <summary>
 	/// 1818以前のRefreshStringsの後半とm_RefreshStringsを融合
@@ -2680,9 +2680,9 @@ internal sealed partial class EmueraConsole : IDisposable
 	// null while the debug dialog is not open
 	private DebugDialog? dd;
 	public DebugDialog? DebugDialog => dd;
-	private StringBuilder dConsoleLog = new("");
+	private readonly StringBuilder dConsoleLog = new("");
 	public string DebugConsoleLog => dConsoleLog.ToString();
-	private List<string> dTraceLogList = [];
+	private readonly List<string> dTraceLogList = [];
 
 	public string GetDebugTraceLog(bool force)
 	{
@@ -2974,7 +2974,7 @@ internal sealed partial class EmueraConsole : IDisposable
 
 	#region EM_私家版_描画拡張
 
-	private int[] dummy = [0];
+	private readonly int[] dummy = [0];
 
 	#endregion
 
@@ -3781,5 +3781,5 @@ internal class ConsoleBackground
 		return colorMatrix;
 	}
 
-	private ColorMatrix colorMatrix;
+	private readonly ColorMatrix colorMatrix;
 }

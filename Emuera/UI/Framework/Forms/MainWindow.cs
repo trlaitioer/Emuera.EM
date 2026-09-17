@@ -109,7 +109,7 @@ internal sealed partial class MainWindow : Form
 		#endregion
 	}
 
-	private ToolStripMenuItem[] macroMenuItems = new ToolStripMenuItem[KeyMacro.MaxFkey];
+	private readonly ToolStripMenuItem[] macroMenuItems = new ToolStripMenuItem[KeyMacro.MaxFkey];
 
 	//private System.Diagnostics.FileVersionInfo emueraVer = System.Diagnostics.FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location);
 	public PictureBox MainPicBox => mainPicBox;
@@ -206,7 +206,8 @@ internal sealed partial class MainWindow : Form
 		public Size Size;
 	}
 
-	private TextBoxInfo textBoxInfo, nextTextBoxInfo;
+	private readonly TextBoxInfo textBoxInfo;
+	private TextBoxInfo nextTextBoxInfo;
 
 	private enum TextBoxState
 	{

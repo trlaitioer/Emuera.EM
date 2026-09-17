@@ -100,7 +100,7 @@ internal sealed class UserDefinedRefMethodTerm : SuperUserDefinedMethodTerm
 		this.reffunc = reffunc;
 	}
 
-	private List<AExpression?> srcArgs;
+	private readonly List<AExpression?> srcArgs;
 	private readonly UserDefinedRefMethod reffunc;
 
 	public override UserDefinedFunctionArgument Argument

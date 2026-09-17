@@ -77,7 +77,7 @@ internal sealed class ConstantData
 	#endregion
 
 
-	public int[] MaxDataList = new int[countNameCsv];
+	public readonly int[] MaxDataList = new int[countNameCsv];
 	private readonly HashSet<VariableCode> changedCode = [];
 
 	public int[] VariableIntArrayLength;

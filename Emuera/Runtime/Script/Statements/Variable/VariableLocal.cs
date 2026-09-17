@@ -18,12 +18,12 @@ internal sealed class VariableLocal
 	private readonly int size;
 	public bool IsForbid => size == 0;
 
-	private VariableCode varCode;
+	private readonly VariableCode varCode;
 
 	//VariableData varData;
-	private CreateLocalVariableToken creater;
+	private readonly CreateLocalVariableToken creater;
 
-	private Dictionary<string, LocalVariableToken> localVarTokens = [];
+	private readonly Dictionary<string, LocalVariableToken> localVarTokens = [];
 
 	//While function bodies are parsed in parallel, several threads create tokens for different
 	//functions at once. Writes are serialized to keep the Dictionary intact. A lock is used rather

@@ -22,14 +22,14 @@ internal static class KeyMacro
 	/// <summary>
 	/// マクロの内容
 	/// </summary>
-	private static string[] macro = new string[MaxMacro];
+	private readonly static string[] macro = new string[MaxMacro];
 
 	/// <summary>
 	/// マクロキー
 	/// </summary>
-	private static string[] macroName = new string[MaxMacro];
+	private readonly static string[] macroName = new string[MaxMacro];
 
-	private static string[] groupName = new string[MaxGroup];
+	private readonly static string[] groupName = new string[MaxGroup];
 	private static bool isMacroChanged;
 
 	static KeyMacro()

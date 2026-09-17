@@ -20,8 +20,8 @@ public class PluginMethodParameter
 	public bool isString;
 
 	// null for integer parameters
-	public string? strValue;
-	public long intValue;
+	public readonly string? strValue;
+	public readonly long intValue;
 }
 
 internal static class PluginMethodParameterBuilder

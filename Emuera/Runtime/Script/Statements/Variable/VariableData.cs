@@ -68,27 +68,27 @@ internal sealed partial class VariableData : IDisposable
 	/// <summary>
 	/// ユーザー変数のうちStaticかつ非Globalなもの。ERHでのDIM(非GLOBAL) と関数でのDIM (STATIC)の両方。ロードやリセットで初期化が必要。キャラクタ変数は除く。
 	/// </summary>
-	private List<UserDefinedVariableToken> userDefinedStaticVarList = [];
+	private readonly List<UserDefinedVariableToken> userDefinedStaticVarList = [];
 
 	/// <summary>
 	/// ユーザー広域変数のうちグローバル属性持ち。
 	/// </summary>
-	private List<UserDefinedVariableToken> userDefinedGlobalVarList = [];
+	private readonly List<UserDefinedVariableToken> userDefinedGlobalVarList = [];
 
 	/// <summary>
 	/// ユーザー広域変数のうちセーブされるもの。グローバル、キャラクタ変数は除く。
 	/// </summary>
-	private List<UserDefinedVariableToken>[] userDefinedSaveVarList = new List<UserDefinedVariableToken>[6];
+	private readonly List<UserDefinedVariableToken>[] userDefinedSaveVarList = new List<UserDefinedVariableToken>[6];
 
 	/// <summary>
 	/// ユーザー広域変数のうち、グローバルかつセーブされるもの。
 	/// </summary>
-	private List<UserDefinedVariableToken>[] userDefinedGlobalSaveVarList = new List<UserDefinedVariableToken>[6];
+	private readonly List<UserDefinedVariableToken>[] userDefinedGlobalSaveVarList = new List<UserDefinedVariableToken>[6];
 
 	/// <summary>
 	/// ユーザー広域変数のうち、キャラクタ変数であるもの。初期化やセーブされるかどうかはCharacterDataの方で判断。
 	/// </summary>
-	public List<UserDefinedCharaVariableToken> UserDefinedCharaVarList = [];
+	public readonly List<UserDefinedCharaVariableToken> UserDefinedCharaVarList = [];
 
 	public VariableData(GameBase gamebase, ConstantData constant)
 	{

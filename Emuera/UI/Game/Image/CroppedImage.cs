@@ -217,7 +217,7 @@ internal sealed class SpriteAnime : ASprite
 		}
 	}
 
-	private List<AnimeFrame> FrameList;
+	private readonly List<AnimeFrame> FrameList;
 	public long totaltime;
 
 	internal bool AddFrame(AbstractImage parentImage, Rectangle rect, Point pos, int delay)

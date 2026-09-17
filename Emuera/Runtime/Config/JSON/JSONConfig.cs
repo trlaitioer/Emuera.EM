@@ -10,7 +10,7 @@ internal static class JSONConfig
 	public static JSONConfigData Data = null!;
 
 	private const string _configFileName = "setting.json";
-	private static string _configFilePath = Program.ExeDir + _configFileName;
+	private readonly static string _configFilePath = Program.ExeDir + _configFileName;
 
 	public static void Load()
 	{

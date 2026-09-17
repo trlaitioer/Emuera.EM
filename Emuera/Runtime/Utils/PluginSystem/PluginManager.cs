@@ -499,7 +499,7 @@ public class PluginManager
 		methods.Add(key, method);
 	}
 
-	private Dictionary<string, IPluginMethod> methods = [];
+	private readonly Dictionary<string, IPluginMethod> methods = [];
 
 	// all fields below are assigned by SetParent/CacheVariables, which run before any plugin method executes
 	private Process process = null!;

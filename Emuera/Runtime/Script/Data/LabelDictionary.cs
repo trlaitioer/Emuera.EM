@@ -25,13 +25,13 @@ internal sealed class LabelDictionary
 	/// <summary>
 	/// 本体。全てのFunctionLabelLineを記録
 	/// </summary>
-	private Dictionary<string, List<FunctionLabelLine>> labelAtDic = new(Config.Config.StrComper);
+	private readonly Dictionary<string, List<FunctionLabelLine>> labelAtDic = new(Config.Config.StrComper);
 
-	private List<FunctionLabelLine> invalidList = [];
-	private Dictionary<string, Dictionary<FunctionLabelLine, GotoLabelLine>> labelDollarList = new(Config.Config.StrComper);
+	private readonly List<FunctionLabelLine> invalidList = [];
+	private readonly Dictionary<string, Dictionary<FunctionLabelLine, GotoLabelLine>> labelDollarList = new(Config.Config.StrComper);
 	private int count;
 
-	private HashSet<string> loadedFileSet = [];
+	private readonly HashSet<string> loadedFileSet = [];
 	private int currentFileCount;
 	private int totalFileCount;
 
@@ -68,8 +68,8 @@ internal sealed class LabelDictionary
 	}
 
 
-	private Dictionary<string, List<FunctionLabelLine>[]> eventLabelDic = new(Config.Config.StrComper);
-	private Dictionary<string, FunctionLabelLine> noneventLabelDic = new(Config.Config.StrComper);
+	private readonly Dictionary<string, List<FunctionLabelLine>[]> eventLabelDic = new(Config.Config.StrComper);
+	private readonly Dictionary<string, FunctionLabelLine> noneventLabelDic = new(Config.Config.StrComper);
 
 	public void SortLabels()
 	{

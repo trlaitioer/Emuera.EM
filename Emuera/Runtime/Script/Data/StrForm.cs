@@ -55,14 +55,14 @@ internal sealed class StrForm
 
 	#region static
 
-	private static FormattedStringMethod formatCurlyBrace;
-	private static FormattedStringMethod formatPercent;
-	private static FormattedStringMethod formatYenAt;
-	private static FunctionMethodTerm NameTarget; // "***"
-	private static FunctionMethodTerm CallnameMaster; // "+++"
-	private static FunctionMethodTerm CallnamePlayer; // "==="
-	private static FunctionMethodTerm NameAssi; // "///"
-	private static FunctionMethodTerm CallnameTarget; // "$$$"
+	private readonly static FormattedStringMethod formatCurlyBrace;
+	private readonly static FormattedStringMethod formatPercent;
+	private readonly static FormattedStringMethod formatYenAt;
+	private readonly static FunctionMethodTerm NameTarget; // "***"
+	private readonly static FunctionMethodTerm CallnameMaster; // "+++"
+	private readonly static FunctionMethodTerm CallnamePlayer; // "==="
+	private readonly static FunctionMethodTerm NameAssi; // "///"
+	private readonly static FunctionMethodTerm CallnameTarget; // "$$$"
 
 	// Runs exactly once, before the first static member access or instance creation.
 	// The earliest access in this codebase is FromWordToken during ERH/ERB parsing,

@@ -467,7 +467,7 @@ public partial class DebugDialog : Form
 		}
 	}
 
-	private List<string> history = [];
+	private readonly List<string> history = [];
 	private int selectedIndex;
 
 	private void updateInputs()

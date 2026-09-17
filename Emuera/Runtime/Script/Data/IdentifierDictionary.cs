@@ -132,7 +132,7 @@ internal partial class IdentifierDictionary
 
 	private readonly Dictionary<string, DefinedNameType> nameDic = new(Config.StrComper);
 
-	private List<string> privateDimList = [];
+	private readonly List<string> privateDimList = [];
 	//Dictionary<string, VariableToken> userDefinedVarDic = new Dictionary<string, VariableToken>();
 
 	private VariableData varData;
@@ -462,7 +462,7 @@ internal partial class IdentifierDictionary
 	#region header.erb
 
 	//1807 ErbLoaderに移動
-	private Dictionary<string, DefineMacro> macroDic = new(Config.StrComper);
+	private readonly Dictionary<string, DefineMacro> macroDic = new(Config.StrComper);
 
 	internal void AddUseDefinedVariable(VariableToken var)
 	{

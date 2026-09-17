@@ -13,7 +13,7 @@ namespace MinorShift.Emuera.Runtime.Utils;
 internal class AudioDeviceTracker : IMMNotificationClient
 {
 	private readonly SynchronizationContext syncContext;
-	private MMDeviceEnumerator enumerator;
+	private readonly MMDeviceEnumerator enumerator;
 	public MMDevice? Device { get; private set; }
 	public event EventHandler<MMDevice?>? DefaultDeviceChanged;
 
@@ -99,7 +99,7 @@ internal class DummyOut : IWavePlayer
 
 	// Assigned by Init before the play thread reads it
 	private ISampleProvider sampleProvider = null!;
-	private int latency;
+	private readonly int latency;
 	public float Volume { get; set; }
 	public PlaybackState PlaybackState => playbackState;
 	public WaveFormat OutputWaveFormat { get; } = null!;

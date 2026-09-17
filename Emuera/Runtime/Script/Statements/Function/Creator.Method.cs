@@ -83,7 +83,7 @@ internal static partial class FunctionMethodCreator
 			];
 		}
 
-		private bool byName;
+		private readonly bool byName;
 
 		private static void OutPutNode(XmlNode node, string?[] array, int i, long style)
 		{
@@ -196,8 +196,8 @@ internal static partial class FunctionMethodCreator
 			With
 		}
 
-		private EType type;
-		private EAction action;
+		private readonly EType type;
+		private readonly EAction action;
 
 		public EnumNameMethod(EType type, EAction act)
 		{
@@ -1056,7 +1056,7 @@ internal static partial class FunctionMethodCreator
 			CanRestructure = false;
 		}
 
-		private Operation op;
+		private readonly Operation op;
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
@@ -1160,7 +1160,7 @@ internal static partial class FunctionMethodCreator
 			];
 		}
 
-		private bool byName;
+		private readonly bool byName;
 
 		private static void SetNode(XmlNode node, string val, long style)
 		{
@@ -1399,8 +1399,8 @@ internal static partial class FunctionMethodCreator
 			}
 		}
 
-		private bool byName;
-		private Operation op;
+		private readonly bool byName;
+		private readonly Operation op;
 
 		private bool Insert(XmlNode node, XmlNode child, int method)
 		{
@@ -1599,8 +1599,8 @@ internal static partial class FunctionMethodCreator
 			];
 		}
 
-		private bool byName;
-		private Operation op;
+		private readonly bool byName;
+		private readonly Operation op;
 
 		private bool Remove(XmlNode node)
 		{
@@ -1727,7 +1727,7 @@ internal static partial class FunctionMethodCreator
 			];
 		}
 
-		private bool byName;
+		private readonly bool byName;
 
 		private static bool Replace(XmlNode node, XmlNode newNode)
 		{
@@ -1889,7 +1889,7 @@ internal static partial class FunctionMethodCreator
 			op = type;
 		}
 
-		private Operation op;
+		private readonly Operation op;
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
@@ -1984,7 +1984,7 @@ internal static partial class FunctionMethodCreator
 			op = type;
 		}
 
-		private Operation op;
+		private readonly Operation op;
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
@@ -2122,7 +2122,7 @@ internal static partial class FunctionMethodCreator
 			op = type;
 		}
 
-		private Operation op;
+		private readonly Operation op;
 
 		private void CheckName(DataTable dt, string name, string key)
 		{
@@ -2279,7 +2279,7 @@ internal static partial class FunctionMethodCreator
 			op = type;
 		}
 
-		private Operation op;
+		private readonly Operation op;
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
@@ -2378,7 +2378,7 @@ internal static partial class FunctionMethodCreator
 			op = type;
 		}
 
-		private Operation op;
+		private readonly Operation op;
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
@@ -2689,7 +2689,7 @@ internal static partial class FunctionMethodCreator
 			op = type;
 		}
 
-		private Operation op;
+		private readonly Operation op;
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
@@ -2752,7 +2752,7 @@ internal static partial class FunctionMethodCreator
 			op = type;
 		}
 
-		private Operation op;
+		private readonly Operation op;
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
@@ -2824,7 +2824,7 @@ internal static partial class FunctionMethodCreator
 			op = type;
 		}
 
-		private Operation op;
+		private readonly Operation op;
 
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
@@ -2979,7 +2979,7 @@ internal static partial class FunctionMethodCreator
 			resume = b;
 		}
 
-		private bool resume;
+		private readonly bool resume;
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{

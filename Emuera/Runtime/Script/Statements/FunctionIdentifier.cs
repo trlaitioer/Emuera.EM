@@ -525,7 +525,7 @@ internal sealed partial class FunctionIdentifier
 		funcParent[FunctionCode.LOOP] = FunctionCode.DO;
 	}
 
-	private static FunctionIdentifier setFunc;
+	private readonly static FunctionIdentifier setFunc;
 
 	public static FunctionIdentifier SETFunction => setFunc;
 
@@ -603,10 +603,10 @@ internal sealed partial class FunctionIdentifier
 	// Both are null for identifiers created from an ArgumentBuilder instead of an AInstruction,
 	// and method stays null for plain instructions.
 	public readonly AInstruction? Instruction;
-	private FunctionCode code;
-	private ArgumentBuilder? arg;
-	private int flag;
-	private FunctionMethod? method;
+	private readonly FunctionCode code;
+	private readonly ArgumentBuilder? arg;
+	private readonly int flag;
+	private readonly FunctionMethod? method;
 	public FunctionCode Code => code;
 	public ArgumentBuilder? ArgBuilder => arg;
 	public FunctionMethod? Method => method;

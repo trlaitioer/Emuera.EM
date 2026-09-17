@@ -28,9 +28,9 @@ internal sealed class PrintStringBuffer
 
 	private readonly EmueraConsole parent;
 	private readonly StringBuilder builder = new(2000);
-	private List<AConsoleDisplayNode> m_stringList = [];
+	private readonly List<AConsoleDisplayNode> m_stringList = [];
 	private StringStyle lastStringStyle;
-	private List<ConsoleButtonString> m_buttonList = [];
+	private readonly List<ConsoleButtonString> m_buttonList = [];
 
 	private bool isLastLineEnd = true;
 

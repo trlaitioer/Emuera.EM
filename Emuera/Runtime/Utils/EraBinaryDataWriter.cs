@@ -44,7 +44,7 @@ internal sealed class EraBinaryDataWriter : IDisposable
 	private BinaryWriter fileWriter;
 
 	// Only allocated when the save data is zipped
-	private MemoryStream? ms;
+	private readonly MemoryStream? ms;
 
 	#endregion
 

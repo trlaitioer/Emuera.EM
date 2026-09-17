@@ -697,7 +697,7 @@ internal static class ExpressionParser
 		private bool hasBefore;
 		private bool hasAfter;
 		private bool waitAfter;
-		private Stack<object> stack = new(5);
+		private readonly Stack<object> stack = new(5);
 
 		public void Add(OperatorCode op)
 		{

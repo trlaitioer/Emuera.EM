@@ -85,7 +85,7 @@ internal sealed partial class FunctionIdentifier
 
 	private sealed class PRINT_Instruction : AInstruction
 	{
-		private bool isLineEnd = true;
+		private readonly bool isLineEnd = true;
 
 		public PRINT_Instruction(string name)
 		{
@@ -875,7 +875,7 @@ internal sealed partial class FunctionIdentifier
 			this.unicode = unicode;
 		}
 
-		private bool unicode;
+		private readonly bool unicode;
 
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
@@ -909,7 +909,7 @@ internal sealed partial class FunctionIdentifier
 			this.op = op;
 		}
 
-		private int op;
+		private readonly int op;
 
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
@@ -953,7 +953,7 @@ internal sealed partial class FunctionIdentifier
 			isForce = force;
 		}
 
-		private bool isForce;
+		private readonly bool isForce;
 
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
@@ -1295,7 +1295,7 @@ internal sealed partial class FunctionIdentifier
 			isOne = oneInput;
 		}
 
-		private bool isOne;
+		private readonly bool isOne;
 
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
@@ -1365,7 +1365,7 @@ internal sealed partial class FunctionIdentifier
 			isOne = oneInput;
 		}
 
-		private bool isOne;
+		private readonly bool isOne;
 
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
@@ -1649,7 +1649,7 @@ internal sealed partial class FunctionIdentifier
 			this.newline = newline;
 		}
 
-		private bool newline;
+		private readonly bool newline;
 
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
@@ -1716,8 +1716,8 @@ internal sealed partial class FunctionIdentifier
 			isSp = flagSp;
 		}
 
-		private bool isDel;
-		private bool isSp;
+		private readonly bool isDel;
+		private readonly bool isSp;
 
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{

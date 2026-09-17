@@ -30,7 +30,7 @@ internal sealed partial class Lang
 			this.tr = tr;
 		}
 
-		private string text;
+		private readonly string text;
 		private string? tr;
 
 		public string Text => tr == null ? text : tr;

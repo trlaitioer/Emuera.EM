@@ -17,7 +17,7 @@ internal sealed partial class Process
 
 	private delegate void SystemProcess();
 
-	private Dictionary<SystemStateCode, SystemProcess> systemProcessDictionary = [];
+	private readonly Dictionary<SystemStateCode, SystemProcess> systemProcessDictionary = [];
 
 	private void initSystemProcess()
 	{

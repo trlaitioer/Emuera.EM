@@ -26,11 +26,11 @@ internal partial class Rikaichan
 	//Loaded by Init() (edictind also by ReceiveIndex) before any search
 	public byte[] edict = null!;
 	public byte[] edictind = null!;
-	public Encoding eucjp = Encoding.GetEncoding(20932);
+	public readonly Encoding eucjp = Encoding.GetEncoding(20932);
 
 	public bool hidden = true;
 
-	public List<int> searchResults = new(0x20);
+	public readonly List<int> searchResults = new(0x20);
 	public int indexLast;
 
 	public int longestResult;

@@ -29,7 +29,7 @@ internal sealed class ConfigData
 	static ConfigData()
 	{ }
 
-	private static ConfigData instance = new();
+	private readonly static ConfigData instance = new();
 	public static ConfigData Instance => instance;
 
 	private ConfigData()
@@ -44,14 +44,14 @@ internal sealed class ConfigData
 	#region EE_configArrayの拡張
 
 	// private AConfigItem[] configArray = new AConfigItem[80];
-	private List<AConfigItem> configArray = [];
+	private readonly List<AConfigItem> configArray = [];
 
 	#endregion
 
 	//private AConfigItem[] replaceArray = new AConfigItem[50];
 	//private AConfigItem[] debugArray = new AConfigItem[20];
-	private List<AConfigItem> replaceArray = [];
-	private List<AConfigItem> debugArray = [];
+	private readonly List<AConfigItem> replaceArray = [];
+	private readonly List<AConfigItem> debugArray = [];
 
 	#endregion
 

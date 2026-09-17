@@ -11,7 +11,7 @@ namespace MinorShift.Emuera.Runtime.Utils;
 internal static partial class Preload
 {
 	// A failed read is cached as null
-	private static Dictionary<string, string[]?> files = new(StringComparer.OrdinalIgnoreCase);
+	private readonly static Dictionary<string, string[]?> files = new(StringComparer.OrdinalIgnoreCase);
 
 	public static string[]? GetFileLines(string path)
 	{
