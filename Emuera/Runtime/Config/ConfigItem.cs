@@ -130,7 +130,7 @@ internal sealed class ConfigItem<T> : AConfigItem
 		if (this is ConfigItem<Color>)
 		{
 			Color c = ((ConfigItem<Color>)(AConfigItem)this).Value;
-			return string.Format("{0},{1},{2}", c.R, c.G, c.B);
+			return $"{c.R},{c.G},{c.B}";
 		}
 
 		#region EM_私家版_LoadText＆SaveText機能拡張

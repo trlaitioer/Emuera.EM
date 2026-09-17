@@ -433,7 +433,7 @@ internal sealed partial class Process
 	private string getTrainComString(int trainCode, int comNo)
 	{
 		string trainName = TrainName[trainCode]!;
-		return string.Format("{0}[{1,3}]", trainName, comNo);
+		return $"{trainName}[{comNo,3}]";
 	}
 
 	private int printComCount;
@@ -469,7 +469,7 @@ internal sealed partial class Process
 				continue;
 			}
 
-			string comName = string.Format("COM_ABLE{0}", lastCalledComable);
+			string comName = $"COM_ABLE{lastCalledComable}";
 			if (!callFunction(comName, false, false))
 			{
 				lastAddCom++;
@@ -605,7 +605,7 @@ internal sealed partial class Process
 	private void endEventCom()
 	{
 		long selectCom = vEvaluator.SELECTCOM;
-		string comName = string.Format("COM{0}", selectCom);
+		string comName = $"COM{selectCom}";
 		state.SystemState = SystemStateCode.Train_CallComXX;
 		callFunction(comName, true, false);
 	}
@@ -742,7 +742,7 @@ internal sealed partial class Process
 		if (systemResult >= 0 && systemResult < 100)
 		{
 			state.SystemState = SystemStateCode.Ablup_CallAblupXX;
-			string ablName = string.Format("ABLUP{0}", systemResult);
+			string ablName = $"ABLUP{systemResult}";
 			if (!callFunction(ablName, false, false))
 			{
 				//見つからなければ終了
@@ -1115,7 +1115,7 @@ internal sealed partial class Process
 
 			dataIsAvailable[dataNo] = false;
 			console.PrintFlush(false);
-			console.Print(string.Format("[{0, 2}] ", dataNo));
+			console.Print($"[{dataNo,2}] ");
 			if (!writeSavedataTextFrom(dataNo))
 			{
 				continue;
@@ -1136,7 +1136,7 @@ internal sealed partial class Process
 		{
 			dataNo = AutoSaveIndex;
 			console.PrintFlush(false);
-			console.Print(string.Format("[{0, 2}] ", dataNo));
+			console.Print($"[{dataNo,2}] ");
 			if (writeSavedataTextFrom(dataNo))
 			{
 				dataIsAvailable[^1] = true;

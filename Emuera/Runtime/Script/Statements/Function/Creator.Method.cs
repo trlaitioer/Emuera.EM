@@ -2910,7 +2910,7 @@ internal static partial class FunctionMethodCreator
 				sb.Append("<map>");
 				foreach (KeyValuePair<string, string> p in sMap)
 				{
-					sb.Append(string.Format("<p><k>{0}</k><v>{1}</v></p>", p.Key, p.Value));
+					sb.Append($"<p><k>{p.Key}</k><v>{p.Value}</v></p>");
 				}
 
 				sb.Append("</map>");
@@ -9412,12 +9412,12 @@ internal static partial class FunctionMethodCreator
 
 	private static string GetSaveDataPathText(int index, string dir)
 	{
-		return string.Format("{0}txt{1:00}.txt", dir, index);
+		return $"{dir}txt{index:00}.txt";
 	}
 
 	private static string GetSaveDataPathGraphics(int index)
 	{
-		return string.Format("{0}img{1:0000}.png", Config.SavDir, index);
+		return $"{Config.SavDir}img{index:0000}.png";
 	}
 
 	/// <summary>

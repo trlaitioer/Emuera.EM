@@ -2577,12 +2577,12 @@ internal sealed class VariableEvaluator : IDisposable
 
 	private static string getSaveDataPathV(int index)
 	{
-		return Program.DatDir + string.Format("var_{0:00}.dat", index);
+		return Program.DatDir + $"var_{index:00}.dat";
 	}
 
 	private static string getSaveDataPathC(int index)
 	{
-		return Program.DatDir + string.Format("chara_{0:00}.dat", index);
+		return Program.DatDir + $"chara_{index:00}.dat";
 	}
 
 	private static string getSaveDataPathV(string s)

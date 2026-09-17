@@ -872,7 +872,7 @@ internal sealed class EraDataWriter : IDisposable
 			return;
 		}
 
-		writer.WriteLine(string.Format("{0}:{1}", key, value));
+		writer.WriteLine($"{key}:{value}");
 	}
 
 	public void WriteExtended(string key, string? value)
@@ -887,7 +887,7 @@ internal sealed class EraDataWriter : IDisposable
 			return;
 		}
 
-		writer.WriteLine(string.Format("{0}:{1}", key, value));
+		writer.WriteLine($"{key}:{value}");
 	}
 
 
