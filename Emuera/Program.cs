@@ -17,7 +17,7 @@ using MinorShift.Emuera.Forms;
 
 namespace MinorShift.Emuera;
 
-internal static partial class Program
+internal static class Program
 {
 	/*
 	コードの開始地点。

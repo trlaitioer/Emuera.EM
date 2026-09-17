@@ -8,7 +8,7 @@ using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 
 namespace MinorShift.Emuera.Runtime.Utils;
 
-internal static partial class Preload
+internal static class Preload
 {
 	// A failed read is cached as null
 	private readonly static Dictionary<string, string[]?> files = new(StringComparer.OrdinalIgnoreCase);

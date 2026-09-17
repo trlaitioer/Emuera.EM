@@ -63,7 +63,7 @@ internal enum LexAnalyzeFlag
 /// 1756 TokenReaderより改名
 /// Lexicalといいつつ構文解析を含む
 /// </summary>
-internal static partial class LexicalAnalyzer
+internal static class LexicalAnalyzer
 {
 	private const int MAX_EXPAND_MACRO = 100;
 

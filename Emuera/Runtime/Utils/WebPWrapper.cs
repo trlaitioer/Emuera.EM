@@ -1130,7 +1130,7 @@ public sealed class WebP : IDisposable
 #region | Import libwebp functions |
 
 [SuppressUnmanagedCodeSecurity]
-internal sealed partial class UnsafeNativeMethods
+internal sealed class UnsafeNativeMethods
 {
 	[DllImport("kernel32.dll", EntryPoint = "CopyMemory", SetLastError = false)]
 	internal static extern void CopyMemory(nint dest, nint src, uint count);
