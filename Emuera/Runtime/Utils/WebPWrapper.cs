@@ -887,12 +887,12 @@ public sealed class WebP : IDisposable
 		finally
 		{
 			//Unlock the pixels
-			if (sourceBmpData != null)
+			if (source != null && sourceBmpData != null)
 			{
 				source.UnlockBits(sourceBmpData);
 			}
 
-			if (referenceBmpData != null)
+			if (reference != null && referenceBmpData != null)
 			{
 				reference.UnlockBits(referenceBmpData);
 			}
