@@ -376,6 +376,7 @@ internal static partial class FunctionMethodCreator
 			var err = CheckVariableTerm(term!, name);
 			if (err != null)
 				throw new CodeEE(err);
+			// CheckVariableTerm returns null only when its argument is a VariableTerm, so this cast cannot fail.
 			return (term as VariableTerm)!;
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)

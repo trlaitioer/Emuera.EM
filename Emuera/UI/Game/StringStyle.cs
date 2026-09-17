@@ -1,4 +1,5 @@
 ﻿using MinorShift.Emuera.Runtime.Config;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 
 namespace MinorShift.Emuera.UI.Game;
@@ -41,7 +42,7 @@ internal struct StringStyle
 	public bool ColorChanged;
 	public FontStyle FontStyle;
 	public string Fontname;
-	public override bool Equals(object? obj)
+	public override bool Equals([NotNullWhen(true)] object? obj)
 	{
 		if (obj == null || obj is not StringStyle ss)
 			return false;

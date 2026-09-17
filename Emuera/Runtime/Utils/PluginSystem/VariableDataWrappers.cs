@@ -3,6 +3,7 @@ using MinorShift.Emuera.GameData.Variable;
 using MinorShift.Emuera.Runtime.Script.Statements;
 using MinorShift.Emuera.Runtime.Script.Statements.Variable;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 {
@@ -54,15 +55,17 @@ namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 
 	public class GlobalString1dWrapper
 	{
+		[DisallowNull]
 		public string? this[string key]
 		{
 			get => Get(key);
-			set => Set(key, value!);
+			set => Set(key, value);
 		}
+		[DisallowNull]
 		public string? this[long key]
 		{
 			get => Get(key);
-			set => Set(key, value!);
+			set => Set(key, value);
 		}
 
 		internal GlobalString1dWrapper(VariableToken token, ExpressionMediator exm, VariableCode variableCode)
@@ -365,15 +368,17 @@ namespace MinorShift.Emuera.Runtime.Utils.PluginSystem
 
 	public class CharString1dWrapper
 	{
+		[DisallowNull]
 		public string? this[string key]
 		{
 			get => Get(key);
-			set => Set(key, value!);
+			set => Set(key, value);
 		}
+		[DisallowNull]
 		public string? this[long key]
 		{
 			get => Get(key);
-			set => Set(key, value!);
+			set => Set(key, value);
 		}
 		internal CharString1dWrapper(long charId, VariableToken token, ExpressionMediator exm, VariableCode variableCode)
 		{

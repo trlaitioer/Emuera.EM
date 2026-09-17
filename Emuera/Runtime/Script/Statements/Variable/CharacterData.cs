@@ -710,6 +710,9 @@ internal sealed class CharacterData : IDisposable
 				if (elem1 < 0 || elem1 >= array.GetLength(0) || elem2 < 0 || elem2 >= array.GetLength(1))
 					throw new CodeEE(trerror.OoRSortKey.Text);
 				// An unset entry stays null here, as before
+				// TODO: temp_SortKey is declared non-nullable, but this branch stores null into it while
+				// the 1D and scalar branches substitute "". CompareTo then dereferences the field, so the
+				// branches should be made consistent (or CompareTo guarded) instead of asserting here.
 				temp_SortKey = array[elem1, elem2]!;
 			}
 			else if (sortkey.IsArray1D)

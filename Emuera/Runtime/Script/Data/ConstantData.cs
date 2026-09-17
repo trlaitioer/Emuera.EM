@@ -140,11 +140,16 @@ internal sealed class ConstantData
 	readonly bool useCompatiName;
 
 	// Initialized by LoadData through this method before any use
-	[MemberNotNull(nameof(VariableIntArrayLength), nameof(VariableStrArrayLength),
-		nameof(VariableIntArray2DLength), nameof(VariableStrArray2DLength),
-		nameof(VariableIntArray3DLength), nameof(VariableStrArray3DLength),
-		nameof(CharacterIntArrayLength), nameof(CharacterStrArrayLength),
-		nameof(CharacterIntArray2DLength), nameof(CharacterStrArray2DLength))]
+	[MemberNotNull(nameof(VariableIntArrayLength))]
+	[MemberNotNull(nameof(VariableStrArrayLength))]
+	[MemberNotNull(nameof(VariableIntArray2DLength))]
+	[MemberNotNull(nameof(VariableStrArray2DLength))]
+	[MemberNotNull(nameof(VariableIntArray3DLength))]
+	[MemberNotNull(nameof(VariableStrArray3DLength))]
+	[MemberNotNull(nameof(CharacterIntArrayLength))]
+	[MemberNotNull(nameof(CharacterStrArrayLength))]
+	[MemberNotNull(nameof(CharacterIntArray2DLength))]
+	[MemberNotNull(nameof(CharacterStrArray2DLength))]
 	private void setDefaultArrayLength()
 	{
 		MaxDataList[ablIndex] = 100;
@@ -906,6 +911,9 @@ internal sealed class ConstantData
 
 	#region EE_ERD
 	//public Dictionary<string, int> GetKeywordDictionary(out string errPos, VariableCode code, int index)
+	// TODO: returns null for any VariableCode not listed below, yet every caller dereferences the
+	// result with '!' (see PluginSystem/VariableDataWrappers.cs Get/Set). Narrow the return type or
+	// make the callers handle the null case instead of asserting it away.
 	public Dictionary<string, int>? GetKeywordDictionary(out string? errPos, VariableCode code, int index, string? varname)
 	#endregion
 	{

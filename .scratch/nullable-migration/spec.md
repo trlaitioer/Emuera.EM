@@ -54,6 +54,6 @@ Status: in-progress
 
 ## 影响
 
-- 全库 129 个源码文件启用可空注解与流分析(137 个受跟踪 `.cs` 减去 8 个不加指令的生成文件),csproj 恢复全量 enable
+- 全库 131 个源码文件启用可空注解与流分析(`Emuera/` 139 个受跟踪 `.cs` 减去 8 个不加指令的生成文件),csproj 恢复全量 enable
 - 迁移期各文件顶部的 `#nullable enable` 在收尾后保留(与 `Program.cs`、`UI/Game/StringStyle.cs` 在 `annotations` 时期的既有做法一致,翻转后冗余但无害)
 - 迁移期不改变运行行为;`Emuera.Tests` 测试套件作为回归安全网

@@ -274,6 +274,9 @@ internal class FunctionLabelLine : LogicalLine, IComparable<FunctionLabelLine>
 	//ソート用情報
 	public int Index { get; set; }
 	public int FileIndex { get; set; }
+	// TODO: IComparable<T> forces the nullable parameter (a non-nullable implementation is CS8767),
+	// but null cannot be compared here and 'other' is dereferenced immediately. Return a defined
+	// result for null instead of dereferencing.
 	public int CompareTo(FunctionLabelLine? other)
 	{
 		if (FileIndex != other!.FileIndex)
