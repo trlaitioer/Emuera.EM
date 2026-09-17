@@ -611,7 +611,7 @@ internal sealed partial class Process(EmueraConsole view)
 		else
 		{
 			console.PrintError(string.Format(trerror.FuncEndUnexpectedError.Text, AssemblyData.EmueraVersionText));
-			console.PrintError(exc.GetType().ToString() + ":" + exc.Message);
+			console.PrintError(exc.GetType() + ":" + exc.Message);
 			string[] stack = exc.StackTrace!.Split('\n');
 			for (int i = 0; i < stack.Length; i++)
 			{
@@ -692,7 +692,7 @@ internal sealed partial class Process(EmueraConsole view)
 		else
 		{
 			console.PrintError(string.Format(trerror.HasUnexpectedError.Text, posString, AssemblyData.EmueraVersionText));
-			console.PrintError(exc.GetType().ToString() + ":" + exc.Message);
+			console.PrintError(exc.GetType() + ":" + exc.Message);
 			string[] stack = exc.StackTrace!.Split('\n');
 			for (int i = 0; i < stack.Length; i++)
 			{

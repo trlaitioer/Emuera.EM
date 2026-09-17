@@ -1818,18 +1818,18 @@ internal sealed partial class EmueraConsole : IDisposable
 		switch (Config.EditorType)
 		{
 			case TextEditorType.SAKURA:
-				pInfo.Arguments = "-Y=" + pos.Value.LineNo.ToString() + " \"" + fname + "\"";
+				pInfo.Arguments = "-Y=" + pos.Value.LineNo + " \"" + fname + "\"";
 				break;
 			case TextEditorType.TERAPAD:
-				pInfo.Arguments = "/jl=" + pos.Value.LineNo.ToString() + " \"" + fname + "\"";
+				pInfo.Arguments = "/jl=" + pos.Value.LineNo + " \"" + fname + "\"";
 				break;
 			case TextEditorType.EMEDITOR:
-				pInfo.Arguments = "/l " + pos.Value.LineNo.ToString() + " \"" + fname + "\"";
+				pInfo.Arguments = "/l " + pos.Value.LineNo + " \"" + fname + "\"";
 				break;
 			case TextEditorType.USER_SETTING:
 				if (!string.IsNullOrEmpty(Config.EditorArg) && Config.EditorArg != null)
 				{
-					pInfo.Arguments = Config.EditorArg + pos.Value.LineNo.ToString() + " \"" + fname + "\"";
+					pInfo.Arguments = Config.EditorArg + pos.Value.LineNo + " \"" + fname + "\"";
 				}
 				else
 				{

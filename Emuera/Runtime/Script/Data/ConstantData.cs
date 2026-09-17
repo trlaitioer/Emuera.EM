@@ -340,13 +340,13 @@ internal sealed class ConstantData
 
 		if (!id.IsArray1D && !id.IsArray2D && !id.IsArray3D)
 		{
-			ParserMediator.Warn(string.Format(trerror.CanNotChange0DVarSize.Text, id.ToString()), position, 1);
+			ParserMediator.Warn(string.Format(trerror.CanNotChange0DVarSize.Text, id), position, 1);
 			return;
 		}
 
 		if (id.IsCalc || id.Code == VariableCode.RANDDATA)
 		{
-			ParserMediator.Warn(string.Format(trerror.CanNotChangeVarSize.Text, id.ToString()), position, 1);
+			ParserMediator.Warn(string.Format(trerror.CanNotChangeVarSize.Text, id), position, 1);
 			return;
 		}
 

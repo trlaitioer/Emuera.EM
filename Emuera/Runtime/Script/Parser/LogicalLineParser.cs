@@ -155,7 +155,7 @@ internal static class LogicalLineParser
 				                s.Equals("FUNCTIONS", Config.Config.StringComparison):
 					if (!string.IsNullOrEmpty(label.LabelName) && char.IsDigit(label.LabelName[0]))
 					{
-						ParserMediator.Warn(string.Format(trerror.CanNotDeclaredBeginNumberFunction.Text, token.ToString()), position, 1);
+						ParserMediator.Warn(string.Format(trerror.CanNotDeclaredBeginNumberFunction.Text, token), position, 1);
 						label.IsError = true;
 						label.ErrMes = trerror.FuncNameBeginNumber.Text;
 						break;
@@ -166,7 +166,7 @@ internal static class LogicalLineParser
 						if ((label.MethodType == typeof(long) && token.SequenceEqual("FUNCTION")) ||
 						    (label.MethodType == typeof(string) && token.SequenceEqual("FUNCTIONS")))
 						{
-							ParserMediator.Warn(string.Format(trerror.AlreadySharpDeclared.Text, label.LabelName, token.ToString()), position, 1);
+							ParserMediator.Warn(string.Format(trerror.AlreadySharpDeclared.Text, label.LabelName, token), position, 1);
 							return false;
 						}
 
@@ -184,7 +184,7 @@ internal static class LogicalLineParser
 
 					if (label.Depth == 0)
 					{
-						ParserMediator.Warn(string.Format(trerror.UseSharpInSystemFunc.Text, token.ToString()), position, 2);
+						ParserMediator.Warn(string.Format(trerror.UseSharpInSystemFunc.Text, token), position, 2);
 						return false;
 					}
 
@@ -230,14 +230,14 @@ internal static class LogicalLineParser
 					WordCollection wc = LexicalAnalyzer.Analyse(st, LexEndWith.EoL, LexAnalyzeFlag.AllowAssignment);
 					if (wc.EOL)
 					{
-						ParserMediator.Warn(string.Format(trerror.SharpHasNotValidValue.Text, token.ToString()), position, 2);
+						ParserMediator.Warn(string.Format(trerror.SharpHasNotValidValue.Text, token), position, 2);
 						break;
 					}
 
 					//イベント関数では指定しても無視される
 					if (label.IsEvent)
 					{
-						ParserMediator.Warn(string.Format(trerror.EventFuncIgnoreSpecified.Text, token.ToString(), token[..^4].ToString()), position,
+						ParserMediator.Warn(string.Format(trerror.EventFuncIgnoreSpecified.Text, token, token[..^4]), position,
 							1);
 						break;
 					}
@@ -245,19 +245,19 @@ internal static class LogicalLineParser
 					AExpression arg = ExpressionParser.ReduceIntegerTerm(wc, TermEndWith.EoL);
 					if (arg.Restructure(null!) is not SingleLongTerm sizeTerm || sizeTerm.GetOperandType() != typeof(long))
 					{
-						ParserMediator.Warn(string.Format(trerror.SharpHasNotValidValue.Text, token.ToString()), position, 2);
+						ParserMediator.Warn(string.Format(trerror.SharpHasNotValidValue.Text, token), position, 2);
 						break;
 					}
 
 					if (sizeTerm.Int <= 0)
 					{
-						ParserMediator.Warn(string.Format(trerror.LocalsizeLessThan1.Text, token.ToString(), sizeTerm.Int.ToString()), position, 1);
+						ParserMediator.Warn(string.Format(trerror.LocalsizeLessThan1.Text, token, sizeTerm.Int.ToString()), position, 1);
 						break;
 					}
 
 					if (sizeTerm.Int >= int.MaxValue)
 					{
-						ParserMediator.Warn(string.Format(trerror.TooManyLocalsize.Text, token.ToString(), sizeTerm.Int.ToString()), position, 1);
+						ParserMediator.Warn(string.Format(trerror.TooManyLocalsize.Text, token, sizeTerm.Int.ToString()), position, 1);
 						break;
 					}
 
@@ -266,7 +266,7 @@ internal static class LogicalLineParser
 					{
 						if (GlobalStatic.IdentifierDictionary.getLocalIsForbid("LOCAL"))
 						{
-							ParserMediator.Warn(string.Format(trerror.LocalIsProhibited.Text, token.ToString(), "LOCAL"), position, 2);
+							ParserMediator.Warn(string.Format(trerror.LocalIsProhibited.Text, token, "LOCAL"), position, 2);
 							break;
 						}
 
@@ -281,7 +281,7 @@ internal static class LogicalLineParser
 					{
 						if (GlobalStatic.IdentifierDictionary.getLocalIsForbid("LOCALS"))
 						{
-							ParserMediator.Warn(string.Format(trerror.LocalIsProhibited.Text, token.ToString(), "LOCALS"), position, 2);
+							ParserMediator.Warn(string.Format(trerror.LocalIsProhibited.Text, token, "LOCALS"), position, 2);
 							break;
 						}
 

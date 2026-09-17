@@ -72,7 +72,7 @@ internal static class KeyMacro
 			writer = new StreamWriter(macroPath, false, Config.Config.Encode);
 			for (int g = 0; g < MaxGroup; g++)
 			{
-				writer.WriteLine(gID + g.ToString() + ":" + groupName[g]);
+				writer.WriteLine(gID + g + ":" + groupName[g]);
 			}
 
 			for (int i = 0; i < MaxMacro; i++)

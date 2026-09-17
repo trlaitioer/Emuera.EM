@@ -1075,7 +1075,7 @@ internal sealed class EraDataWriter : IDisposable
 		writer.WriteLine(key);
 		for (int x = 0; x < countX; x++)
 		{
-			writer.WriteLine(x.ToString() + "{");
+			writer.WriteLine(x + "{");
 			if (countY[x] == 0)
 			{
 				writer.WriteLine("}");

@@ -1062,7 +1062,7 @@ internal sealed class ConfigData
 		}
 		catch (Exception exc)
 		{
-			ParserMediator.ConfigWarn(exc.GetType().ToString() + ":" + exc.Message, pos, 1, exc.StackTrace);
+			ParserMediator.ConfigWarn(exc.GetType() + ":" + exc.Message, pos, 1, exc.StackTrace);
 		}
 		finally
 		{
@@ -1124,7 +1124,7 @@ internal sealed class ConfigData
 		}
 		catch (Exception exc)
 		{
-			ParserMediator.Warn(exc.GetType().ToString() + ":" + exc.Message, pos, 1, exc.StackTrace);
+			ParserMediator.Warn(exc.GetType() + ":" + exc.Message, pos, 1, exc.StackTrace);
 		}
 		finally
 		{
@@ -1219,7 +1219,7 @@ internal sealed class ConfigData
 		}
 		catch (Exception exc)
 		{
-			ParserMediator.ConfigWarn(exc.GetType().ToString() + ":" + exc.Message, pos, 1, exc.StackTrace);
+			ParserMediator.ConfigWarn(exc.GetType() + ":" + exc.Message, pos, 1, exc.StackTrace);
 			goto err;
 		}
 		finally

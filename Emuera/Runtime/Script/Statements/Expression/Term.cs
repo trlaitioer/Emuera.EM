@@ -57,7 +57,7 @@ internal sealed class SingleStrTerm : SingleTerm
 
 	public override string ToString()
 	{
-		return sValue.ToString();
+		return sValue;
 	}
 }
 

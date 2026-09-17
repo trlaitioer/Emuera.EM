@@ -412,15 +412,15 @@ internal class VariableTerm : AExpression
 
 		if (Identifier.IsArray1D)
 		{
-			return Identifier.Name + ":" + transporter[0].ToString();
+			return Identifier.Name + ":" + transporter[0];
 		}
 		else if (Identifier.IsArray2D)
 		{
-			return Identifier.Name + ":" + transporter[0].ToString() + ":" + transporter[1].ToString();
+			return Identifier.Name + ":" + transporter[0] + ":" + transporter[1];
 		}
 		else if (Identifier.IsArray3D)
 		{
-			return Identifier.Name + ":" + transporter[0].ToString() + ":" + transporter[1].ToString() + ":" + transporter[2].ToString();
+			return Identifier.Name + ":" + transporter[0] + ":" + transporter[1] + ":" + transporter[2];
 		}
 		else
 		{

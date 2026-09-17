@@ -47,9 +47,9 @@ internal sealed class CaseExpression
 			case CaseExpressionType.Normal:
 				return LeftTerm!.ToString();
 			case CaseExpressionType.Is:
-				return "Is " + Operator.ToString() + " " + LeftTerm!.ToString();
+				return "Is " + Operator + " " + LeftTerm!;
 			case CaseExpressionType.To:
-				return LeftTerm!.ToString() + " To " + RightTerm!.ToString();
+				return LeftTerm! + " To " + RightTerm!;
 		}
 
 		return base.ToString();

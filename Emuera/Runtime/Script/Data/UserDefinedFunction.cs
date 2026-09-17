@@ -228,7 +228,7 @@ internal sealed class UserDefinedFunctionData
 		argerr:
 		if (!wc.EOL)
 		{
-			throw new CodeEE(string.Format(trerror.UnexpectedToken.Text, wc.Current.ToString()), sc);
+			throw new CodeEE(string.Format(trerror.UnexpectedToken.Text, wc.Current), sc);
 		}
 
 		throw new CodeEE(trerror.ArgParsingError.Text, sc);

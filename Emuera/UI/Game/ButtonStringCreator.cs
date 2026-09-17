@@ -39,7 +39,7 @@ internal static class ButtonStringCreator
 
 	private static List<ButtonPrimitive> syn(string printBuffer)
 	{
-		string printString = printBuffer.ToString();
+		string printString = printBuffer;
 		List<ButtonPrimitive> ret = [];
 		if (printString.Length == 0)
 		{
@@ -95,7 +95,7 @@ internal static class ButtonStringCreator
 
 		if (buttonCount <= 1)
 		{
-			ButtonPrimitive button = new() { Str = printBuffer.ToString(), CanSelect = buttonCount >= 1, Input = inpL };
+			ButtonPrimitive button = new() { Str = printBuffer, CanSelect = buttonCount >= 1, Input = inpL };
 			ret.Add(button);
 			return ret;
 		}

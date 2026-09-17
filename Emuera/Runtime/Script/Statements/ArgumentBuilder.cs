@@ -191,7 +191,7 @@ internal static partial class ArgumentParser
 			minArg = argstr.Length;
 		}
 
-		string key = argstr + minArg.ToString();
+		string key = argstr + minArg;
 		if (nargb.TryGetValue(key, out ArgumentBuilder? value))
 		{
 			return value;

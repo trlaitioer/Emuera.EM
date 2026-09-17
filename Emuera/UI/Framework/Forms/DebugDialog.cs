@@ -192,7 +192,7 @@ public partial class DebugDialog : Form
 		}
 		catch (Exception e)
 		{
-			return e.GetType().ToString() + ":" + e.Message;
+			return e.GetType() + ":" + e.Message;
 		}
 		finally
 		{

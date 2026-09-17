@@ -1022,7 +1022,7 @@ public sealed class WebP : IDisposable
 			//compress the input samples
 			if (UnsafeNativeMethods.WebPEncode(ref config, ref wpic) != 1)
 			{
-				throw new Exception("Encoding error: " + ((WebPEncodingError)wpic.error_code).ToString());
+				throw new Exception("Encoding error: " + ((WebPEncodingError)wpic.error_code));
 			}
 
 			//Remove OnCallback

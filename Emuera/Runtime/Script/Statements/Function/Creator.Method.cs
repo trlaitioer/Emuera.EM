@@ -2334,7 +2334,7 @@ internal static partial class FunctionMethodCreator
 				}
 
 				sb.Append(')');
-				rows = dt.Select("id IN " + sb.ToString());
+				rows = dt.Select("id IN " + sb);
 				if (rows == null)
 				{
 					return 0;
@@ -3991,7 +3991,7 @@ internal static partial class FunctionMethodCreator
 			long money = arguments.Required(0).GetIntValue(exm);
 			if (arguments.Count < 2 || arguments[1] == null)
 			{
-				return Config.MoneyFirst ? Config.MoneyLabel + money.ToString() : money.ToString() + Config.MoneyLabel;
+				return Config.MoneyFirst ? Config.MoneyLabel + money : money + Config.MoneyLabel;
 			}
 
 			string format = arguments.Required(1).GetStrValue(exm);

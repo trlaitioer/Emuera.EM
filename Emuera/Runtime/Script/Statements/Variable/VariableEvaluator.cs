@@ -1602,7 +1602,7 @@ internal sealed class VariableEvaluator : IDisposable
 		{
 			if (charaNo < 0 || charaNo >= varData.CharacterList.Count)
 			{
-				throw new CodeEE(string.Format(trerror.OoRDelChara.Text, charaNoList.ToString()));
+				throw new CodeEE(string.Format(trerror.OoRDelChara.Text, charaNoList));
 			}
 
 			CharacterData chara = varData.CharacterList[(int)charaNo];

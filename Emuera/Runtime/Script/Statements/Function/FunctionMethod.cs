@@ -306,7 +306,7 @@ internal abstract class FunctionMethod
 			}
 		}
 
-		return string.Format(trerror.NotValidArgs.Text, name, sb.ToString());
+		return string.Format(trerror.NotValidArgs.Text, name, sb);
 	}
 
 	public virtual string? CheckArgumentType(string name, List<AExpression?> arguments)

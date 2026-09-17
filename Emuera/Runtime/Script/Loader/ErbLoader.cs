@@ -154,7 +154,7 @@ internal sealed class ErbLoader
 			ParserMediator.FlushWarningList();
 			System.Media.SystemSounds.Hand.Play();
 			output.PrintError(string.Format(trerror.UnexpectedErrorFrom.Text, AssemblyData.EmueraVersionText));
-			output.PrintError(e.GetType().ToString() + ":" + e.Message);
+			output.PrintError(e.GetType() + ":" + e.Message);
 			return false;
 		}
 		finally
@@ -624,7 +624,7 @@ internal sealed class ErbLoader
 				string errmes = exc.Message;
 				if (!(exc is EmueraException))
 				{
-					errmes = exc.GetType().ToString() + ":" + errmes;
+					errmes = exc.GetType() + ":" + errmes;
 				}
 
 				ParserMediator.Warn(string.Format(trerror.FuncArgError.Text, label.LabelName, errmes), label, 2, true, false);
@@ -1114,7 +1114,7 @@ internal sealed class ErbLoader
 				output.PrintError(trerror.GeneralFunc.Text);
 				foreach (KeyValuePair<string, long> pair in generalFuncs)
 				{
-					output.PrintError("　　" + pair.Key + ": " + pair.Value.ToString() + trerror.Occurrences.Text);
+					output.PrintError("　　" + pair.Key + ": " + pair.Value + trerror.Occurrences.Text);
 				}
 			}
 
@@ -1129,7 +1129,7 @@ internal sealed class ErbLoader
 				output.PrintError(trerror.SentenceFunc.Text);
 				foreach (KeyValuePair<string, long> pair in sentenceFuncs)
 				{
-					output.PrintError("　　" + pair.Key + ": " + pair.Value.ToString() + trerror.Occurrences.Text);
+					output.PrintError("　　" + pair.Key + ": " + pair.Value + trerror.Occurrences.Text);
 				}
 			}
 		}
@@ -1269,7 +1269,7 @@ internal sealed class ErbLoader
 			//are accumulated through ParserMediator.Warn and the notification sound is played once
 			//outside the parallel region (in the ParseScript layer loop).
 			//1756beta2+v6.1 修正の効率化のために何かパース関係でハンドリングできてないエラーが出た場合はスタックトレースを投げるようにした
-			string errmes = exc is EmueraException ? exc.Message : exc.GetType().ToString() + ":" + exc.Message;
+			string errmes = exc is EmueraException ? exc.Message : exc.GetType() + ":" + exc.Message;
 			ParserMediator.Warn(string.Format(trerror.FuncAnalysisError.Text, label.LabelName, errmes), label, 2, true, false,
 				exc is not EmueraException ? exc.StackTrace : null);
 			label.ErrMes = trerror.CalledFailedFunc.Text;

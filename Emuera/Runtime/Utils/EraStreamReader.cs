@@ -60,8 +60,8 @@ internal sealed partial class EraStreamReader : IDisposable
 
 	public bool OpenOnCache(string path, string name)
 	{
-		filepath = path.ToString();
-		filename = name.ToString();
+		filepath = path;
+		filename = name;
 		curNo = 0;
 		nextNo = 0;
 		// A cached entry is null only when the preload reported an encoding error; the dereference in ReadLine

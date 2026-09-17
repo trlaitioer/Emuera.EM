@@ -266,14 +266,14 @@ public class PluginManager
 		int depth = 0;
 
 		// add initial caller
-		stackTraceCollecter.Add(processState.CurrentLine!.Position!.Value.Filename + ":" + processState.CurrentLine.Position.Value.LineNo.ToString() +
+		stackTraceCollecter.Add(processState.CurrentLine!.Position!.Value.Filename + ":" + processState.CurrentLine.Position.Value.LineNo +
 		                        "@" + processState.CurrentLine.ParentLabelLine!.LabelName);
 		// loop call stack
 		while ((parent = processState.GetReturnAddressSequensial(depth++)) != null)
 		{
 			if (parent.Position != null)
 			{
-				stackTraceCollecter.Add(parent.Position.Value.Filename + ":" + parent.Position.Value.LineNo.ToString() + "@" +
+				stackTraceCollecter.Add(parent.Position.Value.Filename + ":" + parent.Position.Value.LineNo + "@" +
 				                        parent.ParentLabelLine!.LabelName);
 			}
 		}

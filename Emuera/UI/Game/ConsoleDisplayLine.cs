@@ -342,7 +342,7 @@ internal sealed class ConsoleDisplayLine
 		builder.Clear();
 		foreach (ConsoleButtonString button in buttons)
 		{
-			builder.Append(button.ToString());
+			builder.Append(button);
 		}
 
 		return builder.ToString();
@@ -356,7 +356,7 @@ internal sealed class ConsoleDisplayLine
 		{
 			foreach (ConsoleButtonString button in buttons)
 			{
-				builder.Append(button.ToString());
+				builder.Append(button);
 			}
 		}
 

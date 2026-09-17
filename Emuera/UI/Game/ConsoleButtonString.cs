@@ -471,7 +471,7 @@ internal sealed class ConsoleButtonString
 		builder.Clear();
 		foreach (AConsoleDisplayNode css in strArray)
 		{
-			builder.Append(css.ToString());
+			builder.Append(css);
 		}
 
 		return builder.ToString();

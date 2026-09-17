@@ -165,7 +165,7 @@ internal sealed class PrintStringBuffer
 		StringBuilder buf = new();
 		foreach (ConsoleButtonString button in m_buttonList)
 		{
-			buf.Append(button.ToString());
+			buf.Append(button);
 		}
 
 		foreach (AConsoleDisplayNode css in m_stringList)

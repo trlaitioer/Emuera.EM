@@ -335,7 +335,7 @@ internal sealed class ProcessState
 		if (Program.DebugMode)
 		{
 			console.DebugClearTraceLog();
-			console.DebugAddTraceLog("BEGIN:" + begintype.ToString());
+			console.DebugAddTraceLog("BEGIN:" + begintype);
 		}
 
 		foreach (CalledFunction called in functionList)

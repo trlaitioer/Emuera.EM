@@ -147,6 +147,6 @@ internal sealed class MacroWord : Word
 
 	public override string ToString()
 	{
-		return "Arg" + num.ToString();
+		return "Arg" + num;
 	}
 }
