@@ -18,12 +18,13 @@ internal sealed partial class EraStreamReader : IDisposable
 		this.useRename = useRename;
 	}
 
-	string filepath = null!;
-	string filename = null!;
-	readonly bool useRename;
-	int curNo;
-	int nextNo = 1;
-	string[] _fileLines = null!;
+	private string filepath = null!;
+	private string filename = null!;
+	private readonly bool useRename;
+	private int curNo;
+	private int nextNo = 1;
+	private string[] _fileLines = null!;
+
 	public bool Open(string path)
 	{
 		return Open(path, Path.GetFileName(path));
@@ -49,11 +50,12 @@ internal sealed partial class EraStreamReader : IDisposable
 			Dispose();
 			return false;
 		}
+
 		return true;
 	}
+
 	public bool OpenOnCache(string path)
 	{
-
 		return OpenOnCache(path, Path.GetFileName(path));
 	}
 
@@ -79,6 +81,7 @@ internal sealed partial class EraStreamReader : IDisposable
 			ret = _fileLines[curNo];
 			nextNo++;
 		}
+
 		return ret;
 	}
 
@@ -96,19 +99,24 @@ internal sealed partial class EraStreamReader : IDisposable
 		{
 			line = ReadLine();
 			if (line == null)
+			{
 				return null;
+			}
+
 			if (line.Length == 0)
+			{
 				continue;
+			}
 
 			//Ordinal消して大丈夫なのかわからないのでコメントアウト
 			//if (useRename && (line.IndexOf("[[", StringComparison.Ordinal) >= 0) && (line.IndexOf("]]", StringComparison.Ordinal) >= 0))
 			if (useRename)
 			{
-				var match = regexRenameIdentifer().Match(line);
+				Match match = regexRenameIdentifer().Match(line);
 				while (match.Success)
 				{
 					//この段階でマッチしないパターンもある
-					if (ParserMediator.RenameDic.TryGetValue(match.Value, out var targetStr))
+					if (ParserMediator.RenameDic.TryGetValue(match.Value, out string? targetStr))
 					{
 						line = line.Replace(match.Value, targetStr);
 					}
@@ -116,24 +124,36 @@ internal sealed partial class EraStreamReader : IDisposable
 					match = match.NextMatch();
 				}
 			}
+
 			st = new CharStream(line);
 			LexicalAnalyzer.SkipWhiteSpace(st);
 			if (st.EOS)
+			{
 				continue;
+			}
+
 			//[SKIPSTART]～[SKIPEND]中にここが誤爆するので無効化
 			if (!disabled)
 			{
 				if (st.Current == '}')
+				{
 					throw new CodeEE(trerror.UnexpectedContinuationEnd.Text, new ScriptPosition(filename, curNo));
+				}
+
 				if (st.Current == '{')
 				{
 					if (line.Trim() != "{")
+					{
 						throw new CodeEE(trerror.CharacterAfterContinuation.Text, new ScriptPosition(filename, curNo));
+					}
+
 					break;
 				}
 			}
+
 			return st;
 		}
+
 		//curNoはこの後加算しない(始端記号の行を行番号とする)
 		StringBuilder b = new();
 		while (true)
@@ -148,10 +168,10 @@ internal sealed partial class EraStreamReader : IDisposable
 			if (useRename)
 			{
 				//この段階でマッチしないパターンもある
-				var match = regexRenameIdentifer().Match(line);
+				Match match = regexRenameIdentifer().Match(line);
 				while (match.Success)
 				{
-					if (ParserMediator.RenameDic.TryGetValue(match.Value, out var targetStr))
+					if (ParserMediator.RenameDic.TryGetValue(match.Value, out string? targetStr))
 					{
 						line = line.Replace(match.Value, targetStr);
 					}
@@ -159,25 +179,34 @@ internal sealed partial class EraStreamReader : IDisposable
 					match = match.NextMatch();
 				}
 			}
-			var test = line.AsSpan().TrimStart();
+
+			ReadOnlySpan<char> test = line.AsSpan().TrimStart();
 			if (test.Length > 0)
 			{
 				if (test[0] == '}')
 				{
 					if (!test.TrimEnd().SequenceEqual("}"))
+					{
 						throw new CodeEE(trerror.CharacterAfterContinuationEnd.Text, new ScriptPosition(filename, curNo));
+					}
+
 					break;
 				}
+
 				//行連結文字なら1字でないとおかしい、というか、こうしないとFORMの数値変数処理が誤爆する。
 				//{
 				//A}
 				//みたいなどうしようもないコードは知ったこっちゃない
 				if (test.SequenceEqual("{"))
+				{
 					throw new CodeEE(trerror.UnexpectedContinuation.Text, new ScriptPosition(filename, curNo));
+				}
 			}
+
 			b.Append(line);
 			b.Append(Config.ReplaceContinuationBR.Replace("\"", ""));
 		}
+
 		st = new CharStream(b.ToString());
 		LexicalAnalyzer.SkipWhiteSpace(st);
 		return st;
@@ -186,15 +215,9 @@ internal sealed partial class EraStreamReader : IDisposable
 	/// <summary>
 	/// 直前に読んだ行の行番号
 	/// </summary>
-	public int LineNo
-	{ get { return curNo; } }
-	public string Filename
-	{
-		get
-		{
-			return filename;
-		}
-	}
+	public int LineNo => curNo;
+
+	public string Filename => filename;
 	//public string Filepath
 	//{
 	//    get
@@ -203,14 +226,22 @@ internal sealed partial class EraStreamReader : IDisposable
 	//    }
 	//}
 
-	public void Close() { Dispose(); }
-	bool disposed;
+	public void Close()
+	{
+		Dispose();
+	}
+
+	private bool disposed;
+
 	#region IDisposable メンバ
 
 	public void Dispose()
 	{
 		if (disposed)
+		{
 			return;
+		}
+
 		filepath = null!;
 		filename = null!;
 		disposed = true;

@@ -16,38 +16,45 @@ namespace MinorShift.Emuera.GameProc.Function;
 internal sealed partial class FunctionIdentifier
 {
 	#region flag定義
+
 	//いちいちFunctionFlag.FLOW_CONTROLとか書くのが面倒だったからenumではなくconst intで
 	public const int FLOW_CONTROL = 0x00001;
-	public const int EXTENDED = 0x00002;//Emuera拡張命令
-	public const int METHOD_SAFE = 0x00004;//#Function中で呼び出してよい命令。WAITなど入力を伴うもの、CALLなど関数呼び出しを伴うものは不可。
-	public const int DEBUG_FUNC = 0x00008;//-Debug引数付きで起動した場合にのみ実行される命令。
-	public const int PARTIAL = 0x00010;//複数行に渡る構文の一部である命令。SIF文の次に来てはいけない。debugコマンドからの呼び出しも不適当。
-	public const int FORCE_SETARG = 0x00020;//ロード時に必ず引数解析を行う必要のあるもの。IFやSELECTCASEなど
-	public const int IS_JUMP = 0x00040;//JUMP命令
-	public const int IS_TRY = 0x00080;//TRY系命令
-	public const int IS_TRYC = 0x08000;//TRY系命令
+	public const int EXTENDED = 0x00002; //Emuera拡張命令
+	public const int METHOD_SAFE = 0x00004; //#Function中で呼び出してよい命令。WAITなど入力を伴うもの、CALLなど関数呼び出しを伴うものは不可。
+	public const int DEBUG_FUNC = 0x00008; //-Debug引数付きで起動した場合にのみ実行される命令。
+	public const int PARTIAL = 0x00010; //複数行に渡る構文の一部である命令。SIF文の次に来てはいけない。debugコマンドからの呼び出しも不適当。
+	public const int FORCE_SETARG = 0x00020; //ロード時に必ず引数解析を行う必要のあるもの。IFやSELECTCASEなど
+	public const int IS_JUMP = 0x00040; //JUMP命令
+	public const int IS_TRY = 0x00080; //TRY系命令
+	public const int IS_TRYC = 0x08000; //TRY系命令
 
-	public const int PRINT_NEWLINE = 0x00100;//PRINT命令で出力後改行するもの
-	public const int PRINT_WAITINPUT = 0x00200;//PRINT命令で出力後入力待ちするもの
-	public const int PRINT_SINGLE = 0x00400;//PRINTSINGLE系
-	public const int ISPRINTDFUNC = 0x00800;//PRINTD系判定用
-	public const int ISPRINTKFUNC = 0x01000;//PRINTK系判定用
+	public const int PRINT_NEWLINE = 0x00100; //PRINT命令で出力後改行するもの
+	public const int PRINT_WAITINPUT = 0x00200; //PRINT命令で出力後入力待ちするもの
+	public const int PRINT_SINGLE = 0x00400; //PRINTSINGLE系
+	public const int ISPRINTDFUNC = 0x00800; //PRINTD系判定用
+	public const int ISPRINTKFUNC = 0x01000; //PRINTK系判定用
 
-	public const int IS_PRINT = 0x02000;//SkipPrintにより飛ばされる命令。PRINT系及びWAIT系。DEBUGPRINTは含まない。
-	public const int IS_INPUT = 0x04000;//userDefinedSkipを警告する命令。INPUT系。
-	public const int IS_PRINTDATA = 0x10000;//PRINTDATA系判定用、PRINTとは一部処理が違うので、それ用。
+	public const int IS_PRINT = 0x02000; //SkipPrintにより飛ばされる命令。PRINT系及びWAIT系。DEBUGPRINTは含まない。
+	public const int IS_INPUT = 0x04000; //userDefinedSkipを警告する命令。INPUT系。
+	public const int IS_PRINTDATA = 0x10000; //PRINTDATA系判定用、PRINTとは一部処理が違うので、それ用。
 
 	#endregion
 
 	#region static
+
 	//元BuiltInFunctionManager部分
-	readonly static Dictionary<string, FunctionIdentifier> funcDic = Config.IgnoreCase ? new(StringComparer.OrdinalIgnoreCase) : new();
-	readonly static Dictionary<FunctionCode, string> funcMatch = [];
-	readonly static Dictionary<FunctionCode, FunctionCode> funcParent = [];
-	readonly static AInstruction methodInstruction;
+	private readonly static Dictionary<string, FunctionIdentifier> funcDic = Config.IgnoreCase
+		? new Dictionary<string, FunctionIdentifier>(StringComparer.OrdinalIgnoreCase)
+		: new Dictionary<string, FunctionIdentifier>();
+
+	private readonly static Dictionary<FunctionCode, string> funcMatch = [];
+	private readonly static Dictionary<FunctionCode, FunctionCode> funcParent = [];
+	private readonly static AInstruction methodInstruction;
 
 	private static void addFunction(FunctionCode code, AInstruction inst)
-	{ addFunction(code, inst, 0); }
+	{
+		addFunction(code, inst, 0);
+	}
 
 	private static void addFunction(FunctionCode code, AInstruction inst, int additionalFlag)
 	{
@@ -56,7 +63,9 @@ internal sealed partial class FunctionIdentifier
 	}
 
 	private static void addFunction(FunctionCode code, ArgumentBuilder arg)
-	{ addFunction(code, arg, 0); }
+	{
+		addFunction(code, arg, 0);
+	}
 
 	private static void addFunction(FunctionCode code, ArgumentBuilder arg, int flag)
 	{
@@ -68,20 +77,25 @@ internal sealed partial class FunctionIdentifier
 	{
 		return funcDic;
 	}
+
 	private static void addPrintFunction(FunctionCode code)
 	{
 		addFunction(code, new PRINT_Instruction(code.ToString()));
 	}
+
 	private static void addPrintDataFunction(FunctionCode code)
 	{
 		addFunction(code, new PRINT_DATA_Instruction(code.ToString()));
 	}
+
 	static FunctionIdentifier()
 	{
 		Dictionary<FunctionArgType, ArgumentBuilder> argb = ArgumentParser.GetArgumentBuilderDictionary();
 		methodInstruction = new METHOD_Instruction();
-		setFunc = new FunctionIdentifier("SET", FunctionCode.SET, new SET_Instruction());//代入文
+		setFunc = new FunctionIdentifier("SET", FunctionCode.SET, new SET_Instruction()); //代入文
+
 		#region PRINT or INPUT
+
 		addPrintFunction(FunctionCode.PRINT);
 		addPrintFunction(FunctionCode.PRINTL);
 		addPrintFunction(FunctionCode.PRINTW);
@@ -178,18 +192,18 @@ internal sealed partial class FunctionIdentifier
 		addFunction(FunctionCode.PRINTPLAIN, argb[FunctionArgType.STR_NULLABLE], METHOD_SAFE | EXTENDED);
 		addFunction(FunctionCode.PRINTPLAINFORM, argb[FunctionArgType.FORM_STR_NULLABLE], METHOD_SAFE | EXTENDED);
 
-		addFunction(FunctionCode.PRINT_ABL, argb[FunctionArgType.INT_EXPRESSION], METHOD_SAFE);//能力。引数は登録番号
-		addFunction(FunctionCode.PRINT_TALENT, argb[FunctionArgType.INT_EXPRESSION], METHOD_SAFE);//素質
-		addFunction(FunctionCode.PRINT_MARK, argb[FunctionArgType.INT_EXPRESSION], METHOD_SAFE);//刻印
-		addFunction(FunctionCode.PRINT_EXP, argb[FunctionArgType.INT_EXPRESSION], METHOD_SAFE);//経験
-		addFunction(FunctionCode.PRINT_PALAM, argb[FunctionArgType.INT_EXPRESSION], METHOD_SAFE);//パラメータ
-		addFunction(FunctionCode.PRINT_ITEM, argb[FunctionArgType.VOID], METHOD_SAFE);//所持アイテム
-		addFunction(FunctionCode.PRINT_SHOPITEM, argb[FunctionArgType.VOID], METHOD_SAFE);//ショップで売っているアイテム
+		addFunction(FunctionCode.PRINT_ABL, argb[FunctionArgType.INT_EXPRESSION], METHOD_SAFE); //能力。引数は登録番号
+		addFunction(FunctionCode.PRINT_TALENT, argb[FunctionArgType.INT_EXPRESSION], METHOD_SAFE); //素質
+		addFunction(FunctionCode.PRINT_MARK, argb[FunctionArgType.INT_EXPRESSION], METHOD_SAFE); //刻印
+		addFunction(FunctionCode.PRINT_EXP, argb[FunctionArgType.INT_EXPRESSION], METHOD_SAFE); //経験
+		addFunction(FunctionCode.PRINT_PALAM, argb[FunctionArgType.INT_EXPRESSION], METHOD_SAFE); //パラメータ
+		addFunction(FunctionCode.PRINT_ITEM, argb[FunctionArgType.VOID], METHOD_SAFE); //所持アイテム
+		addFunction(FunctionCode.PRINT_SHOPITEM, argb[FunctionArgType.VOID], METHOD_SAFE); //ショップで売っているアイテム
 
-		addFunction(FunctionCode.DRAWLINE, argb[FunctionArgType.VOID], METHOD_SAFE);//画面の左端から右端まで----と線を引く。
-		addFunction(FunctionCode.BAR, new BAR_Instruction(false));//[*****....]のようなグラフを書く。BAR (変数) , (最大値), (長さ)
-		addFunction(FunctionCode.BARL, new BAR_Instruction(true));//改行付き。
-		addFunction(FunctionCode.TIMES, new TIMES_Instruction());//小数計算。TIMES (変数) , (小数値)という形で使う。
+		addFunction(FunctionCode.DRAWLINE, argb[FunctionArgType.VOID], METHOD_SAFE); //画面の左端から右端まで----と線を引く。
+		addFunction(FunctionCode.BAR, new BAR_Instruction(false)); //[*****....]のようなグラフを書く。BAR (変数) , (最大値), (長さ)
+		addFunction(FunctionCode.BARL, new BAR_Instruction(true)); //改行付き。
+		addFunction(FunctionCode.TIMES, new TIMES_Instruction()); //小数計算。TIMES (変数) , (小数値)という形で使う。
 
 		addFunction(FunctionCode.WAIT, new WAIT_Instruction(false));
 		addFunction(FunctionCode.INPUT, new INPUT_Instruction());
@@ -207,25 +221,29 @@ internal sealed partial class FunctionIdentifier
 		addFunction(FunctionCode.REUSELASTLINE, new REUSELASTLINE_Instruction());
 
 		#endregion
-		addFunction(FunctionCode.UPCHECK, argb[FunctionArgType.VOID], METHOD_SAFE);//パラメータの変動
-		addFunction(FunctionCode.CUPCHECK, argb[FunctionArgType.INT_EXPRESSION], METHOD_SAFE | EXTENDED);
-		addFunction(FunctionCode.ADDCHARA, new ADDCHARA_Instruction(false, false));//(キャラ番号)のキャラクタを追加
-		addFunction(FunctionCode.ADDSPCHARA, new ADDCHARA_Instruction(true, false));//(キャラ番号)のSPキャラクタを追加（フラグ0を1にして作成）
-		addFunction(FunctionCode.ADDDEFCHARA, argb[FunctionArgType.VOID], METHOD_SAFE | EXTENDED);
-		addFunction(FunctionCode.ADDVOIDCHARA, new ADDVOIDCHARA_Instruction());//変数に何の設定のないキャラを作成
-		addFunction(FunctionCode.DELCHARA, new ADDCHARA_Instruction(false, true));//(キャラ登録番号)のキャラクタを削除。
 
-		addFunction(FunctionCode.PUTFORM, argb[FunctionArgType.FORM_STR_NULLABLE], METHOD_SAFE);//@SAVEINFO関数でのみ使用可能。PRINTFORMと同様の書式でセーブデータに概要をつける。
-		addFunction(FunctionCode.QUIT, argb[FunctionArgType.VOID]);//ゲームを終了
+		addFunction(FunctionCode.UPCHECK, argb[FunctionArgType.VOID], METHOD_SAFE); //パラメータの変動
+		addFunction(FunctionCode.CUPCHECK, argb[FunctionArgType.INT_EXPRESSION], METHOD_SAFE | EXTENDED);
+		addFunction(FunctionCode.ADDCHARA, new ADDCHARA_Instruction(false, false)); //(キャラ番号)のキャラクタを追加
+		addFunction(FunctionCode.ADDSPCHARA, new ADDCHARA_Instruction(true, false)); //(キャラ番号)のSPキャラクタを追加（フラグ0を1にして作成）
+		addFunction(FunctionCode.ADDDEFCHARA, argb[FunctionArgType.VOID], METHOD_SAFE | EXTENDED);
+		addFunction(FunctionCode.ADDVOIDCHARA, new ADDVOIDCHARA_Instruction()); //変数に何の設定のないキャラを作成
+		addFunction(FunctionCode.DELCHARA, new ADDCHARA_Instruction(false, true)); //(キャラ登録番号)のキャラクタを削除。
+
+		addFunction(FunctionCode.PUTFORM, argb[FunctionArgType.FORM_STR_NULLABLE], METHOD_SAFE); //@SAVEINFO関数でのみ使用可能。PRINTFORMと同様の書式でセーブデータに概要をつける。
+		addFunction(FunctionCode.QUIT, argb[FunctionArgType.VOID]); //ゲームを終了
+
 		#region EE_OUTPUTLOG
+
 		// addFunction(FunctionCode.OUTPUTLOG, argb[FunctionArgType.VOID]);
 		//addFunction(FunctionCode.OUTPUTLOG, argb[FunctionArgType.STR_EXPRESSION_NULLABLE]);
+
 		#endregion
 
-		addFunction(FunctionCode.BEGIN, new BEGIN_Instruction());//システム関数の実行。実行するとCALLの呼び出し元などを忘れてしまう。
+		addFunction(FunctionCode.BEGIN, new BEGIN_Instruction()); //システム関数の実行。実行するとCALLの呼び出し元などを忘れてしまう。
 
-		addFunction(FunctionCode.SAVEGAME, new SAVELOADGAME_Instruction(true));//セーブ画面を呼ぶ。ショップのみ。
-		addFunction(FunctionCode.LOADGAME, new SAVELOADGAME_Instruction(false));//
+		addFunction(FunctionCode.SAVEGAME, new SAVELOADGAME_Instruction(true)); //セーブ画面を呼ぶ。ショップのみ。
+		addFunction(FunctionCode.LOADGAME, new SAVELOADGAME_Instruction(false)); //
 		addFunction(FunctionCode.SAVEDATA, argb[FunctionArgType.SP_SAVEDATA], METHOD_SAFE | EXTENDED);
 		addFunction(FunctionCode.LOADDATA, argb[FunctionArgType.INT_EXPRESSION], EXTENDED | FLOW_CONTROL);
 		addFunction(FunctionCode.DELDATA, new DELDATA_Instruction());
@@ -234,7 +252,7 @@ internal sealed partial class FunctionIdentifier
 		addFunction(FunctionCode.RESETDATA, new RESETDATA_Instruction());
 		addFunction(FunctionCode.RESETGLOBAL, new RESETGLOBAL_Instruction());
 
-		addFunction(FunctionCode.SIF, new SIF_Instruction());//一行のみIF
+		addFunction(FunctionCode.SIF, new SIF_Instruction()); //一行のみIF
 		addFunction(FunctionCode.IF, new IF_Instruction());
 		addFunction(FunctionCode.ELSE, new ELSEIF_Instruction(FunctionArgType.VOID));
 		addFunction(FunctionCode.ELSEIF, new ELSEIF_Instruction(FunctionArgType.INT_EXPRESSION));
@@ -244,7 +262,7 @@ internal sealed partial class FunctionIdentifier
 		addFunction(FunctionCode.CASEELSE, new ELSEIF_Instruction(FunctionArgType.VOID), EXTENDED);
 		addFunction(FunctionCode.ENDSELECT, new ENDIF_Instruction(), METHOD_SAFE | EXTENDED);
 
-		addFunction(FunctionCode.REPEAT, new REPEAT_Instruction(false));//RENDまで繰り返し。繰り返した回数がCOUNTへ。ネスト不可。
+		addFunction(FunctionCode.REPEAT, new REPEAT_Instruction(false)); //RENDまで繰り返し。繰り返した回数がCOUNTへ。ネスト不可。
 		addFunction(FunctionCode.REND, new REND_Instruction());
 		addFunction(FunctionCode.FOR, new REPEAT_Instruction(true), EXTENDED);
 		addFunction(FunctionCode.NEXT, new REND_Instruction(), EXTENDED);
@@ -252,11 +270,11 @@ internal sealed partial class FunctionIdentifier
 		addFunction(FunctionCode.WEND, new WEND_Instruction());
 		addFunction(FunctionCode.DO, new ENDIF_Instruction(), METHOD_SAFE | EXTENDED);
 		addFunction(FunctionCode.LOOP, new LOOP_Instruction());
-		addFunction(FunctionCode.CONTINUE, new CONTINUE_Instruction());//REPEATに戻る
-		addFunction(FunctionCode.BREAK, new BREAK_Instruction());//RENDの次の行まで
+		addFunction(FunctionCode.CONTINUE, new CONTINUE_Instruction()); //REPEATに戻る
+		addFunction(FunctionCode.BREAK, new BREAK_Instruction()); //RENDの次の行まで
 
-		addFunction(FunctionCode.RETURN, new RETURN_Instruction());//関数の終了。RESULTに整数を格納可能。省略した場合、０。(次の@～～がRETURNと見なされる。)  
-		addFunction(FunctionCode.RETURNFORM, new RETURNFORM_Instruction());//関数の終了。RESULTに整数を格納可能。省略した場合、０。(次の@～～がRETURNと見なされる。)  
+		addFunction(FunctionCode.RETURN, new RETURN_Instruction()); //関数の終了。RESULTに整数を格納可能。省略した場合、０。(次の@～～がRETURNと見なされる。)  
+		addFunction(FunctionCode.RETURNFORM, new RETURNFORM_Instruction()); //関数の終了。RESULTに整数を格納可能。省略した場合、０。(次の@～～がRETURNと見なされる。)  
 		addFunction(FunctionCode.RETURNF, new RETURNF_Instruction());
 
 		addFunction(FunctionCode.STRLEN, new STRLEN_Instruction(false, false));
@@ -333,12 +351,14 @@ internal sealed partial class FunctionIdentifier
 		addFunction(FunctionCode.ARRAYCOPY, argb[FunctionArgType.SP_COPY_ARRAY], METHOD_SAFE | EXTENDED);
 
 		#region EE_SKIPLOG
+
 		addFunction(FunctionCode.SKIPLOG, argb[FunctionArgType.INT_EXPRESSION], METHOD_SAFE | EXTENDED);
+
 		#endregion
 
 
-		addFunction(FunctionCode.JUMP, new CALL_Instruction(false, true, false, false));//関数に移動
-		addFunction(FunctionCode.CALL, new CALL_Instruction(false, false, false, false));//関数に移動。移動元を記憶し、RETURNで帰る。
+		addFunction(FunctionCode.JUMP, new CALL_Instruction(false, true, false, false)); //関数に移動
+		addFunction(FunctionCode.CALL, new CALL_Instruction(false, false, false, false)); //関数に移動。移動元を記憶し、RETURNで帰る。
 		addFunction(FunctionCode.TRYJUMP, new CALL_Instruction(false, true, true, false), EXTENDED);
 		addFunction(FunctionCode.TRYCALL, new CALL_Instruction(false, false, true, false), EXTENDED);
 		addFunction(FunctionCode.JUMPFORM, new CALL_Instruction(true, true, false, false), EXTENDED);
@@ -353,8 +373,8 @@ internal sealed partial class FunctionIdentifier
 		addFunction(FunctionCode.CALLF, new CALLF_Instruction(false));
 		addFunction(FunctionCode.CALLFORMF, new CALLF_Instruction(true));
 		addFunction(FunctionCode.CALLSHARP, new CALLSHARP_Instruction());
-		addFunction(FunctionCode.RESTART, new RESTART_Instruction());//関数の再開。関数の最初に戻る。
-		addFunction(FunctionCode.GOTO, new GOTO_Instruction(false, false, false));//$ラベルへジャンプ
+		addFunction(FunctionCode.RESTART, new RESTART_Instruction()); //関数の再開。関数の最初に戻る。
+		addFunction(FunctionCode.GOTO, new GOTO_Instruction(false, false, false)); //$ラベルへジャンプ
 		addFunction(FunctionCode.TRYGOTO, new GOTO_Instruction(false, true, false), EXTENDED);
 		addFunction(FunctionCode.GOTOFORM, new GOTO_Instruction(true, false, false), EXTENDED);
 		addFunction(FunctionCode.TRYGOTOFORM, new GOTO_Instruction(true, true, false), EXTENDED);
@@ -396,16 +416,20 @@ internal sealed partial class FunctionIdentifier
 
 		addFunction(FunctionCode.INPUTMOUSEKEY, new INPUTMOUSEKEY_Instruction());
 		addFunction(FunctionCode.AWAIT, new AWAIT_Instruction());
+
 		#region 式中関数の引数違い
-		addFunction(FunctionCode.VARSIZE, argb[FunctionArgType.SP_VAR], METHOD_SAFE | EXTENDED);//動作が違うのでMETHOD化できない
-		addFunction(FunctionCode.GETTIME, argb[FunctionArgType.VOID], METHOD_SAFE | EXTENDED);//2つに代入する必要があるのでMETHOD化できない
-		addFunction(FunctionCode.POWER, argb[FunctionArgType.SP_POWER], METHOD_SAFE | EXTENDED);//引数が違うのでMETHOD化できない。
-		addFunction(FunctionCode.PRINTCPERLINE, argb[FunctionArgType.SP_GETINT], METHOD_SAFE | EXTENDED);//よく考えたら引数の仕様違うや
-		addFunction(FunctionCode.SAVENOS, argb[FunctionArgType.SP_GETINT], METHOD_SAFE | EXTENDED);//引数の仕様が違うので(ry
-		addFunction(FunctionCode.ENCODETOUNI, argb[FunctionArgType.FORM_STR_NULLABLE], METHOD_SAFE | EXTENDED);//式中関数版を追加。処理が全然違う
+
+		addFunction(FunctionCode.VARSIZE, argb[FunctionArgType.SP_VAR], METHOD_SAFE | EXTENDED); //動作が違うのでMETHOD化できない
+		addFunction(FunctionCode.GETTIME, argb[FunctionArgType.VOID], METHOD_SAFE | EXTENDED); //2つに代入する必要があるのでMETHOD化できない
+		addFunction(FunctionCode.POWER, argb[FunctionArgType.SP_POWER], METHOD_SAFE | EXTENDED); //引数が違うのでMETHOD化できない。
+		addFunction(FunctionCode.PRINTCPERLINE, argb[FunctionArgType.SP_GETINT], METHOD_SAFE | EXTENDED); //よく考えたら引数の仕様違うや
+		addFunction(FunctionCode.SAVENOS, argb[FunctionArgType.SP_GETINT], METHOD_SAFE | EXTENDED); //引数の仕様が違うので(ry
+		addFunction(FunctionCode.ENCODETOUNI, argb[FunctionArgType.FORM_STR_NULLABLE], METHOD_SAFE | EXTENDED); //式中関数版を追加。処理が全然違う
+
 		#endregion
 
 		#region EE
+
 		addFunction(FunctionCode.PLAYSOUND, new PLAYSOUND_Instruction());
 		addFunction(FunctionCode.STOPSOUND, new STOPSOUND_Instruction());
 		addFunction(FunctionCode.PLAYBGM, new PLAYBGM_Instruction());
@@ -415,10 +439,10 @@ internal sealed partial class FunctionIdentifier
 		addFunction(FunctionCode.TRYCALLF, new TRYCALLF_Instruction(false));
 		addFunction(FunctionCode.TRYCALLFORMF, new TRYCALLF_Instruction(true));
 		addFunction(FunctionCode.UPDATECHECK, new UPDATECHECK_Instruction());
-		addFunction(FunctionCode.QUIT_AND_RESTART, argb[FunctionArgType.VOID]);//ゲームを終了
+		addFunction(FunctionCode.QUIT_AND_RESTART, argb[FunctionArgType.VOID]); //ゲームを終了
 		addFunction(FunctionCode.FORCE_QUIT, argb[FunctionArgType.VOID]);
 		addFunction(FunctionCode.FORCE_QUIT_AND_RESTART, argb[FunctionArgType.VOID]);
-		addFunction(FunctionCode.FORCE_BEGIN, new FORCE_BEGIN_Instruction());//強制BEGIN
+		addFunction(FunctionCode.FORCE_BEGIN, new FORCE_BEGIN_Instruction()); //強制BEGIN
 		addFunction(FunctionCode.INPUTANY, new INPUTANY_Instruction());
 		addFunction(FunctionCode.TOOLTIP_SETFONT, new TOOLTIP_SETFONT_Instruction());
 		addFunction(FunctionCode.TOOLTIP_SETFONTSIZE, new TOOLTIP_SETFONTSIZE_Instruction());
@@ -430,16 +454,23 @@ internal sealed partial class FunctionIdentifier
 		addFunction(FunctionCode.ONEBINPUT, new ONEBINPUT_Instruction());
 		addFunction(FunctionCode.ONEBINPUTS, new ONEBINPUTS_Instruction());
 		addFunction(FunctionCode.BREAKBUTTON, new BREAKBUTTON_Instruction());
+
 		#endregion
+
 		#region EM
+
 		addFunction(FunctionCode.DT_COLUMN_OPTIONS, new DT_COLUMN_OPTIONS_Instruction());
+
 		#endregion
+
 		#region Emuera.NET
+
 		if (JSONConfig.Data.UseScopedVariableInstruction)
 		{
 			addFunction(FunctionCode.VARI, new VARI_Instruction());
 			addFunction(FunctionCode.VARS, new VARS_Instruction());
 		}
+
 		addFunction(FunctionCode.HTML_PRINT_ISLAND, new HTML_PRINT_ISLAND_Instruction());
 		addFunction(FunctionCode.HTML_PRINT_ISLAND_CLEAR, new HTML_PRINT_ISLAND_CLEAR_Instruction());
 
@@ -448,6 +479,7 @@ internal sealed partial class FunctionIdentifier
 		addPrintFunction(FunctionCode.PRINTSN);
 		addPrintFunction(FunctionCode.PRINTFORMN);
 		addPrintFunction(FunctionCode.PRINTFORMSN);
+
 		#endregion
 
 		Dictionary<string, FunctionMethod> methodList = FunctionMethodCreator.GetMethodList();
@@ -459,6 +491,7 @@ internal sealed partial class FunctionIdentifier
 				funcDic.Add(key, new FunctionIdentifier(key, pair.Value, methodInstruction));
 			}
 		}
+
 		funcMatch[FunctionCode.IF] = "ENDIF";
 		funcMatch[FunctionCode.SELECTCASE] = "ENDSELECT";
 		funcMatch[FunctionCode.REPEAT] = "REND";
@@ -495,14 +528,18 @@ internal sealed partial class FunctionIdentifier
 
 	private static FunctionIdentifier setFunc;
 
-	public static FunctionIdentifier SETFunction { get { return setFunc; } }
+	public static FunctionIdentifier SETFunction => setFunc;
 
 	internal static string? getMatchFunction(FunctionCode func)
 	{
 		if (funcMatch.TryGetValue(func, out string? ret))
+		{
 			return ret;
+		}
 		else
+		{
 			return null;
+		}
 	}
 
 
@@ -510,9 +547,13 @@ internal sealed partial class FunctionIdentifier
 	{
 		//1755 どうもenum.ToString()が遅いようなので先に逆引き辞書を作ることに
 		if (funcParent.TryGetValue(func, out FunctionCode ret))
+		{
 			return ret;
+		}
 		else
+		{
 			return FunctionCode.__NULL__;
+		}
 		//if (funcMatch.ContainsValue(func.ToString()))
 		//{
 		//    foreach (FunctionCode pFunc in funcMatch.Keys)
@@ -523,12 +564,13 @@ internal sealed partial class FunctionIdentifier
 		//}
 		//return FunctionCode.__NULL__;
 	}
+
 	#endregion
 
 	private FunctionIdentifier(string name, FunctionCode code, AInstruction instruction)
 		: this(name, code, instruction, 0)
-	{
-	}
+	{ }
+
 	private FunctionIdentifier(string name, FunctionCode code, AInstruction instruction, int additionalFlag)
 	{
 		this.code = code;
@@ -558,6 +600,7 @@ internal sealed partial class FunctionIdentifier
 		Name = methodName;
 		Instruction = instruction;
 	}
+
 	// Both are null for identifiers created from an ArgumentBuilder instead of an AInstruction,
 	// and method stays null for plain instructions.
 	public readonly AInstruction? Instruction;
@@ -565,11 +608,12 @@ internal sealed partial class FunctionIdentifier
 	private ArgumentBuilder? arg;
 	private int flag;
 	private FunctionMethod? method;
-	public FunctionCode Code { get { return code; } }
-	public ArgumentBuilder? ArgBuilder { get { return arg; } }
-	public FunctionMethod? Method { get { return method; } }
+	public FunctionCode Code => code;
+	public ArgumentBuilder? ArgBuilder => arg;
+	public FunctionMethod? Method => method;
 
 	public string Name { get; private set; }
+
 	internal bool IsFlowContorol()
 	{
 		return (flag & FLOW_CONTROL) == FLOW_CONTROL;
@@ -579,6 +623,7 @@ internal sealed partial class FunctionIdentifier
 	{
 		return (flag & EXTENDED) == EXTENDED;
 	}
+
 	internal bool IsPrintDFunction()
 	{
 		return (flag & ISPRINTDFUNC) == ISPRINTDFUNC;
@@ -598,6 +643,7 @@ internal sealed partial class FunctionIdentifier
 	{
 		return (flag & PRINT_WAITINPUT) == PRINT_WAITINPUT;
 	}
+
 	internal bool IsPrintSingle()
 	{
 		return (flag & PRINT_SINGLE) == PRINT_SINGLE;
@@ -612,30 +658,37 @@ internal sealed partial class FunctionIdentifier
 	{
 		return (flag & METHOD_SAFE) == METHOD_SAFE;
 	}
+
 	internal bool IsPrint()
 	{
 		return (flag & IS_PRINT) == IS_PRINT;
 	}
+
 	internal bool IsInput()
 	{
 		return (flag & IS_INPUT) == IS_INPUT;
 	}
+
 	internal bool IsPrintData()
 	{
 		return (flag & IS_PRINTDATA) == IS_PRINTDATA;
 	}
+
 	internal bool IsForceSetArg()
 	{
 		return (flag & FORCE_SETARG) == FORCE_SETARG;
 	}
+
 	internal bool IsDebug()
 	{
 		return (flag & DEBUG_FUNC) == DEBUG_FUNC;
 	}
+
 	internal bool IsTry()
 	{
 		return (flag & IS_TRY) == IS_TRY;
 	}
+
 	internal bool IsJump()
 	{
 		return (flag & IS_JUMP) == IS_JUMP;
@@ -645,6 +698,7 @@ internal sealed partial class FunctionIdentifier
 	{
 		return method != null;
 	}
+
 	//internal bool IsFastCall()
 	//{
 	//    return (arg == FunctionArgType.SP_CALL);
@@ -653,5 +707,4 @@ internal sealed partial class FunctionIdentifier
 	{
 		return Name;
 	}
-
 }

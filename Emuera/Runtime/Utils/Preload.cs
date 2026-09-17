@@ -8,10 +8,11 @@ using System.Threading.Tasks;
 using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 
 namespace MinorShift.Emuera.Runtime.Utils;
-static partial class Preload
+
+internal static partial class Preload
 {
 	// A failed read is cached as null
-	static Dictionary<string, string[]?> files = new(StringComparer.OrdinalIgnoreCase);
+	private static Dictionary<string, string[]?> files = new(StringComparer.OrdinalIgnoreCase);
 
 	public static string[]? GetFileLines(string path)
 	{
@@ -23,7 +24,7 @@ static partial class Preload
 	{
 		try
 		{
-			using var file = File.Open(path, FileMode.Open);
+			using FileStream file = File.Open(path, FileMode.Open);
 			Span<byte> bom = stackalloc byte[3];
 			_ = file.Read(bom);
 			file.Close();
@@ -53,52 +54,53 @@ static partial class Preload
 
 	public static async Task Load(string path)
 	{
-		var startTime = DateTime.Now;
+		DateTime startTime = DateTime.Now;
 		Debug.WriteLine($"Load: {path} : Start");
 
-		var dir = new DirectoryInfo(path);
+		DirectoryInfo dir = new(path);
 		if (dir.Exists)
 		{
 			await Task.Run(() =>
 			{
 				dir.EnumerateFiles("*", SearchOption.AllDirectories)
-				.AsParallel()
-				.Where(x =>
-				{
-					var ext = x.Extension;
-					return ext.Equals(".csv", StringComparison.OrdinalIgnoreCase) ||
-							ext.Equals(".erb", StringComparison.OrdinalIgnoreCase) ||
-							ext.Equals(".erh", StringComparison.OrdinalIgnoreCase) ||
-							ext.Equals(".erd", StringComparison.OrdinalIgnoreCase) ||
-							ext.Equals(".als", StringComparison.OrdinalIgnoreCase);
-				}).ForAll((childPath) =>
-				{
-					var key = childPath;
-					var value = readAllLinesDetectEncoding(childPath.ToString());
-					lock (files)
+					.AsParallel()
+					.Where(x =>
 					{
-						files[key.ToString()] = value;
-					}
-
-				});
+						string ext = x.Extension;
+						return ext.Equals(".csv", StringComparison.OrdinalIgnoreCase) ||
+						       ext.Equals(".erb", StringComparison.OrdinalIgnoreCase) ||
+						       ext.Equals(".erh", StringComparison.OrdinalIgnoreCase) ||
+						       ext.Equals(".erd", StringComparison.OrdinalIgnoreCase) ||
+						       ext.Equals(".als", StringComparison.OrdinalIgnoreCase);
+					}).ForAll((childPath) =>
+					{
+						FileInfo key = childPath;
+						string[]? value = readAllLinesDetectEncoding(childPath.ToString());
+						lock (files)
+						{
+							files[key.ToString()] = value;
+						}
+					});
 			});
 		}
 		else
 		{
-			var key = path;
-			var value = readAllLinesDetectEncoding(path);
+			string key = path;
+			string[]? value = readAllLinesDetectEncoding(path);
 			lock (files)
 			{
 				files[key] = value;
 			}
-		};
+		}
+
+		;
 
 		Debug.WriteLine($"Load: {path} : End in {(DateTime.Now - startTime).TotalMilliseconds}ms");
 	}
 
 	public static async Task Load(IEnumerable<string> paths)
 	{
-		foreach (var path in paths)
+		foreach (string path in paths)
 		{
 			await Load(path);
 		}

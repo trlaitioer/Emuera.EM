@@ -14,49 +14,50 @@ using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 
 namespace MinorShift.Emuera.Runtime.Script.Parser;
 
-enum LexEndWith
+internal enum LexEndWith
 {
 	//いずれにせよEoLで強制終了
 	None = 0,
-	EoL,//常に最後まで解析
-	Operator,//演算子を見つけたら終了。代入式の左辺
-	Question,//三項演算子?により終了。\@～～?～～#～～\@
-	Percent,//%により終了。%～～%
-	RightCurlyBrace,//}により終了。{～～}
-	Comma,//,により終了。TIMES第一引数
-		  //Single,//Identifier一つで終了//1807 Single削除
-	GreaterThan,//'>'により終了。Htmlタグ解析
+	EoL, //常に最後まで解析
+	Operator, //演算子を見つけたら終了。代入式の左辺
+	Question, //三項演算子?により終了。\@～～?～～#～～\@
+	Percent, //%により終了。%～～%
+	RightCurlyBrace, //}により終了。{～～}
+	Comma, //,により終了。TIMES第一引数
+
+	//Single,//Identifier一つで終了//1807 Single削除
+	GreaterThan //'>'により終了。Htmlタグ解析
 }
 
-enum FormStrEndWith
+internal enum FormStrEndWith
 {
 	//いずれにせよEoLで強制終了
 	None = 0,
-	EoL,//常に最後まで解析
-	DoubleQuotation,//"で終了。@"～～"
-	Sharp,//#で終了。\@～～?～～#～～\@　の一つ目
-	YenAt,//\@で終了。\@～～?～～#～～\@　の二つ目
-	Comma,//,により終了。ANY_FORM引数
-	LeftParenthesis_Bracket_Comma_Semicolon,//[または(または,または;により終了。CALLFORM系の関数名部分。
+	EoL, //常に最後まで解析
+	DoubleQuotation, //"で終了。@"～～"
+	Sharp, //#で終了。\@～～?～～#～～\@　の一つ目
+	YenAt, //\@で終了。\@～～?～～#～～\@　の二つ目
+	Comma, //,により終了。ANY_FORM引数
+	LeftParenthesis_Bracket_Comma_Semicolon //[または(または,または;により終了。CALLFORM系の関数名部分。
 }
 
-enum StrEndWith
+internal enum StrEndWith
 {
 	//いずれにせよEoLで強制終了
 	None = 0,
-	EoL,//常に最後まで解析
-	SingleQuotation,//"で終了。'～～'
-	DoubleQuotation,//"で終了。"～～"
-	Comma,//,により終了。PRINTV'～～,
-	LeftParenthesis_Bracket_Comma_Semicolon,//[または(または,または;により終了。関数名部分。
+	EoL, //常に最後まで解析
+	SingleQuotation, //"で終了。'～～'
+	DoubleQuotation, //"で終了。"～～"
+	Comma, //,により終了。PRINTV'～～,
+	LeftParenthesis_Bracket_Comma_Semicolon //[または(または,または;により終了。関数名部分。
 }
 
-enum LexAnalyzeFlag
+internal enum LexAnalyzeFlag
 {
 	None = 0,
-	AnalyzePrintV = 1,//PRINTVの引数で'に続けて文字列を書くと数式ではないが文字列として表示される
-	AllowAssignment = 2,//代入演算子が使用できる場面であるFlag。このFlagなしで=が途中に出てきたらエラー
-	AllowSingleQuotationStr = 4,//HTML_PRINT解析用。''で囲まれた文字列を許可する。
+	AnalyzePrintV = 1, //PRINTVの引数で'に続けて文字列を書くと数式ではないが文字列として表示される
+	AllowAssignment = 2, //代入演算子が使用できる場面であるFlag。このFlagなしで=が途中に出てきたらエラー
+	AllowSingleQuotationStr = 4 //HTML_PRINT解析用。''で囲まれた文字列を許可する。
 }
 
 /// <summary>
@@ -65,8 +66,8 @@ enum LexAnalyzeFlag
 /// </summary>
 internal static partial class LexicalAnalyzer
 {
+	private const int MAX_EXPAND_MACRO = 100;
 
-	const int MAX_EXPAND_MACRO = 100;
 	//readonly static IList<char> operators = new char[] { '+', '-', '*', '/', '%', '=', '!', '<', '>', '|', '&', '^', '~', '?', '#' };
 	//readonly static IList<char> whiteSpaces = new char[] { ' ', '　', '\t' };
 	//readonly static IList<char> endOfExpression = new char[] { ')', '}', ']', ',', ':' };
@@ -75,7 +76,7 @@ internal static partial class LexicalAnalyzer
 	//readonly static IList<char> stringFormToken = new char[] { '@', };
 	//readonly static IList<char> etcSymbol = new char[] { '[', '{', '$', '\\', };
 	//readonly static IList<char> decimalDigits = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', };
-	readonly static char[] hexadecimalDigits = ['a', 'b', 'c', 'd', 'e', 'f', 'A', 'B', 'C', 'D', 'E', 'F'];
+	private readonly static char[] hexadecimalDigits = ['a', 'b', 'c', 'd', 'e', 'f', 'A', 'B', 'C', 'D', 'E', 'F'];
 
 	//1819 正規表現使うとやや遅い。いずれdoubleにも対応させたい。そのうち考える
 	//readonly static Regex DigitsReg = new Regex("" +
@@ -133,9 +134,10 @@ internal static partial class LexicalAnalyzer
 	//}
 
 
-
 	public static bool UseMacro = true;
+
 	#region read
+
 	public static long ReadInt64(CharStream st, bool retZero)
 	{
 		long significand;
@@ -166,34 +168,53 @@ internal static partial class LexicalAnalyzer
 			//    st.ShiftNext();
 			//}
 		}
+
 		if (retZero && st.Current != '+' && st.Current != '-' && !char.IsDigit(st.Current))
 		{
 			if (fromBase != 16)
+			{
 				return 0;
+			}
 			else if (!hexadecimalDigits.AsSpan().Contains(st.Current))
+			{
 				return 0;
+			}
 		}
+
 		significand = readDigits(st, fromBase);
 		if (st.Current == 'p' || st.Current == 'P')
+		{
 			expBase = 2;
+		}
 		else if (st.Current == 'e' || st.Current == 'E')
+		{
 			expBase = 10;
+		}
+
 		if (expBase != 0)
 		{
 			st.ShiftNext();
-			unchecked { exponent = (int)readDigits(st, fromBase); }
+			unchecked
+			{
+				exponent = (int)readDigits(st, fromBase);
+			}
 		}
+
 		stEndPos = st.CurrentPosition;
 		if (expBase != 0 && exponent != 0)
 		{
-
 			double d = significand * Math.Pow(expBase, exponent);
 			if (double.IsNaN(d) || double.IsInfinity(d) || d > long.MaxValue || d < long.MinValue)
+			{
 				throw new CodeEE(string.Format(trerror.OoRInt64.Text, st.Substring(stStartPos, stEndPos)));
+			}
+
 			significand = (long)d;
 		}
+
 		return significand;
 	}
+
 	//static Regex reg = new Regex(@"[0-9A-Fa-f]+", RegexOptions.Compiled);
 	private static long readDigits(CharStream st, int fromBase)
 	{
@@ -206,6 +227,7 @@ internal static partial class LexicalAnalyzer
 		{
 			st.ShiftNext();
 		}
+
 		if (fromBase == 10)
 		{
 			while (!st.EOS)
@@ -216,6 +238,7 @@ internal static partial class LexicalAnalyzer
 					st.ShiftNext();
 					continue;
 				}
+
 				break;
 			}
 		}
@@ -229,6 +252,7 @@ internal static partial class LexicalAnalyzer
 					st.ShiftNext();
 					continue;
 				}
+
 				break;
 			}
 		}
@@ -240,20 +264,26 @@ internal static partial class LexicalAnalyzer
 				if (char.IsDigit(c))
 				{
 					if (c != '0' && c != '1')
+					{
 						throw new CodeEE(trerror.CanNotUseBinaryNotate.Text);
+					}
+
 					st.ShiftNext();
 					continue;
 				}
+
 				break;
 			}
 		}
-		var strInt = st.SubstringROS(start, st.CurrentPosition - start);
+
+		ReadOnlySpan<char> strInt = st.SubstringROS(start, st.CurrentPosition - start);
 		try
 		{
 			if (fromBase == 10)
 			{
 				return long.Parse(strInt);
 			}
+
 			return Convert.ToInt64(strInt.ToString(), fromBase);
 		}
 		catch (FormatException)
@@ -267,7 +297,10 @@ internal static partial class LexicalAnalyzer
 		catch (ArgumentOutOfRangeException)
 		{
 			if (strInt.IsEmpty)
+			{
 				throw new CodeEE(trerror.CanNotInterpretNum.Text);
+			}
+
 			throw new CodeEE(string.Format(trerror.CanNotInterpretNumValue.Text, strInt.ToString()));
 		}
 	}
@@ -275,7 +308,7 @@ internal static partial class LexicalAnalyzer
 	//IsNumericにReadInt64を使うと、本来falseになるべき文字列の一部がCodeEEになってしまうので、新規に追加
 	public static bool NumericCheck(CharStream st)
 	{
-		Int64 significand;
+		long significand;
 		int expBase = 0;
 		int exponent = 0;
 		int stStartPos = st.CurrentPosition;
@@ -284,46 +317,66 @@ internal static partial class LexicalAnalyzer
 		if (st.Current == '0')
 		{
 			char c = st.Next;
-			if ((c == 'x') || (c == 'X'))
+			if (c == 'x' || c == 'X')
 			{
 				fromBase = 16;
 				st.ShiftNext();
 				st.ShiftNext();
 			}
-			else if ((c == 'b') || (c == 'B'))
+			else if (c == 'b' || c == 'B')
 			{
 				fromBase = 2;
 				st.ShiftNext();
 				st.ShiftNext();
 			}
 		}
+
 		if (st.Current != '+' && st.Current != '-' && !char.IsDigit(st.Current))
 		{
 			if (fromBase != 16)
+			{
 				return false;
+			}
 			else if (!hexadecimalDigits.Contains(st.Current))
+			{
 				return false;
+			}
 		}
+
 		significand = readDigits(st, fromBase);
-		if ((st.Current == 'p') || (st.Current == 'P'))
+		if (st.Current == 'p' || st.Current == 'P')
+		{
 			expBase = 2;
-		else if ((st.Current == 'e') || (st.Current == 'E'))
+		}
+		else if (st.Current == 'e' || st.Current == 'E')
+		{
 			expBase = 10;
+		}
+
 		if (expBase != 0)
 		{
 			st.ShiftNext();
 			if (st.EOS || !char.IsDigit(st.Current))
+			{
 				return false;
-			unchecked { exponent = (int)readDigits(st, fromBase); }
-		}
-		stEndPos = st.CurrentPosition;
-		if ((expBase != 0) && (exponent != 0))
-		{
+			}
 
-			double d = significand * Math.Pow(expBase, exponent);
-			if ((double.IsNaN(d)) || (double.IsInfinity(d)) || (d > Int64.MaxValue) || (d < Int64.MinValue))
-				throw new CodeEE("\"" + st.Substring(stStartPos, stEndPos) + "\"は64ビット符号付整数の範囲を超えています");
+			unchecked
+			{
+				exponent = (int)readDigits(st, fromBase);
+			}
 		}
+
+		stEndPos = st.CurrentPosition;
+		if (expBase != 0 && exponent != 0)
+		{
+			double d = significand * Math.Pow(expBase, exponent);
+			if (double.IsNaN(d) || double.IsInfinity(d) || d > long.MaxValue || d < long.MinValue)
+			{
+				throw new CodeEE("\"" + st.Substring(stStartPos, stEndPos) + "\"は64ビット符号付整数の範囲を超えています");
+			}
+		}
+
 		return true;
 	}
 
@@ -343,16 +396,20 @@ internal static partial class LexicalAnalyzer
 		{
 			st.ShiftNext();
 		}
+
 		while (!st.EOS)
-		{//仮数部
+		{
+			//仮数部
 			char c = st.Current;
 			if (char.IsDigit(c) || c == '.')
 			{
 				st.ShiftNext();
 				continue;
 			}
+
 			break;
 		}
+
 		if (st.Current == 'e' || st.Current == 'E')
 		{
 			st.ShiftNext();
@@ -360,17 +417,21 @@ internal static partial class LexicalAnalyzer
 			{
 				st.ShiftNext();
 			}
+
 			while (!st.EOS)
-			{//指数部
+			{
+				//指数部
 				char c = st.Current;
 				if (char.IsDigit(c) || c == '.')
 				{
 					st.ShiftNext();
 					continue;
 				}
+
 				break;
 			}
 		}
+
 		return double.Parse(st.SubstringROS(start, st.CurrentPosition - start), CultureInfo.InvariantCulture);
 	}
 
@@ -382,9 +443,12 @@ internal static partial class LexicalAnalyzer
 	public static IdentifierWord ReadFirstIdentifierWord(CharStream st)
 	{
 		//int startpos = st.CurrentPosition;
-		var str = ReadSingleIdentifierROS(st);
+		ReadOnlySpan<char> str = ReadSingleIdentifierROS(st);
 		if (str.IsEmpty)
+		{
 			throw new CodeEE(trerror.LineBeginsIllegalCharacter.Text);
+		}
+
 		//1808a3 先頭1単語の展開をやめる。－命令の置換を禁止。
 		//if (UseMacro)
 		//{
@@ -418,7 +482,10 @@ internal static partial class LexicalAnalyzer
 	{
 		string str = ReadSingleIdentifier(st);
 		if (string.IsNullOrEmpty(str))
+		{
 			return null;
+		}
+
 		if (UseMacro)
 		{
 			int i = 0;
@@ -427,14 +494,24 @@ internal static partial class LexicalAnalyzer
 				DefineMacro? macro = GlobalStatic.IdentifierDictionary.GetMacro(str);
 				i++;
 				if (i > MAX_EXPAND_MACRO)
+				{
 					throw new CodeEE(string.Format(trerror.MacroOverLimit.Text, MAX_EXPAND_MACRO.ToString()));
+				}
+
 				if (macro == null)
+				{
 					break;
+				}
+
 				if (macro.IDWord == null)
+				{
 					throw new CodeEE(string.Format(trerror.MacroIsNotAvailable.Text, macro.Keyword));
+				}
+
 				str = macro.IDWord.Code;
 			}
 		}
+
 		return new IdentifierWord(str);
 	}
 
@@ -445,14 +522,17 @@ internal static partial class LexicalAnalyzer
 	/// <returns></returns>
 	public static string ReadSingleIdentifier(CharStream st)
 	{
-		var span = ReadSingleIdentifierROS(st);
-		return span.ToString(); ;
+		ReadOnlySpan<char> span = ReadSingleIdentifierROS(st);
+		return span.ToString();
+		;
 	}
-	static readonly SearchValues<char> _searchValues = SearchValues.Create(""" 　.+-*/%=!<>|&^~?#)}],:({[$\'"@;""" + "\t");
+
+	private readonly static SearchValues<char> _searchValues = SearchValues.Create(""" 　.+-*/%=!<>|&^~?#)}],:({[$\'"@;""" + "\t");
+
 	public static ReadOnlySpan<char> ReadSingleIdentifierROS(CharStream st)
 	{
-		var row = st.RowString.AsSpan()[st.CurrentPosition..];
-		var index = row.IndexOfAny(_searchValues);
+		ReadOnlySpan<char> row = st.RowString.AsSpan()[st.CurrentPosition..];
+		int index = row.IndexOfAny(_searchValues);
 		if (index != -1)
 		{
 			st.Jump(index);
@@ -471,7 +551,8 @@ internal static partial class LexicalAnalyzer
 	/// <returns></returns>
 	public static string ReadString(CharStream st, StrEndWith endWith)
 	{
-		var buffer = new StringBuilder(100);
+		StringBuilder buffer = new(100);
+
 		void loop()
 		{
 			while (true)
@@ -482,24 +563,36 @@ internal static partial class LexicalAnalyzer
 						return;
 					case '\"':
 						if (endWith == StrEndWith.DoubleQuotation)
+						{
 							return;
+						}
+
 						break;
 					case '\'':
 						if (endWith == StrEndWith.SingleQuotation)
+						{
 							return;
+						}
+
 						break;
 					case ',':
 						if (endWith == StrEndWith.Comma || endWith == StrEndWith.LeftParenthesis_Bracket_Comma_Semicolon)
+						{
 							return;
+						}
+
 						break;
 					case '(':
 					case '[':
 					case ';':
 						if (endWith == StrEndWith.LeftParenthesis_Bracket_Comma_Semicolon)
+						{
 							return;
+						}
+
 						break;
-					case '\\'://エスケープ処理
-						st.ShiftNext();//\を読み飛ばす
+					case '\\': //エスケープ処理
+						st.ShiftNext(); //\を読み飛ばす
 						switch (st.Current)
 						{
 							case CharStream.EndOfString:
@@ -511,13 +604,16 @@ internal static partial class LexicalAnalyzer
 							case 'n': buffer.Append('\n'); break;
 							default: buffer.Append(st.Current); break;
 						}
-						st.ShiftNext();//\の次の文字を読み飛ばす
+
+						st.ShiftNext(); //\の次の文字を読み飛ばす
 						continue;
 				}
+
 				buffer.Append(st.Current);
 				st.ShiftNext();
 			}
 		}
+
 		loop();
 		return buffer.ToString();
 	}
@@ -541,6 +637,7 @@ internal static partial class LexicalAnalyzer
 					st.ShiftNext();
 					return OperatorCode.Increment;
 				}
+
 				return OperatorCode.Plus;
 			case '-':
 				if (next == '-')
@@ -548,6 +645,7 @@ internal static partial class LexicalAnalyzer
 					st.ShiftNext();
 					return OperatorCode.Decrement;
 				}
+
 				return OperatorCode.Minus;
 			case '*':
 				return OperatorCode.Mult;
@@ -561,8 +659,12 @@ internal static partial class LexicalAnalyzer
 					st.ShiftNext();
 					return OperatorCode.Equal;
 				}
+
 				if (allowAssignment)
+				{
 					return OperatorCode.Assignment;
+				}
+
 				throw new CodeEE(trerror.UnexpectedEqual.Text);
 			case '!':
 				if (next == '=')
@@ -580,6 +682,7 @@ internal static partial class LexicalAnalyzer
 					st.ShiftNext();
 					return OperatorCode.Nor;
 				}
+
 				return OperatorCode.Not;
 			case '<':
 				if (next == '=')
@@ -592,6 +695,7 @@ internal static partial class LexicalAnalyzer
 					st.ShiftNext();
 					return OperatorCode.LeftShift;
 				}
+
 				return OperatorCode.Less;
 			case '>':
 				if (next == '=')
@@ -604,6 +708,7 @@ internal static partial class LexicalAnalyzer
 					st.ShiftNext();
 					return OperatorCode.RightShift;
 				}
+
 				return OperatorCode.Greater;
 			case '|':
 				if (next == '|')
@@ -611,6 +716,7 @@ internal static partial class LexicalAnalyzer
 					st.ShiftNext();
 					return OperatorCode.Or;
 				}
+
 				return OperatorCode.BitOr;
 			case '&':
 				if (next == '&')
@@ -618,6 +724,7 @@ internal static partial class LexicalAnalyzer
 					st.ShiftNext();
 					return OperatorCode.And;
 				}
+
 				return OperatorCode.BitAnd;
 			case '^':
 				if (next == '^')
@@ -625,6 +732,7 @@ internal static partial class LexicalAnalyzer
 					st.ShiftNext();
 					return OperatorCode.Xor;
 				}
+
 				return OperatorCode.BitXor;
 			case '~':
 				return OperatorCode.BitNot;
@@ -632,8 +740,8 @@ internal static partial class LexicalAnalyzer
 				return OperatorCode.Ternary_a;
 			case '#':
 				return OperatorCode.Ternary_b;
-
 		}
+
 		throw new CodeEE(string.Format(trerror.CanNotRecognizedOp.Text, cur));
 	}
 
@@ -653,27 +761,46 @@ internal static partial class LexicalAnalyzer
 		{
 			case '+':
 				if (next == '+')
+				{
 					ret = OperatorCode.Increment;
+				}
 				else if (next == '=')
+				{
 					ret = OperatorCode.Plus;
+				}
+
 				break;
 			case '-':
 				if (next == '-')
+				{
 					ret = OperatorCode.Decrement;
+				}
 				else if (next == '=')
+				{
 					ret = OperatorCode.Minus;
+				}
+
 				break;
 			case '*':
 				if (next == '=')
+				{
 					ret = OperatorCode.Mult;
+				}
+
 				break;
 			case '/':
 				if (next == '=')
+				{
 					ret = OperatorCode.Div;
+				}
+
 				break;
 			case '%':
 				if (next == '=')
+				{
 					ret = OperatorCode.Mod;
+				}
+
 				break;
 			case '=':
 				if (next == '=')
@@ -681,6 +808,7 @@ internal static partial class LexicalAnalyzer
 					ret = OperatorCode.Equal;
 					break;
 				}
+
 				return OperatorCode.Assignment;
 			case '\'':
 				if (next == '=')
@@ -688,6 +816,7 @@ internal static partial class LexicalAnalyzer
 					ret = OperatorCode.AssignmentStr;
 					break;
 				}
+
 				throw new CodeEE(string.Format(trerror.CanNotRecognizedAssignOp.Text, "\'"));
 			case '<':
 				if (next == '<')
@@ -698,8 +827,10 @@ internal static partial class LexicalAnalyzer
 						ret = OperatorCode.LeftShift;
 						break;
 					}
+
 					throw new CodeEE(string.Format(trerror.CanNotRecognizedAssignOp.Text, "<"));
 				}
+
 				break;
 			case '>':
 				if (next == '>')
@@ -710,28 +841,42 @@ internal static partial class LexicalAnalyzer
 						ret = OperatorCode.RightShift;
 						break;
 					}
+
 					throw new CodeEE(string.Format(trerror.CanNotRecognizedAssignOp.Text, ">"));
 				}
+
 				break;
 			case '|':
 				if (next == '=')
+				{
 					ret = OperatorCode.BitOr;
+				}
+
 				break;
 			case '&':
 				if (next == '=')
+				{
 					ret = OperatorCode.BitAnd;
+				}
+
 				break;
 			case '^':
 				if (next == '=')
+				{
 					ret = OperatorCode.BitXor;
+				}
+
 				break;
 		}
+
 		if (ret == OperatorCode.NULL)
+		{
 			throw new CodeEE(string.Format(trerror.CanNotRecognizedAssignOp.Text, cur));
+		}
+
 		st.ShiftNext();
 		return ret;
 	}
-
 
 
 	/// <summary>
@@ -751,6 +896,7 @@ internal static partial class LexicalAnalyzer
 					st.ShiftNext();
 					continue;
 			}
+
 			return count;
 		}
 	}
@@ -777,7 +923,10 @@ internal static partial class LexicalAnalyzer
 					continue;
 				case '　':
 					if (!Config.Config.SystemAllowFullSpace)
+					{
 						return count;
+					}
+
 					goto case ' ';
 				case ';':
 					if (st.CurrentEqualTo(";#;") && Program.DebugMode)
@@ -785,16 +934,22 @@ internal static partial class LexicalAnalyzer
 						st.Jump(3);
 						continue;
 					}
+
 					#region EMEEでのみ動作するコメント行を追加
+
 					else if (st.CurrentEqualTo(";!;") || st.CurrentEqualTo(";^;"))
-					#endregion
+
+						#endregion
+
 					{
 						st.Jump(3);
 						continue;
 					}
+
 					st.Seek(0, System.IO.SeekOrigin.End);
 					return count;
 			}
+
 			return count;
 		}
 	}
@@ -810,8 +965,10 @@ internal static partial class LexicalAnalyzer
 			count++;
 			st.ShiftNext();
 		}
+
 		return count;
 	}
+
 	#endregion
 
 	#region analyse
@@ -824,7 +981,7 @@ internal static partial class LexicalAnalyzer
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	public static WordCollection Analyse(CharStream st, LexEndWith endWith, LexAnalyzeFlag flag)
 	{
-		var ret = new WordCollection();
+		WordCollection ret = new();
 		int nestBracketS = 0;
 		//int nestBracketM = 0;
 		int nestBracketL = 0;
@@ -845,7 +1002,11 @@ internal static partial class LexicalAnalyzer
 						continue;
 					case '　':
 						if (!Config.Config.SystemAllowFullSpace)
-							throw new CodeEE(string.Format(trerror.UnexpectedFullWidthSpace.Text, Config.Config.GetConfigName(ConfigCode.SystemAllowFullSpace)));
+						{
+							throw new CodeEE(string.Format(trerror.UnexpectedFullWidthSpace.Text,
+								Config.Config.GetConfigName(ConfigCode.SystemAllowFullSpace)));
+						}
+
 						st.ShiftNext();
 						continue;
 					case '0':
@@ -862,7 +1023,10 @@ internal static partial class LexicalAnalyzer
 						break;
 					case '>':
 						if (endWith == LexEndWith.GreaterThan)
+						{
 							return;
+						}
+
 						goto case '+';
 					case '+':
 					case '-':
@@ -881,17 +1045,36 @@ internal static partial class LexicalAnalyzer
 						if (nestBracketS == 0 && nestBracketL == 0)
 						{
 							if (endWith == LexEndWith.Operator)
-								return;//代入演算子のはずである。呼び出し元がチェックするはず
+							{
+								return; //代入演算子のはずである。呼び出し元がチェックするはず
+							}
 							else if (endWith == LexEndWith.Percent && st.Current == '%')
+							{
 								return;
+							}
 							else if (endWith == LexEndWith.Question && st.Current == '?')
+							{
 								return;
+							}
 						}
+
 						ret.Add(new OperatorWord(ReadOperator(st, (flag & LexAnalyzeFlag.AllowAssignment) == LexAnalyzeFlag.AllowAssignment)));
 						break;
-					case ')': ret.Add(new SymbolWord(')')); nestBracketS--; st.ShiftNext(); continue;
-					case ']': ret.Add(new SymbolWord(']')); nestBracketL--; st.ShiftNext(); continue;
-					case '(': ret.Add(new SymbolWord('(')); nestBracketS++; st.ShiftNext(); continue;
+					case ')':
+						ret.Add(new SymbolWord(')'));
+						nestBracketS--;
+						st.ShiftNext();
+						continue;
+					case ']':
+						ret.Add(new SymbolWord(']'));
+						nestBracketL--;
+						st.ShiftNext();
+						continue;
+					case '(':
+						ret.Add(new SymbolWord('('));
+						nestBracketS++;
+						st.ShiftNext();
+						continue;
 					case '[':
 						if (st.Next == '[')
 						{
@@ -900,16 +1083,24 @@ internal static partial class LexicalAnalyzer
 							//1808beta009 ここだけ戻す
 							//現在の処理だとここに来た時点でrename失敗確定だが警告内容を元に戻すため
 							if (ParserMediator.RenameDic == null)
+							{
 								throw new CodeEE(string.Format(trerror.UnexpectedCharacter.Text, "[["));
+							}
+
 							int start = st.CurrentPosition;
 							int find = st.Find("]]");
 							if (find <= 2)
 							{
 								if (find == 2)
+								{
 									throw new CodeEE(trerror.EmptyTwoSBrackets.Text);
+								}
 								else
+								{
 									throw new CodeEE(trerror.MissingTwoSBrackets.Text);
+								}
 							}
+
 							string key = st.Substring(start, find + 2);
 							//1810 ここまでで置換できなかったものは強制エラーにする
 							//行連結前に置換不能で行連結より置換することができるようになったものまで置換されていたため
@@ -920,12 +1111,24 @@ internal static partial class LexicalAnalyzer
 							//st.Replace(start, find + 2, value);
 							//continue;//その場から再度解析スタート
 						}
-						ret.Add(new SymbolWord('[')); nestBracketL++; st.ShiftNext(); continue;
-					case ':': ret.Add(new SymbolWord(':')); st.ShiftNext(); continue;
+
+						ret.Add(new SymbolWord('['));
+						nestBracketL++;
+						st.ShiftNext();
+						continue;
+					case ':':
+						ret.Add(new SymbolWord(':'));
+						st.ShiftNext();
+						continue;
 					case ',':
-						if (endWith == LexEndWith.Comma && nestBracketS == 0)// && (nestBracketL == 0))
+						if (endWith == LexEndWith.Comma && nestBracketS == 0) // && (nestBracketL == 0))
+						{
 							return;
-						ret.Add(new SymbolWord(',')); st.ShiftNext(); continue;
+						}
+
+						ret.Add(new SymbolWord(','));
+						st.ShiftNext();
+						continue;
 					//case '}': ret.Add(new SymbolWT('}')); nestBracketM--; continue;
 					//case '{': ret.Add(new SymbolWT('{')); nestBracketM++; continue;
 					case '\'':
@@ -934,32 +1137,49 @@ internal static partial class LexicalAnalyzer
 							st.ShiftNext();
 							ret.Add(new LiteralStringWord(ReadString(st, StrEndWith.SingleQuotation)));
 							if (st.Current != '\'')
+							{
 								throw new CodeEE(string.Format(trerror.NotClosed.Text, "'"));
+							}
+
 							st.ShiftNext();
 							break;
 						}
+
 						if ((flag & LexAnalyzeFlag.AnalyzePrintV) != LexAnalyzeFlag.AnalyzePrintV)
 						{
 							//AssignmentStr用特殊処理 代入文の代入演算子を探索中で'=の場合のみ許可
 							if (endWith == LexEndWith.Operator && nestBracketS == 0 && nestBracketL == 0 && st.Next == '=')
+							{
 								return;
+							}
+
 							throw new CodeEE(string.Format(trerror.UnexpectedCharacter.Text, st.Current));
 						}
+
 						st.ShiftNext();
 						ret.Add(new LiteralStringWord(ReadString(st, StrEndWith.Comma)));
 						if (st.Current == ',')
-							goto case ',';//続きがあるなら,の処理へ。それ以外は行終端のはず
+						{
+							goto case ','; //続きがあるなら,の処理へ。それ以外は行終端のはず
+						}
+
 						return;
 					case '}':
 						if (endWith == LexEndWith.RightCurlyBrace)
+						{
 							return;
+						}
+
 						throw new CodeEE(string.Format(trerror.UnexpectedCharacter.Text, st.Current));
 					case '\"':
 
 						st.ShiftNext();
 						ret.Add(new LiteralStringWord(ReadString(st, StrEndWith.DoubleQuotation)));
 						if (st.Current != '\"')
+						{
 							throw new CodeEE(string.Format(trerror.NotClosed.Text, "\""));
+						}
+
 						st.ShiftNext();
 						break;
 
@@ -971,11 +1191,15 @@ internal static partial class LexicalAnalyzer
 							st.ShiftNext();
 							continue;
 						}
+
 						st.ShiftNext();
 						st.ShiftNext();
 						ret.Add(AnalyseFormattedString(st, FormStrEndWith.DoubleQuotation, false));
 						if (st.Current != '\"')
+						{
 							throw new CodeEE(string.Format(trerror.NotClosed.Text, "\""));
+						}
+
 						st.ShiftNext();
 						break;
 					case '.':
@@ -984,16 +1208,19 @@ internal static partial class LexicalAnalyzer
 						continue;
 					case '\\':
 						if (st.Next != '@')
-							throw new CodeEE(string.Format(trerror.UnexpectedCharacter.Text, st.Current));
 						{
-							st.Jump(2);
-							ret.Add(new StrFormWord(["", ""], [AnalyseYenAt(st)]));
+							throw new CodeEE(string.Format(trerror.UnexpectedCharacter.Text, st.Current));
 						}
+
+					{
+						st.Jump(2);
+						ret.Add(new StrFormWord(["", ""], [AnalyseYenAt(st)]));
+					}
 						break;
 					case '{':
 					case '$':
 						throw new CodeEE(string.Format(trerror.UnexpectedCharacter.Text, st.Current));
-					case ';'://1807 行中コメント
+					case ';': //1807 行中コメント
 						if (st.CurrentEqualTo(";#;") && Program.DebugMode)
 						{
 							st.Jump(3);
@@ -1004,38 +1231,54 @@ internal static partial class LexicalAnalyzer
 							st.Jump(3);
 							break;
 						}
+
 						st.Seek(0, System.IO.SeekOrigin.End);
 						return;
 					default:
-						{
-							ret.Add(new IdentifierWord(ReadSingleIdentifier(st)));
-							break;
-						}
+					{
+						ret.Add(new IdentifierWord(ReadSingleIdentifier(st)));
+						break;
+					}
 				}
 			}
-		};
+		}
+
+		;
 		local();
 		if (nestBracketS != 0 || nestBracketL != 0)
 		{
 			if (nestBracketS < 0)
+			{
 				throw new CodeEE(trerror.NotCloseBrackets.Text);
+			}
 			else if (nestBracketS > 0)
+			{
 				throw new CodeEE(trerror.UnexpectedBrackets.Text);
-			if (nestBracketL < 0)
-				throw new CodeEE(trerror.NotCloseSBrackets.Text);
-			else if (nestBracketL > 0)
-				throw new CodeEE(trerror.NotCloseSBrackets.Text);
-		}
-		if (UseMacro)
-			return expandMacro(ret);
-		return ret;
+			}
 
+			if (nestBracketL < 0)
+			{
+				throw new CodeEE(trerror.NotCloseSBrackets.Text);
+			}
+			else if (nestBracketL > 0)
+			{
+				throw new CodeEE(trerror.NotCloseSBrackets.Text);
+			}
+		}
+
+		if (UseMacro)
+		{
+			return expandMacro(ret);
+		}
+
+		return ret;
 	}
 
 	private static WordCollection expandMacro(WordCollection wc)
 	{
 		//マクロ展開
-		wc.PointerReset();;
+		wc.PointerReset();
+		;
 		int count = 0;
 		while (!wc.EOL)
 		{
@@ -1045,6 +1288,7 @@ internal static partial class LexicalAnalyzer
 				wc.ShiftNext();
 				continue;
 			}
+
 			string idStr = word.Code;
 			DefineMacro? macro = GlobalStatic.IdentifierDictionary.GetMacro(idStr);
 			if (macro == null)
@@ -1052,29 +1296,39 @@ internal static partial class LexicalAnalyzer
 				wc.ShiftNext();
 				continue;
 			}
+
 			count++;
 			if (count > MAX_EXPAND_MACRO)
+			{
 				throw new CodeEE(string.Format(trerror.MacroOverLimit.Text, MAX_EXPAND_MACRO.ToString()));
+			}
+
 			if (!macro.HasArguments)
 			{
 				wc.Remove();
 				wc.InsertRange(macro.Statement);
 				continue;
 			}
+
 			//関数型マクロ
 			wc = expandFunctionlikeMacro(macro, wc);
 		}
-		wc.PointerReset();;
+
+		wc.PointerReset();
+		;
 		return wc;
 	}
 
 	private static WordCollection expandFunctionlikeMacro(DefineMacro macro, WordCollection wc)
 	{
-		var macroStart = wc.Pointer;
+		LinkedListNode<Word>? macroStart = wc.Pointer;
 		wc.ShiftNext();
 		SymbolWord? symbol = wc.Current as SymbolWord;
 		if (symbol == null || symbol.Type != '(')
+		{
 			throw new CodeEE(string.Format(trerror.MacroHasNotArg.Text, macro.Keyword));
+		}
+
 		WordCollection macroWC = macro.Statement.Clone();
 		WordCollection[] args = new WordCollection[macro.ArgCount];
 		//引数部読み取りループ
@@ -1086,13 +1340,17 @@ internal static partial class LexicalAnalyzer
 			{
 				wc.ShiftNext();
 				if (wc.EOL)
+				{
 					throw new CodeEE(string.Format(trerror.WrongMacroUsage.Text, macro.Keyword));
+				}
+
 				symbol = wc.Current as SymbolWord;
 				if (symbol == null)
 				{
 					args[i].Add(wc.Current);
 					continue;
 				}
+
 				switch (symbol.Type)
 				{
 					case '(': macroNestBracketS++; break;
@@ -1102,27 +1360,43 @@ internal static partial class LexicalAnalyzer
 							macroNestBracketS--;
 							break;
 						}
+
 						if (i != macro.ArgCount - 1)
+						{
 							throw new CodeEE(string.Format(trerror.MacroDifferentArgCount.Text, macro.Keyword));
+						}
+
 						goto exitfor;
 					case ',':
 						if (macroNestBracketS == 0)
+						{
 							goto exitwhile;
+						}
+
 						break;
 				}
+
 				args[i].Add(wc.Current);
 			}
-		exitwhile:
+
+			exitwhile:
 			if (args[i].Collection.Count == 0)
+			{
 				throw new CodeEE(string.Format(trerror.CanNotOmitMacroArg.Text, macro.Keyword));
+			}
+
 			continue;
 		}
-	//引数部読み取りループ終端
-	exitfor:
+
+		//引数部読み取りループ終端
+		exitfor:
 		symbol = wc.Current as SymbolWord;
 		if (symbol == null || symbol.Type != ')')
+		{
 			throw new CodeEE(string.Format(trerror.WrongMacroUsage.Text, macro.Keyword));
-		var macroEnd = wc.Pointer;
+		}
+
+		LinkedListNode<Word>? macroEnd = wc.Pointer;
 		wc.Pointer = macroStart;
 		while (macroEnd == wc.Pointer)
 		{
@@ -1130,6 +1404,7 @@ internal static partial class LexicalAnalyzer
 			// macroEnd was captured above as an existing node, so neither dereference can reach the chain end here.
 			wc.Collection.Remove(wc.Pointer!.Previous!);
 		}
+
 		while (!macroWC.EOL)
 		{
 			MacroWord? w = macroWC.Current as MacroWord;
@@ -1138,6 +1413,7 @@ internal static partial class LexicalAnalyzer
 				macroWC.ShiftNext();
 				continue;
 			}
+
 			macroWC.Remove();
 			macroWC.InsertRange(args[w.Number]);
 			for (int i = 0; i < args[w.Number].Collection.Count; i++)
@@ -1145,6 +1421,7 @@ internal static partial class LexicalAnalyzer
 				macroWC.Pointer = macroWC.Pointer!.Next;
 			}
 		}
+
 		wc.InsertRange(macroWC);
 		wc.Pointer = macroStart;
 		return wc;
@@ -1170,24 +1447,36 @@ internal static partial class LexicalAnalyzer
 					goto end;
 				case '\"':
 					if (endWith == FormStrEndWith.DoubleQuotation)
+					{
 						goto end;
+					}
+
 					buffer.Append(cur);
 					break;
 				case '#':
 					if (endWith == FormStrEndWith.Sharp)
+					{
 						goto end;
+					}
+
 					buffer.Append(cur);
 					break;
 				case ',':
 					if (endWith == FormStrEndWith.Comma || endWith == FormStrEndWith.LeftParenthesis_Bracket_Comma_Semicolon)
+					{
 						goto end;
+					}
+
 					buffer.Append(cur);
 					break;
 				case '(':
 				case '[':
 				case ';':
 					if (endWith == FormStrEndWith.LeftParenthesis_Bracket_Comma_Semicolon)
+					{
 						goto end;
+					}
+
 					buffer.Append(cur);
 					break;
 				case '%':
@@ -1196,7 +1485,10 @@ internal static partial class LexicalAnalyzer
 					st.ShiftNext();
 					SWTs.Add(new PercentSubWord(Analyse(st, LexEndWith.Percent, LexAnalyzeFlag.None)));
 					if (st.Current != '%')
+					{
 						throw new CodeEE(string.Format(trerror.NotFoundCorresponding.Text, "%", "%"));
+					}
+
 					break;
 				case '{':
 					strs.Add(buffer.ToString());
@@ -1204,7 +1496,10 @@ internal static partial class LexicalAnalyzer
 					st.ShiftNext();
 					SWTs.Add(new CurlyBraceSubWord(Analyse(st, LexEndWith.RightCurlyBrace, LexAnalyzeFlag.None)));
 					if (st.Current != '}')
+					{
 						throw new CodeEE(string.Format(trerror.NotFoundCorresponding.Text, "{", "}"));
+					}
+
 					break;
 				case '*':
 				case '+':
@@ -1220,9 +1515,12 @@ internal static partial class LexicalAnalyzer
 						continue;
 					}
 					else
+					{
 						buffer.Append(cur);
+					}
+
 					break;
-				case '\\'://エスケープ文字の使用
+				case '\\': //エスケープ文字の使用
 
 					st.ShiftNext();
 					cur = st.Current;
@@ -1235,29 +1533,35 @@ internal static partial class LexicalAnalyzer
 						case 'S': buffer.Append('　'); break;
 						case 't': buffer.Append('\t'); break;
 						case 'n': buffer.Append('\n'); break;
-						case '@'://\@～～?～～#～～\@
+						case '@': //\@～～?～～#～～\@
+						{
+							if (endWith == FormStrEndWith.YenAt || endWith == FormStrEndWith.Sharp)
 							{
-								if (endWith == FormStrEndWith.YenAt || endWith == FormStrEndWith.Sharp)
-									goto end;
-								strs.Add(buffer.ToString());
-								buffer.Remove(0, buffer.Length);
-								st.ShiftNext();
-								SWTs.Add(AnalyseYenAt(st));
-								continue;
+								goto end;
 							}
+
+							strs.Add(buffer.ToString());
+							buffer.Remove(0, buffer.Length);
+							st.ShiftNext();
+							SWTs.Add(AnalyseYenAt(st));
+							continue;
+						}
 						default:
 							buffer.Append(cur);
 							st.ShiftNext();
 							continue;
 					}
+
 					break;
 				default:
 					buffer.Append(cur);
 					break;
 			}
+
 			st.ShiftNext();
 		}
-	end:
+
+		end:
 		strs.Add(buffer.ToString());
 
 		string[] retStr = new string[strs.Count];
@@ -1269,9 +1573,9 @@ internal static partial class LexicalAnalyzer
 			retStr[0] = retStr[0].TrimStart([' ', '\t']);
 			retStr[^1] = retStr[^1].TrimEnd([' ', '\t']);
 		}
+
 		return new StrFormWord(retStr, retSWTs);
 	}
-
 
 
 	/// <summary>
@@ -1283,24 +1587,35 @@ internal static partial class LexicalAnalyzer
 	{
 		WordCollection w = Analyse(st, LexEndWith.Question, LexAnalyzeFlag.None);
 		if (st.Current != '?')
+		{
 			throw new CodeEE(string.Format(trerror.NotFoundCorresponding.Text, "\\@", "?"));
+		}
+
 		st.ShiftNext();
 		StrFormWord left = AnalyseFormattedString(st, FormStrEndWith.Sharp, true);
 		if (st.Current != '#')
 		{
 			if (st.Current != '@')
+			{
 				throw new CodeEE(string.Format(trerror.NotFoundCorresponding.Text, "\\@", "#"));
+			}
+
 			st.ShiftNext();
-			ParserMediator.Warn(string.Format(trerror.NotFoundCorresponding.Text, "\\@", "#"), GlobalStatic.Process.GetScaningLine()!, 1, false, false);
+			ParserMediator.Warn(string.Format(trerror.NotFoundCorresponding.Text, "\\@", "#"), GlobalStatic.Process.GetScaningLine()!, 1, false,
+				false);
 			return new YenAtSubWord(w, left, null);
 		}
+
 		st.ShiftNext();
 		StrFormWord right = AnalyseFormattedString(st, FormStrEndWith.YenAt, true);
 		if (st.Current != '@')
+		{
 			throw new CodeEE(string.Format(trerror.NotFoundCorresponding.Text, "\\@\',\'?\',\'#", "\\@"));
+		}
+
 		st.ShiftNext();
 		return new YenAtSubWord(w, left, right);
 	}
-	#endregion
 
+	#endregion
 }

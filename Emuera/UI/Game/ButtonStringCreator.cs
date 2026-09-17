@@ -12,6 +12,7 @@ internal sealed class ButtonPrimitive
 	public string Str = "";
 	public long Input;
 	public bool CanSelect;
+
 	public override string ToString()
 	{
 		return Str;
@@ -25,9 +26,13 @@ internal static class ButtonStringCreator
 		List<ButtonPrimitive> list = syn(printBuffer);
 		List<string> ret = [];
 		foreach (ButtonPrimitive p in list)
+		{
 			ret.Add(p.Str);
+		}
+
 		return ret;
 	}
+
 	public static List<ButtonPrimitive> SplitButton(string printBuffer)
 	{
 		return syn(printBuffer);
@@ -38,84 +43,103 @@ internal static class ButtonStringCreator
 		string printString = printBuffer.ToString();
 		List<ButtonPrimitive> ret = [];
 		if (printString.Length == 0)
+		{
 			goto nonButton;
+		}
+
 		List<string>? strs;
 		if (!printString.Contains('[') || !printString.Contains(']'))
+		{
 			goto nonButton;
+		}
+
 		strs = lex(new CharStream(printString));
 		if (strs == null)
+		{
 			goto nonButton;
-		bool beforeButton = false;//最初のボタン（"[1]"とか）より前にテキストがある
-		bool afterButton = false;//最後のボタン（"[1]"とか）より後にテキストがある
+		}
+
+		bool beforeButton = false; //最初のボタン（"[1]"とか）より前にテキストがある
+		bool afterButton = false; //最後のボタン（"[1]"とか）より後にテキストがある
 		int buttonCount = 0;
 		long inpL = 0;
 		for (int i = 0; i < strs.Count; i++)
 		{
 			if (strs[i].Length == 0)
+			{
 				continue;
+			}
+
 			char c = strs[i][0];
 			if (LexicalAnalyzer.IsWhiteSpace(c))
-			{//ただの空白
+			{
+				//ただの空白
 			}
 			//数値以外はボタン化しない方向にした。
 			//else if ((c == '[') && (!isSymbols(strArray[i])))
 			else if (isButtonCore(strs[i], ref inpL))
-			{//[]で囲まれた文字列。選択肢の核となるかどうかはこの段階では判定しない。
+			{
+				//[]で囲まれた文字列。選択肢の核となるかどうかはこの段階では判定しない。
 				buttonCount++;
 				afterButton = false;
 			}
 			else
-			{//選択肢の説明になるかもしれない文字列
+			{
+				//選択肢の説明になるかもしれない文字列
 				afterButton = true;
 				if (buttonCount == 0)
+				{
 					beforeButton = true;
+				}
 			}
 		}
+
 		if (buttonCount <= 1)
 		{
-			ButtonPrimitive button = new()
-			{
-				Str = printBuffer.ToString(),
-				CanSelect = buttonCount >= 1,
-				Input = inpL
-			};
+			ButtonPrimitive button = new() { Str = printBuffer.ToString(), CanSelect = buttonCount >= 1, Input = inpL };
 			ret.Add(button);
 			return ret;
 		}
+
 		buttonCount = 0;
-		bool alignmentRight = !beforeButton && afterButton;//説明はボタンの右固定
-		bool alignmentLeft = beforeButton && !afterButton;//説明はボタンの左固定
-		bool alignmentEtc = !alignmentRight && !alignmentLeft;//臨機応変に
+		bool alignmentRight = !beforeButton && afterButton; //説明はボタンの右固定
+		bool alignmentLeft = beforeButton && !afterButton; //説明はボタンの左固定
+		bool alignmentEtc = !alignmentRight && !alignmentLeft; //臨機応変に
 		bool canSelect = false;
 		long input = 0;
 
 		int state = 0;
 		StringBuilder buffer = new();
+
 		void reduce()
 		{
 			if (buffer.Length == 0)
-				return;
-			ButtonPrimitive button = new()
 			{
-				Str = buffer.ToString(),
-				CanSelect = canSelect,
-				Input = input
-			};
+				return;
+			}
+
+			ButtonPrimitive button = new() { Str = buffer.ToString(), CanSelect = canSelect, Input = input };
 			ret.Add(button);
 			buffer.Remove(0, buffer.Length);
 			canSelect = false;
 			input = 0;
 		}
+
 		for (int i = 0; i < strs.Count; i++)
 		{
 			if (strs[i].Length == 0)
+			{
 				continue;
+			}
+
 			char c = strs[i][0];
 			if (LexicalAnalyzer.IsWhiteSpace(c))
-			{//ただの空白
+			{
+				//ただの空白
 				if ((state & 3) == 3 && alignmentEtc && strs[i].Length >= 2)
-				{//核と説明を含んだものが完成していればボタン生成。
-				 //一文字以下のスペースはキニシナイ。キャラ購入画面対策
+				{
+					//核と説明を含んだものが完成していればボタン生成。
+					//一文字以下のスペースはキニシナイ。キャラ購入画面対策
 					reduce();
 					buffer.Append(strs[i]);
 					state = 0;
@@ -124,21 +148,25 @@ internal static class ButtonStringCreator
 				{
 					buffer.Append(strs[i]);
 				}
+
 				continue;
 			}
+
 			if (isButtonCore(strs[i], ref inpL))
 			{
 				buttonCount++;
 				if ((state & 1) == 1 || alignmentRight)
-				{//bufferが既に核を含んでいる、又は強制的に右配置
+				{
+					//bufferが既に核を含んでいる、又は強制的に右配置
 					reduce();
 					buffer.Append(strs[i]);
 					input = inpL;
 					canSelect = true;
 					state = 1;
-				}//((state & 2) == 2) || 
+				} //((state & 2) == 2) || 
 				else if (alignmentLeft)
-				{//bufferが説明を含んでいる、又は強制的に左配置
+				{
+					//bufferが説明を含んでいる、又は強制的に左配置
 					buffer.Append(strs[i]);
 					input = inpL;
 					canSelect = true;
@@ -146,12 +174,14 @@ internal static class ButtonStringCreator
 					state = 0;
 				}
 				else
-				{//bufferが空または空白文字列
+				{
+					//bufferが空または空白文字列
 					buffer.Append(strs[i]);
 					input = inpL;
 					canSelect = true;
 					state = 1;
 				}
+
 				continue;
 			}
 			//else
@@ -160,20 +190,19 @@ internal static class ButtonStringCreator
 			buffer.Append(strs[i]);
 			state |= 2;
 			//}
+		}
 
-		};
+		;
 		reduce();
 		return ret;
-	nonButton:
+		nonButton:
 		ret = [];
-		ButtonPrimitive singleButton = new()
-		{
-			Str = printString
-		};
+		ButtonPrimitive singleButton = new() { Str = printString };
 		ret.Add(singleButton);
 		return ret;
 	}
-	readonly static Regex numReg = new(@"\[\s*([0][xXbB])?[+-]?[0-9]+([eEpP][0-9]+)?\s*\]");
+
+	private readonly static Regex numReg = new(@"\[\s*([0][xXbB])?[+-]?[0-9]+([eEpP][0-9]+)?\s*\]");
 
 	/// <summary>
 	/// []付き文字列が数値的であるかどうかを調べる
@@ -195,9 +224,15 @@ internal static class ButtonStringCreator
 	private static bool isButtonCore(string str, ref long input)
 	{
 		if (str == null || str.Length < 3 || str[0] != '[' || str[^1] != ']')
+		{
 			return false;
+		}
+
 		if (!isNumericWord(str))
+		{
 			return false;
+		}
+
 		string buttonStr = str[1..^1];
 		CharStream stInt = new(buttonStr);
 		LexicalAnalyzer.SkipAllSpace(stInt);
@@ -209,6 +244,7 @@ internal static class ButtonStringCreator
 		{
 			return false;
 		}
+
 		return true;
 	}
 
@@ -223,28 +259,39 @@ internal static class ButtonStringCreator
 		List<string> strs = [];
 		int state = 0;
 		int startIndex = 0;
+
 		void reduce()
 		{
 			if (st.CurrentPosition == startIndex)
+			{
 				return;
+			}
+
 			int length = st.CurrentPosition - startIndex;
 			strs.Add(st.Substring(startIndex, length));
 			startIndex = st.CurrentPosition;
 		}
+
 		while (!st.EOS)
 		{
 			if (st.Current == '[')
 			{
-				if (state == 1)//"["内部
+				if (state == 1) //"["内部
+				{
 					goto unanalyzable;
+				}
+
 				reduce();
 				state = 1;
 				st.ShiftNext();
 			}
 			else if (st.Current == ']')
 			{
-				if (state != 1)//"["外部
+				if (state != 1) //"["外部
+				{
 					goto unanalyzable;
+				}
+
 				st.ShiftNext();
 				reduce();
 				state = 0;
@@ -260,10 +307,10 @@ internal static class ButtonStringCreator
 				st.ShiftNext();
 			}
 		}
+
 		reduce();
 		return strs;
-	unanalyzable:
+		unanalyzable:
 		return null;
 	}
-
 }

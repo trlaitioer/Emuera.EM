@@ -17,6 +17,7 @@ internal sealed class WinmmTimer
 	{
 		mm_BeginPeriod(1);
 	}
+
 	~WinmmTimer()
 	{
 		mm_EndPeriod(1);
@@ -31,21 +32,27 @@ internal sealed class WinmmTimer
 	/// <summary>
 	/// timeGetTime()。Windows が起動してから経過した時間(ms)。一周して0になる可能性に注意。
 	/// </summary>
-	public static uint TickCount { get { return mm_GetTime(); } }
+	public static uint TickCount => mm_GetTime();
 
 	/// <summary>
 	/// 現在のフレームの描画に使うためのミリ秒数
 	/// </summary>
 	public static uint CurrentFrameTime;
+
 	/// <summary>
 	/// フレーム描画開始合図の時点でのミリ秒を固定するための数値
 	/// </summary>
-	public static void FrameStart() { CurrentFrameTime = mm_GetTime(); }
+	public static void FrameStart()
+	{
+		CurrentFrameTime = mm_GetTime();
+	}
 
 	[DllImport("winmm.dll", EntryPoint = "timeGetTime")]
 	private static extern uint mm_GetTime();
+
 	[DllImport("winmm.dll", EntryPoint = "timeBeginPeriod")]
 	private static extern uint mm_BeginPeriod(uint uMilliseconds);
+
 	[DllImport("winmm.dll", EntryPoint = "timeEndPeriod")]
 	private static extern uint mm_EndPeriod(uint uMilliseconds);
 }

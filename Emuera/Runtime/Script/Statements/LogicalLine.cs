@@ -20,23 +20,26 @@ internal abstract class LogicalLine
 	protected ScriptPosition? scriptPosition;
 
 	//LogicalLine prevLine;
-	LogicalLine nextLine = null!;
-	public ScriptPosition? Position
-	{
-		get { return scriptPosition; }
-	}
+	private LogicalLine nextLine = null!;
+	public ScriptPosition? Position => scriptPosition;
 
 	public FunctionLabelLine? ParentLabelLine { get; set; }
+
 	public LogicalLine NextLine
 	{
-		get { return nextLine; }
-		set { nextLine = value; }
+		get => nextLine;
+		set => nextLine = value;
 	}
+
 	public override string ToString()
 	{
 		if (scriptPosition == null)
+		{
 			return base.ToString()!;
-		return string.Format("{0}:{1}:{2}", scriptPosition.Value.Filename, scriptPosition.Value.LineNo, Process.getRawTextFormFilewithLine(scriptPosition));
+		}
+
+		return string.Format("{0}:{1}:{2}", scriptPosition.Value.Filename, scriptPosition.Value.LineNo,
+			Process.getRawTextFormFilewithLine(scriptPosition));
 	}
 
 	protected bool isError;
@@ -44,13 +47,14 @@ internal abstract class LogicalLine
 
 	public virtual string ErrMes
 	{
-		get { return errMes; }
-		set { errMes = value; }
+		get => errMes;
+		set => errMes = value;
 	}
+
 	public virtual bool IsError
 	{
-		get { return isError; }
-		set { isError = value; }
+		get => isError;
+		set => isError = value;
 	}
 }
 
@@ -81,10 +85,8 @@ internal sealed class InvalidLine : LogicalLine
 		scriptPosition = thePosition;
 		errMes = err;
 	}
-	public override bool IsError
-	{
-		get { return true; }
-	}
+
+	public override bool IsError => true;
 }
 
 /// <summary>
@@ -99,7 +101,13 @@ internal sealed class InstructionLine : LogicalLine
 		argprimitive = theArgPrimitive;
 	}
 
-	public InstructionLine(ScriptPosition? thePosition, FunctionIdentifier functionIdentifier, OperatorCode assignOP, WordCollection dest, CharStream? theArgPrimitive)
+	public InstructionLine(
+		ScriptPosition? thePosition,
+		FunctionIdentifier functionIdentifier,
+		OperatorCode assignOP,
+		WordCollection dest,
+		CharStream? theArgPrimitive
+	)
 	{
 		scriptPosition = thePosition;
 		func = functionIdentifier;
@@ -107,32 +115,32 @@ internal sealed class InstructionLine : LogicalLine
 		assigndest = dest;
 		argprimitive = theArgPrimitive;
 	}
-	readonly FunctionIdentifier func;
-	CharStream? argprimitive;
 
-	WordCollection? assigndest;
+	private readonly FunctionIdentifier func;
+	private CharStream? argprimitive;
+
+	private WordCollection? assigndest;
 	public OperatorCode AssignOperator { get; private set; }
-	long subData;
-	public FunctionCode FunctionCode
-	{
-		get { return func.Code; }
-	}
-	public FunctionIdentifier Function
-	{
-		get { return func; }
-	}
+	private long subData;
+	public FunctionCode FunctionCode => func.Code;
+
+	public FunctionIdentifier Function => func;
+
 	public Argument? Argument { get; set; }
+
 	// Argument stays null until ArgumentParser builds it; every read through BuiltArgument happens
 	// after that point (ErbLoader.setArgument before SetJumpTo, Process.ScriptProc before
 	// DoInstruction), so the parser-facing null tests keep the nullable property and readers assert
 	// in this one place.
 	public Argument BuiltArgument => Argument!;
+
 	public CharStream? PopArgumentPrimitive()
 	{
 		CharStream? ret = argprimitive;
 		argprimitive = null;
 		return ret;
 	}
+
 	public WordCollection? PopAssignmentDestStr()
 	{
 		WordCollection? ret = assigndest;
@@ -145,57 +153,63 @@ internal sealed class InstructionLine : LogicalLine
 	/// </summary>
 	public long LoopEnd
 	{
-		get { return subData; }
-		set { subData = value; }
+		get => subData;
+		set => subData = value;
 	}
 
-	VariableTerm? cnt;
+	private VariableTerm? cnt;
+
 	/// <summary>
 	/// 繰り返しにつかう変数を記憶する
 	/// </summary>
 	public VariableTerm? LoopCounter
 	{
-		get { return cnt; }
-		set { cnt = value; }
+		get => cnt;
+		set => cnt = value;
 	}
 
-	long step;
+	private long step;
+
 	/// <summary>
 	/// 繰り返しのたびに増加する値を記憶する
 	/// </summary>
 	public long LoopStep
 	{
-		get { return step; }
-		set { step = value; }
+		get => step;
+		set => step = value;
 	}
 
 	private LogicalLine? jumpto;
+
 	private LogicalLine? jumptoendcatch;
+
 	//IF文とSELECT文のみが使う。
 	public List<InstructionLine> IfCaseList = null!;
+
 	//PRINTDATA文のみが使う。
 	public List<List<InstructionLine>> dataList = null!;
+
 	//TRYCALLLIST系が使う
 	public List<InstructionLine> callList = null!;
 
 	public LogicalLine? JumpTo
 	{
-		get { return jumpto; }
-		set { jumpto = value; }
+		get => jumpto;
+		set => jumpto = value;
 	}
 
 	public LogicalLine? JumpToEndCatch
 	{
-		get { return jumptoendcatch; }
-		set { jumptoendcatch = value; }
+		get => jumptoendcatch;
+		set => jumptoendcatch = value;
 	}
-
 }
 
 /// <summary>
 /// ファイルの始端と終端
 /// </summary>
-internal sealed class NullLine : LogicalLine { }
+internal sealed class NullLine : LogicalLine
+{ }
 
 /// <summary>
 /// ラベルがエラーになっている関数行専用のクラス
@@ -213,10 +227,8 @@ internal sealed class InvalidLabelLine : FunctionLabelLine
 		IsMethod = false;
 		MethodType = typeof(void);
 	}
-	public override bool IsError
-	{
-		get { return true; }
-	}
+
+	public override bool IsError => true;
 }
 
 /// <summary>
@@ -224,7 +236,9 @@ internal sealed class InvalidLabelLine : FunctionLabelLine
 /// </summary>
 internal class FunctionLabelLine : LogicalLine, IComparable<FunctionLabelLine>
 {
-	protected FunctionLabelLine() { }
+	protected FunctionLabelLine()
+	{ }
+
 	public FunctionLabelLine(ScriptPosition? thePosition, string labelname, WordCollection wc)
 	{
 		scriptPosition = thePosition;
@@ -244,7 +258,9 @@ internal class FunctionLabelLine : LogicalLine, IComparable<FunctionLabelLine>
 		//ArgOptional = true;
 		//ArgAutoConvert = true;
 	}
-	WordCollection? wc;
+
+	private WordCollection? wc;
+
 	public WordCollection? PopRowArgs()
 	{
 		WordCollection? ret = wc;
@@ -271,40 +287,62 @@ internal class FunctionLabelLine : LogicalLine, IComparable<FunctionLabelLine>
 	public bool IsMethod { get; set; }
 	public Type MethodType { get; set; } = null!;
 	public VariableTerm[]? Arg { get; set; }
+
 	public SingleTerm[]? Def { get; set; }
+
 	//public SingleTerm[] SubNames { get; set; }
 	public int Depth { get; set; }
 
 	#region IComparable<FunctionLabelLine> メンバ
+
 	//ソート用情報
 	public int Index { get; set; }
+
 	public int FileIndex { get; set; }
+
 	// TODO: IComparable<T> forces the nullable parameter (a non-nullable implementation is CS8767),
 	// but null cannot be compared here and 'other' is dereferenced immediately. Return a defined
 	// result for null instead of dereferencing.
 	public int CompareTo(FunctionLabelLine? other)
 	{
 		if (FileIndex != other!.FileIndex)
+		{
 			return FileIndex.CompareTo(other.FileIndex);
+		}
+
 		//position == nullであるLine(デバッグコマンドなど)をSortすることはないはず
 		if (Position!.Value.LineNo != other.Position!.Value.LineNo)
+		{
 			return Position.Value.LineNo.CompareTo(other.Position.Value.LineNo);
+		}
+
 		return Index.CompareTo(other.Index);
 	}
+
 	#endregion
+
 	#region private変数
-	readonly Dictionary<string, UserDefinedVariableToken> privateVar = new(Config.Config.StrComper);
+
+	private readonly Dictionary<string, UserDefinedVariableToken> privateVar = new(Config.Config.StrComper);
+
 	internal bool AddPrivateVariable(UserDefinedVariableData data)
 	{
 		if (privateVar.ContainsKey(data.Name))
+		{
 			return false;
+		}
+
 		UserDefinedVariableToken var = GlobalStatic.VariableData.CreatePrivateVariable(data);
 		privateVar.Add(data.Name, var);
 		//静的な変数のみの場合は関数呼び出し時に何もする必要がない
 		if (!data.Static)
+		{
 			hasPrivDynamicVar = true;
+		}
+
 		return true;
 	}
+
 	internal UserDefinedVariableToken? GetPrivateVariable(string key)
 	{
 		privateVar.TryGetValue(key, out UserDefinedVariableToken? var);
@@ -320,20 +358,29 @@ internal class FunctionLabelLine : LogicalLine, IComparable<FunctionLabelLine>
 		GlobalStatic.StackList.Add(this);
 #endif
 		foreach (UserDefinedVariableToken var in privateVar.Values)
+		{
 			if (!var.IsStatic)
+			{
 				var.ScopeIn();
+			}
+		}
 	}
+
 	internal void ScopeOut()
 	{
 #if DEBUG
 		GlobalStatic.StackList.Remove(this);
 #endif
 		foreach (UserDefinedVariableToken var in privateVar.Values)
+		{
 			if (!var.IsStatic)
+			{
 				var.ScopeOut();
+			}
+		}
 	}
-	#endregion
 
+	#endregion
 }
 
 /// <summary>
@@ -346,18 +393,19 @@ internal sealed class GotoLabelLine : LogicalLine, IEqualityComparer<GotoLabelLi
 		scriptPosition = thePosition;
 		this.labelname = labelname;
 	}
-	readonly string labelname = "";
-	public string LabelName
-	{
-		get { return labelname; }
-	}
+
+	private readonly string labelname = "";
+	public string LabelName => labelname;
 
 	#region IEqualityComparer<GotoLabelLine> メンバ
 
 	public bool Equals(GotoLabelLine? x, GotoLabelLine? y)
 	{
 		if (x == null || y == null)
+		{
 			return false;
+		}
+
 		return x.ParentLabelLine == y.ParentLabelLine && x.labelname == y.labelname;
 	}
 

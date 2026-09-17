@@ -6,6 +6,7 @@ using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 namespace MinorShift.Emuera.Runtime.Script.Statements.Variable;
 
 internal delegate LocalVariableToken CreateLocalVariableToken(VariableCode varCode, string subKey, int size);
+
 internal sealed class VariableLocal
 {
 	public VariableLocal(VariableCode varCode, int size, CreateLocalVariableToken creater)
@@ -14,17 +15,22 @@ internal sealed class VariableLocal
 		this.varCode = varCode;
 		this.creater = creater;
 	}
-	readonly int size;
-	public bool IsForbid { get { return size == 0; } }
-	VariableCode varCode;
+
+	private readonly int size;
+	public bool IsForbid => size == 0;
+
+	private VariableCode varCode;
+
 	//VariableData varData;
-	CreateLocalVariableToken creater;
-	Dictionary<string, LocalVariableToken> localVarTokens = [];
+	private CreateLocalVariableToken creater;
+
+	private Dictionary<string, LocalVariableToken> localVarTokens = [];
+
 	//While function bodies are parsed in parallel, several threads create tokens for different
 	//functions at once. Writes are serialized to keep the Dictionary intact. A lock is used rather
 	//than GetOrAdd because creater must run exactly once per subKey: calling it twice would leave a
 	//function referring to the array that never made it into the dictionary.
-	readonly object localVarTokensLock = new();
+	private readonly object localVarTokensLock = new();
 
 	public int GetDefaultSize()
 	{
@@ -36,21 +42,35 @@ internal sealed class VariableLocal
 		LocalVariableToken? ret = null;
 		int newSize = 0;
 		if (varCode == VariableCode.LOCAL)
+		{
 			newSize = func.LocalLength;
+		}
 		else if (varCode == VariableCode.LOCALS)
+		{
 			newSize = func.LocalsLength;
+		}
 		else if (varCode == VariableCode.ARG)
+		{
 			newSize = func.ArgLength;
+		}
 		else if (varCode == VariableCode.ARGS)
+		{
 			newSize = func.ArgsLength;
+		}
+
 		if (newSize > 0)
 		{
 			if (newSize < size && (varCode == VariableCode.ARG || varCode == VariableCode.ARGS))
+			{
 				newSize = size;
+			}
+
 			ret = creater(varCode, subKey, newSize);
 		}
 		else if (newSize == 0)
+		{
 			ret = creater(varCode, subKey, size);
+		}
 		else
 		{
 			ret = creater(varCode, subKey, size);
@@ -58,16 +78,22 @@ internal sealed class VariableLocal
 			if (line != null)
 			{
 				if (!func.IsSystem)
+				{
 					ParserMediator.Warn(string.Format(trerror.UseArgVarInHasNotArgFunc.Text, varCode), line, 1, false, false);
+				}
 				else
+				{
 					ParserMediator.Warn(string.Format(trerror.UseArgVarInSystemFunc.Text, func.LabelName, varCode), line, 1, false, false);
+				}
 			}
 			//throw new CodeEE("この関数に引数変数\"" + varCode + "\"は定義されていません");
 		}
+
 		lock (localVarTokensLock)
 		{
 			localVarTokens.Add(subKey, ret);
 		}
+
 		return ret;
 	}
 
@@ -81,7 +107,10 @@ internal sealed class VariableLocal
 		lock (localVarTokensLock)
 		{
 			if (localVarTokens.TryGetValue(subKey, out LocalVariableToken? exist))
+			{
 				return exist;
+			}
+
 			return GetNewLocalVariableToken(subKey, func);
 		}
 	}
@@ -93,18 +122,29 @@ internal sealed class VariableLocal
 			if (localVarTokens.TryGetValue(subKey, out LocalVariableToken? ret))
 			{
 				if (size < newSize)
+				{
 					ret.resize(newSize);
+				}
 				else
+				{
 					ret.resize(size);
+				}
 			}
 			else
 			{
 				if (newSize > size)
+				{
 					ret = creater(varCode, subKey, newSize);
+				}
 				else if (newSize == 0)
+				{
 					ret = creater(varCode, subKey, size);
+				}
 				else
+				{
 					return;
+				}
+
 				localVarTokens.Add(subKey, ret);
 			}
 		}
@@ -121,6 +161,8 @@ internal sealed class VariableLocal
 	public void SetDefault()
 	{
 		foreach (KeyValuePair<string, LocalVariableToken> pair in localVarTokens)
+		{
 			pair.Value.SetDefault();
+		}
 	}
 }

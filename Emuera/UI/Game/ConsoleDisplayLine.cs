@@ -12,14 +12,14 @@ internal enum DisplayLineLastState
 	None = 0,
 	Normal = 1,
 	Selected = 2,
-	BackLog = 3,
+	BackLog = 3
 }
 
 internal enum DisplayLineAlignment
 {
 	LEFT = 0,
 	CENTER = 1,
-	RIGHT = 2,
+	RIGHT = 2
 }
 
 /// <summary>
@@ -35,10 +35,12 @@ internal readonly struct LineFragment
 		CustomWidth = customWidth;
 		NoShift = noShift;
 	}
+
 	public readonly int Start;
 	public readonly int Count;
 	public readonly DisplayLineAlignment Align;
 	public readonly int CustomWidth;
+
 	/// <summary>True when SetAlignment did not move the fragment (LEFT alignment on a logical line).</summary>
 	public readonly bool NoShift;
 }
@@ -48,7 +50,6 @@ internal readonly struct LineFragment
 /// </summary>
 internal sealed class ConsoleDisplayLine
 {
-
 	//public ConsoleDisplayLine(EmueraConsole parentWindow, ConsoleButtonString[] buttons, bool isLogical, bool temporary)
 	public ConsoleDisplayLine(ConsoleButtonString[] buttons, bool isLogical, bool temporary, bool lineEnd = true)
 	{
@@ -59,46 +60,66 @@ internal sealed class ConsoleDisplayLine
 			buttons = [];
 			return;
 		}
+
 		this.buttons = buttons;
 		foreach (ConsoleButtonString button in buttons)
+		{
 			button.ParentLine = this;
+		}
+
 		IsLogicalLine = isLogical;
 		IsTemporary = temporary;
 		IsLineEnd = lineEnd;
 	}
+
 	public int LineNo = -1;
 
 	///論理行の最初となる場合だけtrue。表示の都合で改行された2行目以降はfalse
-	readonly public bool IsLogicalLine = true;
-	readonly public bool IsTemporary;
+	public readonly bool IsLogicalLine = true;
+
+	public readonly bool IsTemporary;
+
 	public bool IsLineEnd = true;
+
 	//EmueraConsole parent;
 	// The constructor only assigns this in its non-null branch, and ChangeStr uses null as an intermediate state
-	ConsoleButtonString[] buttons = null!;
-	DisplayLineAlignment align;
-	public ConsoleButtonString[] Buttons { get { return buttons; } }
-	public DisplayLineAlignment Align { get { return align; } }
-	bool aligned;
-	readonly List<LineFragment> fragments = [];
+	private ConsoleButtonString[] buttons = null!;
+	private DisplayLineAlignment align;
+	public ConsoleButtonString[] Buttons => buttons;
+	public DisplayLineAlignment Align => align;
+	private bool aligned;
+	private readonly List<LineFragment> fragments = [];
+
 	/// <summary>
 	/// Version of the last width measurement. A line whose value differs from EmueraConsole.layoutVersion was not measured again yet.
 	/// </summary>
 	public int LayoutVersion;
+
 	//Bitmap Cache
 	public bool bitmapCacheEnabled;
-	public void SetAlignment(DisplayLineAlignment align, int customWidth = -1/*, int xOffset = 0*/)
+
+	public void SetAlignment(DisplayLineAlignment align, int customWidth = -1 /*, int xOffset = 0*/)
 	{
 		if (aligned)
+		{
 			return;
+		}
+
 		aligned = true;
 		this.align = align;
 		fragments.Add(new LineFragment(0, buttons.Length, align, customWidth, align == DisplayLineAlignment.LEFT && IsLogicalLine));
 		if (buttons.Length == 0)
+		{
 			return;
+		}
+
 		//DisplayLineの幅
 		int width = 0;
 		foreach (ConsoleButtonString button in buttons)
+		{
 			width += button.Width;
+		}
+
 		//現在位置
 		int pointX = buttons[0].PointX;
 
@@ -108,35 +129,58 @@ internal sealed class ConsoleDisplayLine
 		{
 			//位置固定に対応
 			if (IsLogicalLine)
+			{
 				return;
-			#region EE_div各要素の修正
-			movetoX = 0; // xOffsetをここに入らないで
-						 //movetoX = 0+xOffset;
-			#endregion
+			}
 
+			#region EE_div各要素の修正
+
+			movetoX = 0; // xOffsetをここに入らないで
+			//movetoX = 0+xOffset;
+
+			#endregion
 		}
+
 		#region EM_私家版_HTML_divタグ
+
 		else if (align == DisplayLineAlignment.CENTER)
 			// movetoX = Config.WindowX / 2 - width / 2;
+
 			#region EE_div各要素の修正
-			movetoX = (customWidth > 0 ? customWidth : Config.DrawableWidth) / 2 - width / 2/* + xOffset*/;
+
+		{
+			movetoX = ((customWidth > 0 ? customWidth : Config.DrawableWidth) / 2) - (width / 2) /* + xOffset*/;
+		}
+
 		#endregion
+
 		else if (align == DisplayLineAlignment.RIGHT)
 			// movetoX = Config.WindowX - width;
+
 			#region EE_div各要素の修正
-			movetoX = (customWidth > 0 ? customWidth : Config.DrawableWidth) - width/* + xOffset*/;
+
+		{
+			movetoX = (customWidth > 0 ? customWidth : Config.DrawableWidth) - width /* + xOffset*/;
+		}
+
 		#endregion
+
 		#endregion
+
 		//移動距離
 		int shiftX = movetoX - pointX;
 		if (shiftX != 0)
+		{
 			ShiftPositionX(shiftX);
+		}
 	}
 
 	public void ShiftPositionX(int shiftX)
 	{
 		foreach (ConsoleButtonString button in buttons)
+		{
 			button.ShiftPositionX(shiftX);
+		}
 	}
 
 	/// <summary>
@@ -146,50 +190,82 @@ internal sealed class ConsoleDisplayLine
 	internal void ReLayout(StringMeasure sm)
 	{
 		if (buttons == null || buttons.Length == 0)
+		{
 			return;
+		}
+
 		float subPixel = 0.0f;
 		int pointX = 0;
 		foreach (ConsoleButtonString button in buttons)
 		{
 			if (button == null)
-			{//forced line break flag
+			{
+				//forced line break flag
 				pointX = 0;
 				continue;
 			}
+
 			button.ResetLayout(sm);
 			button.CalcWidth(sm, subPixel);
 			button.CalcPointX(pointX);
 			pointX = button.PointX + button.Width;
 			if (button.PointXisLocked)
+			{
 				subPixel = 0;
+			}
+
 			subPixel = button.XsubPixel;
 		}
+
 		int end = 0;
 		foreach (LineFragment fragment in fragments)
 		{
 			int last = Math.Min(fragment.Start + fragment.Count, buttons.Length);
 			if (fragment.Start >= last)
+			{
 				continue;
+			}
+
 			int width = 0;
 			for (int i = fragment.Start; i < last; i++)
+			{
 				if (buttons[i] != null)
+				{
 					width += buttons[i].Width;
+				}
+			}
+
 			int movetoX = 0;
 			if (!fragment.NoShift)
 			{
 				#region EM_私家版_HTML_divタグ
+
 				int customWidth = fragment.CustomWidth > 0 ? fragment.CustomWidth : Config.DrawableWidth;
+
 				#endregion
+
 				if (fragment.Align == DisplayLineAlignment.CENTER)
-					movetoX = customWidth / 2 - width / 2;
+				{
+					movetoX = (customWidth / 2) - (width / 2);
+				}
 				else if (fragment.Align == DisplayLineAlignment.RIGHT)
+				{
 					movetoX = customWidth - width;
+				}
 			}
+
 			int shiftX = movetoX + end - buttons[fragment.Start].PointX;
 			if (shiftX != 0)
+			{
 				for (int i = fragment.Start; i < last; i++)
+				{
 					if (buttons[i] != null)
+					{
 						buttons[i].ShiftPositionX(shiftX);
+					}
+				}
+			}
+
 			end = movetoX + end + width;
 		}
 	}
@@ -202,7 +278,10 @@ internal sealed class ConsoleDisplayLine
 		int offset = prev.buttons.Length;
 		List<LineFragment> merged = [.. prev.fragments];
 		foreach (LineFragment fragment in fragments)
+		{
 			merged.Add(new LineFragment(fragment.Start + offset, fragment.Count, fragment.Align, fragment.CustomWidth, fragment.NoShift));
+		}
+
 		fragments.Clear();
 		fragments.AddRange(merged);
 		ChangeStr([.. prev.Buttons, .. buttons]);
@@ -213,7 +292,10 @@ internal sealed class ConsoleDisplayLine
 		// null is the intermediate state while the buttons are re-parented
 		buttons = null!;
 		foreach (ConsoleButtonString button in newButtons)
+		{
 			button.ParentLine = this;
+		}
+
 		buttons = newButtons;
 	}
 
@@ -244,26 +326,43 @@ internal sealed class ConsoleDisplayLine
 	public void DrawTo(Graphics graph, int pointY, bool isBackLog, bool force, TextDrawingMode mode, bool scalePreview = false)
 	{
 		foreach (ConsoleButtonString button in buttons)
+		{
 			button.DrawTo(graph, pointY, isBackLog, mode, scalePreview);
+		}
 	}
 
-	readonly static StringBuilder builder = new();
+	private readonly static StringBuilder builder = new();
+
 	public override string ToString()
 	{
 		if (buttons == null)
+		{
 			return "";
+		}
+
 		builder.Clear();
-		foreach (var button in buttons)
+		foreach (ConsoleButtonString button in buttons)
+		{
 			builder.Append(button.ToString());
+		}
+
 		return builder.ToString();
 	}
+
 	#region EM_私家版_描画拡張
+
 	public StringBuilder BuildString(StringBuilder builder)
 	{
 		if (buttons != null)
+		{
 			foreach (ConsoleButtonString button in buttons)
+			{
 				builder.Append(button.ToString());
+			}
+		}
+
 		return builder;
 	}
+
 	#endregion
 }

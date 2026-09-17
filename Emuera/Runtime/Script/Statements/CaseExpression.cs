@@ -8,21 +8,27 @@ internal enum CaseExpressionType
 {
 	Normal = 1,
 	To = 2,
-	Is = 3,
+	Is = 3
 }
+
 internal sealed class CaseExpression
 {
 	public CaseExpressionType CaseType = CaseExpressionType.Normal;
+
 	// Both terms are filled by ExpressionParser before the case is used; a null term is
 	// only possible for a case the parser has already rejected.
 	public AExpression? LeftTerm;
 	public AExpression? RightTerm;
 
 	public OperatorCode Operator;
+
 	public Type GetOperandType()
 	{
 		if (LeftTerm != null)
+		{
 			return LeftTerm.GetOperandType();
+		}
+
 		return typeof(void);
 	}
 
@@ -30,7 +36,9 @@ internal sealed class CaseExpression
 	{
 		LeftTerm = LeftTerm!.Restructure(exm);
 		if (CaseType == CaseExpressionType.To)
+		{
 			RightTerm = RightTerm!.Restructure(exm);
+		}
 	}
 
 	public override string? ToString()
@@ -51,13 +59,20 @@ internal sealed class CaseExpression
 	public bool GetBool(long Is, ExpressionMediator exm)
 	{
 		if (CaseType == CaseExpressionType.To)
+		{
 			return LeftTerm!.GetIntValue(exm) <= Is && Is <= RightTerm!.GetIntValue(exm);
+		}
+
 		if (CaseType == CaseExpressionType.Is)
 		{
 			if (LeftTerm!.IsInteger)
+			{
 				return OperatorMethodManager.ReduceBinaryBool(Operator, Is, LeftTerm.GetIntValue(exm));
+			}
+
 			return OperatorMethodManager.ReduceBinaryTerm(Operator, new SingleLongTerm(Is), LeftTerm).GetIntValue(exm) != 0;
 		}
+
 		return LeftTerm!.GetIntValue(exm) == Is;
 	}
 
@@ -66,14 +81,19 @@ internal sealed class CaseExpression
 		if (CaseType == CaseExpressionType.To)
 		{
 			return string.Compare(LeftTerm!.GetStrValue(exm), Is, Config.Config.SCExpression) <= 0
-				&& string.Compare(Is, RightTerm!.GetStrValue(exm), Config.Config.SCExpression) <= 0;
+			       && string.Compare(Is, RightTerm!.GetStrValue(exm), Config.Config.SCExpression) <= 0;
 		}
+
 		if (CaseType == CaseExpressionType.Is)
 		{
 			if (LeftTerm!.IsString)
+			{
 				return OperatorMethodManager.ReduceBinaryBool(Operator, Is, LeftTerm.GetStrValue(exm));
+			}
+
 			return OperatorMethodManager.ReduceBinaryTerm(Operator, new SingleStrTerm(Is), LeftTerm).GetIntValue(exm) != 0;
 		}
+
 		return LeftTerm!.GetStrValue(exm) == Is;
 	}
 }

@@ -13,13 +13,13 @@ internal sealed class WordCollection
 {
 	public WordCollection()
 	{
-		Collection = new();
+		Collection = new LinkedList<Word>();
 		Pointer = Collection.First;
 	}
 
 	public LinkedList<Word> Collection;
 	public LinkedListNode<Word>? Pointer;
-	int index = 0;
+	private int index = 0;
 	private static Word nullToken = new NullWord();
 
 	public void PointerReset()
@@ -33,12 +33,14 @@ internal sealed class WordCollection
 		Collection.AddLast(token);
 		Pointer ??= Collection.First;
 	}
+
 	public void Add(WordCollection wc)
 	{
-		foreach (var word in wc.Collection)
+		foreach (Word word in wc.Collection)
 		{
 			Collection.AddLast(word);
 		}
+
 		Pointer ??= Collection.First;
 	}
 
@@ -56,43 +58,46 @@ internal sealed class WordCollection
 				Pointer = Collection.First;
 			}
 			else
-			{
-			}
+			{ }
 		}
 		else
 		{
-
 			Pointer = Pointer.Next;
 		}
 
 		index++;
 	}
+
 	public Word Current
 	{
 		get
 		{
 			if (Pointer == null)
+			{
 				return nullToken;
+			}
+
 			return Pointer.Value;
 		}
 	}
-	public bool EOL
-	{
-		get
-		{
-			return Pointer == null;
-		}
-	}
+
+	public bool EOL => Pointer == null;
+
 	#region EM_私家版_HTMLパラメータ拡張
+
 	public Word Next
 	{
 		get
 		{
 			if (index + 1 >= Collection.Count)
+			{
 				return nullToken;
+			}
+
 			return Pointer!.Next!.Value;
 		}
 	}
+
 	#endregion
 
 	public void Insert(Word w)
@@ -115,11 +120,12 @@ internal sealed class WordCollection
 			Collection.AddAfter(Pointer, w);
 		}
 	}
+
 	public void InsertRange(WordCollection wc)
 	{
-		var pointer = Pointer?.Previous;
+		LinkedListNode<Word>? pointer = Pointer?.Previous;
 		LinkedListNode<Word>? lastPointer = null;
-		foreach (var word in wc.Collection)
+		foreach (Word word in wc.Collection)
 		{
 			if (pointer == null)
 			{
@@ -129,14 +135,13 @@ internal sealed class WordCollection
 				}
 				else
 				{
-
 					pointer = Collection.AddLast(word);
 				}
+
 				Pointer = pointer;
 			}
 			else
 			{
-
 				pointer = Collection.AddAfter(pointer, word);
 			}
 
@@ -145,9 +150,10 @@ internal sealed class WordCollection
 
 		Pointer = lastPointer;
 	}
+
 	public void Remove()
 	{
-		var next = Pointer!.Next;
+		LinkedListNode<Word>? next = Pointer!.Next;
 		Collection.Remove(Pointer);
 		Pointer = next;
 	}
@@ -162,7 +168,7 @@ internal sealed class WordCollection
 
 	public WordCollection Clone()
 	{
-		var ret = new WordCollection();
+		WordCollection ret = new();
 		ret.Add(this);
 		return ret;
 	}

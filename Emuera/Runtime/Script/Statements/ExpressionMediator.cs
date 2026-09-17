@@ -21,10 +21,10 @@ internal sealed class ExpressionMediator
 		Process = proc;
 		Console = console;
 	}
+
 	public readonly VariableEvaluator VEvaluator;
 	public readonly Process Process;
 	public readonly EmueraConsole Console;
-
 
 
 	private bool forceHiragana;
@@ -34,7 +34,10 @@ internal sealed class ExpressionMediator
 	public void ForceKana(long flag)
 	{
 		if (flag < 0 || flag > 3)
+		{
 			throw new CodeEE(trerror.OoRForcekanaArg.Text);
+		}
+
 		forceKatakana = flag == 1;
 		forceHiragana = flag > 1;
 		halftoFull = flag == 3;
@@ -48,7 +51,9 @@ internal sealed class ExpressionMediator
 	public void OutputToConsole(string str, FunctionIdentifier func, bool lineEnd)
 	{
 		if (func.IsPrintSingle())
+		{
 			Console.PrintSingleLine(str, false);
+		}
 		else
 		{
 			Console.Print(str, lineEnd);
@@ -56,9 +61,12 @@ internal sealed class ExpressionMediator
 			{
 				Console.NewLine();
 				if (func.IsWaitInput())
+				{
 					Console.ReadAnyKey();
+				}
 			}
 		}
+
 		Console.UseSetColorStyle = true;
 	}
 
@@ -67,16 +75,26 @@ internal sealed class ExpressionMediator
 		// TODO: Strings.StrConv may return null for an unsupported conversion; consider handling that instead of asserting a non-null result.
 		// Its only callers consume the result as non-null on the print path.
 		if (!(forceHiragana | forceKatakana | halftoFull))
+		{
 			return str;
+		}
+
 		if (forceKatakana)
+		{
 			return Strings.StrConv(str, VbStrConv.Katakana, 0x0411)!;
+		}
 		else if (forceHiragana)
 		{
 			if (halftoFull)
+			{
 				return Strings.StrConv(str, VbStrConv.Hiragana | VbStrConv.Wide, 0x0411)!;
+			}
 			else
+			{
 				return Strings.StrConv(str, VbStrConv.Hiragana, 0x0411)!;
+			}
 		}
+
 		return str;
 	}
 
@@ -109,23 +127,35 @@ internal sealed class ExpressionMediator
 						buffer.Append(st.Current);
 						break;
 				}
+
 				st.ShiftNext();
 				continue;
 			}
+
 			buffer.Append(st.Current);
 			st.ShiftNext();
 		}
+
 		return buffer.ToString();
 	}
 
 	public static string CreateBar(long var, long max, long length)
 	{
 		if (max <= 0)
+		{
 			throw new CodeEE(trerror.MaxBarNotPositive.Text);
+		}
+
 		if (length <= 0)
+		{
 			throw new CodeEE(trerror.BarNotPositive.Text);
-		if (length >= 100)//暴走を防ぐため。
+		}
+
+		if (length >= 100) //暴走を防ぐため。
+		{
 			throw new CodeEE(trerror.TooLongBar.Text);
+		}
+
 		StringBuilder builder = new();
 		builder.Append('[');
 		int count;
@@ -133,10 +163,17 @@ internal sealed class ExpressionMediator
 		{
 			count = (int)(var * length / max);
 		}
+
 		if (count < 0)
+		{
 			count = 0;
+		}
+
 		if (count > length)
+		{
 			count = (int)length;
+		}
+
 		builder.Append(Config.Config.BarChar1, count);
 		builder.Append(Config.Config.BarChar2, (int)length - count);
 		builder.Append(']');

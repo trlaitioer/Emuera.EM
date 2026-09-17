@@ -21,7 +21,7 @@ namespace MinorShift.Emuera.UI.Game;
 internal static class GraphicsTextRenderer
 {
 	/// <summary>Origin at the line top without padding, matching TextFormatFlags.NoPadding of the GDI path.</summary>
-	static readonly StringFormat drawFormat = StringFormat.GenericTypographic;
+	private readonly static StringFormat drawFormat = StringFormat.GenericTypographic;
 
 	/// <summary>
 	/// Pen advances of the whole text, which is what the layout is built on.
@@ -34,7 +34,10 @@ internal static class GraphicsTextRenderer
 	public static int MeasureAdvance(Graphics? graph, ReadOnlySpan<char> text, Font font, Size layoutSize)
 	{
 		if (text.IsEmpty)
+		{
 			return 0;
+		}
+
 		if (graph == null)
 		{
 			// GDI copies the text into its own buffer whichever overload is used, so this saves the caller's copy
@@ -42,6 +45,7 @@ internal static class GraphicsTextRenderer
 			return TextRenderer.MeasureText(new string(text), font, layoutSize,
 				TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix).Width;
 		}
+
 		// GDI copies the text into its own buffer whichever overload is used, so this saves the caller's copy
 		// rather than GDI's
 		return TextRenderer.MeasureText(graph, text, font, layoutSize,
@@ -65,8 +69,11 @@ internal static class GraphicsTextRenderer
 	public static void Draw(Graphics graph, string text, Font font, Color color, int pointX, float subPixel, int pointY)
 	{
 		if (string.IsNullOrEmpty(text))
+		{
 			return;
-		using var brush = new SolidBrush(color);
+		}
+
+		using SolidBrush brush = new(color);
 		graph.DrawString(text, font, brush, new PointF(pointX + subPixel, pointY), drawFormat);
 	}
 }

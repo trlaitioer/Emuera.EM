@@ -23,7 +23,7 @@ internal enum CharacterStrData
 	CALLNAME = 1,
 	NICKNAME = 2,
 	MASTERNAME = 3,
-	CSTR = 4,
+	CSTR = 4
 }
 
 internal enum CharacterIntData
@@ -36,13 +36,11 @@ internal enum CharacterIntData
 	RELATION = 5,
 	CFLAG = 6,
 	EQUIP = 7,
-	JUEL = 8,
-
+	JUEL = 8
 }
 
 internal sealed class ConstantData
 {
-
 	private const int ablIndex = (int)(VariableCode.ABLNAME & VariableCode.__LOWERCASE__);
 	private const int expIndex = (int)(VariableCode.EXPNAME & VariableCode.__LOWERCASE__);
 	private const int talentIndex = (int)(VariableCode.TALENTNAME & VariableCode.__LOWERCASE__);
@@ -72,14 +70,16 @@ internal sealed class ConstantData
 	private const int countNameCsv = (int)VariableCode.__COUNT_CSV_STRING_ARRAY_1D__;
 
 	#region EE_CSV変数拡張
+
 	private const int dayIndex = (int)(VariableCode.DAYNAME & VariableCode.__LOWERCASE__);
 	private const int timeIndex = (int)(VariableCode.TIMENAME & VariableCode.__LOWERCASE__);
 	private const int moneyIndex = (int)(VariableCode.MONEYNAME & VariableCode.__LOWERCASE__);
+
 	#endregion
 
 
 	public int[] MaxDataList = new int[countNameCsv];
-	readonly HashSet<VariableCode> changedCode = [];
+	private readonly HashSet<VariableCode> changedCode = [];
 
 	public int[] VariableIntArrayLength;
 	public int[] VariableStrArrayLength;
@@ -93,6 +93,7 @@ internal sealed class ConstantData
 	public long[] CharacterStrArray2DLength;
 
 	#region EM_私家版_セーブ拡張
+
 	public HashSet<string> GlobalSaveMaps { get; private set; } = [];
 	public HashSet<string> SaveMaps { get; private set; } = [];
 	public HashSet<string> GlobalSaveXmls { get; private set; } = [];
@@ -103,19 +104,26 @@ internal sealed class ConstantData
 	public HashSet<string> StaticMaps { get; private set; } = [];
 	public HashSet<string> StaticXmls { get; private set; } = [];
 	public HashSet<string> StaticDTs { get; private set; } = [];
+
 	#endregion
 
 	//private readonly GameBase gamebase;
 	//private readonly string[][] names = new string[(int)VariableCode.__COUNT_CSV_STsRING_ARRAY_1D__][];
+
 	#region EE_ERD
+
 	private const int ERD_NAMES_INDEX = (int)VariableCode.__COUNT_CSV_STRING_ARRAY_1D__;
+
 	// Slots stay null until LoadData fills them; elements stay null where the CSV has no entry
 	private readonly string?[]?[] names = new string?[(int)VariableCode.__COUNT_CSV_STRING_ARRAY_1D__ + 1][]; // 元より1増やす
 	private readonly Dictionary<string, int>[] aliases = new Dictionary<string, int>[(int)VariableCode.__COUNT_CSV_STRING_ARRAY_1D__ + 1];
 	private readonly Dictionary<string, Dictionary<string, int>> erdNameToIntDics = [];
+
 	#endregion
+
 	private readonly Dictionary<string, int>[] nameToIntDics = new Dictionary<string, int>[(int)VariableCode.__COUNT_CSV_STRING_ARRAY_1D__];
 	private readonly Dictionary<string, int> relationDic = [];
+
 	public string?[] GetCsvNameList(VariableCode code)
 	{
 		return names[(int)(code & VariableCode.__LOWERCASE__)]!;
@@ -137,7 +145,7 @@ internal sealed class ConstantData
 		useCompatiName = Config.Config.CompatiCALLNAME;
 	}
 
-	readonly bool useCompatiName;
+	private readonly bool useCompatiName;
 
 	// Initialized by LoadData through this method before any use
 	[MemberNotNull(nameof(VariableIntArrayLength))]
@@ -180,9 +188,11 @@ internal sealed class ConstantData
 		MaxDataList[globalsIndex] = 100;
 
 		#region EE_CSV拡張機能
+
 		MaxDataList[dayIndex] = 100;
 		MaxDataList[timeIndex] = 100;
 		MaxDataList[moneyIndex] = 100;
+
 		#endregion
 
 		VariableIntArrayLength = new int[(int)VariableCode.__COUNT_INTEGER_ARRAY__];
@@ -196,55 +206,88 @@ internal sealed class ConstantData
 		CharacterIntArray2DLength = new long[(int)VariableCode.__COUNT_CHARACTER_INTEGER_ARRAY_2D__];
 		CharacterStrArray2DLength = [];
 		for (int i = 0; i < VariableIntArrayLength.Length; i++)
+		{
 			VariableIntArrayLength[i] = 1000;
+		}
+
 		VariableIntArrayLength[(int)(VariableCode.__LOWERCASE__ & VariableCode.FLAG)] = 10000;
 		VariableIntArrayLength[(int)(VariableCode.__LOWERCASE__ & VariableCode.ITEMPRICE)] = MaxDataList[itemIndex];
 
 		VariableIntArrayLength[(int)(VariableCode.__LOWERCASE__ & VariableCode.RANDDATA)] = 625;
 
 		for (int i = 0; i < VariableStrArrayLength.Length; i++)
+		{
 			VariableStrArrayLength[i] = 100;
+		}
+
 		VariableStrArrayLength[(int)(VariableCode.__LOWERCASE__ & VariableCode.STR)] = MaxDataList[strIndex];
 
 		for (int i = 0; i < VariableIntArray2DLength.Length; i++)
+		{
 			VariableIntArray2DLength[i] = (100L << 32) + 100L;
+		}
+
 		for (int i = 0; i < VariableStrArray2DLength.Length; i++)
+		{
 			VariableStrArray2DLength[i] = (100L << 32) + 100L;
+		}
 
 		for (int i = 0; i < VariableIntArray3DLength.Length; i++)
+		{
 			VariableIntArray3DLength[i] = (100L << 40) + (100L << 20) + 100L;
+		}
+
 		for (int i = 0; i < VariableStrArray3DLength.Length; i++)
+		{
 			VariableStrArray3DLength[i] = (100L << 40) + (100L << 20) + 100L;
+		}
 
 		for (int i = 0; i < CharacterIntArrayLength.Length; i++)
+		{
 			CharacterIntArrayLength[i] = 100;
+		}
+
 		CharacterIntArrayLength[(int)(VariableCode.__LOWERCASE__ & VariableCode.TALENT)] = 1000;
 		CharacterIntArrayLength[(int)(VariableCode.__LOWERCASE__ & VariableCode.CFLAG)] = 1000;
 		CharacterIntArrayLength[(int)(VariableCode.__LOWERCASE__ & VariableCode.JUEL)] = 200;
 		CharacterIntArrayLength[(int)(VariableCode.__LOWERCASE__ & VariableCode.GOTJUEL)] = 200;
 
 		for (int i = 0; i < CharacterStrArrayLength.Length; i++)
+		{
 			CharacterStrArrayLength[i] = 100;
+		}
 
 		for (int i = 0; i < CharacterIntArray2DLength.Length; i++)
+		{
 			CharacterIntArray2DLength[i] = (1L << 32) + 1L;
+		}
+
 		for (int i = 0; i < CharacterStrArray2DLength.Length; i++)
+		{
 			CharacterStrArray2DLength[i] = (1L << 32) + 1L;
+		}
 	}
 
 	private void loadVariableSizeData(string csvPath, bool disp)
 	{
 		if (!File.Exists(csvPath))
+		{
 			return;
-		using var eReader = new EraStreamReader(false);
+		}
+
+		using EraStreamReader eReader = new(false);
 		if (!eReader.Open(csvPath))
 		{
 			output.PrintError(string.Format(trerror.FailedOpenFile.Text, eReader.Filename));
 			return;
 		}
+
 		ScriptPosition? position = null;
 		if (disp)
+		{
 			output.PrintSystemLine(string.Format(trsl.LoadingFile.Text, eReader.Filename));
+		}
+
 		try
 		{
 			CharStream? st = null;
@@ -253,21 +296,28 @@ internal sealed class ConstantData
 				position = new ScriptPosition(eReader.Filename, eReader.LineNo);
 				changeVariableSizeData(st.Substring(), position);
 			}
+
 			position = new ScriptPosition(eReader.Filename, -1);
 		}
 		catch
 		{
 			System.Media.SystemSounds.Hand.Play();
 			if (position != null)
+			{
 				ParserMediator.Warn(trerror.UnexpectedError.Text, position, 3);
+			}
 			else
+			{
 				output.PrintError(trerror.UnexpectedError.Text);
+			}
+
 			return;
 		}
 		finally
 		{
 			eReader.Close();
 		}
+
 		decideActualArraySize(position);
 	}
 
@@ -280,6 +330,7 @@ internal sealed class ConstantData
 			ParserMediator.Warn(trerror.MissingComma.Text, position, 1);
 			return;
 		}
+
 		string idtoken = tokens[0].Trim();
 		VariableIdentifier? id = VariableIdentifier.GetVariableId(idtoken);
 		if (id == null)
@@ -287,16 +338,19 @@ internal sealed class ConstantData
 			ParserMediator.Warn(string.Format(trerror.CanNotInterpretVarName.Text, "1"), position, 1);
 			return;
 		}
+
 		if (!id.IsArray1D && !id.IsArray2D && !id.IsArray3D)
 		{
 			ParserMediator.Warn(string.Format(trerror.CanNotChange0DVarSize.Text, id.ToString()), position, 1);
 			return;
 		}
+
 		if (id.IsCalc || id.Code == VariableCode.RANDDATA)
 		{
 			ParserMediator.Warn(string.Format(trerror.CanNotChangeVarSize.Text, id.ToString()), position, 1);
 			return;
 		}
+
 		int length2 = 0;
 		int length3 = 0;
 		if (!int.TryParse(tokens[1], out int length))
@@ -304,6 +358,7 @@ internal sealed class ConstantData
 			ParserMediator.Warn(string.Format(trerror.CanNotInterpretVarName.Text, "2"), position, 1);
 			return;
 		}
+
 		//1820a16 変数禁止指定 負の値を指定する
 		if (length <= 0)
 		{
@@ -312,34 +367,41 @@ internal sealed class ConstantData
 				ParserMediator.Warn(trerror.ArrayLengthIs0.Text, position, 2);
 				return;
 			}
+
 			if (!id.CanForbid)
 			{
 				ParserMediator.Warn(trerror.CanNotDisableVarArrayLengthIsNegative.Text, position, 2);
 				return;
 			}
+
 			if (tokens.Length > 2 && tokens[2].Length > 0 && tokens[2].Trim().Length > 0 && char.IsDigit(tokens[2].Trim()[0]))
 			{
 				ParserMediator.Warn(string.Format(trerror.IgnoreNDData.Text, "1"), position, 0);
 			}
+
 			length = 0;
 			goto check1break;
 		}
+
 		if (id.IsArray1D)
 		{
 			if (tokens.Length > 2 && tokens[2].Length > 0 && tokens[2].Trim().Length > 0 && char.IsDigit(tokens[2].Trim()[0]))
 			{
 				ParserMediator.Warn(string.Format(trerror.IgnoreNDData.Text, "1"), position, 0);
 			}
+
 			if (id.IsLocal && length < 1)
 			{
 				ParserMediator.Warn(trerror.LocalVarSizeCanNotLessThan1.Text, position, 1);
 				return;
 			}
+
 			if (!id.IsLocal && length < 100)
 			{
 				ParserMediator.Warn(trerror.InternalVarSizeCanNotLessThan100.Text, position, 1);
 				return;
 			}
+
 			if (length > 1000000)
 			{
 				ParserMediator.Warn(trerror.OneDVarSizeCanNotGreaterThan1M.Text, position, 1);
@@ -353,25 +415,30 @@ internal sealed class ConstantData
 				ParserMediator.Warn(string.Format(trerror.MissingVarSizeArg.Text, "2"), position, 1);
 				return;
 			}
+
 			if (tokens.Length > 3 && tokens[3].Length > 0 && tokens[3].Trim().Length > 0 && char.IsDigit(tokens[3].Trim()[0]))
 			{
 				ParserMediator.Warn(string.Format(trerror.IgnoreNDData.Text, "2"), position, 0);
 			}
+
 			if (!int.TryParse(tokens[2], out length2))
 			{
 				ParserMediator.Warn(string.Format(trerror.CanNotInterpretVarName.Text, "3"), position, 1);
 				return;
 			}
+
 			if (length < 1 || length2 < 1)
 			{
 				ParserMediator.Warn(trerror.VarSizeCanNotLessThan1.Text, position, 1);
 				return;
 			}
+
 			if (length > 1000000 || length2 > 1000000)
 			{
 				ParserMediator.Warn(trerror.VarSizeCanNotGreaterThan1M.Text, position, 1);
 				return;
 			}
+
 			if (length * length2 > 1000000)
 			{
 				ParserMediator.Warn(string.Format(trerror.VarSizeLimitIs1M.Text, "2"), position, 1);
@@ -385,38 +452,45 @@ internal sealed class ConstantData
 				ParserMediator.Warn(string.Format(trerror.MissingVarSizeArg.Text, "3"), position, 1);
 				return;
 			}
+
 			if (tokens.Length > 4 && tokens[4].Length > 0 && tokens[4].Trim().Length > 0 && char.IsDigit(tokens[4].Trim()[0]))
 			{
 				ParserMediator.Warn(string.Format(trerror.IgnoreNDData.Text, "3"), position, 0);
 			}
+
 			if (!int.TryParse(tokens[2], out length2))
 			{
 				ParserMediator.Warn(string.Format(trerror.CanNotInterpretVarName.Text, "3"), position, 1);
 				return;
 			}
+
 			if (!int.TryParse(tokens[3], out length3))
 			{
 				ParserMediator.Warn(string.Format(trerror.CanNotInterpretVarName.Text, "4"), position, 1);
 				return;
 			}
+
 			if (length < 1 || length2 < 1 || length3 < 1)
 			{
 				ParserMediator.Warn(trerror.VarSizeCanNotLessThan1.Text, position, 1);
 				return;
 			}
+
 			//1802 サイズ保存の都合上、2^20超えるとバグる
 			if (length > 1000000 || length2 > 1000000 || length3 > 1000000)
 			{
 				ParserMediator.Warn(trerror.VarSizeCanNotGreaterThan1M.Text, position, 1);
 				return;
 			}
+
 			if (length * length2 * length3 > 10000000)
 			{
 				ParserMediator.Warn(string.Format(trerror.VarSizeLimitIs1M.Text, "3"), position, 1);
 				return;
 			}
 		}
-	check1break:
+
+		check1break:
 		switch (id.Code)
 		{
 			//1753a PALAMだけ仕様が違うのはかえって問題なので、変数と要素文字列配列数の同期は全部バックアウト
@@ -454,63 +528,90 @@ internal sealed class ConstantData
 			case VariableCode.STRNAME:
 			case VariableCode.GLOBALNAME:
 			case VariableCode.GLOBALSNAME:
+
 			#region EE_CSV機能拡張
+
 			case VariableCode.DAYNAME:
 			case VariableCode.TIMENAME:
 			case VariableCode.MONEYNAME:
-			#endregion
+
+				#endregion
+
 				MaxDataList[(int)(id.Code & VariableCode.__LOWERCASE__)] = length;
 				break;
 			default:
+			{
+				if (id.IsCharacterData)
 				{
-					if (id.IsCharacterData)
-					{
-						if (id.IsArray2D)
-						{
-							long length64 = ((long)length << 32) + length2;
-							if (id.IsInteger)
-								CharacterIntArray2DLength[id.CodeInt] = length64;
-							else if (id.IsString)
-								CharacterStrArray2DLength[id.CodeInt] = length64;
-						}
-						else
-						{
-							if (id.IsInteger)
-								CharacterIntArrayLength[id.CodeInt] = length;
-							else if (id.IsString)
-								CharacterStrArrayLength[id.CodeInt] = length;
-						}
-					}
-					else if (id.IsArray2D)
+					if (id.IsArray2D)
 					{
 						long length64 = ((long)length << 32) + length2;
 						if (id.IsInteger)
-							VariableIntArray2DLength[id.CodeInt] = length64;
+						{
+							CharacterIntArray2DLength[id.CodeInt] = length64;
+						}
 						else if (id.IsString)
-							VariableStrArray2DLength[id.CodeInt] = length64;
-					}
-					else if (id.IsArray3D)
-					{
-						//Int64 length3d = ((Int64)length << 32) + ((Int64)length2 << 16) + (Int64)length3;
-						long length3d = ((long)length << 40) + ((long)length2 << 20) + length3;
-						if (id.IsInteger)
-							VariableIntArray3DLength[id.CodeInt] = length3d;
-						else
-							VariableStrArray3DLength[id.CodeInt] = length3d;
+						{
+							CharacterStrArray2DLength[id.CodeInt] = length64;
+						}
 					}
 					else
 					{
 						if (id.IsInteger)
-							VariableIntArrayLength[id.CodeInt] = length;
+						{
+							CharacterIntArrayLength[id.CodeInt] = length;
+						}
 						else if (id.IsString)
-							VariableStrArrayLength[id.CodeInt] = length;
+						{
+							CharacterStrArrayLength[id.CodeInt] = length;
+						}
 					}
 				}
+				else if (id.IsArray2D)
+				{
+					long length64 = ((long)length << 32) + length2;
+					if (id.IsInteger)
+					{
+						VariableIntArray2DLength[id.CodeInt] = length64;
+					}
+					else if (id.IsString)
+					{
+						VariableStrArray2DLength[id.CodeInt] = length64;
+					}
+				}
+				else if (id.IsArray3D)
+				{
+					//Int64 length3d = ((Int64)length << 32) + ((Int64)length2 << 16) + (Int64)length3;
+					long length3d = ((long)length << 40) + ((long)length2 << 20) + length3;
+					if (id.IsInteger)
+					{
+						VariableIntArray3DLength[id.CodeInt] = length3d;
+					}
+					else
+					{
+						VariableStrArray3DLength[id.CodeInt] = length3d;
+					}
+				}
+				else
+				{
+					if (id.IsInteger)
+					{
+						VariableIntArrayLength[id.CodeInt] = length;
+					}
+					else if (id.IsString)
+					{
+						VariableStrArrayLength[id.CodeInt] = length;
+					}
+				}
+			}
 				break;
 		}
+
 		//1803beta004 二重定義を警告対象に
 		if (!changedCode.Add(id.Code))
+		{
 			ParserMediator.Warn(string.Format(trerror.VarSizeAlreadyDefined.Text, id.Code.ToString()), position, 1);
+		}
 	}
 
 	private void _decideActualArraySize_sub(VariableCode mainCode, VariableCode nameCode, int[] arraylength, ScriptPosition? position)
@@ -526,15 +627,24 @@ internal sealed class ConstantData
 				MaxDataList[nameIndex] = i;
 				//1803beta004 不適切な指定として警告Lv1の対象にする
 				if (MaxDataList[nameIndex] == 0 || arraylength[mainLengthIndex] == 0)
-					ParserMediator.Warn(string.Format(trerror.DifferentVarProhibitSetting.Text, mainCode.ToString(), nameCode.ToString()), position, 1);
+				{
+					ParserMediator.Warn(string.Format(trerror.DifferentVarProhibitSetting.Text, mainCode.ToString(), nameCode.ToString()), position,
+						1);
+				}
 				else
+				{
 					ParserMediator.Warn(string.Format(trerror.DifferentVarSize.Text, mainCode.ToString(), nameCode.ToString()), position, 1);
+				}
 			}
 		}
 		else if (changedCode.Contains(nameCode) && !changedCode.Contains(mainCode))
+		{
 			arraylength[mainLengthIndex] = MaxDataList[nameIndex];
+		}
 		else if (!changedCode.Contains(nameCode) && changedCode.Contains(mainCode))
+		{
 			MaxDataList[nameIndex] = arraylength[mainLengthIndex];
+		}
 	}
 
 	private void decideActualArraySize(ScriptPosition? position)
@@ -559,10 +669,13 @@ internal sealed class ConstantData
 		_decideActualArraySize_sub(VariableCode.SAVESTR, VariableCode.SAVESTRNAME, VariableStrArrayLength, position);
 		_decideActualArraySize_sub(VariableCode.GLOBAL, VariableCode.GLOBALNAME, VariableIntArrayLength, position);
 		_decideActualArraySize_sub(VariableCode.GLOBALS, VariableCode.GLOBALSNAME, VariableStrArrayLength, position);
+
 		#region EE_CSV機能拡張
+
 		_decideActualArraySize_sub(VariableCode.DAY, VariableCode.DAYNAME, VariableIntArrayLength, position);
 		_decideActualArraySize_sub(VariableCode.TIME, VariableCode.TIMENAME, VariableIntArrayLength, position);
 		_decideActualArraySize_sub(VariableCode.MONEY, VariableCode.MONEYNAME, VariableIntArrayLength, position);
+
 		#endregion
 
 
@@ -571,7 +684,7 @@ internal sealed class ConstantData
 		if (changedCode.Contains(VariableCode.PALAM) || changedCode.Contains(VariableCode.JUEL))
 		{
 			int palamJuelMax = Math.Max(CharacterIntArrayLength[(int)(VariableCode.__LOWERCASE__ & VariableCode.PALAM)]
-					, CharacterIntArrayLength[(int)(VariableCode.__LOWERCASE__ & VariableCode.JUEL)]);
+				, CharacterIntArrayLength[(int)(VariableCode.__LOWERCASE__ & VariableCode.JUEL)]);
 			//PALAMNAMEが変わっているなら、それと比較して大きい方を採用
 			if (changedCode.Contains(VariableCode.PALAMNAME))
 			{
@@ -580,15 +693,23 @@ internal sealed class ConstantData
 					int i = Math.Max(MaxDataList[paramIndex], palamJuelMax);
 					MaxDataList[paramIndex] = i;
 					if (CharacterIntArrayLength[(int)(VariableCode.__LOWERCASE__ & VariableCode.PALAM)] == palamJuelMax)
+					{
 						CharacterIntArrayLength[(int)(VariableCode.__LOWERCASE__ & VariableCode.PALAM)] = i;
+					}
+
 					if (CharacterIntArrayLength[(int)(VariableCode.__LOWERCASE__ & VariableCode.JUEL)] == palamJuelMax)
+					{
 						CharacterIntArrayLength[(int)(VariableCode.__LOWERCASE__ & VariableCode.JUEL)] = i;
+					}
+
 					//1803beta004 不適切な指定として警告Lv1の対象にする
 					ParserMediator.Warn(trerror.InappropriatePalamJuelPalamname.Text, position, 1);
 				}
 			}
-			else//PALAMNAMEの指定がないなら大きい方にPALAMNAMEをあわせる
+			else //PALAMNAMEの指定がないなら大きい方にPALAMNAMEをあわせる
+			{
 				MaxDataList[paramIndex] = palamJuelMax;
+			}
 		}
 		//PALAMとJUEL不変でPALAMNAMEが変わっている場合
 		else if (changedCode.Contains(VariableCode.PALAMNAME))
@@ -602,6 +723,7 @@ internal sealed class ConstantData
 				MaxDataList[paramIndex] = CharacterIntArrayLength[(int)(VariableCode.__LOWERCASE__ & VariableCode.JUEL)];
 			}
 		}
+
 		//CDFLAG
 		//一部変更されたら双方変更されたと扱う
 		bool cdflagNameLengthChanged = changedCode.Contains(VariableCode.CDFLAGNAME1) || changedCode.Contains(VariableCode.CDFLAGNAME2);
@@ -613,7 +735,9 @@ internal sealed class ConstantData
 		{
 			//調整が面倒なので投げる
 			if (length1 != MaxDataList[cdflag1Index] || length2 != MaxDataList[cdflag2Index])
+			{
 				throw new CodeEE(trerror.DoesNotMatchCdflagElements.Text, position);
+			}
 		}
 		else if (cdflagNameLengthChanged && !changedCode.Contains(VariableCode.CDFLAG))
 		{
@@ -624,6 +748,7 @@ internal sealed class ConstantData
 				//調整が面倒なので投げる
 				throw new CodeEE(trerror.TooManyCdflagElements.Text, position);
 			}
+
 			CharacterIntArray2DLength[mainLengthIndex] = ((long)length1 << 32) + length2;
 		}
 		else if (!cdflagNameLengthChanged && changedCode.Contains(VariableCode.CDFLAG))
@@ -631,6 +756,7 @@ internal sealed class ConstantData
 			MaxDataList[cdflag1Index] = length1;
 			MaxDataList[cdflag2Index] = length2;
 		}
+
 		//もう使わないのでデータ破棄
 		changedCode.Clear();
 	}
@@ -645,8 +771,11 @@ internal sealed class ConstantData
 			names[i] = new string[MaxDataList[i]];
 			nameToIntDics[i] = [];
 		}
+
 		ItemPrice = new long[MaxDataList[itemIndex]];
+
 		#region EE_ERD
+
 		loadDataTo(Path.Combine(csvDir, "ABL.CSV"), ablIndex, null, disp);
 		loadDataTo(Path.Combine(csvDir, "EXP.CSV"), expIndex, null, disp);
 		loadDataTo(Path.Combine(csvDir, "TALENT.CSV"), talentIndex, null, disp);
@@ -674,73 +803,109 @@ internal sealed class ConstantData
 		loadDataTo(Path.Combine(csvDir, "SAVESTR.CSV"), savestrnameIndex, null, disp);
 		loadDataTo(Path.Combine(csvDir, "GLOBAL.CSV"), globalIndex, null, disp);
 		loadDataTo(Path.Combine(csvDir, "GLOBALS.CSV"), globalsIndex, null, disp);
+
 		#endregion
+
 		#region EE_CSV機能拡張
+
 		loadDataTo(Path.Combine(csvDir, "DAY.CSV"), dayIndex, null, disp);
 		loadDataTo(Path.Combine(csvDir, "TIME.CSV"), timeIndex, null, disp);
 		loadDataTo(Path.Combine(csvDir, "MONEY.CSV"), moneyIndex, null, disp);
+
 		#endregion
+
 		//逆引き辞書を作成
 		for (int i = 0; i < names.Length; i++)
 		{
-			if (i == 10)//Strは逆引き無用
+			if (i == 10) //Strは逆引き無用
+			{
 				continue;
+			}
+
 			#region EE_ERD
+
 			if (names[i] == null)
+			{
 				continue;
+			}
+
 			#endregion
+
 			//Add CSV Names
 			string?[] nameArray = names[i]!;
 			for (int j = 0; j < nameArray.Length; j++)
 			{
 				string? name = nameArray[j];
 				if (!string.IsNullOrEmpty(name) && !nameToIntDics[i].ContainsKey(name))
+				{
 					nameToIntDics[i].Add(name, j);
+				}
 			}
+
 			//Add CSV Aliases
 			Dictionary<string, int> aliasDict = aliases[i];
 			if (aliasDict == null)
 			{
 				continue;
 			}
-			foreach (var alias in aliasDict)
+
+			foreach (KeyValuePair<string, int> alias in aliasDict)
 			{
 				if (!string.IsNullOrEmpty(alias.Key) && !nameToIntDics[i].ContainsKey(alias.Key))
+				{
 					nameToIntDics[i].Add(alias.Key, alias.Value);
+				}
 			}
 		}
+
 		//if (!Program.AnalysisMode)
 		loadCharacterData(csvDir, disp);
 
 		#region EM_私家版_セーブ拡張
+
 		loadGlobalVarExSetting(csvDir, disp);
+
 		#endregion
+
 		//逆引き辞書を作成2 (RELATION)
 		for (int i = 0; i < CharacterTmplList.Count; i++)
 		{
 			CharacterTemplate tmpl = CharacterTmplList[i];
 			if (!string.IsNullOrEmpty(tmpl.Name) && !relationDic.ContainsKey(tmpl.Name))
+			{
 				relationDic.Add(tmpl.Name, (int)tmpl.No);
+			}
+
 			if (!string.IsNullOrEmpty(tmpl.Callname) && !relationDic.ContainsKey(tmpl.Callname))
+			{
 				relationDic.Add(tmpl.Callname, (int)tmpl.No);
+			}
+
 			if (!string.IsNullOrEmpty(tmpl.Nickname) && !relationDic.ContainsKey(tmpl.Nickname))
+			{
 				relationDic.Add(tmpl.Nickname, (int)tmpl.No);
+			}
+
 			if (!string.IsNullOrEmpty(tmpl.Mastername) && !relationDic.ContainsKey(tmpl.Mastername))
+			{
 				relationDic.Add(tmpl.Mastername, (int)tmpl.No);
+			}
 		}
 	}
+
 	#region EE_ERD
+
 	private struct ErdDictInfo
 	{
 		public int num;
 		public string path;
 	};
+
 	public void UserDefineLoadData(List<string> filepaths, string varname, int varlength, bool disp, ScriptPosition? sc)
 	{
-
 		Dictionary<string, ErdDictInfo> preDict = [];
 
-		foreach (var filepath in filepaths)
+		foreach (string filepath in filepaths)
 		{
 			string[] nameArray = new string[varlength];
 			names[ERD_NAMES_INDEX] = nameArray;
@@ -753,7 +918,7 @@ internal sealed class ConstantData
 				{
 					if (!preDict.TryGetValue(nameArray[j], out ErdDictInfo value))
 					{
-						preDict[nameArray[j]] = new ErdDictInfo() { num = j, path = filepath };
+						preDict[nameArray[j]] = new ErdDictInfo { num = j, path = filepath };
 					}
 					else
 					{
@@ -763,35 +928,48 @@ internal sealed class ConstantData
 				}
 			}
 		}
+
 		// ここで発生しないと思うが一応書いておく
 		if (erdNameToIntDics.ContainsKey(varname))
+		{
 			throw new CodeEE(string.Format(trerror.DuplicateVariableDefine.Text, varname), sc);
+		}
 
-		var dict = new Dictionary<string, int>();
-		foreach (var pair in preDict)
+		Dictionary<string, int> dict = new();
+		foreach (KeyValuePair<string, ErdDictInfo> pair in preDict)
+		{
 			dict.Add(pair.Key, pair.Value.num);
+		}
+
 		erdNameToIntDics.Add(varname, dict);
 	}
 
 	#region EE_重複定義の確認
+
 	public void isDefinedErd(string varname, ScriptPosition? sc)
 	{
 		List<string> erddic = new(erdNameToIntDics.Keys);
-		foreach (var erdvarname in erddic)
+		foreach (string erdvarname in erddic)
 		{
 			foreach (string erdname in erdNameToIntDics[erdvarname].Keys)
 			{
 				if (erdname == varname)
+				{
 					ParserMediator.Warn(string.Format(trerror.IsDefinedErdVariable.Text, varname, erdvarname), sc, 1);
+				}
 			}
 		}
 	}
+
 	#endregion
 
 	public bool isDefined(VariableCode varCode, string str)
 	{
 		if (string.IsNullOrEmpty(str))
+		{
 			return false;
+		}
+
 		Dictionary<string, int>? dic;
 		if (varCode == VariableCode.CDFLAG)
 		{
@@ -799,33 +977,52 @@ internal sealed class ConstantData
 			dic = GetKeywordDictionary(out _, VariableCode.CDFLAGNAME1, -1, null);
 			if (dic == null || !dic.ContainsKey(str))
 				// dic = GetKeywordDictionary(out _, VariableCode.CDFLAGNAME2, -1);
+			{
 				dic = GetKeywordDictionary(out _, VariableCode.CDFLAGNAME2, -1, null);
+			}
+
 			if (dic == null)
+			{
 				return false;
+			}
+
 			return dic.ContainsKey(str);
 		}
+
 		// dic = GetKeywordDictionary(out _, varCode, -1);
 		dic = GetKeywordDictionary(out _, varCode, -1, null);
 		if (dic == null)
+		{
 			return false;
+		}
+
 		return dic.ContainsKey(str);
 	}
 
 	public bool isUserDefined(string varname, string str, int dim)
 	{
 		if (string.IsNullOrEmpty(str))
+		{
 			return false;
+		}
+
 		if (dim == 1 && (!erdNameToIntDics.ContainsKey(varname) || !erdNameToIntDics[varname].ContainsKey(str)))
+		{
 			throw new CodeEE(string.Format(trerror.NotDefinedErdKey.Text, varname, str));
+		}
+
 		//CDFLAGの判定も割とガバガバなのでこれで良い（暴論）
 		if (dim == 2)
 		{
 			if (!erdNameToIntDics.ContainsKey(varname + "@1") || !erdNameToIntDics[varname + "@1"].ContainsKey(str))
 			{
 				if (!erdNameToIntDics.ContainsKey(varname + "@2") || !erdNameToIntDics[varname + "@2"].ContainsKey(str))
+				{
 					throw new CodeEE(string.Format(trerror.NotDefinedErdKey.Text, varname, str));
+				}
 			}
 		}
+
 		if (dim == 3)
 		{
 			if (!erdNameToIntDics.ContainsKey(varname + "@1") || !erdNameToIntDics[varname + "@1"].ContainsKey(str))
@@ -833,31 +1030,40 @@ internal sealed class ConstantData
 				if (!erdNameToIntDics.ContainsKey(varname + "@2") || !erdNameToIntDics[varname + "@2"].ContainsKey(str))
 				{
 					if (!erdNameToIntDics.ContainsKey(varname + "@3") || !erdNameToIntDics[varname + "@3"].ContainsKey(str))
+					{
 						throw new CodeEE(string.Format(trerror.NotDefinedErdKey.Text, varname, str));
+					}
 				}
 			}
 		}
+
 		return true;
 	}
+
 	#endregion
 
 
 	#region EE_ERD
+
 	// public bool TryKeywordToInteger(out int ret, VariableCode code, string key, int index)
 	public bool TryKeywordToInteger(out int ret, VariableCode code, string key, int index, string varname)
 	{
 		ret = 0;
 		if (string.IsNullOrEmpty(key))
+		{
 			return false;
+		}
 
 		{
 			//ここで見つからなかったら下の処理でも通す
 			Dictionary<string, int>? dic = GetKeywordDictionary(out string? errPos, code, index, null);
 			if (dic != null)
 			{
-				var found = dic.TryGetValue(key, out ret);
+				bool found = dic.TryGetValue(key, out ret);
 				if (found)
+				{
 					return true;
+				}
 			}
 		}
 		{
@@ -865,57 +1071,92 @@ internal sealed class ConstantData
 			{
 				return false;
 			}
+
 			bool found = erdNameToIntDics.TryGetValue(varname, out Dictionary<string, int>? dic);
-			if (!found) return false;
+			if (!found)
+			{
+				return false;
+			}
+
 			// found implies a non-null dictionary
 			return dic!.TryGetValue(key, out ret);
 		}
 	}
+
 	#endregion
+
 	#region EE_ERDNAME
+
 	public bool TryIntegerToKeyword(out string ret, long value, string varname)
 	{
 		ret = "";
 		if (value < 0)
+		{
 			return false;
+		}
+
 		if (string.IsNullOrEmpty(varname))
+		{
 			return false;
+		}
 
 		if (!erdNameToIntDics.TryGetValue(varname, out Dictionary<string, int>? dic))
+		{
 			return false;
+		}
 
-		var keyValuePair = dic.FirstOrDefault(x => x.Value == value);
+		KeyValuePair<string, int> keyValuePair = dic.FirstOrDefault(x => x.Value == value);
 		if (string.IsNullOrEmpty(keyValuePair.Key))
+		{
 			return false;
+		}
+
 		ret = keyValuePair.Key;
 		return true;
 	}
+
 	#endregion
 
 	public int KeywordToInteger(VariableCode code, string key, int index)
 	{
 		if (string.IsNullOrEmpty(key))
+		{
 			throw new CodeEE(trerror.KeywordsCannotBeEmpty.Text);
+		}
+
 		#region EE_ERD
+
 		// Dictionary<string, int> dic = GetKeywordDictionary(out string errPos, code, index);
 		Dictionary<string, int>? dic = GetKeywordDictionary(out string? errPos, code, index, null);
+
 		#endregion
+
 		// Callers pass keyword-backed codes, for which GetKeywordDictionary returns a dictionary
 		if (dic!.TryGetValue(key, out int ret))
+		{
 			return ret;
+		}
+
 		if (errPos == null)
+		{
 			throw new CodeEE(string.Format(trerror.CanNotSpecifiedByString.Text, code.ToString()));
+		}
 		else
+		{
 			throw new CodeEE(string.Format(trerror.NotDefinedKey.Text, errPos, key));
+		}
 	}
 
 	#region EE_ERD
+
 	//public Dictionary<string, int> GetKeywordDictionary(out string errPos, VariableCode code, int index)
 	// TODO: returns null for any VariableCode not listed below, yet every caller dereferences the
 	// result with '!' (see PluginSystem/VariableDataWrappers.cs Get/Set). Narrow the return type or
 	// make the callers handle the null case instead of asserting it away.
 	public Dictionary<string, int>? GetKeywordDictionary(out string? errPos, VariableCode code, int index, string? varname)
-	#endregion
+
+		#endregion
+
 	{
 		errPos = null;
 		int allowIndex = -1;
@@ -923,23 +1164,23 @@ internal sealed class ConstantData
 		switch (code)
 		{
 			case VariableCode.ABL:
-				ret = nameToIntDics[ablIndex];//AblName;
+				ret = nameToIntDics[ablIndex]; //AblName;
 				errPos = "abl.csv";
 				allowIndex = 1;
 				break;
 			case VariableCode.EXP:
-				ret = nameToIntDics[expIndex];//ExpName;
+				ret = nameToIntDics[expIndex]; //ExpName;
 				errPos = "exp.csv";
 				allowIndex = 1;
 				break;
 			case VariableCode.TALENT:
-				ret = nameToIntDics[talentIndex];//TalentName;
+				ret = nameToIntDics[talentIndex]; //TalentName;
 				errPos = "talent.csv";
 				allowIndex = 1;
 				break;
 			case VariableCode.UP:
 			case VariableCode.DOWN:
-				ret = nameToIntDics[paramIndex];//ParamName　１;
+				ret = nameToIntDics[paramIndex]; //ParamName　１;
 				errPos = "palam.csv";
 				allowIndex = 0;
 				break;
@@ -948,91 +1189,91 @@ internal sealed class ConstantData
 			case VariableCode.GOTJUEL:
 			case VariableCode.CUP:
 			case VariableCode.CDOWN:
-				ret = nameToIntDics[paramIndex];//ParamName　２;
+				ret = nameToIntDics[paramIndex]; //ParamName　２;
 				errPos = "palam.csv";
 				allowIndex = 1;
 				break;
 
 			case VariableCode.TRAINNAME:
-				ret = nameToIntDics[trainIndex];//TrainName;
+				ret = nameToIntDics[trainIndex]; //TrainName;
 				errPos = "train.csv";
 				allowIndex = 0;
 				break;
 			case VariableCode.MARK:
-				ret = nameToIntDics[markIndex];//MarkName;
+				ret = nameToIntDics[markIndex]; //MarkName;
 				errPos = "mark.csv";
 				allowIndex = 1;
 				break;
 			case VariableCode.ITEM:
 			case VariableCode.ITEMSALES:
 			case VariableCode.ITEMPRICE:
-				ret = nameToIntDics[itemIndex];//ItemName;
+				ret = nameToIntDics[itemIndex]; //ItemName;
 				errPos = "Item.csv";
 				allowIndex = 0;
 				break;
 			case VariableCode.LOSEBASE:
-				ret = nameToIntDics[baseIndex];//BaseName;
+				ret = nameToIntDics[baseIndex]; //BaseName;
 				errPos = "base.csv";
 				allowIndex = 0;
 				break;
 			case VariableCode.BASE:
 			case VariableCode.MAXBASE:
 			case VariableCode.DOWNBASE:
-				ret = nameToIntDics[baseIndex];//BaseName;
+				ret = nameToIntDics[baseIndex]; //BaseName;
 				errPos = "base.csv";
 				allowIndex = 1;
 				break;
 			case VariableCode.SOURCE:
-				ret = nameToIntDics[sourceIndex];//SourceName;
+				ret = nameToIntDics[sourceIndex]; //SourceName;
 				errPos = "source.csv";
 				allowIndex = 1;
 				break;
 			case VariableCode.EX:
 			case VariableCode.NOWEX:
-				ret = nameToIntDics[exIndex];//ExName;
+				ret = nameToIntDics[exIndex]; //ExName;
 				errPos = "ex.csv";
 				allowIndex = 1;
 				break;
 
 
 			case VariableCode.EQUIP:
-				ret = nameToIntDics[equipIndex];//EquipName;
+				ret = nameToIntDics[equipIndex]; //EquipName;
 				errPos = "equip.csv";
 				allowIndex = 1;
 				break;
 			case VariableCode.TEQUIP:
-				ret = nameToIntDics[tequipIndex];//TequipName;
+				ret = nameToIntDics[tequipIndex]; //TequipName;
 				errPos = "tequip.csv";
 				allowIndex = 1;
 				break;
 			case VariableCode.FLAG:
-				ret = nameToIntDics[flagIndex];//FlagName;
+				ret = nameToIntDics[flagIndex]; //FlagName;
 				errPos = "flag.csv";
 				allowIndex = 0;
 				break;
 			case VariableCode.TFLAG:
-				ret = nameToIntDics[tflagIndex];//TFlagName;
+				ret = nameToIntDics[tflagIndex]; //TFlagName;
 				errPos = "tflag.csv";
 				allowIndex = 0;
 				break;
 			case VariableCode.CFLAG:
-				ret = nameToIntDics[cflagIndex];//CFlagName;
+				ret = nameToIntDics[cflagIndex]; //CFlagName;
 				errPos = "cflag.csv";
 				allowIndex = 1;
 				break;
 			case VariableCode.TCVAR:
-				ret = nameToIntDics[tcvarIndex];//TCVarName;
+				ret = nameToIntDics[tcvarIndex]; //TCVarName;
 				errPos = "tcvar.csv";
 				allowIndex = 1;
 				break;
 			case VariableCode.CSTR:
-				ret = nameToIntDics[cstrIndex];//CStrName;
+				ret = nameToIntDics[cstrIndex]; //CStrName;
 				errPos = "cstr.csv";
 				allowIndex = 1;
 				break;
 
 			case VariableCode.STAIN:
-				ret = nameToIntDics[stainIndex];//StainName;
+				ret = nameToIntDics[stainIndex]; //StainName;
 				errPos = "stain.csv";
 				allowIndex = 1;
 				break;
@@ -1047,23 +1288,28 @@ internal sealed class ConstantData
 				allowIndex = 0;
 				break;
 			case VariableCode.CDFLAG:
+			{
+				if (index == 1)
 				{
-					if (index == 1)
-					{
-						ret = nameToIntDics[cdflag1Index];//CDFlagName1
-						errPos = "cdflag1.csv";
-					}
-					else if (index == 2)
-					{
-						ret = nameToIntDics[cdflag2Index];//CDFlagName2
-						errPos = "cdflag2.csv";
-					}
-					else if (index >= 0)
-						throw new CodeEE(string.Format(trerror.CannotIndexSpecifiedByString.Text, code.ToString(), (index + 1).ToString()));
-					else
-						throw new CodeEE(trerror.UseCdflagname.Text);
-					return ret;
+					ret = nameToIntDics[cdflag1Index]; //CDFlagName1
+					errPos = "cdflag1.csv";
 				}
+				else if (index == 2)
+				{
+					ret = nameToIntDics[cdflag2Index]; //CDFlagName2
+					errPos = "cdflag2.csv";
+				}
+				else if (index >= 0)
+				{
+					throw new CodeEE(string.Format(trerror.CannotIndexSpecifiedByString.Text, code.ToString(), (index + 1).ToString()));
+				}
+				else
+				{
+					throw new CodeEE(trerror.UseCdflagname.Text);
+				}
+
+				return ret;
+			}
 			case VariableCode.STR:
 				ret = nameToIntDics[strnameIndex];
 				errPos = "strname.csv";
@@ -1100,7 +1346,9 @@ internal sealed class ConstantData
 				errPos = "chara*.csv";
 				allowIndex = -1;
 				break;
+
 			#region EE_CSV機能拡張
+
 			case VariableCode.DAY:
 				ret = nameToIntDics[dayIndex];
 				errPos = "day.csv";
@@ -1116,15 +1364,18 @@ internal sealed class ConstantData
 				errPos = "money.csv";
 				allowIndex = 0;
 				break;
-			#endregion
 
+			#endregion
 		}
 
 		#region EE_ERD
+
 		if (ret == null && Config.Config.UseERD)
 		{
 			if (string.IsNullOrEmpty(varname))
+			{
 				return ret;
+			}
 			else
 			{
 				switch (code)
@@ -1134,55 +1385,80 @@ internal sealed class ConstantData
 					case VariableCode.CVAR:
 					case VariableCode.CVARS:
 						if (erdNameToIntDics.TryGetValue(varname, out Dictionary<string, int>? value))
+						{
 							ret = value;
+						}
 						else
+						{
 							return ret;
+						}
+
 						errPos = varname + ".csv";
 						allowIndex = 0;
 						if (code == VariableCode.CVAR || code == VariableCode.CVARS)
+						{
 							allowIndex = 1;
+						}
+
 						break;
 					case VariableCode.VAR2D:
 					case VariableCode.VARS2D:
 					case VariableCode.CVAR2D:
 					case VariableCode.CVARS2D:
+					{
+						if ((code == VariableCode.VAR2D || code == VariableCode.VARS2D) && index == 0)
 						{
-							if ((code == VariableCode.VAR2D || code == VariableCode.VARS2D) && index == 0)
+							string varnamed = varname + "@1";
+							if (erdNameToIntDics.TryGetValue(varnamed, out Dictionary<string, int>? value1))
 							{
-								string varnamed = varname + "@1";
-								if (erdNameToIntDics.TryGetValue(varnamed, out Dictionary<string, int>? value1))
-									ret = value1;
-								else
-									return ret;
-
-								errPos = varnamed + ".csv";
-								allowIndex = 0;
-								if (code == VariableCode.CVAR2D || code == VariableCode.CVARS2D)
-									allowIndex = 1;
+								ret = value1;
 							}
-							//if ((code == VariableCode.VAR2D && index == 1) || (code == VariableCode.CVAR2D && index == 2))
 							else
 							{
-								string varnamed = varname + "@2";
-								if (erdNameToIntDics.TryGetValue(varnamed, out Dictionary<string, int>? value1))
-									ret = value1;
-								else
-									return ret;
-
-								errPos = varnamed + ".csv";
-								allowIndex = 1;
-								if (code == VariableCode.CVAR2D || code == VariableCode.CVARS2D)
-									allowIndex = 2;
+								return ret;
 							}
-							break;
+
+							errPos = varnamed + ".csv";
+							allowIndex = 0;
+							if (code == VariableCode.CVAR2D || code == VariableCode.CVARS2D)
+							{
+								allowIndex = 1;
+							}
 						}
+						//if ((code == VariableCode.VAR2D && index == 1) || (code == VariableCode.CVAR2D && index == 2))
+						else
+						{
+							string varnamed = varname + "@2";
+							if (erdNameToIntDics.TryGetValue(varnamed, out Dictionary<string, int>? value1))
+							{
+								ret = value1;
+							}
+							else
+							{
+								return ret;
+							}
+
+							errPos = varnamed + ".csv";
+							allowIndex = 1;
+							if (code == VariableCode.CVAR2D || code == VariableCode.CVARS2D)
+							{
+								allowIndex = 2;
+							}
+						}
+
+						break;
+					}
 					case VariableCode.VAR3D:
 					case VariableCode.VARS3D:
 						string varname3d = varname + "@" + (index + 1);
 						if (erdNameToIntDics.TryGetValue(varname3d, out Dictionary<string, int>? value2))
+						{
 							ret = value2;
+						}
 						else
+						{
 							return ret;
+						}
 
 						errPos = varname3d + ".csv";
 						allowIndex = index;
@@ -1190,33 +1466,50 @@ internal sealed class ConstantData
 				}
 			}
 		}
+
 		#endregion
+
 		if (index < 0)
+		{
 			return ret;
+		}
+
 		if (ret == null)
+		{
 			throw new CodeEE(string.Format(trerror.CanNotSpecifiedByString.Text, code.ToString()));
+		}
+
 		if (index != allowIndex)
 		{
-			if (allowIndex < 0)//GETNUM専用
+			if (allowIndex < 0) //GETNUM専用
+			{
 				throw new CodeEE(string.Format(trerror.CanNotSpecifiedByString.Text, code.ToString()));
+			}
+
 			throw new CodeEE(string.Format(trerror.CannotIndexSpecifiedByString.Text, code.ToString(), (index + 1).ToString()));
 		}
+
 		return ret;
 	}
 
 	#region EE_重複定義の確認
+
 	public bool IsDefinedCsvVar(string varname)
 	{
-		for (int i = (int)(VariableCode.ABLNAME & VariableCode.__LOWERCASE__); i < (int)(VariableCode.__COUNT_CSV_STRING_ARRAY_1D__ & VariableCode.__LOWERCASE__); i++)
+		for (int i = (int)(VariableCode.ABLNAME & VariableCode.__LOWERCASE__);
+		     i < (int)(VariableCode.__COUNT_CSV_STRING_ARRAY_1D__ & VariableCode.__LOWERCASE__);
+		     i++)
 		{
-			var dic = nameToIntDics[i];
+			Dictionary<string, int> dic = nameToIntDics[i];
 			if (dic.ContainsKey(varname))
 			{
 				return true;
 			}
 		}
+
 		return false;
 	}
+
 	#endregion
 
 	public CharacterTemplate? GetCharacterTemplate(long index)
@@ -1252,17 +1545,25 @@ internal sealed class ConstantData
 	private void loadCharacterData(string csvDir, bool disp)
 	{
 		if (!Directory.Exists(csvDir))
+		{
 			return;
+		}
+
 		List<KeyValuePair<string, string>> csvPaths = Config.Config.GetFiles(csvDir, "CHARA*.CSV");
 
 		for (int i = 0; i < csvPaths.Count; i++)
+		{
 			loadCharacterDataFile(csvPaths[i].Value, csvPaths[i].Key, disp);
+		}
 
 		// 模板收尾: Callname 兜底、SP 标记、查询字典(含 SP, 先到先得)
 		foreach (CharacterTemplate tmpl in CharacterTmplList)
 		{
 			if (useCompatiName && string.IsNullOrEmpty(tmpl.Callname))
+			{
 				tmpl.Callname = tmpl.Name;
+			}
+
 			tmpl.SetSpFlag();
 			charaTmplByNo.TryAdd(tmpl.No, tmpl);
 			charaTmplByCsvNo.TryAdd(tmpl.csvNo, tmpl);
@@ -1271,20 +1572,25 @@ internal sealed class ConstantData
 		// 重复 No 告警每组一条并附定义次数: CompatiSPChara 开启时普通/SP 分流(跨类同号不告警), 关闭时组内 SP 属性混合则提示兼容选项
 		if (Config.Config.CompatiSPChara)
 		{
-			foreach (var group in CharacterTmplList.GroupBy(tmpl => (tmpl.No, tmpl.IsSpchara)))
+			foreach (IGrouping<(long No, bool IsSpchara), CharacterTemplate> group in CharacterTmplList.GroupBy(tmpl => (tmpl.No, tmpl.IsSpchara)))
 			{
 				int count = group.Count();
 				if (count > 1)
+				{
 					ParserMediator.Warn(string.Format(trerror.DuplicateCharaDefine2.Text, group.Key.No.ToString(), count.ToString()), null, 1);
+				}
 			}
 		}
 		else
 		{
-			foreach (var group in CharacterTmplList.GroupBy(tmpl => tmpl.No))
+			foreach (IGrouping<long, CharacterTemplate> group in CharacterTmplList.GroupBy(tmpl => tmpl.No))
 			{
 				int count = group.Count();
 				if (count <= 1)
+				{
 					continue;
+				}
+
 				bool spMixed = group.Any(tmpl => tmpl.IsSpchara) && group.Any(tmpl => !tmpl.IsSpchara);
 				ParserMediator.Warn(string.Format(
 					spMixed ? trerror.DuplicateCharaDefine1.Text : trerror.DuplicateCharaDefine2.Text,
@@ -1294,6 +1600,7 @@ internal sealed class ConstantData
 	}
 
 	#region EM_私家版_セーブ拡張
+
 	private void loadGlobalVarExSetting(string csvPath, bool disp)
 	{
 		GlobalSaveXmls.Clear();
@@ -1302,17 +1609,21 @@ internal sealed class ConstantData
 		SaveMaps.Clear();
 		StaticMaps.Clear();
 		StaticXmls.Clear();
-		foreach (var path in Directory.GetFiles(csvPath, "VarExt*.csv", SearchOption.AllDirectories))
+		foreach (string path in Directory.GetFiles(csvPath, "VarExt*.csv", SearchOption.AllDirectories))
 		{
-			using var eReader = new EraStreamReader(false);
+			using EraStreamReader eReader = new(false);
 			if (!eReader.Open(path))
 			{
 				output.PrintError(string.Format(trerror.FailedOpenFile.Text, eReader.Filename));
 				return;
 			}
+
 			ScriptPosition? position = null;
 			if (disp)
+			{
 				output.PrintSystemLine(string.Format(trsl.LoadingFile.Text, eReader.Filename));
+			}
+
 			try
 			{
 				CharStream? st = null;
@@ -1325,63 +1636,100 @@ internal sealed class ConstantData
 						ParserMediator.Warn(trerror.MissingComma.Text, position, 1);
 						continue;
 					}
+
 					if (tokens[0].Length == 0)
 					{
 						ParserMediator.Warn(trerror.StartedComma.Text, position, 1);
 						continue;
 					}
+
 					if (tokens[0].Equals("GLOBAL_MAPS", Config.Config.StringComparison))
 					{
 						for (int i = 1; i < tokens.Length; i++)
+						{
 							GlobalSaveMaps.Add(tokens[i].Trim());
+						}
+
 						continue;
 					}
+
 					if (tokens[0].Equals("SAVE_MAPS", Config.Config.StringComparison))
 					{
 						for (int i = 1; i < tokens.Length; i++)
+						{
 							SaveMaps.Add(tokens[i].Trim());
+						}
+
 						continue;
 					}
+
 					if (tokens[0].Equals("GLOBAL_XMLS", Config.Config.StringComparison))
 					{
 						for (int i = 1; i < tokens.Length; i++)
+						{
 							GlobalSaveXmls.Add(tokens[i].Trim());
+						}
+
 						continue;
 					}
+
 					if (tokens[0].Equals("SAVE_XMLS", Config.Config.StringComparison))
 					{
 						for (int i = 1; i < tokens.Length; i++)
+						{
 							SaveXmls.Add(tokens[i].Trim());
+						}
+
 						continue;
 					}
+
 					if (tokens[0].Equals("GLOBAL_DTS", Config.Config.StringComparison))
 					{
 						for (int i = 1; i < tokens.Length; i++)
+						{
 							GlobalSaveDTs.Add(tokens[i].Trim());
+						}
+
 						continue;
 					}
+
 					if (tokens[0].Equals("SAVE_DTS", Config.Config.StringComparison))
 					{
 						for (int i = 1; i < tokens.Length; i++)
+						{
 							SaveDTs.Add(tokens[i].Trim());
+						}
+
 						continue;
 					}
+
 					if (tokens[0].Equals("STATIC_XMLS", Config.Config.StringComparison))
 					{
 						for (int i = 1; i < tokens.Length; i++)
+						{
 							StaticXmls.Add(tokens[i].Trim());
+						}
+
 						continue;
 					}
+
 					if (tokens[0].Equals("STATIC_MAPS", Config.Config.StringComparison))
 					{
 						for (int i = 1; i < tokens.Length; i++)
+						{
 							StaticMaps.Add(tokens[i].Trim());
+						}
+
 						continue;
 					}
+
 					if (tokens[0].Equals("STATIC_DTS", Config.Config.StringComparison))
 					{
 						for (int i = 1; i < tokens.Length; i++)
+						{
 							StaticDTs.Add(tokens[i].Trim());
+						}
+
 						continue;
 					}
 				}
@@ -1390,9 +1738,14 @@ internal sealed class ConstantData
 			{
 				System.Media.SystemSounds.Hand.Play();
 				if (position != null)
+				{
 					ParserMediator.Warn(trerror.UnexpectedError.Text, position, 3);
+				}
 				else
+				{
 					output.PrintError(trerror.UnexpectedError.Text);
+				}
+
 				return;
 			}
 			finally
@@ -1401,19 +1754,25 @@ internal sealed class ConstantData
 			}
 		}
 	}
+
 	#endregion
+
 	private void loadCharacterDataFile(string csvPath, string csvName, bool disp)
 	{
 		CharacterTemplate? tmpl = null;
-		using var eReader = new EraStreamReader(false);
+		using EraStreamReader eReader = new(false);
 		if (!eReader.OpenOnCache(csvPath, csvName))
 		{
 			output.PrintError(string.Format(trerror.FailedOpenFile.Text, eReader.Filename));
 			return;
 		}
+
 		ScriptPosition? position = null;
 		if (disp)
+		{
 			output.PrintSystemLine(string.Format(trsl.LoadingFile.Text, eReader.Filename));
+		}
+
 		try
 		{
 			long index = -1;
@@ -1427,24 +1786,28 @@ internal sealed class ConstantData
 					ParserMediator.Warn(trerror.MissingComma.Text, position, 1);
 					continue;
 				}
+
 				if (tokens[0].Length == 0)
 				{
 					ParserMediator.Warn(trerror.StartedComma.Text, position, 1);
 					continue;
 				}
+
 				if (tokens[0].Equals("NO", Config.Config.StringComparison)
-					|| tokens[0].Equals("番号", Config.Config.StringComparison))
+				    || tokens[0].Equals("番号", Config.Config.StringComparison))
 				{
 					if (tmpl != null)
 					{
 						ParserMediator.Warn(trerror.CharaNoDefinedTwice.Text, position, 1);
 						continue;
 					}
+
 					if (!long.TryParse(tokens[1].TrimEnd(), out index))
 					{
 						ParserMediator.Warn(string.Format(trerror.CanNotConvertToInt.Text, tokens[1]), position, 1);
 						continue;
 					}
+
 					tmpl = new CharacterTemplate(index, this);
 					string no = eReader.Filename;
 					no = no[(no.IndexOf("CHARA", StringComparison.OrdinalIgnoreCase) + 5)..];
@@ -1455,10 +1818,16 @@ internal sealed class ConstantData
 						sb.Append(ss.Current);
 						ss.ShiftNext();
 					}
+
 					if (sb.Length > 0)
+					{
 						tmpl.csvNo = Convert.ToInt64(sb.ToString());
+					}
 					else
+					{
 						tmpl.csvNo = 0;
+					}
+
 					//tmpl.csvNo = index;
 					CharacterTmplList.Add(tmpl);
 					continue;
@@ -1469,6 +1838,7 @@ internal sealed class ConstantData
 					ParserMediator.Warn(trerror.StartedDataBeforeCharaNo.Text, position, 1);
 					continue;
 				}
+
 				toCharacterTemplate(position, tmpl, tokens);
 			}
 
@@ -1478,9 +1848,14 @@ internal sealed class ConstantData
 		{
 			System.Media.SystemSounds.Hand.Play();
 			if (position != null)
+			{
 				ParserMediator.Warn(trerror.UnexpectedError.Text, position, 3);
+			}
 			else
+			{
 				output.PrintError(trerror.UnexpectedError.Text);
+			}
+
 			return;
 		}
 		finally
@@ -1493,16 +1868,22 @@ internal sealed class ConstantData
 	{
 		p = -1;
 		if (string.IsNullOrEmpty(str))
+		{
 			return false;
+		}
+
 		CharStream st = new(str);
 		int sign = 1;
 		if (st.Current == '+')
+		{
 			st.ShiftNext();
+		}
 		else if (st.Current == '-')
 		{
 			sign = -1;
 			st.ShiftNext();
 		}
+
 		//1803beta005 char.IsDigitは全角数字とかまでひろってしまうので･･･
 		//if (!char.IsDigit(st.Current))
 		// return false;
@@ -1522,6 +1903,7 @@ internal sealed class ConstantData
 			default:
 				return false;
 		}
+
 		try
 		{
 			p = LexicalAnalyzer.ReadInt64(st, false);
@@ -1531,13 +1913,17 @@ internal sealed class ConstantData
 		{
 			return false;
 		}
+
 		return true;
 	}
 
 	private void toCharacterTemplate(ScriptPosition? position, CharacterTemplate chara, string[] tokens)
 	{
 		if (chara == null)
+		{
 			return;
+		}
+
 		int length;
 		Dictionary<int, long>? intArray = null;
 		Dictionary<int, string>? strArray = null;
@@ -1545,7 +1931,7 @@ internal sealed class ConstantData
 
 		string? errPos = null;
 		Span<char> chars = stackalloc char[tokens[0].Length];
-		var varname = tokens[0].AsSpan().ToUpper(chars, CultureInfo.InvariantCulture);
+		int varname = tokens[0].AsSpan().ToUpper(chars, CultureInfo.InvariantCulture);
 		switch (chars)
 		{
 			case "NAME":
@@ -1575,28 +1961,28 @@ internal sealed class ConstantData
 			case "経験":
 				length = CharacterIntArrayLength[(int)(VariableCode.__LOWERCASE__ & VariableCode.EXP)];
 				intArray = chara.Exp;
-				namearray = nameToIntDics[expIndex];//ExpName;
+				namearray = nameToIntDics[expIndex]; //ExpName;
 				errPos = "exp.csv";
 				break;
 			case "ABL":
 			case "能力":
 				length = CharacterIntArrayLength[(int)(VariableCode.__LOWERCASE__ & VariableCode.ABL)];
 				intArray = chara.Abl;
-				namearray = nameToIntDics[ablIndex];//AblName;
+				namearray = nameToIntDics[ablIndex]; //AblName;
 				errPos = "abl.csv";
 				break;
 			case "BASE":
 			case "基礎":
 				length = CharacterIntArrayLength[(int)(VariableCode.__LOWERCASE__ & VariableCode.MAXBASE)];
 				intArray = chara.Maxbase;
-				namearray = nameToIntDics[baseIndex];//BaseName;
+				namearray = nameToIntDics[baseIndex]; //BaseName;
 				errPos = "base.csv";
 				break;
 			case "TALENT":
 			case "素質":
 				length = CharacterIntArrayLength[(int)(VariableCode.__LOWERCASE__ & VariableCode.TALENT)];
 				intArray = chara.Talent;
-				namearray = nameToIntDics[talentIndex];//TalentName;
+				namearray = nameToIntDics[talentIndex]; //TalentName;
 				errPos = "talent.csv";
 				break;
 			case "RELATION":
@@ -1609,27 +1995,27 @@ internal sealed class ConstantData
 			case "フラグ":
 				length = CharacterIntArrayLength[(int)(VariableCode.__LOWERCASE__ & VariableCode.CFLAG)];
 				intArray = chara.CFlag;
-				namearray = nameToIntDics[cflagIndex];//CFlagName;
+				namearray = nameToIntDics[cflagIndex]; //CFlagName;
 				errPos = "cflag.csv";
 				break;
 			case "EQUIP":
 			case "装着物":
 				length = CharacterIntArrayLength[(int)(VariableCode.__LOWERCASE__ & VariableCode.EQUIP)];
 				intArray = chara.Equip;
-				namearray = nameToIntDics[equipIndex];//EquipName;
+				namearray = nameToIntDics[equipIndex]; //EquipName;
 				errPos = "equip.csv";
 				break;
 			case "JUEL":
 			case "珠":
 				length = CharacterIntArrayLength[(int)(VariableCode.__LOWERCASE__ & VariableCode.JUEL)];
 				intArray = chara.Juel;
-				namearray = nameToIntDics[paramIndex];//ParamName;
+				namearray = nameToIntDics[paramIndex]; //ParamName;
 				errPos = "palam.csv";
 				break;
 			case "CSTR":
 				length = CharacterStrArrayLength[(int)(VariableCode.__LOWERCASE__ & VariableCode.CSTR)];
 				strArray = chara.CStr;
-				namearray = nameToIntDics[cstrIndex];//CStrName;
+				namearray = nameToIntDics[cstrIndex]; //CStrName;
 				errPos = "cstr.csv";
 				break;
 			case "ISASSI":
@@ -1639,22 +2025,26 @@ internal sealed class ConstantData
 				ParserMediator.Warn(string.Format(trerror.CanNotInterpreted.Text, tokens[0]), position, 1);
 				return;
 		}
+
 		if (length < 0)
 		{
 			ParserMediator.Warn(trerror.ProgramError.Text, position, 3);
 			return;
 		}
+
 		if (length == 0)
 		{
 			ParserMediator.Warn(string.Format(trerror.IsProhibitedVar.Text, varname), position, 2);
 			return;
 		}
+
 		bool p1isNumeric = tryToInt64(tokens[1].TrimEnd(), out long p1);
 		if (p1isNumeric && (p1 < 0 || p1 >= length))
 		{
 			ParserMediator.Warn(string.Format(trerror.OoRArray.Text, p1.ToString()), position, 1);
 			return;
 		}
+
 		int index = (int)p1;
 		if (!p1isNumeric && namearray != null)
 		{
@@ -1674,57 +2064,91 @@ internal sealed class ConstantData
 		if (index < 0 || index >= length)
 		{
 			if (p1isNumeric)
+			{
 				ParserMediator.Warn(string.Format(trerror.OoRArray.Text, index.ToString()), position, 1);
+			}
 			else if (tokens[1].Length == 0)
+			{
 				ParserMediator.Warn(trerror.MissingSecondIdentifier.Text, position, 1);
+			}
 			else
+			{
 				ParserMediator.Warn(string.Format(trerror.CanNotInterpreted.Text, tokens[1]), position, 1);
+			}
+
 			return;
 		}
+
 		if (strArray != null)
 		{
 			if (tokens.Length < 3)
+			{
 				ParserMediator.Warn(trerror.MissingThirdIdentifier.Text, position, 1);
+			}
+
 			if (strArray.ContainsKey(index))
+			{
 				ParserMediator.Warn(string.Format(trerror.VarKeyAreadyDefined.Text, varname, index.ToString()), position, 1);
+			}
+
 			strArray[index] = tokens[2];
 		}
 		else
 		{
 			if (tokens.Length < 3 || !tryToInt64(tokens[2], out long p2))
+			{
 				p2 = 1;
+			}
+
 			// The switch above assigns intArray exactly when it leaves strArray unset
 			if (intArray!.ContainsKey(index))
+			{
 				ParserMediator.Warn(string.Format(trerror.VarKeyAreadyDefined.Text, varname, index.ToString()), position, 1);
+			}
+
 			intArray[index] = p2;
 		}
 	}
 
 	private void loadDataTo(string csvPath, int targetIndex, long[]? targetI, bool disp)
 	{
-
 		if (!File.Exists(csvPath))
+		{
 			return;
+		}
+
 		// Every caller fills the slot right before the call
 		string?[] target = names[targetIndex]!;
 		HashSet<int> defined = [];
-		using var eReader = new EraStreamReader(false);
+		using EraStreamReader eReader = new(false);
+
 		#region EE_ERD
+
 		// if (!eReader.Open(csvPath))
 		// ERD機能と競合するっぽいので一旦保留
 		// if (!eReader.OpenOnCache(csvPath) && output != null)
 		if (!eReader.Open(csvPath) && output != null)
-		#endregion
+
+			#endregion
+
 		{
 			output.PrintError(string.Format(trerror.FailedOpenFile.Text, eReader.Filename));
 			return;
 		}
+
 		ScriptPosition? position = null;
+
 		#region EE_ERD
+
 		// if (disp || Program.AnalysisMode)
 		if ((disp || Program.AnalysisMode) && output != null)
-		#endregion
+
+			#endregion
+
+		{
 			output.PrintSystemLine(string.Format(trsl.LoadingFile.Text, eReader.Filename));
+		}
+
 		try
 		{
 			CharStream? st = null;
@@ -1732,34 +2156,40 @@ internal sealed class ConstantData
 			while ((st = eReader.ReadEnabledLine()) != null)
 			{
 				position = new ScriptPosition(eReader.Filename, eReader.LineNo);
-				var ros = st.SubstringROS();
-				var length = ros.Split(dest, [',']);
+				ReadOnlySpan<char> ros = st.SubstringROS();
+				int length = ros.Split(dest, [',']);
 				if (length < 2)
 				{
 					ParserMediator.Warn(trerror.MissingComma.Text, position, 1);
 					continue;
 				}
+
 				if (!int.TryParse(ros[dest[0]], out int index))
 				{
 					ParserMediator.Warn(trerror.FirstValueCanNotConvertToInt.Text, position, 1);
 					continue;
 				}
+
 				if (target.Length == 0)
 				{
 					ParserMediator.Warn(trerror.ProhibitedArrayName.Text, position, 2);
 					break;
 				}
+
 				if (index < 0 || target.Length <= index)
 				{
 					ParserMediator.Warn(string.Format(trerror.OoRArray.Text, index.ToString()), position, 1);
 					continue;
 				}
+
 				if (!defined.Add(index))
+				{
 					ParserMediator.Warn(string.Format(trerror.VarKeyAreadyDefined.Text, index.ToString()), position, 1);
+				}
+
 				target[index] = ros[dest[1]].ToString();
 				if (targetI != null && length >= 3)
 				{
-
 					if (!long.TryParse(ros[dest[2]].TrimEnd(), out long price))
 					{
 						ParserMediator.Warn(trerror.CanNotReadAmountOfMoney.Text, position, 1);
@@ -1774,9 +2204,14 @@ internal sealed class ConstantData
 		{
 			System.Media.SystemSounds.Hand.Play();
 			if (position != null)
+			{
 				ParserMediator.Warn(trerror.UnexpectedError.Text, position, 3);
+			}
 			else
+			{
 				output!.PrintError(trerror.UnexpectedError.Text);
+			}
+
 			return;
 		}
 		finally
@@ -1784,7 +2219,7 @@ internal sealed class ConstantData
 			eReader.Close();
 		}
 
-		var aliasPath = Path.GetDirectoryName(csvPath) + "\\" + Path.GetFileNameWithoutExtension(csvPath) + ".als";
+		string aliasPath = Path.GetDirectoryName(csvPath) + "\\" + Path.GetFileNameWithoutExtension(csvPath) + ".als";
 		if (File.Exists(aliasPath))
 		{
 			loadAliases(aliasPath, targetIndex);
@@ -1793,13 +2228,16 @@ internal sealed class ConstantData
 
 	private void loadAliases(string aliasPath, int targetIndex)
 	{
-
 		if (!File.Exists(aliasPath))
+		{
 			return;
+		}
+
 		if (aliases[targetIndex] == null)
 		{
 			aliases[targetIndex] = [];
 		}
+
 		Dictionary<string, int> target = aliases[targetIndex];
 		HashSet<int> defined = [];
 		EraStreamReader eReader = new(false);
@@ -1808,6 +2246,7 @@ internal sealed class ConstantData
 			output.PrintError(string.Format(trerror.FailedOpenFile.Text, eReader.Filename));
 			return;
 		}
+
 		ScriptPosition? position = null;
 		try
 		{
@@ -1821,13 +2260,18 @@ internal sealed class ConstantData
 					ParserMediator.Warn(trerror.MissingComma.Text, position, 1);
 					continue;
 				}
+
 				if (!int.TryParse(tokens[0], out int index))
 				{
 					ParserMediator.Warn(trerror.FirstValueCanNotConvertToInt.Text, position, 1);
 					continue;
 				}
+
 				if (!defined.Add(index))
+				{
 					ParserMediator.Warn(string.Format(trerror.VarKeyAreadyDefined.Text, index.ToString()), position, 1);
+				}
+
 				target.TryAdd(tokens[1], index);
 			}
 		}
@@ -1835,24 +2279,27 @@ internal sealed class ConstantData
 		{
 			System.Media.SystemSounds.Hand.Play();
 			if (position != null)
+			{
 				ParserMediator.Warn(trerror.UnexpectedError.Text, position, 3);
+			}
 			else
+			{
 				output!.PrintError(trerror.UnexpectedError.Text);
+			}
+
 			return;
 		}
 		finally
 		{
 			eReader.Close();
 		}
-
-
 	}
 }
 
 internal sealed class CharacterTemplate
 {
-	readonly int[] arraySize;
-	readonly int cstrSize;
+	private readonly int[] arraySize;
+	private readonly int cstrSize;
 
 	// Unset columns leave these null; readers either check them or copy them into string data
 	public string? Name;
@@ -1879,6 +2326,7 @@ internal sealed class CharacterTemplate
 		cstrSize = constant.CharacterStrArrayLength[(int)(VariableCode.__LOWERCASE__ & VariableCode.CSTR)];
 		No = index;
 	}
+
 	public int ArrayStrLength(CharacterStrData type)
 	{
 		switch (type)
@@ -1895,11 +2343,11 @@ internal sealed class CharacterTemplate
 		switch (type)
 		{
 			case CharacterIntData.BASE:
-				{
-					int size = arraySize[(int)(VariableCode.__LOWERCASE__ & VariableCode.BASE)];
-					int maxSize = arraySize[(int)(VariableCode.__LOWERCASE__ & VariableCode.MAXBASE)];
-					return size > maxSize ? size : maxSize;
-				}
+			{
+				int size = arraySize[(int)(VariableCode.__LOWERCASE__ & VariableCode.BASE)];
+				int maxSize = arraySize[(int)(VariableCode.__LOWERCASE__ & VariableCode.MAXBASE)];
+				return size > maxSize ? size : maxSize;
+			}
 			case CharacterIntData.MARK:
 				return arraySize[(int)(VariableCode.__LOWERCASE__ & VariableCode.MARK)];
 			case CharacterIntData.ABL:
@@ -1925,6 +2373,8 @@ internal sealed class CharacterTemplate
 	{
 		//bool res;
 		if (CFlag.TryGetValue(0, out long value) && value != 0L)
+		{
 			IsSpchara = true;
+		}
 	}
 }

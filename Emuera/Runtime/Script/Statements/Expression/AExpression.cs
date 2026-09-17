@@ -9,6 +9,7 @@ internal abstract class AExpression
 	{
 		type = t;
 	}
+
 	public Type GetOperandType()
 	{
 		return type;
@@ -18,26 +19,29 @@ internal abstract class AExpression
 	{
 		return 0;
 	}
+
 	public virtual string GetStrValue(ExpressionMediator exm)
 	{
 		return "";
 	}
+
 	public virtual SingleTerm GetValue(ExpressionMediator exm)
 	{
 		if (type == typeof(long))
+		{
 			return new SingleLongTerm(0);
+		}
 		else
+		{
 			return new SingleStrTerm("");
+		}
 	}
-	public bool IsInteger
-	{
-		get { return type == typeof(long); }
-	}
-	public bool IsString
-	{
-		get { return type == typeof(string); }
-	}
-	readonly Type type;
+
+	public bool IsInteger => type == typeof(long);
+
+	public bool IsString => type == typeof(string);
+
+	private readonly Type type;
 
 	/// <summary>
 	/// 定数を解体して可能ならSingleTerm化する

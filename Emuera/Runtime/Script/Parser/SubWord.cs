@@ -7,32 +7,43 @@ namespace MinorShift.Emuera.Runtime.Script.Parser;
 /// </summary>
 internal abstract class SubWord
 {
-	protected SubWord(WordCollection? w) { words = w; }
-	readonly WordCollection? words;
-	public WordCollection? Words { get { return words; } }
+	protected SubWord(WordCollection? w)
+	{
+		words = w;
+	}
+
+	private readonly WordCollection? words;
+	public WordCollection? Words => words;
 	public bool IsMacro;
+
 	public virtual void SetIsMacro()
 	{
 		IsMacro = true;
 		Words?.SetIsMacro();
-
 	}
 }
 
 internal sealed class TripleSymbolSubWord : SubWord
 {
-	public TripleSymbolSubWord(char c) : base(null) { code = c; }
-	readonly char code;
-	public char Code { get { return code; } }
+	public TripleSymbolSubWord(char c) : base(null)
+	{
+		code = c;
+	}
+
+	private readonly char code;
+	public char Code => code;
 }
+
 internal sealed class CurlyBraceSubWord : SubWord
 {
-	public CurlyBraceSubWord(WordCollection w) : base(w) { }
+	public CurlyBraceSubWord(WordCollection w) : base(w)
+	{ }
 }
 
 internal sealed class PercentSubWord : SubWord
 {
-	public PercentSubWord(WordCollection w) : base(w) { }
+	public PercentSubWord(WordCollection w) : base(w)
+	{ }
 }
 
 internal sealed class YenAtSubWord : SubWord
@@ -43,16 +54,17 @@ internal sealed class YenAtSubWord : SubWord
 		left = fsLeft;
 		right = fsRight;
 	}
-	readonly StrFormWord left;
-	readonly StrFormWord? right;
-	public StrFormWord Left { get { return left; } }
-	public StrFormWord? Right { get { return right; } }
+
+	private readonly StrFormWord left;
+	private readonly StrFormWord? right;
+	public StrFormWord Left => left;
+	public StrFormWord? Right => right;
 
 	public override void SetIsMacro()
 	{
 		IsMacro = true;
 		Words!.SetIsMacro();
 		Left.SetIsMacro();
-		Right!.SetIsMacro();//Right is null only on the missing-# warning path, which never reaches macro expansion
+		Right!.SetIsMacro(); //Right is null only on the missing-# warning path, which never reaches macro expansion
 	}
 }

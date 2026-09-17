@@ -22,18 +22,22 @@ namespace MinorShift.Emuera;
 //また、使用されている名前を記憶し衝突を検出する。
 internal partial class IdentifierDictionary
 {
-	private static readonly System.Buffers.SearchValues<char> badSymbolAsIdentifier = System.Buffers.SearchValues.Create(
-			[
-			'+', '-', '*', '/', '%', '=', '!', '<', '>', '|', '&', '^', '~',
-			' ', ' ', '\t' ,
-			'\"','(', ')', '{', '}', '[', ']', ',', '.', ':',
-			'\\', '@', '$', '#', '?', ';', '\'',
-				//'_'はOK
-			]);
+	private readonly static System.Buffers.SearchValues<char> badSymbolAsIdentifier = System.Buffers.SearchValues.Create(
+	[
+		'+', '-', '*', '/', '%', '=', '!', '<', '>', '|', '&', '^', '~',
+		' ', ' ', '\t',
+		'\"', '(', ')', '{', '}', '[', ']', ',', '.', ':',
+		'\\', '@', '$', '#', '?', ';', '\''
+		//'_'はOK
+	]);
+
 	#region EM_私家版_辞書獲得
+
 	public string[] VarKeys => varTokenDic.Keys.ToArray();
 	public string[] MacroKeys => macroDic.Values.Select(v => v.Keyword).ToArray();
+
 	#endregion
+
 	private enum DefinedNameType
 	{
 		None = 0,
@@ -41,15 +45,18 @@ internal partial class IdentifierDictionary
 		SystemVariable,
 		SystemMethod,
 		SystemInstrument,
+
 		//UserIdentifier,
 		UserGlobalVariable,
 		UserMacro,
 		UserRefMethod,
-		NameSpace,
+		NameSpace
 	}
-	readonly static Regex regexCom = preCompiledComRegex();
-	readonly static Regex regexComAble = preCompiledComAbleRegex();
-	readonly static Regex regexAblup = preCompiledAblupRegex();
+
+	private readonly static Regex regexCom = preCompiledComRegex();
+	private readonly static Regex regexComAble = preCompiledComAbleRegex();
+	private readonly static Regex regexAblup = preCompiledAblupRegex();
+
 	#region static
 
 	public static bool IsEventLabelName(string labelName)
@@ -67,8 +74,10 @@ internal partial class IdentifierDictionary
 			case "EVENTLOAD":
 				return true;
 		}
+
 		return false;
 	}
+
 	public static bool IsSystemLabelName(string labelName)
 	{
 		switch (labelName)
@@ -102,30 +111,41 @@ internal partial class IdentifierDictionary
 		}
 
 		if (regexCom.IsMatch(labelName))
+		{
 			return true;
+		}
+
 		if (regexComAble.IsMatch(labelName))
+		{
 			return true;
+		}
+
 		if (regexAblup.IsMatch(labelName))
+		{
 			return true;
+		}
+
 		return false;
 	}
+
 	#endregion
 
 
-	readonly Dictionary<string, DefinedNameType> nameDic = new(Config.StrComper);
+	private readonly Dictionary<string, DefinedNameType> nameDic = new(Config.StrComper);
 
-	List<string> privateDimList = [];
+	private List<string> privateDimList = [];
 	//Dictionary<string, VariableToken> userDefinedVarDic = new Dictionary<string, VariableToken>();
 
-	VariableData varData;
-	readonly Dictionary<string, VariableToken> varTokenDic;
-	readonly Dictionary<string, VariableLocal> localvarTokenDic;
-	readonly Dictionary<string, FunctionIdentifier> instructionDic;
-	readonly Dictionary<string, FunctionMethod> methodDic;
-	readonly Dictionary<string, UserDefinedRefMethod> refmethodDic;
+	private VariableData varData;
+	private readonly Dictionary<string, VariableToken> varTokenDic;
+	private readonly Dictionary<string, VariableLocal> localvarTokenDic;
+	private readonly Dictionary<string, FunctionIdentifier> instructionDic;
+	private readonly Dictionary<string, FunctionMethod> methodDic;
+	private readonly Dictionary<string, UserDefinedRefMethod> refmethodDic;
 	public List<UserDefinedCharaVariableToken> CharaDimList = [];
 
 	#region initialize
+
 	public IdentifierDictionary(VariableData varData)
 	{
 		this.varData = varData;
@@ -142,7 +162,7 @@ internal partial class IdentifierDictionary
 		nameDic.Add("GLOBAL", DefinedNameType.Reserved);
 		nameDic.Add("PRIVATE", DefinedNameType.Reserved);
 		nameDic.Add("SAVEDATA", DefinedNameType.Reserved);
-		nameDic.Add("CHARADATA", DefinedNameType.Reserved);//CHARDATAから変更
+		nameDic.Add("CHARADATA", DefinedNameType.Reserved); //CHARDATAから変更
 		nameDic.Add("REF", DefinedNameType.Reserved);
 		nameDic.Add("__DEBUG__", DefinedNameType.Reserved);
 		nameDic.Add("__SKIP__", DefinedNameType.Reserved);
@@ -160,7 +180,7 @@ internal partial class IdentifierDictionary
 		varTokenDic = varData.GetVarTokenDicClone();
 		localvarTokenDic = varData.GetLocalvarTokenDic();
 		methodDic = FunctionMethodCreator.GetMethodList();
-		refmethodDic = new(Config.StrComper);
+		refmethodDic = new Dictionary<string, UserDefinedRefMethod>(Config.StrComper);
 
 		foreach (KeyValuePair<string, FunctionMethod> pair in methodDic)
 		{
@@ -201,6 +221,7 @@ internal partial class IdentifierDictionary
 			warnLevel = 2;
 			return;
 		}
+
 		//1.721 記号をサポートしない方向に変更
 		if (labelName.AsSpan().ContainsAny(badSymbolAsIdentifier))
 		{
@@ -208,14 +229,19 @@ internal partial class IdentifierDictionary
 			warnLevel = 1;
 			return;
 		}
+
 		if (char.IsDigit(labelName[0]) && labelName[0].ToString().Length == LangManager.GetStrlenLang(labelName[0].ToString()))
 		{
 			errMes = string.Format(treer.LabelStartedHalfDigit.Text, labelName);
 			warnLevel = 0;
 			return;
 		}
+
 		if (!isFunction || !Config.WarnFunctionOverloading)
+		{
 			return;
+		}
+
 		if (nameDic.TryGetValue(labelName, out DefinedNameType value))
 		{
 			switch (value)
@@ -231,6 +257,7 @@ internal partial class IdentifierDictionary
 						errMes = string.Format(treer.LabelConflictReservedWord2.Text, labelName);
 						warnLevel = 2;
 					}
+
 					break;
 				case DefinedNameType.SystemMethod:
 					if (Config.AllowFunctionOverloading)
@@ -243,6 +270,7 @@ internal partial class IdentifierDictionary
 						errMes = string.Format(treer.LabelNameAlreadyUsedInternalExpression.Text, labelName);
 						warnLevel = 2;
 					}
+
 					break;
 				case DefinedNameType.SystemVariable:
 					errMes = string.Format(treer.LabelNameAlreadyUsedInternalVariable.Text, labelName);
@@ -263,6 +291,7 @@ internal partial class IdentifierDictionary
 					break;
 			}
 		}
+
 		return;
 	}
 
@@ -330,6 +359,7 @@ internal partial class IdentifierDictionary
 			warnLevel = 2;
 			return;
 		}
+
 		if (nameDic.TryGetValue(macroName, out DefinedNameType value))
 		{
 			switch (value)
@@ -373,6 +403,7 @@ internal partial class IdentifierDictionary
 			warnLevel = 2;
 			return;
 		}
+
 		//1.721 記号をサポートしない方向に変更
 		if (varName.AsSpan().IndexOfAny(badSymbolAsIdentifier) != -1)
 		{
@@ -380,12 +411,14 @@ internal partial class IdentifierDictionary
 			warnLevel = 2;
 			return;
 		}
+
 		if (char.IsDigit(varName[0]))
 		{
 			errMes = string.Format(treer.VarStartedHalfDigit.Text, varName);
 			warnLevel = 2;
 			return;
 		}
+
 		if (nameDic.TryGetValue(varName, out DefinedNameType value))
 		{
 			switch (value)
@@ -421,33 +454,38 @@ internal partial class IdentifierDictionary
 					break;
 			}
 		}
+
 		privateDimList.Add(varName);
 	}
+
 	#endregion
 
 	#region header.erb
+
 	//1807 ErbLoaderに移動
-	Dictionary<string, DefineMacro> macroDic = new(Config.StrComper);
+	private Dictionary<string, DefineMacro> macroDic = new(Config.StrComper);
 
 	internal void AddUseDefinedVariable(VariableToken var)
 	{
 		varTokenDic.Add(var.Name, var);
 		if (var.IsCharacterData)
-		{
+		{ }
 
-		}
 		nameDic.Add(var.Name, DefinedNameType.UserGlobalVariable);
 	}
+
 	internal void AddMacro(DefineMacro mac)
 	{
 		nameDic.Add(mac.Keyword, DefinedNameType.UserMacro);
 		macroDic.Add(mac.Keyword, mac);
 	}
+
 	internal void AddRefMethod(UserDefinedRefMethod refm)
 	{
 		refmethodDic.Add(refm.Name, refm);
 		nameDic.Add(refm.Name, DefinedNameType.UserRefMethod);
 	}
+
 	#endregion
 
 	#region get
@@ -459,8 +497,11 @@ internal partial class IdentifierDictionary
 
 	public DefineMacro? GetMacro(string key)
 	{
-		if (macroDic.TryGetValue(key, out var value))
+		if (macroDic.TryGetValue(key, out DefineMacro? value))
+		{
 			return value;
+		}
+
 		return null;
 	}
 
@@ -472,40 +513,50 @@ internal partial class IdentifierDictionary
 		if (allowPrivate)
 		{
 			LogicalLine? line = GlobalStatic.Process.GetScaningLine();
-			if ((line != null) && (line.ParentLabelLine != null))
+			if (line != null && line.ParentLabelLine != null)
 			{
 				ret = line.ParentLabelLine.GetPrivateVariable(key);
 				if (ret != null)
 				{
 					if (subKey != null)
+					{
 						throw new CodeEE(string.Format(treer.UsedAtForPrivVar.Text, key));
+					}
+
 					return ret;
 				}
 			}
 		}
+
 		if (localvarTokenDic.TryGetValue(key, out VariableLocal? value))
 		{
 			if (value.IsForbid)
 			{
 				throw new CodeEE(string.Format(treer.UsedProhibitedVar.Text, key));
 			}
+
 			LogicalLine? line = GlobalStatic.Process.GetScaningLine();
 			if (string.IsNullOrEmpty(subKey))
 			{
 				//システムの入力待ち中にデバッグコマンドからLOCALを呼んだとき。
-				if ((line == null) || (line.ParentLabelLine == null))
+				if (line == null || line.ParentLabelLine == null)
+				{
 					throw new CodeEE(string.Format(treer.CannotGetKeyNotExistRunningFunction.Text, key));
+				}
+
 				subKey = line.ParentLabelLine.LabelName;
 			}
 			else
 			{
 				ParserMediator.Warn(treer.CannotRecommendCallLocalVar.Text, line!, 1, false, false);
 			}
+
 			// Only the subKey-less path above proves a parent label exists; with an explicit subKey the
 			// dereference inside keeps its previous behavior
 			LocalVariableToken retLocal = value.GetNewVariableTokenIfAbsent(subKey, line!.ParentLabelLine!);
 			return retLocal;
 		}
+
 		if (varTokenDic.TryGetValue(key, out ret))
 		{
 			//一文字変数の禁止オプションを考えた名残
@@ -514,15 +565,26 @@ internal partial class IdentifierDictionary
 			if (ret.IsForbid)
 			{
 				if (!ret.CanForbid)
+				{
 					throw new ExeEE(string.Format(treer.InvalidProhibitedVar.Text, ret.Name));
+				}
+
 				throw new CodeEE(string.Format(treer.UsedProhibitedVar.Text, ret.Name));
 			}
+
 			if (subKey != null)
+			{
 				throw new CodeEE(string.Format(treer.UsedAtForGlobalVar.Text, key));
+			}
+
 			return ret;
 		}
+
 		if (subKey != null)
+		{
 			throw new CodeEE(treer.InvalidAt.Text);
+		}
+
 		return null;
 	}
 
@@ -530,13 +592,23 @@ internal partial class IdentifierDictionary
 	{
 		string key = str;
 		if (string.IsNullOrEmpty(key))
+		{
 			return null;
+		}
+
 		if (Config.IgnoreCase)
+		{
 			key = key.ToUpper();
+		}
+
 		if (instructionDic.TryGetValue(key, out FunctionIdentifier? ret))
+		{
 			return ret;
+		}
 		else
+		{
 			return null;
+		}
 	}
 
 	public List<string> GetOverloadedList(LabelDictionary labelDic)
@@ -546,18 +618,28 @@ internal partial class IdentifierDictionary
 		{
 			FunctionLabelLine? func = labelDic.GetNonEventLabel(pair.Key);
 			if (func == null)
+			{
 				continue;
+			}
+
 			if (!func.IsMethod)
+			{
 				continue;
+			}
+
 			list.Add(pair.Key);
 		}
+
 		return list;
 	}
 
 	public UserDefinedRefMethod? GetRefMethod(string codeStr)
 	{
 		if (refmethodDic.TryGetValue(codeStr, out UserDefinedRefMethod? value))
+		{
 			return value;
+		}
+
 		return null;
 	}
 
@@ -565,16 +647,23 @@ internal partial class IdentifierDictionary
 	{
 		//if (Config.Config.IgnoreCase)
 		//	codeStr = codeStr.ToUpper();
-		if (arguments == null)//引数なし、名前のみの探索
+		if (arguments == null) //引数なし、名前のみの探索
 		{
 			if (refmethodDic.TryGetValue(codeStr, out UserDefinedRefMethod? value))
+			{
 				return new UserDefinedRefMethodNoArgTerm(value);
+			}
+
 			return null;
 		}
-		if ((labelDic != null) && labelDic.Initialized)
+
+		if (labelDic != null && labelDic.Initialized)
 		{
 			if (refmethodDic.TryGetValue(codeStr, out UserDefinedRefMethod? value))
+			{
 				return new UserDefinedRefMethodTerm(value, arguments);
+			}
+
 			FunctionLabelLine? func = labelDic.GetNonEventLabel(codeStr);
 			if (func != null)
 			{
@@ -582,26 +671,43 @@ internal partial class IdentifierDictionary
 				{
 					throw new CodeEE(string.Format(treer.CallfNonMethodFunc.Text, func.LabelName));
 				}
+
 				if (func.IsMethod)
 				{
 					string errMes;
 					AExpression? ret = UserDefinedMethodTerm.Create(func, arguments, out errMes);
 					if (ret == null)
+					{
 						throw new CodeEE(errMes);
+					}
+
 					return ret;
 				}
+
 				//1.721 #FUNCTIONが定義されていない関数は組み込み関数を上書きしない方向に。 PANCTION.ERBのRANDとか。
 				if (!methodDic.ContainsKey(codeStr))
+				{
 					throw new CodeEE(string.Format(treer.UsedNonMethodFunc.Text, func.Position!.Value.Filename, func.Position!.Value.LineNo));
+				}
 			}
 		}
+
 		if (userDefinedOnly)
+		{
 			return null;
+		}
+
 		if (!methodDic.TryGetValue(codeStr, out FunctionMethod? method))
+		{
 			return null;
+		}
+
 		string? errmes = method.CheckArgumentType(codeStr, arguments);
 		if (errmes != null)
+		{
 			throw new CodeEE(errmes);
+		}
+
 		return new FunctionMethodTerm(method, arguments);
 	}
 
@@ -614,7 +720,10 @@ internal partial class IdentifierDictionary
 		//if (Config.Config.IgnoreCase || Config.Config.IgnoreCase) //片方だけなのは互換性用オプションなのでレアケースのはず。対応しない。
 		//	idStr = idStr.ToUpper();
 		if (!isFunc && privateDimList.Contains(idStr))
+		{
 			throw new IdentifierNotFoundCodeEE(string.Format(treer.VarNotDefinedThisFunc.Text, str));
+		}
+
 		if (nameDic.TryGetValue(idStr, out DefinedNameType value))
 		{
 			DefinedNameType type = value;
@@ -625,41 +734,55 @@ internal partial class IdentifierDictionary
 				case DefinedNameType.SystemVariable:
 				case DefinedNameType.UserGlobalVariable:
 					if (isFunc)
+					{
 						throw new CodeEE(string.Format(treer.UseVarLikeFunc.Text, str));
+					}
+
 					break;
 				case DefinedNameType.SystemMethod:
 				case DefinedNameType.UserRefMethod:
 					if (!isFunc)
+					{
 						throw new CodeEE(string.Format(treer.UseFuncLikeVar.Text, str));
+					}
+
 					break;
 				case DefinedNameType.UserMacro:
 					throw new CodeEE(string.Format(treer.UnexpectedMacro.Text, str));
 				case DefinedNameType.SystemInstrument:
 					if (isFunc)
+					{
 						throw new CodeEE(string.Format(treer.UseInstructionLikeFunc.Text, str));
+					}
 					else
+					{
 						throw new CodeEE(string.Format(treer.UseInstructionLikeVar.Text, str));
-
+					}
 			}
 		}
+
 		if (!JSONConfig.Data.UseScopedVariableInstruction &&
-			(idStr == "VARS" || idStr == "VARI"))
+		    (idStr == "VARS" || idStr == "VARI"))
 		{
 			throw new CodeEE(string.Format(treer.CanNotUseVAR.Text, idStr));
 		}
 
 		throw new IdentifierNotFoundCodeEE(string.Format(treer.CanNotInterpreted.Text, idStr));
 	}
+
 	[GeneratedRegex("^COM[0-9]+$")]
 	private static partial Regex preCompiledComRegex();
+
 	[GeneratedRegex("^COM_ABLE[0-9]+$")]
 	private static partial Regex preCompiledComAbleRegex();
+
 	[GeneratedRegex("^ABLUP[0-9]+$")]
 	private static partial Regex preCompiledAblupRegex();
 
 	#endregion
 
 	#region util
+
 	public void resizeLocalVars(string key, string subKey, int newSize)
 	{
 		localvarTokenDic[key].ResizeLocalVariableToken(subKey, newSize);
@@ -674,16 +797,22 @@ internal partial class IdentifierDictionary
 	{
 		return localvarTokenDic[key].IsForbid;
 	}
+
 	public bool getVarTokenIsForbid(string key)
 	{
 		if (localvarTokenDic.TryGetValue(key, out VariableLocal? value))
+		{
 			return value.IsForbid;
+		}
+
 		varTokenDic.TryGetValue(key, out VariableToken? var);
 		if (var != null)
+		{
 			return var.IsForbid;
+		}
+
 		return true;
 	}
+
 	#endregion
-
-
 }

@@ -26,15 +26,21 @@ internal static class GlobalStatic
 	//Config Replace
 	//public static MainWindow MainWindow;
 	public static EmueraConsole Console = null!;
+
 	public static Process Process = null!;
+
 	//Config.RenameDic
 	public static GameBase GameBaseData = null!;
 	public static ConstantData ConstantData = null!;
+
 	public static VariableData VariableData = null!;
+
 	//StrForm
 	public static VariableEvaluator VEvaluator = null!;
 	public static IdentifierDictionary IdentifierDictionary = null!;
+
 	public static ExpressionMediator EMediator = null!;
+
 	//
 	public static LabelDictionary LabelDictionary = null!;
 
@@ -42,21 +48,31 @@ internal static class GlobalStatic
 	//ERBloaderに引数解析の結果を渡すための橋渡し変数
 	//1756 Processから移動。Program.AnalysisMode用
 	public static Dictionary<string, long> tempDic = new(StringComparer.OrdinalIgnoreCase);
+
 	/// <summary>
 	/// Guards <see cref="tempDic"/>. In AnalysisMode the dictionary is written from the depth-layer
 	/// workers of ErbLoader.ParseScript, so every write and the read-back enumeration take this lock.
 	/// </summary>
-	public static readonly object TempDicLock = new();
+	public readonly static object TempDicLock = new();
+
 	#region EE_FORCE_QUIT_AND_RESTART
-	public static bool ForceQuitAndRestart;//連続実行を防ぐ
+
+	public static bool ForceQuitAndRestart; //連続実行を防ぐ
+
 	#endregion
+
 	#region EE_フォントファイル対応
+
 	public static PrivateFontCollection Pfc = new();
+
 	#endregion
 
 	public static CtrlZ ctrlZ = new();
+
 	#region EE_CALLSHARP注意
+
 	public static bool ExistPlugin;
+
 	#endregion
 
 #if DEBUG

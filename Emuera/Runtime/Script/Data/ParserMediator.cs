@@ -19,6 +19,7 @@ internal partial class ParserMediator
 	{
 		RenameDic = [];
 	}
+
 	/// <summary>
 	/// emuera.config等で発生した警告
 	/// Initializeより前に発生する
@@ -27,12 +28,16 @@ internal partial class ParserMediator
 	/// <param name="?"></param>
 	public static void ConfigWarn(string str, ScriptPosition? pos, int level, string? stack)
 	{
-		if (level <Config.DisplayWarningLevel && !Program.AnalysisMode)
+		if (level < Config.DisplayWarningLevel && !Program.AnalysisMode)
+		{
 			return;
+		}
+
 		warningList.Add(new ParserWarning(str, pos, level, stack));
 	}
 
-	static EmueraConsole? console;
+	private static EmueraConsole? console;
+
 	public static void Initialize(EmueraConsole? console)
 	{
 		ParserMediator.console = console;
@@ -46,7 +51,7 @@ internal partial class ParserMediator
 	/// </summary>
 	public static bool DeferParseErrorSound { get; set; }
 
-	static int parseErrorCount;
+	private static int parseErrorCount;
 
 	/// <summary>
 	/// Records that a parse error occurred. Thread-safe. When <see cref="DeferParseErrorSound"/> is
@@ -60,6 +65,7 @@ internal partial class ParserMediator
 			System.Threading.Interlocked.Increment(ref parseErrorCount);
 			return;
 		}
+
 		System.Media.SystemSounds.Hand.Play();
 	}
 
@@ -91,7 +97,9 @@ internal partial class ParserMediator
 	}
 
 	#region Rename
+
 	public static Dictionary<string, string> RenameDic { get; private set; }
+
 	//1756 Process.Load.csより移動
 	public static void LoadEraExRenameFile(string filepath)
 	{
@@ -99,21 +107,27 @@ internal partial class ParserMediator
 		{
 			return;
 		}
-		if (RenameDic.Count > 0)
-			RenameDic.Clear();
 
-		var fileLine = File.ReadAllLines(filepath, EncodingHandler.DetectEncoding(filepath));
+		if (RenameDic.Count > 0)
+		{
+			RenameDic.Clear();
+		}
+
+		string[] fileLine = File.ReadAllLines(filepath, EncodingHandler.DetectEncoding(filepath));
 		ScriptPosition? pos = null;
 		Regex regex = unEscapedCommaRegex();
 		try
 		{
-			var lineNo = 0;
-			foreach (var line in fileLine)
+			int lineNo = 0;
+			foreach (string line in fileLine)
 			{
 				pos = new ScriptPosition(filepath, lineNo);
 				if (line.StartsWith(';'))
+				{
 					continue;
-				var tokens = regex.Split(line);
+				}
+
+				string[] tokens = regex.Split(line);
 				if (tokens.Length == 2)
 				{
 					//右がERB中の表記、左が変換先になる。
@@ -121,6 +135,7 @@ internal partial class ParserMediator
 					string value = tokens[0].Trim();
 					RenameDic[key] = value;
 				}
+
 				lineNo++;
 			}
 		}
@@ -129,9 +144,10 @@ internal partial class ParserMediator
 			throw new CodeEE(e.Message, pos);
 		}
 	}
+
 	#endregion
 
-	static object warningListLock = new();
+	private static object warningListLock = new();
 
 	public static void Warn(string str, ScriptPosition? pos, int level)
 	{
@@ -141,7 +157,10 @@ internal partial class ParserMediator
 	public static void Warn(string str, ScriptPosition? pos, int level, string? stack)
 	{
 		if (level < Config.DisplayWarningLevel && !Program.AnalysisMode)
+		{
 			return;
+		}
+
 		if (console != null && !console.RunERBFromMemory)
 		{
 			lock (warningListLock)
@@ -174,10 +193,17 @@ internal partial class ParserMediator
 				line.ErrMes = str;
 			}
 		}
+
 		if (level < Config.DisplayWarningLevel && !Program.AnalysisMode)
+		{
 			return;
+		}
+
 		if (isBackComp && !Config.WarnBackCompatibility)
+		{
 			return;
+		}
+
 		if (console != null && !console.RunERBFromMemory)
 		{
 			lock (warningListLock)
@@ -200,6 +226,7 @@ internal partial class ParserMediator
 			}
 		}
 	}
+
 	public static void ClearWarningList()
 	{
 		lock (warningListLock)
@@ -216,6 +243,7 @@ internal partial class ParserMediator
 			pending = [.. warningList];
 			warningList.Clear();
 		}
+
 		for (int i = 0; i < pending.Length; i++)
 		{
 			ParserWarning warning = pending[i];
@@ -241,6 +269,7 @@ internal partial class ParserMediator
 			WarningLevel = level;
 			StackTrace = stackTrace;
 		}
+
 		public string WarningMes;
 		public ScriptPosition? WarningPos;
 		public int WarningLevel;
@@ -255,5 +284,4 @@ internal partial class ParserMediator
 		// Same as above: the console is present whenever this is called
 		console!.PrintSingleLine(str);
 	}
-
 }

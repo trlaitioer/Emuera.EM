@@ -12,17 +12,20 @@ namespace MinorShift.Emuera.Forms;
 public partial class RikaiDialog : Form
 {
 	private byte[] mEdict;
+
 	//Built by the worker and only read back from bwRunWorkerCompleted
 	private byte[] mEdictIndex = null!;
+
 	public delegate void RikaiSendIndex(byte[] edictind);
+
 	private RikaiSendIndex rikaiSendIndex;
 	public Encoding eucjp = Encoding.GetEncoding(20932);
 	private List<string> dialogLines = new(16);
-	DateTime start = DateTime.Now;
+	private DateTime start = DateTime.Now;
 
 	public RikaiDialog(byte[] edict, RikaiSendIndex rikaiSendIndex)
 	{
-		this.mEdict = edict;
+		mEdict = edict;
 		this.rikaiSendIndex = rikaiSendIndex;
 
 		dialogLines.Add("");
@@ -44,44 +47,51 @@ public partial class RikaiDialog : Form
 	}
 
 	private void bwRunWorkerCompleted(
-		object? sender, RunWorkerCompletedEventArgs e)
+		object? sender,
+		RunWorkerCompletedEventArgs e
+	)
 	{
 		rikaiSendIndex(mEdictIndex);
 	}
 
 	private void bwProgressChanged(object? sender, ProgressChangedEventArgs e)
 	{
-		var per = e.ProgressPercentage;
+		int per = e.ProgressPercentage;
 		dialogLines[0] = $"Generating {Config.RikaiFilename}.ind, {e.ProgressPercentage}% done.";
 		if (per >= 20 && dialogLines[1].Length == 0)
 		{
-			var timeSpan = DateTime.Now - start;
+			TimeSpan timeSpan = DateTime.Now - start;
 			dialogLines[1] = $"20% in {(int)timeSpan.TotalSeconds} seconds";
 		}
+
 		if (per >= 40 && dialogLines[2].Length == 0)
 		{
-			var timeSpan = DateTime.Now - start;
+			TimeSpan timeSpan = DateTime.Now - start;
 			dialogLines[2] = $"40% in {(int)timeSpan.TotalSeconds} seconds";
 		}
+
 		if (per >= 60 && dialogLines[3].Length == 0)
 		{
-			var timeSpan = DateTime.Now - start;
+			TimeSpan timeSpan = DateTime.Now - start;
 			dialogLines[3] = $"60% in {(int)timeSpan.TotalSeconds} seconds";
 		}
+
 		if (per >= 80 && dialogLines[4].Length == 0)
 		{
-			var timeSpan = DateTime.Now - start;
+			TimeSpan timeSpan = DateTime.Now - start;
 			dialogLines[4] = $"80% in {(int)timeSpan.TotalSeconds} seconds";
 		}
+
 		if (per >= 100 && dialogLines[5].Length == 0)
 		{
-			var timeSpan = DateTime.Now - start;
+			TimeSpan timeSpan = DateTime.Now - start;
 			dialogLines[5] = $"100% in {(int)timeSpan.TotalSeconds} seconds";
 		}
+
 		label.Text = string.Join("\n", dialogLines);
 	}
 
-	class EdictParser
+	private class EdictParser
 	{
 		public byte[] mEdict;
 		public ReadOnlyMemory<byte> mEdictMemory;
@@ -168,11 +178,12 @@ public partial class RikaiDialog : Form
 					}
 				}
 			}
+
 			return;
 		}
 	}
 
-	class IndexEntryList
+	private class IndexEntryList
 	{
 		public List<IndexEntry> mList = new(0x10000); //TODO: get final size and add it here, rounded up just in case
 
@@ -184,13 +195,14 @@ public partial class RikaiDialog : Form
 			//mList.Insert(0, aIndexEntry);
 			// IndexEntry aIndexEntry
 
-			var ie = new IndexEntry(aWord);
+			IndexEntry ie = new(aWord);
 
 			int index = mList.BinarySearch(ie);
 			if (index >= 0)
 			{
 				mList[index].offsets.Add(offset);
-			} else
+			}
+			else
 			{
 				ie.offsets.Add(offset);
 				mList.Insert(~index, ie);
@@ -199,7 +211,7 @@ public partial class RikaiDialog : Form
 
 		public void AddFirst(ReadOnlyMemory<byte> aWord, int offset)
 		{
-			var indexEntry = new IndexEntry(aWord);
+			IndexEntry indexEntry = new(aWord);
 			indexEntry.offsets.Add(offset);
 			//TODO: either modify constructor to accept offset, or do fancy {x = 1, y = 2} creation thing.
 			mList.Add(indexEntry);
@@ -207,14 +219,14 @@ public partial class RikaiDialog : Form
 
 		public void AddSecond(ReadOnlyMemory<byte> aWord, int offset)
 		{
-			var indexEntry = new IndexEntry(aWord);
+			IndexEntry indexEntry = new(aWord);
 			indexEntry.offsets.Add(offset);
 			//TODO: either modify constructor to accept offset, or do fancy {x = 1, y = 2} creation thing.
 			mList.Add(indexEntry);
 		}
 	}
 
-	class IndexEntry : IComparable<IndexEntry>
+	private class IndexEntry : IComparable<IndexEntry>
 	{
 		public ReadOnlyMemory<byte> mWord;
 		public List<int> offsets;
@@ -228,14 +240,14 @@ public partial class RikaiDialog : Form
 		//List.BinarySearch never passes null; the nullable parameter matches IComparable<IndexEntry>.CompareTo
 		public int CompareTo(IndexEntry? ie)
 		{
-			return Compare(this.mWord, ie!.mWord);
+			return Compare(mWord, ie!.mWord);
 		}
 	}
 
 	// Returns 0 when equal, 1 when first bigger, -1 when first smaller
 	private static int Compare(ReadOnlyMemory<byte> first, ReadOnlyMemory<byte> second)
 	{
-		var res = first.Span.SequenceCompareTo(second.Span);
+		int res = first.Span.SequenceCompareTo(second.Span);
 		return res;
 	}
 
@@ -262,11 +274,11 @@ public partial class RikaiDialog : Form
 		//DoWork is always raised by this worker, so sender is it
 		BackgroundWorker? worker = sender as BackgroundWorker;
 
-		var indexEntryList = new IndexEntryList();
+		IndexEntryList indexEntryList = new();
 
 		int oldPercentage = -1;
 
-		var edictParser = new EdictParser(mEdict);
+		EdictParser edictParser = new(mEdict);
 
 		edictParser.Step();
 		indexEntryList.AddFirst(edictParser.mWord, edictParser.mStart);
@@ -282,7 +294,7 @@ public partial class RikaiDialog : Form
 				worker!.ReportProgress(100);
 				break;
 			}
-			
+
 			{
 				long tickNew = DateTime.Now.Ticks;
 				if (tickNew > edictParser.mTickNext)
@@ -300,21 +312,24 @@ public partial class RikaiDialog : Form
 			indexEntryList.Add(edictParser.mWord, edictParser.mStart);
 
 
-			if (edictParser.mPronunciation.Equals(null)) continue;
-			
+			if (edictParser.mPronunciation.Equals(null))
+			{
+				continue;
+			}
+
 			indexEntryList.Add(edictParser.mPronunciation, edictParser.mStart);
 		}
 
-		var memory = new MemoryStream(0x10000);
+		MemoryStream memory = new(0x10000);
 		memory.WriteByte(0);
 
-		var bytesToWrite = new List<byte>(64);
+		List<byte> bytesToWrite = new(64);
 
-		foreach (var ie in indexEntryList.mList)
-		
+		foreach (IndexEntry ie in indexEntryList.mList)
+
 		{
 			memory.Write(ie.mWord.Span);
-			foreach (var offset in ie.offsets)
+			foreach (int offset in ie.offsets)
 			{
 				int num = offset;
 				int rem;
@@ -329,7 +344,7 @@ public partial class RikaiDialog : Form
 
 					//if (rem >= 0 && rem <= 2)
 					//if (rem >= 0 && rem <= 3)
-					if ((rem >> 2) == 0)
+					if (rem >> 2 == 0)
 					{
 						bytesToWrite.Insert(0, 2);
 						rem = (rem << 2) + 2;
@@ -340,27 +355,27 @@ public partial class RikaiDialog : Form
 						bytesToWrite.Insert(0, (byte)rem);
 					}
 
-					if (num == 0) break;
+					if (num == 0)
+					{
+						break;
+					}
 				} //end single offset
 
 				foreach (byte b in bytesToWrite)
 				{
 					memory.WriteByte(b);
 				}
-
 			}
 
 			memory.WriteByte(0);
-
 		}
 
 		mEdictIndex = memory.ToArray();
 
-		using (FileStream fileStream = new FileStream(Program.ExeDir + Config.RikaiFilename + ".ind", FileMode.Create, FileAccess.Write))
+		using (FileStream fileStream = new(Program.ExeDir + Config.RikaiFilename + ".ind", FileMode.Create, FileAccess.Write))
 		{
 			memory.Position = 0;
 			memory.CopyTo(fileStream);
 		}
 	}
 }
-

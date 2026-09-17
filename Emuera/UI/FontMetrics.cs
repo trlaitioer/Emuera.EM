@@ -30,14 +30,16 @@ internal static class FontMetrics
 
 	/// <summary>The probe text is one character, so the proposed box only has to be wide enough not to wrap it.</summary>
 	private const int ProbeBoxWidth = 4096;
+
 	private const int ProbeBoxHeight = 64;
 
 	/// <summary>
 	/// Full width advances by (font name, size). The font name only changes when the process restarts, so the
 	/// entries are never invalidated and stay bounded by the sizes the lookup enumerates.
 	/// </summary>
-	private static readonly Dictionary<(string FontName, int Size), int> advances = [];
-	private static readonly object advancesLock = new();
+	private readonly static Dictionary<(string FontName, int Size), int> advances = [];
+
+	private readonly static object advancesLock = new();
 
 	//Created together on the first measurement, before any read
 	private static Bitmap probeBitmap = null!;
@@ -52,13 +54,20 @@ internal static class FontMetrics
 	public static int FindRenderSizePx(string? fontName, int baseFontSize)
 	{
 		if (baseFontSize <= 0)
+		{
 			return baseFontSize;
+		}
+
 		if (string.IsNullOrEmpty(fontName))
+		{
 			fontName = BaselineFontName;
+		}
 
 		int baselineCell = MeasureAdvance(BaselineFontName, baseFontSize);
 		if (baselineCell <= 0)
+		{
 			baselineCell = baseFontSize;
+		}
 
 		//The search starts from the configured size, which is what keeps the baseline font on it: the advance
 		//the layout compares against is that font's own, so the error is zero there. A tie only replaces a
@@ -78,8 +87,12 @@ internal static class FontMetrics
 				bestError = error;
 			}
 		}
+
 		if (bestError > MaxErrorPx)
+		{
 			return baseFontSize;
+		}
+
 		return best;
 	}
 
@@ -97,7 +110,9 @@ internal static class FontMetrics
 		lock (advancesLock)
 		{
 			if (advances.TryGetValue((fontName, size), out int cached))
+			{
 				return cached;
+			}
 
 			int advance = 0;
 			Font? font = FontFactory.CreateFont(fontName, size, FontStyle.Regular);
@@ -110,11 +125,13 @@ internal static class FontMetrics
 						probeBitmap = new Bitmap(16, 16, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 						probeGraphics = Graphics.FromImage(probeBitmap);
 					}
+
 					Size measured = TextRenderer.MeasureText(probeGraphics, FullWidthProbe.ToString(), font,
 						new Size(ProbeBoxWidth, ProbeBoxHeight), TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix);
 					advance = measured.Width;
 				}
 			}
+
 			advances[(fontName, size)] = advance;
 			return advance;
 		}

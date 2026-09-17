@@ -5,6 +5,7 @@ using MinorShift.Emuera.Runtime.Utils;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using MinorShift.Emuera.Runtime.Utils.EvilMask;
 using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 
 namespace MinorShift.Emuera.Runtime.Script.Statements.Function;
@@ -14,7 +15,9 @@ internal abstract class FunctionMethod
 	public Type ReturnType { get; protected set; } = null!;
 	protected Type[]? argumentTypeArray;
 	protected string Name { get; private set; } = null!;
+
 	#region EM_私家版_Emuera多言語化改造
+
 	protected enum ArgType
 	{
 		Invalid = 0,
@@ -29,7 +32,7 @@ internal abstract class FunctionMethod
 		Array3D = 1 << 7,
 		Variadic = 1 << 8,
 		SameAsFirst = 1 << 9,
-		CharacterData = Ref | 1 << 10,
+		CharacterData = Ref | (1 << 10),
 		AllowConstRef = 1 << 11,
 		DisallowVoid = 1 << 12,
 
@@ -52,45 +55,44 @@ internal abstract class FunctionMethod
 		VariadicAny = Variadic | Any,
 		VariadicInt = Variadic | Int,
 		VariadicString = Variadic | String,
-		VariadicSameAsFirst = Variadic | SameAsFirst,
+		VariadicSameAsFirst = Variadic | SameAsFirst
 	}
+
 	protected sealed class _ArgType
 	{
 		public _ArgType(ArgType t)
 		{
 			type = t;
 		}
-		public Type Type { get { return Int ? typeof(long) : typeof(string); } }
+
+		public Type Type => Int ? typeof(long) : typeof(string);
 		public ArgType type = ArgType.Invalid;
-		public bool AllowConstRef { get { return (type & ArgType.AllowConstRef) != 0; } }
-		public bool DisallowVoid { get { return (type & ArgType.DisallowVoid) != 0; } }
-		public bool Ref { get { return (type & ArgType.Ref) != 0; } }
-		public bool Any { get { return (type & ArgType.Any) != 0; } }
-		public bool Int { get { return (type & ArgType.Int) != 0; } }
-		public bool Array { get { return (type & ArgType.Array) != 0; } }
-		public bool Array1D { get { return (type & ArgType.Array1D) != 0; } }
-		public bool Array2D { get { return (type & ArgType.Array2D) != 0; } }
-		public bool Array3D { get { return (type & ArgType.Array2D) != 0; } }
-		public bool String { get { return (type & ArgType.String) != 0; } }
-		public bool Variadic { get { return (type & ArgType.Variadic) != 0; } }
-		public bool SameAsFirst { get { return (type & ArgType.SameAsFirst) != 0; } }
-		public bool CharacterData { get { return ((int)type & 1 << 10) != 0; } }
-		public int ArrayDims
-		{
-			get
-			{
-				return Array ? -1
-					: Array1D ? 1
-					: Array2D ? 2
-					: Array3D ? 3 : 0;
-			}
-		}
+		public bool AllowConstRef => (type & ArgType.AllowConstRef) != 0;
+		public bool DisallowVoid => (type & ArgType.DisallowVoid) != 0;
+		public bool Ref => (type & ArgType.Ref) != 0;
+		public bool Any => (type & ArgType.Any) != 0;
+		public bool Int => (type & ArgType.Int) != 0;
+		public bool Array => (type & ArgType.Array) != 0;
+		public bool Array1D => (type & ArgType.Array1D) != 0;
+		public bool Array2D => (type & ArgType.Array2D) != 0;
+		public bool Array3D => (type & ArgType.Array2D) != 0;
+		public bool String => (type & ArgType.String) != 0;
+		public bool Variadic => (type & ArgType.Variadic) != 0;
+		public bool SameAsFirst => (type & ArgType.SameAsFirst) != 0;
+		public bool CharacterData => ((int)type & (1 << 10)) != 0;
+
+		public int ArrayDims =>
+			Array ? -1
+			: Array1D ? 1
+			: Array2D ? 2
+			: Array3D ? 3 : 0;
 
 		public static implicit operator _ArgType(ArgType value)
 		{
 			return new _ArgType(value);
 		}
 	}
+
 	protected sealed class ArgTypeList
 	{
 		public List<_ArgType> ArgTypes { get; set; } = [];
@@ -104,19 +106,30 @@ internal abstract class FunctionMethod
 				int count = 0;
 				for (int i = ArgTypes.Count - 1; i >= 0; i--)
 				{
-					if (!ArgTypes[i].Variadic) break;
+					if (!ArgTypes[i].Variadic)
+					{
+						break;
+					}
+
 					count++;
 				}
-				if (count == 0) return null;
-				var ret = new _ArgType[count];
+
+				if (count == 0)
+				{
+					return null;
+				}
+
+				_ArgType[] ret = new _ArgType[count];
 				for (int i = 0; i < count; i++)
 				{
 					ret[i] = ArgTypes[ArgTypes.Count - count + i];
 				}
+
 				return ret;
 			}
 		}
 	}
+
 	protected ArgTypeList[]? argumentTypeArrayEx;
 
 	//引数の数・型が一致するかどうかのテスト
@@ -125,12 +138,12 @@ internal abstract class FunctionMethod
 	private string? CheckArgumentTypeEx(string name, List<AExpression?> arguments)
 	{
 		// Only reached from CheckArgumentType after the null check on argumentTypeArrayEx.
-		var rules = argumentTypeArrayEx!;
+		ArgTypeList[] rules = argumentTypeArrayEx!;
 		string[] errMsg = new string[rules.Length];
 		for (int idx = 0; idx < rules.Length; idx++)
 		{
-			var list = rules[idx];
-			var vs = list.LastVariadics;
+			ArgTypeList list = rules[idx];
+			_ArgType[]? vs = list.LastVariadics;
 			bool variadic = vs != null;
 			bool argsNotMoreThanRule = variadic ? true : arguments.Count <= list.ArgTypes.Count;
 			bool argsNotLessThanRule = list.OmitStart > -1 ? arguments.Count >= list.OmitStart : arguments.Count >= list.ArgTypes.Count;
@@ -138,26 +151,31 @@ internal abstract class FunctionMethod
 			{
 				if (list.MatchVariadicGroup && vs != null)
 				{
-					var variadicGroupStart = list.ArgTypes.Count - vs.Length;
+					int variadicGroupStart = list.ArgTypes.Count - vs.Length;
 					if (arguments.Count > variadicGroupStart && (arguments.Count - variadicGroupStart) % vs.Length != 0)
 					{
 						errMsg[idx] = string.Format(trerror.ArgsNotFitExpr.Text, name, arguments.Count, variadicGroupStart, vs.Length);
 						continue;
 					}
 				}
+
 				// 引数の数が有効
 				for (int i = 0; i < (variadic ? arguments.Count : Math.Min(arguments.Count, list.ArgTypes.Count)); i++)
 				{
-					var rule = variadic && i >= list.ArgTypes.Count ? vs![(i - list.ArgTypes.Count) % vs!.Length] : list.ArgTypes[i];
+					_ArgType rule = variadic && i >= list.ArgTypes.Count ? vs![(i - list.ArgTypes.Count) % vs!.Length] : list.ArgTypes[i];
 					if (arguments[i] == null)
 					{
-						if (i < list.OmitStart || list.OmitStart > -1 && i >= list.OmitStart && rule.DisallowVoid)
+						if (i < list.OmitStart || (list.OmitStart > -1 && i >= list.OmitStart && rule.DisallowVoid))
 						{
 							errMsg[idx] = string.Format(trerror.ArgCanNotBeNull.Text, name, i + 1);
 							break;
 						}
-						else continue;
+						else
+						{
+							continue;
+						}
 					}
+
 					bool typeNotMatch = rule.SameAsFirst
 						? arguments.Required(0).GetOperandType() != arguments.Required(i).GetOperandType()
 						: !rule.Any && rule.Type != arguments.Required(i).GetOperandType();
@@ -169,51 +187,60 @@ internal abstract class FunctionMethod
 							errMsg[idx] = string.Format(trerror.ArgIsNotCharacterVar.Text, name, i + 1);
 							break;
 						}
+
 						// 引数の型が違う
 						bool error = false;
 						string errText;
-						var dims = rule.ArrayDims;
+						int dims = rule.ArrayDims;
 						switch (dims)
 						{
 							case 0:
-								{
-									// 普通の場合
-									var err = rule.String ? trerror.ArgIsNotStrVar
-										: rule.Int ? trerror.ArgIsNotIntVar : trerror.ArgIsNotVar;
-									errText = string.Format(err.Text, name, i + 1);
-									break;
-								}
+							{
+								// 普通の場合
+								Lang.TranslatableString err = rule.String ? trerror.ArgIsNotStrVar
+									: rule.Int ? trerror.ArgIsNotIntVar : trerror.ArgIsNotVar;
+								errText = string.Format(err.Text, name, i + 1);
+								break;
+							}
 							case -1:
-								{
-									// 任意配列の場合
-									var err = rule.String ? trerror.ArgIsNotStrArray
-										: rule.Int ? trerror.ArgIsNotIntArray : trerror.ArgIsNotArray;
-									errText = string.Format(err.Text, name, i + 1);
-									break;
-								}
+							{
+								// 任意配列の場合
+								Lang.TranslatableString err = rule.String ? trerror.ArgIsNotStrArray
+									: rule.Int ? trerror.ArgIsNotIntArray : trerror.ArgIsNotArray;
+								errText = string.Format(err.Text, name, i + 1);
+								break;
+							}
 							default:
-								{
-									// 1-3次元配列の場合
-									var err = rule.String ? trerror.ArgIsNotNDStrArray
-										: rule.Int ? trerror.ArgIsNotNDIntArray : trerror.ArgIsNotNDArray;
-									errText = string.Format(err.Text, name, i + 1, dims);
-									break;
-								}
+							{
+								// 1-3次元配列の場合
+								Lang.TranslatableString err = rule.String ? trerror.ArgIsNotNDStrArray
+									: rule.Int ? trerror.ArgIsNotNDIntArray : trerror.ArgIsNotNDArray;
+								errText = string.Format(err.Text, name, i + 1, dims);
+								break;
+							}
 						}
+
 						// 引数が引用系
-						if (arguments[i] is VariableTerm varTerm && !(varTerm.Identifier.IsCalc || !rule.AllowConstRef && varTerm.Identifier.IsConst))
+						if (arguments[i] is VariableTerm varTerm &&
+						    !(varTerm.Identifier.IsCalc || (!rule.AllowConstRef && varTerm.Identifier.IsConst)))
 						{
 							// 変数の場合
 							switch (dims)
 							{
 								case 0: error = typeNotMatch; break;
-								case -1: error = !varTerm.Identifier.IsArray1D && !varTerm.Identifier.IsArray2D && !varTerm.Identifier.IsArray3D || typeNotMatch; break;
+								case -1:
+									error = (!varTerm.Identifier.IsArray1D && !varTerm.Identifier.IsArray2D && !varTerm.Identifier.IsArray3D) ||
+									        typeNotMatch; break;
 								case 1: error = !varTerm.Identifier.IsArray1D || typeNotMatch; break;
 								case 2: error = !varTerm.Identifier.IsArray2D || typeNotMatch; break;
 								case 3: error = !varTerm.Identifier.IsArray3D || typeNotMatch; break;
 							}
 						}
-						else error = true; // 変数ではない
+						else
+						{
+							error = true; // 変数ではない
+						}
+
 						if (error)
 						{
 							errMsg[idx] = errText;
@@ -222,22 +249,32 @@ internal abstract class FunctionMethod
 					}
 					else if (typeNotMatch)
 					{
-						var type = rule.SameAsFirst ? arguments.Required(0).GetOperandType() : rule.Type;
+						Type type = rule.SameAsFirst ? arguments.Required(0).GetOperandType() : rule.Type;
 						// 引数の型が違う
-						errMsg[idx] = type == typeof(string) ? string.Format(trerror.ArgIsNotStr.Text, name, i + 1)
+						errMsg[idx] = type == typeof(string)
+							? string.Format(trerror.ArgIsNotStr.Text, name, i + 1)
 							: string.Format(trerror.ArgIsNotInt.Text, name, i + 1);
 						break;
 					}
 				}
-				if (errMsg[idx] == null) return null;
+
+				if (errMsg[idx] == null)
+				{
+					return null;
+				}
 			}
 			else if (list.OmitStart == -1 && list.ArgTypes.Count > 0 && !variadic)
 			{
 				// 数固定の引数が必要
 				if (list.ArgTypes.Count > 0)
+				{
 					errMsg[idx] = string.Format(trerror.ArgsCountNotMatches.Text, name, list.ArgTypes.Count, arguments.Count);
+				}
 				else
+				{
 					errMsg[idx] = string.Format(trerror.ArgsNotNeeded.Text, name);
+				}
+
 				continue;
 			}
 			// 可変長引数
@@ -254,16 +291,25 @@ internal abstract class FunctionMethod
 				continue;
 			}
 		}
-		if (rules.Length == 1) return errMsg[0];
+
+		if (rules.Length == 1)
+		{
+			return errMsg[0];
+		}
 
 		StringBuilder sb = new();
 		for (int i = 0; i < errMsg.Length; i++)
 		{
 			sb.Append(string.Format(trerror.NotValidArgsReason.Text, i + 1, errMsg[i]));
-			if (i + 1 < errMsg.Length) sb.Append(" | ");
+			if (i + 1 < errMsg.Length)
+			{
+				sb.Append(" | ");
+			}
 		}
+
 		return string.Format(trerror.NotValidArgs.Text, name, sb.ToString());
 	}
+
 	public virtual string? CheckArgumentType(string name, List<AExpression?> arguments)
 	{
 		if (argumentTypeArrayEx != null)
@@ -273,26 +319,39 @@ internal abstract class FunctionMethod
 		else if (argumentTypeArray != null)
 		{
 			if (arguments.Count != argumentTypeArray.Length)
-			// return string.Format(Properties.Resources.SyntaxErrMesMethodDefaultArgumentNum0, name);
+				// return string.Format(Properties.Resources.SyntaxErrMesMethodDefaultArgumentNum0, name);
 			{
 				if (argumentTypeArray.Length > 0)
+				{
 					return string.Format(trerror.ArgsCountNotMatches.Text, name, argumentTypeArray.Length, arguments.Count);
+				}
 				else
+				{
 					return string.Format(trerror.ArgsNotNeeded.Text, name);
+				}
 			}
+
 			for (int i = 0; i < argumentTypeArray.Length; i++)
 			{
 				if (arguments[i] == null)
 					// return string.Format(Properties.Resources.SyntaxErrMesMethodDefaultArgumentNotNullable0, name, i + 1);
+				{
 					return string.Format(trerror.ArgCanNotBeNull.Text, name, i + 1);
+				}
+
 				if (argumentTypeArray[i] != arguments.Required(i).GetOperandType())
 					// return string.Format(Properties.Resources.SyntaxErrMesMethodDefaultArgumentType0, name, i + 1);
-					return argumentTypeArray[i] == typeof(string) ? string.Format(trerror.ArgIsNotStr.Text, name, i + 1)
-							: string.Format(trerror.ArgIsNotInt.Text, name, i + 1);
+				{
+					return argumentTypeArray[i] == typeof(string)
+						? string.Format(trerror.ArgIsNotStr.Text, name, i + 1)
+						: string.Format(trerror.ArgIsNotInt.Text, name, i + 1);
+				}
 			}
 		}
+
 		return null;
 	}
+
 	#endregion
 
 	//Argumentが全て定数の時にMethodを解体してよいかどうか。RANDやCharaを参照するものなどは不可
@@ -302,14 +361,26 @@ internal abstract class FunctionMethod
 	public bool HasUniqueRestructure { get; protected set; }
 
 	//実際の計算。
-	public virtual long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments) { throw new ExeEE(trerror.ReturnTypeDifferentOrNotImpelemnt.Text); }
-	public virtual string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments) { throw new ExeEE(trerror.ReturnTypeDifferentOrNotImpelemnt.Text); }
+	public virtual long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+	{
+		throw new ExeEE(trerror.ReturnTypeDifferentOrNotImpelemnt.Text);
+	}
+
+	public virtual string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
+	{
+		throw new ExeEE(trerror.ReturnTypeDifferentOrNotImpelemnt.Text);
+	}
+
 	public virtual SingleTerm GetReturnValue(ExpressionMediator exm, List<AExpression?> arguments)
 	{
 		if (ReturnType == typeof(long))
+		{
 			return new SingleLongTerm(GetIntValue(exm, arguments));
+		}
 		else
+		{
 			return new SingleStrTerm(GetStrValue(exm, arguments));
+		}
 	}
 
 	/// <summary>
@@ -319,7 +390,9 @@ internal abstract class FunctionMethod
 	/// <param name="arguments"></param>
 	/// <returns></returns>
 	public virtual bool UniqueRestructure(ExpressionMediator exm, List<AExpression?> arguments)
-	{ throw new ExeEE(trerror.NotImplement.Text); }
+	{
+		throw new ExeEE(trerror.NotImplement.Text);
+	}
 
 
 	internal void SetMethodName(string name)

@@ -7,11 +7,12 @@ using static MinorShift.Emuera.Runtime.Utils.EvilMask.Utils;
 
 namespace MinorShift.Emuera.UI.Game;
 
-abstract class ConsoleShapePart : AConsoleColoredPart
+internal abstract class ConsoleShapePart : AConsoleColoredPart
 {
 	#region EM_私家版_HTMLパラメータ拡張
-	static public ConsoleShapePart CreateShape(string shapeType, MixedNum[] param, Color color, Color bcolor, bool colorchanged)
-	// static public ConsoleShapePart CreateShape(string shapeType, int[] param, Color color, Color bcolor, bool colorchanged)
+
+	public static ConsoleShapePart CreateShape(string shapeType, MixedNum[] param, Color color, Color bcolor, bool colorchanged)
+		// static public ConsoleShapePart CreateShape(string shapeType, int[] param, Color color, Color bcolor, bool colorchanged)
 	{
 		string type = shapeType.ToLower();
 		colorchanged = colorchanged || color != Config.ForeColor;
@@ -23,10 +24,17 @@ abstract class ConsoleShapePart : AConsoleColoredPart
 		{
 			// sb.Append(param[i].ToString());
 			sb.Append(param[i].num);
-			if (param[i].isPx) sb.Append("px");
+			if (param[i].isPx)
+			{
+				sb.Append("px");
+			}
+
 			if (i < param.Length - 1)
+			{
 				sb.Append(", ");
+			}
 		}
+
 		sb.Append('\'');
 		if (colorchanged)
 		{
@@ -34,73 +42,96 @@ abstract class ConsoleShapePart : AConsoleColoredPart
 			sb.Append(HtmlManager.GetColorToString(color));
 			sb.Append('\'');
 		}
+
 		if (bcolor != Config.FocusColor)
 		{
 			sb.Append(" bcolor='");
 			sb.Append(HtmlManager.GetColorToString(bcolor));
 			sb.Append('\'');
 		}
+
 		sb.Append('>');
 		ConsoleShapePart? ret = null;
 
 		switch (type)
 		{
 			case "space":
+
 				#region EM_私家版_space制限解除
+
 				// if (paramPixel.Length == 1 && paramPixel[0] >= 0)
+
 				#endregion
+
 				if (param.Length == 1)
+				{
 					ret = new ConsoleSpacePart(param[0]);
+				}
+
 				break;
 			case "rect":
 				// if (paramPixel.Length == 1 && paramPixel[0] >= 0)
 				if (param.Length == 1 && param[0].num > 0)
+				{
 					ret = new ConsoleRectangleShapePart(param[0]);
+				}
 				// else if (paramPixel.Length == 4)
 				else if (param.Length == 4)
 				{
 					//rectF = new RectangleF(paramPixel[0], paramPixel[1], paramPixel[2], paramPixel[3]);
-					var rectF = new RectangleF(MixedNum.ToPixelf(param[0]), MixedNum.ToPixelf(param[1]), MixedNum.ToPixelf(param[2]), MixedNum.ToPixelf(param[3]));
+					RectangleF rectF = new(MixedNum.ToPixelf(param[0]), MixedNum.ToPixelf(param[1]), MixedNum.ToPixelf(param[2]),
+						MixedNum.ToPixelf(param[3]));
 					//1820a12 サイズ上限撤廃
 					if (rectF.X >= 0 && rectF.Width > 0 && rectF.Height > 0)
-					//	rectF.Y >= 0 && (rectF.Y + rectF.Height) <= lineHeight)
+						//	rectF.Y >= 0 && (rectF.Y + rectF.Height) <= lineHeight)
 					{
 						ret = new ConsoleRectangleShapePart(param);
 					}
 				}
+
 				break;
 			case "polygon":
 				break;
 		}
+
 		if (ret == null)
 		{
 			ret = new ConsoleErrorShapePart(sb.ToString());
 		}
+
 		ret.AltText = sb.ToString();
 		ret.Color = color;
 		ret.ButtonColor = bcolor;
 		ret.colorChanged = colorchanged;
 		return ret;
 	}
+
 	#endregion
 
-	public override bool CanDivide
-	{
-		get { return false; }
-	}
+	public override bool CanDivide => false;
 
 	public override string ToString()
 	{
 		if (AltText == null)
+		{
 			return "";
+		}
+
 		return AltText;
 	}
+
 	#region EM_私家版_描画拡張
+
 	public override StringBuilder BuildString(StringBuilder sb)
 	{
-		if (AltText != null) sb.Append(AltText);
+		if (AltText != null)
+		{
+			sb.Append(AltText);
+		}
+
 		return sb;
 	}
+
 	#endregion
 }
 
@@ -133,7 +164,8 @@ internal sealed class ConsoleRectangleShapePart : ConsoleShapePart
 		int lineHeight = Config.FontSize;
 		RectangleF theRect = rawParam.Length == 1
 			? new RectangleF(0, 0, rawParam[0].isPx ? rawParam[0].num : (float)rawParam[0].num * lineHeight / 100f, lineHeight)
-			: new RectangleF(MixedNum.ToPixelf(rawParam[0]), MixedNum.ToPixelf(rawParam[1]), MixedNum.ToPixelf(rawParam[2]), MixedNum.ToPixelf(rawParam[3]));
+			: new RectangleF(MixedNum.ToPixelf(rawParam[0]), MixedNum.ToPixelf(rawParam[1]), MixedNum.ToPixelf(rawParam[2]),
+				MixedNum.ToPixelf(rawParam[3]));
 		originalRectF = theRect;
 		WidthF = theRect.X + theRect.Width;
 		rect.Y = (int)theRect.Y;
@@ -141,7 +173,10 @@ internal sealed class ConsoleRectangleShapePart : ConsoleShapePart
 		//	rect.Y = 1;
 		rect.Height = (int)theRect.Height;
 		if (rect.Height == 0 && theRect.Height >= 0.001f)
+		{
 			rect.Height = 1;
+		}
+
 		top = Math.Min(0, rect.Y);
 		bottom = Math.Max(Config.FontSize, rect.Y + rect.Height);
 	}
@@ -154,15 +189,28 @@ internal sealed class ConsoleRectangleShapePart : ConsoleShapePart
 
 	private int top;
 	private int bottom;
-	public override int Top { get { return top; } }
-	public override int Bottom { get { return bottom; } }
-	RectangleF originalRectF;
-	bool visible;
-	Rectangle rect;
-	public override void DrawTo(Graphics graph, int pointY, bool isSelecting, bool isFocus, bool isBackLog, TextDrawingMode mode, bool isButton = false, bool scalePreview = false)
+	public override int Top => top;
+	public override int Bottom => bottom;
+	private RectangleF originalRectF;
+	private bool visible;
+	private Rectangle rect;
+
+	public override void DrawTo(
+		Graphics graph,
+		int pointY,
+		bool isSelecting,
+		bool isFocus,
+		bool isBackLog,
+		TextDrawingMode mode,
+		bool isButton = false,
+		bool scalePreview = false
+	)
 	{
 		if (!visible)
+		{
 			return;
+		}
+
 		Rectangle targetRect = rect;
 		targetRect.X = targetRect.X + PointX;
 		targetRect.Y = targetRect.Y + pointY;
@@ -178,7 +226,7 @@ internal sealed class ConsoleRectangleShapePart : ConsoleShapePart
 		rect.X = (int)(subPixel + originalRectF.X);
 		rect.Width = Width - rect.X;
 		rect.X += Config.DrawingParam_ShapePositionShift;
-		visible = rect.X >= 0 && rect.Width > 0;// && rect.Y >= 0 && (rect.Y + rect.Height) <= Config.Config.FontSize);
+		visible = rect.X >= 0 && rect.Width > 0; // && rect.Y >= 0 && (rect.Y + rect.Height) <= Config.Config.FontSize);
 	}
 }
 
@@ -209,7 +257,17 @@ internal sealed class ConsoleSpacePart : ConsoleShapePart
 		Width = -1;
 	}
 
-	public override void DrawTo(Graphics graph, int pointY, bool isSelecting, bool isFocus, bool isBackLog, TextDrawingMode mode, bool isButton = false, bool scalePreview = false) { }
+	public override void DrawTo(
+		Graphics graph,
+		int pointY,
+		bool isSelecting,
+		bool isFocus,
+		bool isBackLog,
+		TextDrawingMode mode,
+		bool isButton = false,
+		bool scalePreview = false
+	)
+	{ }
 
 	public override void SetWidth(StringMeasure sm, float subPixel)
 	{
@@ -227,18 +285,34 @@ internal sealed class ConsoleErrorShapePart : ConsoleShapePart
 		AltText = errMes;
 	}
 
-	public override void DrawTo(Graphics graph, int pointY, bool isSelecting, bool isFocus, bool isBackLog, TextDrawingMode mode, bool isButton = false, bool scalePreview = false)
+	public override void DrawTo(
+		Graphics graph,
+		int pointY,
+		bool isSelecting,
+		bool isFocus,
+		bool isBackLog,
+		TextDrawingMode mode,
+		bool isButton = false,
+		bool scalePreview = false
+	)
 	{
 		if (mode == TextDrawingMode.GRAPHICS || scalePreview)
 			// the constructor of this shape assigns Text and AltText
+		{
 			GraphicsTextRenderer.Draw(graph, Text!, Config.DefaultFont, Config.ForeColor, PointX, XsubPixel, pointY);
+		}
 		else
-			System.Windows.Forms.TextRenderer.DrawText(graph, Text.AsSpan(), Config.DefaultFont, new Point(PointX, pointY), Config.ForeColor, System.Windows.Forms.TextFormatFlags.NoPrefix);
+		{
+			System.Windows.Forms.TextRenderer.DrawText(graph, Text.AsSpan(), Config.DefaultFont, new Point(PointX, pointY), Config.ForeColor,
+				System.Windows.Forms.TextFormatFlags.NoPrefix);
+		}
 	}
+
 	public override void ResetLayout(StringMeasure sm)
 	{
 		Width = -1;
 	}
+
 	public override void SetWidth(StringMeasure sm, float subPixel)
 	{
 		if (Error)
@@ -246,6 +320,7 @@ internal sealed class ConsoleErrorShapePart : ConsoleShapePart
 			Width = 0;
 			return;
 		}
+
 		Width = sm.GetDisplayLength(Text!, Config.DefaultFont);
 		XsubPixel = subPixel;
 	}

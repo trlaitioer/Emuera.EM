@@ -11,13 +11,23 @@ internal static partial class ArgumentParser
 	public static bool SetArgumentTo(InstructionLine line)
 	{
 		if (line == null)
+		{
 			return false;
+		}
+
 		if (line.Argument != null)
+		{
 			return true;
+		}
+
 		if (line.IsError)
+		{
 			return false;
+		}
+
 		if (!Program.DebugMode && line.Function.IsDebug())
-		{//非DebugモードでのDebug系命令。何もしないので引数解析も不要
+		{
+			//非DebugモードでのDebug系命令。何もしないので引数解析も不要
 			line.Argument = null;
 			return true;
 		}
@@ -27,16 +37,21 @@ internal static partial class ArgumentParser
 		try
 		{
 			if (line.Function.ArgBuilder != null)
+			{
 				arg = line.Function.ArgBuilder.CreateArgument(line, GlobalStatic.EMediator);
+			}
 			else
 				// A null ArgBuilder means the identifier was built from an AInstruction, which carries the Instruction.
+			{
 				arg = line.Function.Instruction!.CreateArgument(line, GlobalStatic.EMediator);
+			}
 		}
 		catch (EmueraException e)
 		{
 			errmes = e.Message;
 			return error(line, errmes);
 		}
+
 		if (arg == null)
 		{
 			if (!line.IsError)
@@ -44,8 +59,10 @@ internal static partial class ArgumentParser
 				errmes = trerror.ArgParsingError.Text;
 				return error(line, errmes);
 			}
+
 			return false;
 		}
+
 		line.Argument = arg;
 		return true;
 

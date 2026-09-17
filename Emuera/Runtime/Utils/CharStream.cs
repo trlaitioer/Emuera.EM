@@ -13,32 +13,33 @@ internal sealed class CharStream
 	{
 		source = s;
 		if (source == null)
+		{
 			source = "";
+		}
+
 		pointer = 0;
 	}
 
-	string source;
+	private string source;
 	public const char EndOfString = '\0';
-	int pointer;
-	public string RowString
-	{
-		get
-		{
-			return source;
-		}
-	}
+	private int pointer;
+	public string RowString => source;
 
 	public int CurrentPosition
 	{
-		get { return pointer; }
-		set { pointer = value; }
+		get => pointer;
+		set => pointer = value;
 	}
+
 	public char Current
 	{
 		get
 		{
 			if (pointer >= source.Length)
+			{
 				return EndOfString;
+			}
+
 			return source[pointer];
 		}
 	}
@@ -46,14 +47,17 @@ internal sealed class CharStream
 	public void AppendString(string str)
 	{
 		if (pointer > source.Length)
+		{
 			pointer = source.Length;
+		}
+
 		source += " " + str;
 	}
 
 	/// <summary>
 	/// 文字列終端に達した
 	/// </summary>
-	public bool EOS { get { return pointer >= source.Length; } }
+	public bool EOS => pointer >= source.Length;
 
 	///変数の区切りである"[["と"]]"の先読みなどに使用
 	public char Next
@@ -61,7 +65,10 @@ internal sealed class CharStream
 		get
 		{
 			if (pointer + 1 >= source.Length)
+			{
 				return EndOfString;
+			}
+
 			return source[pointer + 1];
 		}
 	}
@@ -69,35 +76,59 @@ internal sealed class CharStream
 	public string Substring()
 	{
 		if (pointer >= source.Length)
+		{
 			return "";
+		}
 		else if (pointer == 0)
+		{
 			return source;
+		}
+
 		return source[pointer..];
 	}
 
 	public string Substring(int start, int length)
 	{
 		if (start >= source.Length || length == 0)
+		{
 			return "";
+		}
+
 		if (start + length > source.Length)
+		{
 			length = source.Length - start;
+		}
+
 		return source.Substring(start, length);
 	}
+
 	public ReadOnlySpan<char> SubstringROS()
 	{
 		if (pointer >= source.Length)
+		{
 			return "";
+		}
 		else if (pointer == 0)
+		{
 			return source;
-		return source.AsSpan()[pointer..]; ;
+		}
+
+		return source.AsSpan()[pointer..];
+		;
 	}
 
 	public ReadOnlySpan<char> SubstringROS(int start, int length)
 	{
 		if (start >= source.Length || length == 0)
+		{
 			return "";
+		}
+
 		if (start + length > source.Length)
+		{
 			length = source.Length - start;
+		}
+
 		return source.AsSpan()[start..(start + length)];
 	}
 
@@ -139,27 +170,38 @@ internal sealed class CharStream
 	public override string ToString()
 	{
 		if (source == null)
+		{
 			return "";
+		}
+
 		return source;
 	}
 
 	public bool CurrentEqualTo(string rother)
 	{
 		if (pointer + rother.Length > source.Length)
+		{
 			return false;
+		}
 
 		for (int i = 0; i < rother.Length; i++)
 		{
 			if (source[pointer + i] != rother[i])
+			{
 				return false;
+			}
 		}
+
 		return true;
 	}
 
 	public bool TripleSymbol()
 	{
 		if (pointer + 3 > source.Length)
+		{
 			return false;
+		}
+
 		return source[pointer] == source[pointer + 1] && source[pointer] == source[pointer + 2];
 	}
 
@@ -167,7 +209,10 @@ internal sealed class CharStream
 	public bool CurrentEqualTo(string rother, StringComparison comp)
 	{
 		if (pointer + rother.Length > source.Length)
+		{
 			return false;
+		}
+
 		string sub = source.Substring(pointer, rother.Length);
 		return sub.Equals(rother, comp);
 	}
@@ -175,12 +220,21 @@ internal sealed class CharStream
 	public void Seek(int offset, SeekOrigin origin)
 	{
 		if (origin == SeekOrigin.Begin)
+		{
 			pointer = offset;
+		}
 		else if (origin == SeekOrigin.Current)
+		{
 			pointer = pointer + offset;
+		}
 		else if (origin == SeekOrigin.End)
+		{
 			pointer = source.Length + offset;
+		}
+
 		if (pointer < 0)
+		{
 			pointer = 0;
+		}
 	}
 }

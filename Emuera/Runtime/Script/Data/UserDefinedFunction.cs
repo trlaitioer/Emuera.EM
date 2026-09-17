@@ -19,14 +19,14 @@ internal enum UserDifinedFunctionDataArgType
 	RefStr2 = 0x62,
 	RefStr3 = 0x63,
 	__Ref = 0x40,
-	__Dimention = 0x0F,
+	__Dimention = 0x0F
 }
 
 internal sealed class UserDefinedFunctionData
 {
 	private UserDefinedFunctionData()
-	{
-	}
+	{ }
+
 	// Assigned by Create; never read before that point
 	public string Name = null!;
 	public bool TypeIsStr;
@@ -35,10 +35,7 @@ internal sealed class UserDefinedFunctionData
 	public static UserDefinedFunctionData Create(WordCollection wc, bool dims, ScriptPosition? sc)
 	{
 		string dimtype = dims ? "#FUNCTION" : "#FUNCTIONS";
-		UserDefinedFunctionData ret = new()
-		{
-			TypeIsStr = dims
-		};
+		UserDefinedFunctionData ret = new() { TypeIsStr = dims };
 		IdentifierWord? idw;
 		string keyword = dimtype;
 		while (!wc.EOL && (idw = wc.Current as IdentifierWord) != null)
@@ -60,29 +57,43 @@ internal sealed class UserDefinedFunctionData
 					goto whilebreak;
 			}
 		}
-	whilebreak:
+
+		whilebreak:
 		if (ret.Name == null)
+		{
 			throw new CodeEE(string.Format(trerror.NotIdentifierAfterKeyword.Text, keyword), sc);
+		}
+
 		if (wc.EOL || wc.Current.Type != '(')
+		{
 			throw new CodeEE(trerror.NotIdentifierArg.Text, sc);
+		}
+
 		string errMes = "";
 		int errLevel = -1;
 		GlobalStatic.IdentifierDictionary.CheckUserLabelName(out errMes, ref errLevel, true, ret.Name);
-		if (errLevel == 0)//関数と変数の両方からチェック エラーメッセージが微妙だがひとまず気にしない
+		if (errLevel == 0) //関数と変数の両方からチェック エラーメッセージが微妙だがひとまず気にしない
+		{
 			GlobalStatic.IdentifierDictionary.CheckUserVarName(ref errMes, ref errLevel, ret.Name);
+		}
+
 		if (errLevel >= 0)
 		{
 			if (errLevel >= 2)
+			{
 				throw new CodeEE(errMes, sc);
+			}
+
 			ParserMediator.Warn(errMes, sc, errLevel);
 		}
+
 		List<UserDifinedFunctionDataArgType> argList = [];
 		UserDifinedFunctionDataArgType argType = UserDifinedFunctionDataArgType.Null;
 
 		int state = 0;
 		//0=初期状態 1=カンマ括弧閉じ待ち 2=カンマ直後
 		//3=REF後INTorSTR待ち 4=':'or','待ち 5=':'or '0'or ','待ち
-		while (true)// REF INT STR 0 '*' ',' ')' のみで構成されるはず
+		while (true) // REF INT STR 0 '*' ',' ')' のみで構成されるはず
 		{
 			wc.ShiftNext();
 			switch (wc.Current.Type)
@@ -91,33 +102,49 @@ internal sealed class UserDefinedFunctionData
 					throw new CodeEE(trerror.NotCloseBrackets.Text, sc);
 				case ')':
 					if (state == 0 || state == 1)
+					{
 						goto argend;
+					}
+
 					if (state == 4 || state == 5)
 					{
 						if ((argType & UserDifinedFunctionDataArgType.__Dimention) == 0)
+						{
 							throw new CodeEE(trerror.RefArgIsNotArray.Text, sc);
+						}
+
 						//state = 2;
 						argList.Add(argType);
 						goto argend;
 					}
+
 					throw new CodeEE(trerror.UnexpectedBrackets.Text, sc);
 				case '0':
 					if (((LiteralIntegerWord)wc.Current).Int != 0)
+					{
 						goto argerr;
+					}
+
 					if (state == 5)
 					{
 						state = 4;
 						continue;
 					}
+
 					goto argerr;
 				case ':':
 					if (state == 4 || state == 5)
 					{
 						state = 5;
-						argType++; if ((int)(argType & UserDifinedFunctionDataArgType.__Dimention) > 3)
+						argType++;
+						if ((int)(argType & UserDifinedFunctionDataArgType.__Dimention) > 3)
+						{
 							throw new CodeEE(trerror.RefArrayCanNotMoreThan4.Text, sc);
+						}
+
 						continue;
 					}
+
 					goto argerr;
 				case ',':
 					if (state == 1)
@@ -125,65 +152,86 @@ internal sealed class UserDefinedFunctionData
 						state = 2;
 						continue;
 					}
+
 					if (state == 4 || state == 5)
 					{
 						if ((argType & UserDifinedFunctionDataArgType.__Dimention) == 0)
+						{
 							throw new CodeEE(trerror.RefArgIsNotArray.Text, sc);
+						}
+
 						state = 2;
 						argList.Add(argType);
 						continue;
 					}
+
 					goto argerr;
 				case 'A':
+				{
+					string str = ((IdentifierWord)wc.Current).Code;
+					if (str == "REF")
 					{
-						string str = ((IdentifierWord)wc.Current).Code;
-						if (str == "REF")
+						if (state == 0 || state == 2)
 						{
-							if (state == 0 || state == 2)
-							{
-								state = 3;
-								continue;
-							}
-							goto argerr;
+							state = 3;
+							continue;
 						}
-						else if (str == "INT" || str == "STR")
+
+						goto argerr;
+					}
+					else if (str == "INT" || str == "STR")
+					{
+						if (str == "INT")
 						{
-							if (str == "INT")
-								argType = UserDifinedFunctionDataArgType.Int;
-							else
-								argType = UserDifinedFunctionDataArgType.Str;
-							if (state == 0 || state == 2)
-							{
-								state = 1;
-								argList.Add(argType);
-								continue;
-							}
-							if (state == 3)
-							{
-								argType = argType | UserDifinedFunctionDataArgType.__Ref;
-								state = 4;
-								continue;
-							}
-							goto argerr;
+							argType = UserDifinedFunctionDataArgType.Int;
 						}
 						else
-							goto argerr;
+						{
+							argType = UserDifinedFunctionDataArgType.Str;
+						}
+
+						if (state == 0 || state == 2)
+						{
+							state = 1;
+							argList.Add(argType);
+							continue;
+						}
+
+						if (state == 3)
+						{
+							argType = argType | UserDifinedFunctionDataArgType.__Ref;
+							state = 4;
+							continue;
+						}
+
+						goto argerr;
 					}
+					else
+					{
+						goto argerr;
+					}
+				}
 				default:
 					goto argerr;
 			}
 		}
-	argend:
+
+		argend:
 		wc.ShiftNext();
 		if (!wc.EOL)
+		{
 			throw new CodeEE(trerror.ExtraCharacterAfterDeclaration.Text, sc);
+		}
+
 		ret.ArgList = new UserDifinedFunctionDataArgType[argList.Count];
 		argList.CopyTo(ret.ArgList);
 		return ret;
-	argerr:
+		argerr:
 		if (!wc.EOL)
+		{
 			throw new CodeEE(string.Format(trerror.UnexpectedToken.Text, wc.Current.ToString()), sc);
+		}
+
 		throw new CodeEE(trerror.ArgParsingError.Text, sc);
 	}
-
 }

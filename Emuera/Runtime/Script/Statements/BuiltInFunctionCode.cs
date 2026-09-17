@@ -4,112 +4,116 @@ namespace MinorShift.Emuera.Runtime.Script.Statements;
 /// <summary>
 /// 命令コード
 /// </summary>
-enum FunctionCode
-{//数値不要
- //FunctionCodeを定義したらstatic FunctionIdentifier()内でaddFunctionすること。
- //その際に適切なFunctionArgとフラグを選ぶ。
+internal enum FunctionCode
+{
+	//数値不要
+	//FunctionCodeを定義したらstatic FunctionIdentifier()内でaddFunctionすること。
+	//その際に適切なFunctionArgとフラグを選ぶ。
 
 	//FunctionMethod(式中関数)を定義した場合には自動で拾うので何もしなくてよい。
 	//ただし、式中関数バージョンと命令バージョンで動作が違うなら追加する必要がある。
 
 	__NULL__ = 0x0000,
-	SET,//数値代入文 or 文字列代入文
-		//SETS,//文字列代入文
-	PRINT,//文字を表示する
-	PRINTL,//改行
-	PRINTW,//入力待ち(実質改行)
+	SET, //数値代入文 or 文字列代入文
 
-	PRINTV,//変数の内容
+	//SETS,//文字列代入文
+	PRINT, //文字を表示する
+	PRINTL, //改行
+	PRINTW, //入力待ち(実質改行)
+
+	PRINTV, //変数の内容
 	PRINTVL,
 	PRINTVW,
 
-	PRINTS,//文字列変数の内容
+	PRINTS, //文字列変数の内容
 	PRINTSL,
 	PRINTSW,
 
-	PRINTFORM,//{数式}、%文字列変数%などの書式が使える。
+	PRINTFORM, //{数式}、%文字列変数%などの書式が使える。
 	PRINTFORML,
 	PRINTFORMW,
 
-	PRINTFORMS,//文字列変数の内容を変換して表示。
+	PRINTFORMS, //文字列変数の内容を変換して表示。
 	PRINTFORMSL,
 	PRINTFORMSW,
 
-	PRINTC,//??
+	PRINTC, //??
 
 	CLEARLINE,
 	REUSELASTLINE,
 
-	WAIT,//改行待ち。
-	INPUT,//整数入力。入力はRESULTへ。
-	INPUTS,//文字列入力。入力はRESULTSへ。
+	WAIT, //改行待ち。
+	INPUT, //整数入力。入力はRESULTへ。
+	INPUTS, //文字列入力。入力はRESULTSへ。
 	TINPUT,
 	TINPUTS,
 	TWAIT,
 	WAITANYKEY,
-	FORCEWAIT,//スキップで省略できないWAIT、強制TWAITと違い、スキップを打ち切る
+	FORCEWAIT, //スキップで省略できないWAIT、強制TWAITと違い、スキップを打ち切る
 	ONEINPUT,
 	ONEINPUTS,
 	TONEINPUT,
 	TONEINPUTS,
-	AWAIT,//入力不可 DoEvents
+	AWAIT, //入力不可 DoEvents
 
-	DRAWLINE,//画面の左端から右端まで----と線を引く。
-	BAR,//[*****....]のようなグラフを書く。BAR (変数) , (最大値), (長さ)
-	BARL,//改行付き。
-	TIMES,//小数計算。TIMES (変数) , (小数値)という形で使う。
+	DRAWLINE, //画面の左端から右端まで----と線を引く。
+	BAR, //[*****....]のようなグラフを書く。BAR (変数) , (最大値), (長さ)
+	BARL, //改行付き。
+	TIMES, //小数計算。TIMES (変数) , (小数値)という形で使う。
 
-	PRINT_ABL,//能力。引数は登録番号
-	PRINT_TALENT,//素質
-	PRINT_MARK,//刻印
-	PRINT_EXP,//経験
-	PRINT_PALAM,//パラメータ
-	PRINT_ITEM,//所持アイテム
-	PRINT_SHOPITEM,//ショップで売っているアイテム
+	PRINT_ABL, //能力。引数は登録番号
+	PRINT_TALENT, //素質
+	PRINT_MARK, //刻印
+	PRINT_EXP, //経験
+	PRINT_PALAM, //パラメータ
+	PRINT_ITEM, //所持アイテム
+	PRINT_SHOPITEM, //ショップで売っているアイテム
 
-	UPCHECK,//パラメータの変動
+	UPCHECK, //パラメータの変動
 	CUPCHECK,
-	ADDCHARA,//(キャラ番号)のキャラクタを追加
-	ADDSPCHARA,//(キャラ番号)のSPキャラクタを追加（フラグ0を1にして作成）
+	ADDCHARA, //(キャラ番号)のキャラクタを追加
+	ADDSPCHARA, //(キャラ番号)のSPキャラクタを追加（フラグ0を1にして作成）
 	ADDDEFCHARA,
-	ADDVOIDCHARA,//変数に何の設定のないキャラを作成
-	DELCHARA,//(キャラ登録番号)のキャラクタを削除。
+	ADDVOIDCHARA, //変数に何の設定のないキャラを作成
+	DELCHARA, //(キャラ登録番号)のキャラクタを削除。
 
-	PUTFORM,//@SAVEINFO関数でのみ使用可能。PRINTFORMと同様の書式でセーブデータに概要をつける。
-	QUIT,//ゲームを終了
+	PUTFORM, //@SAVEINFO関数でのみ使用可能。PRINTFORMと同様の書式でセーブデータに概要をつける。
+	QUIT, //ゲームを終了
 	//OUTPUTLOG,
 
-	BEGIN,//システム関数の実行。実行するとCALLの呼び出し元などを忘れてしまう。
+	BEGIN, //システム関数の実行。実行するとCALLの呼び出し元などを忘れてしまう。
 
-	SAVEGAME,//セーブ画面を呼ぶ。ショップのみ。
-	LOADGAME,//
+	SAVEGAME, //セーブ画面を呼ぶ。ショップのみ。
+	LOADGAME, //
 
-	SIF,//一行のみIF
+	SIF, //一行のみIF
 	IF,
 	ELSE,
 	ELSEIF,
 	ENDIF,
 
-	REPEAT,//RENDまで繰り返し。繰り返した回数がCOUNTへ。ネスト不可。
+	REPEAT, //RENDまで繰り返し。繰り返した回数がCOUNTへ。ネスト不可。
 	REND,
-	CONTINUE,//REPEATに戻る
-	BREAK,//RENDの次の行まで
+	CONTINUE, //REPEATに戻る
+	BREAK, //RENDの次の行まで
 
-	GOTO,//$ラベルへジャンプ
+	GOTO, //$ラベルへジャンプ
 
-	JUMP,//関数に移動
-	CALL,//関数に移動。移動元を記憶し、RETURNで帰る。
+	JUMP, //関数に移動
+	CALL, //関数に移動。移動元を記憶し、RETURNで帰る。
 	CALLEVENT,
-	RETURN,//__INT_EXPRESSION__,//関数の終了。RESULTに整数を格納可能。省略した場合、０。(次の@～～がRETURNと見なされる。)  
-	RETURNFORM,//__FORM_STR__,//関数の終了。RESULTに整数を格納可能。省略した場合、０。(次の@～～がRETURNと見なされる。)  
+	RETURN, //__INT_EXPRESSION__,//関数の終了。RESULTに整数を格納可能。省略した場合、０。(次の@～～がRETURNと見なされる。)  
+	RETURNFORM, //__FORM_STR__,//関数の終了。RESULTに整数を格納可能。省略した場合、０。(次の@～～がRETURNと見なされる。)  
 	RETURNF,
-	RESTART,//関数の再開。関数の最初に戻る。
+	RESTART, //関数の再開。関数の最初に戻る。
 
 
 	STRLEN,
+
 	//STRLENS,//
 	STRLENFORM,
 	STRLENU,
+
 	//STRLENSU,
 	STRLENFORMU,
 
@@ -120,7 +124,7 @@ enum FunctionCode
 	SWAPCHARA,
 	COPYCHARA,
 	ADDCOPYCHARA,
-	VARSIZE,//動作が違うので__METHOD__化できない
+	VARSIZE, //動作が違うので__METHOD__化できない
 	SPLIT,
 
 	PRINTSINGLE,
@@ -139,7 +143,7 @@ enum FunctionCode
 	SAVEDATA,
 	LOADDATA,
 	DELDATA,
-	GETTIME,//2つに代入する必要があるので__METHOD__化できない
+	GETTIME, //2つに代入する必要があるので__METHOD__化できない
 
 	TRYJUMP,
 	TRYCALL,
@@ -195,7 +199,7 @@ enum FunctionCode
 	WHILE,
 	WEND,
 
-	POWER,//引数が違うのでMETHOD化できない。
+	POWER, //引数が違うのでMETHOD化できない。
 	SAVEGLOBAL,
 	LOADGLOBAL,
 	SWAP,
@@ -228,7 +232,7 @@ enum FunctionCode
 	ENDLIST,
 	STRDATA,
 
-	PRINTCPERLINE,//よく考えたら引数の仕様違うや
+	PRINTCPERLINE, //よく考えたら引数の仕様違うや
 
 
 	SETBIT,
@@ -242,7 +246,7 @@ enum FunctionCode
 
 	RESET_STAIN,
 
-	SAVENOS,//引数の仕様が違うので(ry
+	SAVENOS, //引数の仕様が違うので(ry
 
 	FORCEKANA,
 
@@ -267,6 +271,7 @@ enum FunctionCode
 
 	SAVEVAR,
 	LOADVAR,
+
 	//		CHKVARDATA,
 	SAVECHARA,
 	LOADCHARA,
@@ -279,23 +284,23 @@ enum FunctionCode
 	PRINTKL,
 	PRINTKW,
 
-	PRINTVK,//変数の内容
+	PRINTVK, //変数の内容
 	PRINTVKL,
 	PRINTVKW,
 
-	PRINTSK,//文字列変数の内容
+	PRINTSK, //文字列変数の内容
 	PRINTSKL,
 	PRINTSKW,
 
-	PRINTFORMK,//{数式}、%文字列変数%などの書式が使える。
+	PRINTFORMK, //{数式}、%文字列変数%などの書式が使える。
 	PRINTFORMKL,
 	PRINTFORMKW,
 
-	PRINTFORMSK,//文字列変数の内容を変換して表示。
+	PRINTFORMSK, //文字列変数の内容を変換して表示。
 	PRINTFORMSKL,
 	PRINTFORMSKW,
 
-	PRINTCK,//??
+	PRINTCK, //??
 	PRINTLCK,
 	PRINTFORMCK,
 	PRINTFORMLCK,
@@ -310,27 +315,27 @@ enum FunctionCode
 	PRINTDATAKL,
 	PRINTDATAKW,
 
-	PRINTD,//文字を表示する
-	PRINTDL,//改行
-	PRINTDW,//入力待ち(実質改行)
+	PRINTD, //文字を表示する
+	PRINTDL, //改行
+	PRINTDW, //入力待ち(実質改行)
 
-	PRINTVD,//変数の内容
+	PRINTVD, //変数の内容
 	PRINTVDL,
 	PRINTVDW,
 
-	PRINTSD,//文字列変数の内容
+	PRINTSD, //文字列変数の内容
 	PRINTSDL,
 	PRINTSDW,
 
-	PRINTFORMD,//{数式}、%文字列変数%などの書式が使える。
+	PRINTFORMD, //{数式}、%文字列変数%などの書式が使える。
 	PRINTFORMDL,
 	PRINTFORMDW,
 
-	PRINTFORMSD,//文字列変数の内容を変換して表示。
+	PRINTFORMSD, //文字列変数の内容を変換して表示。
 	PRINTFORMSDL,
 	PRINTFORMSDW,
 
-	PRINTCD,//??
+	PRINTCD, //??
 	PRINTLCD,
 	PRINTFORMCD,
 	PRINTFORMLCD,
@@ -359,6 +364,7 @@ enum FunctionCode
 	INPUTMOUSEKEY,
 
 	#region EE
+
 	PLAYSOUND,
 	STOPSOUND,
 	PLAYBGM,
@@ -384,23 +390,27 @@ enum FunctionCode
 	ONEBINPUT,
 	ONEBINPUTS,
 	BREAKBUTTON,
+
 	#endregion
 
 	#region EM
+
 	DT_COLUMN_OPTIONS,
+
 	#endregion
 
 	#region Emuera.NET
+
 	VARI,
 	VARS,
 	HTML_PRINT_ISLAND,
 	HTML_PRINT_ISLAND_CLEAR,
 
-	PRINTN,//改行をしないで入力待ち
+	PRINTN, //改行をしないで入力待ち
 	PRINTVN,
 	PRINTSN,
 	PRINTFORMN,
 	PRINTFORMSN,
-	#endregion
 
+	#endregion
 }

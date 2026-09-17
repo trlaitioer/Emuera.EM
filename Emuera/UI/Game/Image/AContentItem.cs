@@ -1,11 +1,15 @@
 ﻿#nullable enable
-namespace MinorShift.Emuera.UI.Game.Image
+namespace MinorShift.Emuera.UI.Game.Image;
+
+internal abstract class AContentItem
 {
-	abstract class AContentItem
+	protected AContentItem(string name)
 	{
-		protected AContentItem(string name) { Name = name; }
-		public readonly string Name;
-		//public bool Enabled { get; protected set; }
-		public abstract bool IsCreated { get; }
+		Name = name;
 	}
+
+	public readonly string Name;
+
+	//public bool Enabled { get; protected set; }
+	public abstract bool IsCreated { get; }
 }

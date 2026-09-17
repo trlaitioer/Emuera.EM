@@ -9,9 +9,13 @@ namespace MinorShift.Emuera.UI.Game.Image;
 internal sealed class ConstImage : AbstractImage
 {
 	public ConstImage(string name)
-	{ Name = name; RealIsCreated = false; }
+	{
+		Name = name;
+		RealIsCreated = false;
+	}
 
 	public readonly string Name;
+
 	// Assigned by CreateFrom/Load; RealBitmap is reset by Dispose.
 	public Bitmap RealBitmap = null!;
 	public string Filepath = null!;
@@ -22,7 +26,9 @@ internal sealed class ConstImage : AbstractImage
 	internal void CreateFrom(Bitmap bmp, string filepath, bool useGDI)
 	{
 		if (RealBitmap != null || !string.IsNullOrEmpty(Filepath))
+		{
 			throw new Exception();
+		}
 
 		try
 		{
@@ -31,7 +37,10 @@ internal sealed class ConstImage : AbstractImage
 			Width = RealBitmap.Width;
 			Height = RealBitmap.Height;
 			lock (AppContents.tempLoadedConstImages)
+			{
 				AppContents.tempLoadedConstImages.Add(this);
+			}
+
 			RealIsCreated = true;
 			return;
 		}
@@ -39,13 +48,17 @@ internal sealed class ConstImage : AbstractImage
 		{
 			File.WriteAllText("img_err.log", e.ToString());
 		}
+
 		return;
 	}
 
 	public void Load()
 	{
 		if (RealBitmap != null || !RealIsCreated)
+		{
 			return;
+		}
+
 		try
 		{
 			RealBitmap = ImgUtils.LoadImage(Filepath)!;
@@ -53,13 +66,17 @@ internal sealed class ConstImage : AbstractImage
 			{
 				return;
 			}
+
 			lock (AppContents.tempLoadedConstImages)
+			{
 				AppContents.tempLoadedConstImages.Add(this);
+			}
 		}
 		catch
 		{
 			return;
 		}
+
 		return;
 	}
 	//public void Load(bool useGDI)
@@ -89,7 +106,10 @@ internal sealed class ConstImage : AbstractImage
 	public override void Dispose()
 	{
 		if (RealBitmap == null || !RealIsCreated)
+		{
 			return;
+		}
+
 		g?.Dispose();
 		g = null!;
 		RealBitmap?.Dispose();
@@ -102,24 +122,15 @@ internal sealed class ConstImage : AbstractImage
 	}
 
 
-	public override bool IsCreated
-	{
-		get
-		{
-			return RealIsCreated;
-		}
-	}
+	public override bool IsCreated => RealIsCreated;
 
 	public override Bitmap Bitmap
 	{
-		set
-		{
-			RealBitmap = value;
-		}
 		get
 		{
 			Load();
 			return RealBitmap;
 		}
+		set => RealBitmap = value;
 	}
 }

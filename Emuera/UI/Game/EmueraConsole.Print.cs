@@ -29,39 +29,51 @@ internal sealed partial class EmueraConsole : IDisposable
 	public Color bgColor = Config.BackColor;
 
 	private readonly PrintStringBuffer printBuffer;
+
 	#region EE_BINPUT
-	public PrintStringBuffer PrintBuffer { get { return printBuffer; } }
+
+	public PrintStringBuffer PrintBuffer => printBuffer;
+
 	#endregion
-	readonly StringMeasure stringMeasure = new();
+
+	private readonly StringMeasure stringMeasure = new();
 
 	#region EM_私家版_StringMeasure獲得
-	public StringMeasure StrMeasure
-	{
-		get
-		{
-			return stringMeasure;
-		}
-	}
+
+	public StringMeasure StrMeasure => stringMeasure;
+
 	#endregion
+
 	public void ClearDisplay()
 	{
 		#region EE_AnchorのCB機能移植
+
 		CBProc.ClearScreen();
+
 		#endregion
+
 		displayLineList.Clear();
 		_htmlElementList.Clear();
+
 		#region EM_私家版_描画拡張
+
 		ConsoleEscapedParts.Clear();
+
 		#endregion
+
 		logicalLineCount = 0;
+
 		#region GETDISPLAYLINE修正
+
 		//issue:修正できてない 未だにどこかでずれてる
 		deletedLines = 0;
+
 		#endregion
+
 		lineNo = 0;
 		lastDrawnLineNo = -1;
 		verticalScrollBarUpdate();
-		window.Refresh();//OnPaint発行
+		window.Refresh(); //OnPaint発行
 	}
 
 
@@ -71,46 +83,86 @@ internal sealed partial class EmueraConsole : IDisposable
 	public bool UseUserStyle { get; set; }
 	public bool UseSetColorStyle { get; set; }
 	private StringStyle defaultStyle = new(Config.ForeColor, FontStyle.Regular, null);
+
 	private StringStyle userStyle = new(Config.ForeColor, FontStyle.Regular, null);
+
 	//private StringStyle style = new StringStyle(Config.ForeColor, FontStyle.Regular, null);
 	private StringStyle Style
 	{
 		get
 		{
 			if (!UseUserStyle)
+			{
 				return defaultStyle;
+			}
+
 			if (UseSetColorStyle)
+			{
 				return userStyle;
+			}
+
 			//PRINTD系(SETCOLORを無視する)
 			if (userStyle.Color == defaultStyle.Color)
+			{
 				return userStyle;
+			}
+
 			return new StringStyle(defaultStyle.Color, userStyle.FontStyle, userStyle.Fontname);
 		}
 	}
+
 	//private StringStyle Style { get { return (useUserStyle ? userStyle : defaultStyle); } }
-	public StringStyle StringStyle { get { return userStyle; } }
-	public void SetStringStyle(FontStyle fs) { userStyle.FontStyle = fs; }
-	public void SetStringStyle(Color color) { userStyle.Color = color; userStyle.ColorChanged = color != Config.ForeColor; }
-	public void SetFont(string fontname) { if (!string.IsNullOrEmpty(fontname)) userStyle.Fontname = fontname; else userStyle.Fontname = Config.FontName; }
+	public StringStyle StringStyle => userStyle;
+
+	public void SetStringStyle(FontStyle fs)
+	{
+		userStyle.FontStyle = fs;
+	}
+
+	public void SetStringStyle(Color color)
+	{
+		userStyle.Color = color;
+		userStyle.ColorChanged = color != Config.ForeColor;
+	}
+
+	public void SetFont(string fontname)
+	{
+		if (!string.IsNullOrEmpty(fontname))
+		{
+			userStyle.Fontname = fontname;
+		}
+		else
+		{
+			userStyle.Fontname = Config.FontName;
+		}
+	}
+
 	private DisplayLineAlignment alignment = DisplayLineAlignment.LEFT;
-	public DisplayLineAlignment Alignment { get { return alignment; } set { alignment = value; } }
+
+	public DisplayLineAlignment Alignment
+	{
+		get => alignment;
+		set => alignment = value;
+	}
+
 	public void ResetStyle()
 	{
 		userStyle = defaultStyle;
 		alignment = DisplayLineAlignment.LEFT;
 	}
 
-	public bool EmptyLine { get { return printBuffer.IsEmpty; } }
+	public bool EmptyLine => printBuffer.IsEmpty;
 
 	/// <summary>
 	/// DRAWLINE用文字列
 	/// </summary>
 	// set by setStBar before the bar is printed; Print tolerates the unset state
-	string stBar = null!;
+	private string stBar = null!;
 
 	// created on the first SetBgColor
-	Stopwatch? _drawStopwatch;
-	bool forceTextBoxColor;
+	private Stopwatch? _drawStopwatch;
+	private bool forceTextBoxColor;
+
 	public void SetBgColor(Color color)
 	{
 		bgColor = color;
@@ -118,7 +170,10 @@ internal sealed partial class EmueraConsole : IDisposable
 		//REDRAWされない場合はTextBoxの色は変えずにフラグだけ立てる
 		//最初の再描画時に現在の背景色に合わせる
 		if (redraw == ConsoleRedraw.None && window.ScrollBar.Value == window.ScrollBar.Maximum)
+		{
 			return;
+		}
+
 		//色変化が速くなりすぎないように一定時間以内の再呼び出しは強制待ちにする
 		if (_drawStopwatch == null)
 		{
@@ -131,6 +186,7 @@ internal sealed partial class EmueraConsole : IDisposable
 				Application.DoEvents();
 			}
 		}
+
 		RefreshStrings(true);
 		_drawStopwatch.Restart();
 	}
@@ -138,11 +194,15 @@ internal sealed partial class EmueraConsole : IDisposable
 	//完全に独立したHTML
 	public void PrintHTMLIsland(string html)
 	{
-		var lines = HtmlManager.Html2DisplayLine(html, stringMeasure, this);
-		foreach (var line in lines)
+		ConsoleDisplayLine[] lines = HtmlManager.Html2DisplayLine(html, stringMeasure, this);
+		foreach (ConsoleDisplayLine line in lines)
+		{
 			line.LayoutVersion = layoutVersion;
+		}
+
 		_htmlElementList.AddRange(lines);
 	}
+
 	public void ClearHTMLIsland()
 	{
 		_htmlElementList.Clear();
@@ -152,34 +212,55 @@ internal sealed partial class EmueraConsole : IDisposable
 	/// <summary>
 	/// 最後に描画した時にlineNoの値
 	/// </summary>
-	int lastDrawnLineNo = -1;
-	int lineNo;
-	public int GetLineNo { get { return lineNo; } }
-	long logicalLineCount;
+	private int lastDrawnLineNo = -1;
+
+	private int lineNo;
+	public int GetLineNo => lineNo;
+	private long logicalLineCount;
+
 	#region GETDISPLAYLINE修正
-	long deletedLines;
+
+	private long deletedLines;
+
 	#endregion
-	public long LineCount { get { return logicalLineCount; } }
+
+	public long LineCount => logicalLineCount;
+
 	#region GETDISPLAYLINE修正
-	public long DeletedLines { get { return deletedLines; } }
+
+	public long DeletedLines => deletedLines;
+
 	#endregion
+
 	private void addRangeDisplayLine(ConsoleDisplayLine[] lineList)
 	{
 		for (int i = 0; i < lineList.Length; i++)
+		{
 			addDisplayLine(lineList[i], false);
+		}
 	}
 
 	private void addDisplayLine(ConsoleDisplayLine line, bool force_LEFT)
 	{
 		#region EE_AnchorのCB機能移植
+
 		if (Config.CBUseClipboard)
+		{
 			CBProc.AddLine(line, force_LEFT);
+		}
+
 		#endregion
+
 		if (LastLineIsTemporary)
+		{
 			deleteLine(1);
+		}
+
 		//不適正なFontのチェック
 		AConsoleDisplayNode? errorStr = null;
+
 		#region EM_私家版_描画拡張
+
 		foreach (ConsoleButtonString button in line.Buttons)
 		{
 			foreach (AConsoleDisplayNode css in button.StrArray)
@@ -190,12 +271,13 @@ internal sealed partial class EmueraConsole : IDisposable
 					goto ScanBreak;
 				}
 			}
+
 			if (Config.TextDrawingMode != TextDrawingMode.WINAPI)
 			{
 				button.FilterEscaped();
 				if (button.EscapedParts != null)
 				{
-					foreach (var p in button.EscapedParts)
+					foreach (AConsoleDisplayNode p in button.EscapedParts)
 					{
 						p.Parent = button;
 						//stored in pixels so that it follows a change of the line height
@@ -204,57 +286,82 @@ internal sealed partial class EmueraConsole : IDisposable
 				}
 			}
 		}
-	ScanBreak:
+
+		ScanBreak:
+
 		#endregion
+
 		if (errorStr != null)
 		{
 			Dialog.Show(trmb.IllegalFontError.Text, trmb.IllegalFontError.Text);
 			Quit();
 			return;
 		}
+
 		if (force_LEFT)
+		{
 			line.SetAlignment(DisplayLineAlignment.LEFT);
+		}
 		else
+		{
 			line.SetAlignment(alignment);
+		}
+
 		line.LineNo = lineNo;
 		line.LayoutVersion = layoutVersion;
 		//Bitmap Cache
 		line.bitmapCacheEnabled = GlobalStatic.Console.bitmapCacheEnabledForNextLine;
 		if (displayLineList.Count != 0 &&
-					!displayLineList[^1].IsLineEnd)
+		    !displayLineList[^1].IsLineEnd)
 		{
-			var lastline = displayLineList[^1];
+			ConsoleDisplayLine lastline = displayLineList[^1];
 			deleteLine(1);
 			line.ShiftPositionX(lastline.Buttons[^1].PointX + lastline.Buttons[^1].Width);
 			line.PrependButtons(lastline);
 			//if the joined line was not measured yet, measure this line again when it is drawn
 			if (lastline.LayoutVersion != layoutVersion)
+			{
 				line.LayoutVersion = -1;
+			}
 		}
+
 		displayLineList.Add(line);
 		lineNo++;
 		if (line.IsLogicalLine && displayLineList[^1].IsLineEnd)
+		{
 			logicalLineCount++;
+		}
+
 		if (lineNo == int.MaxValue)
 		{
 			lastDrawnLineNo = -1;
 			lineNo = 0;
 		}
+
 		if (logicalLineCount == long.MaxValue)
 		{
 			logicalLineCount = 0;
 		}
+
 		#region EM_私家版_描画拡張
+
 		if (displayLineList.Count > Config.MaxLog)
-		// displayLineList.RemoveAt(0);
+			// displayLineList.RemoveAt(0);
 		{
 			if (Config.TextDrawingMode != TextDrawingMode.WINAPI)
+			{
 				ConsoleEscapedParts.RemoveAt(displayLineList[0].LineNo);
+			}
+
 			displayLineList.RemoveAt(0);
+
 			#region GETDISPLAYLINE修正
+
 			deletedLines++;
+
 			#endregion
 		}
+
 		#endregion
 	}
 
@@ -262,17 +369,27 @@ internal sealed partial class EmueraConsole : IDisposable
 	public void deleteLine(int argNum)
 	{
 		#region EE_AnchorのCB機能移植
+
 		if (Config.CBUseClipboard)
+		{
 			CBProc.DelLine(Math.Min(argNum, displayLineList.Count)); //FIXIT - Do we need to worry about the count?
+		}
+
 		#endregion
+
 		int delNum = 0;
 		int num = argNum;
+
 		#region EM_私家版_描画拡張
+
 		bool deleted = false;
 		while (delNum < num)
 		{
 			if (displayLineList.Count == 0)
+			{
 				break;
+			}
+
 			ConsoleDisplayLine line = displayLineList[^1];
 			deleted = true;
 			displayLineList.RemoveAt(displayLineList.Count - 1);
@@ -285,11 +402,17 @@ internal sealed partial class EmueraConsole : IDisposable
 					logicalLineCount--;
 				}
 			}
+
 			#region GETDISPLAYLINE修正
+
 			//MaxLog状態からのRemoveはdummylineの挿入が無いのでdeletedLineを加算
 			if (displayLineList.Count == Config.MaxLog - 1)
+			{
 				deletedLines++;
+			}
+
 			#endregion
+
 			if (displayLineList.Count == Config.MaxLog - 2 && lineNo > displayLineList.Count)
 			{
 				// force is true, so this is null only while the console is disabled
@@ -305,17 +428,30 @@ internal sealed partial class EmueraConsole : IDisposable
 		}
 
 		if (deleted && Config.TextDrawingMode != TextDrawingMode.WINAPI)
+		{
 			ConsoleEscapedParts.Remove(lineNo);
+		}
+
 		#endregion
+
 		if (lineNo < 0)
+		{
 			lineNo += int.MaxValue;
+		}
+
 		lastDrawnLineNo = -1;
 		//MaxLog超過時の補充はCLEARLINEで改行が入るため1つだけ消す
 		if (displayLineList.Count == Config.MaxLog)
+		{
 			displayLineList.RemoveAt(0);
+		}
+
 		#region GETDISPLAYLINE修正
+
 		deletedLines -= num;
+
 		#endregion
+
 		//RefreshStrings(true);
 	}
 
@@ -324,7 +460,10 @@ internal sealed partial class EmueraConsole : IDisposable
 		get
 		{
 			if (displayLineList.Count == 0)
+			{
 				return false;
+			}
+
 			return displayLineList[^1].IsTemporary;
 		}
 	}
@@ -335,7 +474,10 @@ internal sealed partial class EmueraConsole : IDisposable
 		get
 		{
 			if (displayLineList.Count == 0)
+			{
 				return false;
+			}
+
 			return string.IsNullOrEmpty(displayLineList[^1].ToString().Trim());
 		}
 	}
@@ -362,7 +504,10 @@ internal sealed partial class EmueraConsole : IDisposable
 	public void PrintWarning(string str, ScriptPosition? position, int level)
 	{
 		if (level < Config.DisplayWarningLevel && !Program.AnalysisMode)
+		{
 			return;
+		}
+
 		//警告だけは強制表示
 		bool b = force_temporary;
 		force_temporary = false;
@@ -374,16 +519,17 @@ internal sealed partial class EmueraConsole : IDisposable
 				GlobalStatic.Process.printRawLine(position);
 			}
 			else
+			{
 				PrintErrorButton(string.Format(trerror.Warning2.Text, level, position.Value.Filename, str), position, level);
-
+			}
 		}
 		else
 		{
 			PrintError(string.Format(trerror.Warning3.Text, level, str));
 		}
+
 		force_temporary = b;
 	}
-
 
 
 	/// <summary>
@@ -397,20 +543,28 @@ internal sealed partial class EmueraConsole : IDisposable
 		UseUserStyle = false;
 		PrintSingleLine(str, false);
 	}
+
 	public void PrintError(string str)
 	{
 		if (string.IsNullOrEmpty(str))
+		{
 			return;
+		}
+
 		if (Program.DebugMode)
 		{
 			DebugPrint(str);
 			DebugNewLine();
 		}
+
 		PrintFlush(false);
 		UseUserStyle = false;
 		ConsoleDisplayLine? dispLine = PrintPlainwithSingleLine(str);
 		if (dispLine == null)
+		{
 			return;
+		}
+
 		addDisplayLine(dispLine, true);
 		RefreshStrings(false);
 	}
@@ -418,16 +572,20 @@ internal sealed partial class EmueraConsole : IDisposable
 	internal void PrintErrorButton(string str, ScriptPosition? pos, int level = 0)
 	{
 		if (string.IsNullOrEmpty(str))
+		{
 			return;
+		}
+
 		if (Program.DebugMode)
 		{
 			DebugPrint(str);
 			DebugNewLine();
 		}
+
 		UseUserStyle = false;
 		//todo:オプションで色を変えられるように
-		var errColor = Color.FromArgb(255, 255, 255, 160);
-		var errerStyle = Style;
+		Color errColor = Color.FromArgb(255, 255, 255, 160);
+		StringStyle errerStyle = Style;
 		errerStyle.Color = level switch
 		{
 			0 => errColor,
@@ -439,7 +597,10 @@ internal sealed partial class EmueraConsole : IDisposable
 
 		ConsoleDisplayLine? dispLine = printBuffer.AppendAndFlushErrButton(str, errerStyle, ErrorButtonsText, pos, stringMeasure);
 		if (dispLine == null)
+		{
 			return;
+		}
+
 		addDisplayLine(dispLine, true);
 		RefreshStrings(false);
 	}
@@ -448,16 +609,26 @@ internal sealed partial class EmueraConsole : IDisposable
 	/// 1813 従来のPrintLineを用途を考慮してPrintSingleLineとPrintSystemLineに分割
 	/// </summary>
 	/// <param name="str"></param>
-	public void PrintSingleLine(string str) { PrintSingleLine(str, false); }
+	public void PrintSingleLine(string str)
+	{
+		PrintSingleLine(str, false);
+	}
+
 	public void PrintSingleLine(string str, bool temporary)
 	{
 		if (string.IsNullOrEmpty(str))
+		{
 			return;
+		}
+
 		PrintFlush(false);
 		printBuffer.Append(str, Style);
 		ConsoleDisplayLine? dispLine = BufferToSingleLine(true, temporary);
 		if (dispLine == null)
+		{
 			return;
+		}
+
 		addDisplayLine(dispLine, false);
 		RefreshStrings(false);
 	}
@@ -465,9 +636,11 @@ internal sealed partial class EmueraConsole : IDisposable
 	public void Print(string str, bool lineEnd = true)
 	{
 		if (string.IsNullOrEmpty(str))
+		{
 			return;
+		}
 
-		var lineEndIndex = str.IndexOf('\n', StringComparison.Ordinal);
+		int lineEndIndex = str.IndexOf('\n', StringComparison.Ordinal);
 		if (lineEndIndex != -1)
 		{
 			string upper = str[..lineEndIndex];
@@ -478,6 +651,7 @@ internal sealed partial class EmueraConsole : IDisposable
 				string lower = str[(lineEndIndex + 1)..];
 				Print(lower);
 			}
+
 			return;
 		}
 
@@ -487,34 +661,48 @@ internal sealed partial class EmueraConsole : IDisposable
 
 
 	#region EM_私家版_HTMLパラメータ拡張
+
 	// public void PrintImg(string str)
 	public void PrintImg(string name, string? nameb, string? namem, MixedNum? height, MixedNum? width, MixedNum? ypos)
 	{
 		//printBuffer.Append(new ConsoleImagePart(str, null, 0, 0, 0));
 		printBuffer.Append(new ConsoleImagePart(name, nameb, namem, height, width, ypos));
 	}
+
 	#endregion
 
 	#region EM_私家版_HTMLパラメータ拡張
+
 	//public void PrintShape(string type, int[] param)
 	public void PrintShape(string type, MixedNum[] param)
-	#endregion
+
+		#endregion
+
 	{
 		ConsoleShapePart part = ConsoleShapePart.CreateShape(type, param, userStyle.Color, userStyle.ButtonColor, false);
 		printBuffer.Append(part);
 	}
 
 	#region EM_私家版_HTML_PRINT拡張
+
 	public void PrintHtml(string str, bool toPrintBuffer)
 	{
 		if (string.IsNullOrEmpty(str))
+		{
 			return;
+		}
+
 		if (!Enabled)
+		{
 			return;
+		}
+
 		if (toPrintBuffer)
 		{
-			foreach (var button in HtmlManager.Html2ButtonList(str, stringMeasure, this))
+			foreach (ConsoleButtonString button in HtmlManager.Html2ButtonList(str, stringMeasure, this))
+			{
 				printBuffer.AppendButton(button);
+			}
 		}
 		else
 		{
@@ -523,19 +711,25 @@ internal sealed partial class EmueraConsole : IDisposable
 				ConsoleDisplayLine[] dispList = printBuffer.Flush(stringMeasure, force_temporary);
 				addRangeDisplayLine(dispList);
 			}
+
 			addRangeDisplayLine(HtmlManager.Html2DisplayLine(str, stringMeasure, this));
 		}
+
 		RefreshStrings(false);
 	}
+
 	#endregion
 
 	private int printCWidth = -1;
 	private int printCWidthL = -1;
 	private int printCWidthL2 = -1;
+
 	public void PrintC(string str, bool alignmentRight)
 	{
 		if (string.IsNullOrEmpty(str))
+		{
 			return;
+		}
 
 		printBuffer.Append(CreateTypeCString(str, alignmentRight), Style, true);
 	}
@@ -557,14 +751,23 @@ internal sealed partial class EmueraConsole : IDisposable
 	private string CreateTypeCString(string str, bool alignmentRight)
 	{
 		if (printCWidth == -1)
+		{
 			calcPrintCWidth(stringMeasure);
+		}
+
 		int length = 0;
 		int width;
 		if (str != null)
+
 			#region .NET 7化の弊害でPRINTC系の文字数カウントがおかしい不具合修正
+
 			//length = Config.Encode.GetByteCount(str);
+		{
 			length = Encoding.GetEncoding("Shift-JIS").GetByteCount(str);
-			#endregion
+		}
+
+		#endregion
+
 		int printcLength = Config.PrintCLength;
 		Font font;
 		try
@@ -578,30 +781,37 @@ internal sealed partial class EmueraConsole : IDisposable
 			return str!;
 		}
 
-		if (alignmentRight && (length < printcLength))
+		if (alignmentRight && length < printcLength)
 		{
 			str = new string(' ', printcLength - length) + str;
 			width = stringMeasure.GetDisplayLength(str, font);
 			while (width > printCWidth)
 			{
 				if (str[0] != ' ')
+				{
 					break;
+				}
+
 				str = str.Remove(0, 1);
 				width = stringMeasure.GetDisplayLength(str, font);
 			}
 		}
-		else if ((!alignmentRight) && (length < printcLength + 1))
+		else if (!alignmentRight && length < printcLength + 1)
 		{
 			str += new string(' ', printcLength + 1 - length);
 			width = stringMeasure.GetDisplayLength(str, font);
 			while (width > printCWidthL)
 			{
 				if (str[^1] != ' ')
+				{
 					break;
+				}
+
 				str = str.Remove(str.Length - 1, 1);
 				width = stringMeasure.GetDisplayLength(str, font);
 			}
 		}
+
 		// as in the catch block above
 		return str!;
 	}
@@ -609,32 +819,50 @@ internal sealed partial class EmueraConsole : IDisposable
 	internal void PrintButton(string str, string p)
 	{
 		if (string.IsNullOrEmpty(str))
+		{
 			return;
+		}
+
 		printBuffer.AppendButton(str, Style, p);
 	}
+
 	internal void PrintButton(string str, long p)
 	{
 		if (string.IsNullOrEmpty(str))
+		{
 			return;
+		}
+
 		printBuffer.AppendButton(str, Style, p);
 	}
+
 	internal void PrintButtonC(string str, string p, bool isRight)
 	{
 		if (string.IsNullOrEmpty(str))
+		{
 			return;
+		}
+
 		printBuffer.AppendButton(CreateTypeCString(str, isRight), Style, p);
 	}
+
 	internal void PrintButtonC(string str, long p, bool isRight)
 	{
 		if (string.IsNullOrEmpty(str))
+		{
 			return;
+		}
+
 		printBuffer.AppendButton(CreateTypeCString(str, isRight), Style, p);
 	}
 
 	internal void PrintPlain(string str)
 	{
 		if (string.IsNullOrEmpty(str))
+		{
 			return;
+		}
+
 		printBuffer.AppendPlainText(str, Style);
 	}
 
@@ -647,14 +875,24 @@ internal sealed partial class EmueraConsole : IDisposable
 	public ConsoleDisplayLine? BufferToSingleLine(bool force, bool temporary)
 	{
 		if (!Enabled)
+		{
 			return null;
+		}
+
 		if (!force && printBuffer.IsEmpty)
+		{
 			return null;
+		}
+
 		if (force && printBuffer.IsEmpty)
+		{
 			printBuffer.Append(" ", Style);
+		}
+
 		ConsoleDisplayLine dispLine = printBuffer.FlushSingleLine(stringMeasure, temporary | force_temporary);
 		return dispLine;
 	}
+
 	public void ClearText()
 	{
 		window.clear_richText();
@@ -664,7 +902,10 @@ internal sealed partial class EmueraConsole : IDisposable
 	{
 		ConsoleDisplayLine? dispLine = PrintPlainwithSingleLine(str);
 		if (dispLine == null)
+		{
 			return;
+		}
+
 		addDisplayLine(dispLine, false);
 		RefreshStrings(false);
 	}
@@ -672,9 +913,15 @@ internal sealed partial class EmueraConsole : IDisposable
 	internal ConsoleDisplayLine? PrintPlainwithSingleLine(string str)
 	{
 		if (!Enabled)
+		{
 			return null;
+		}
+
 		if (string.IsNullOrEmpty(str))
+		{
 			return null;
+		}
+
 		printBuffer.AppendPlainText(str, Style);
 		ConsoleDisplayLine dispLine = printBuffer.FlushSingleLine(stringMeasure, false);
 		return dispLine;
@@ -687,11 +934,20 @@ internal sealed partial class EmueraConsole : IDisposable
 	public void PrintFlush(bool force)
 	{
 		if (!Enabled)
+		{
 			return;
+		}
+
 		if (!force && printBuffer.IsEmpty)
+		{
 			return;
+		}
+
 		if (force && printBuffer.IsEmpty)
+		{
 			printBuffer.Append(" ", Style);
+		}
+
 		ConsoleDisplayLine[] dispList = printBuffer.Flush(stringMeasure, force_temporary);
 		//ConsoleDisplayLine[] dispList = printBuffer.Flush(stringMeasure, temporary | force_temporary);
 		addRangeDisplayLine(dispList);
@@ -721,13 +977,21 @@ internal sealed partial class EmueraConsole : IDisposable
 	public void printCustomBar(string barStr, bool isConst)
 	{
 		if (string.IsNullOrEmpty(barStr))
+		{
 			throw new CodeEE(trerror.EmptyDrawline.Text);
+		}
+
 		StringStyle ss = userStyle;
 		userStyle.FontStyle = FontStyle.Regular;
 		if (isConst)
+		{
 			Print(barStr);
+		}
 		else
+		{
 			Print(getStBar(barStr));
+		}
+
 		userStyle = ss;
 	}
 
@@ -759,27 +1023,33 @@ internal sealed partial class EmueraConsole : IDisposable
 	/// </remarks>
 	internal static string BuildStBar(StringMeasure measure, string barStr, int targetWidth, Font font)
 	{
-		var builder = new StringBuilder();
+		StringBuilder builder = new();
 		int singleWidth = measure.GetDisplayLength(barStr, font);
 		if (singleWidth <= 0)
 		{
 			singleWidth = targetWidth;
 		}
+
 		for (int i = 0; i < targetWidth; i += singleWidth)
 		{
 			builder.Append(barStr);
 		}
+
 		int width = measure.GetDisplayLength(builder.ToString(), font);
 		while (width < targetWidth)
-		{//境界を越えるまで一文字ずつ増やす
+		{
+			//境界を越えるまで一文字ずつ増やす
 			builder.Append(barStr);
 			width = measure.GetDisplayLength(builder.ToString(), font);
 		}
+
 		while (width > targetWidth)
-		{//境界を越えたら、今度は超えなくなるまで一文字ずつ減らす（barStrに複数字の文字列がきた場合に対応するため）
+		{
+			//境界を越えたら、今度は超えなくなるまで一文字ずつ減らす（barStrに複数字の文字列がきた場合に対応するため）
 			builder.Remove(builder.Length - 1, 1);
 			width = measure.GetDisplayLength(builder.ToString(), font);
 		}
+
 		return builder.ToString();
 	}
 
@@ -787,6 +1057,7 @@ internal sealed partial class EmueraConsole : IDisposable
 	{
 		stBar = getStBar(barStr);
 	}
+
 	#endregion
 
 
@@ -795,7 +1066,7 @@ internal sealed partial class EmueraConsole : IDisposable
 		// StreamWriter writer = null;
 		try
 		{
-			var log = GetLog(hideInfo);
+			string log = GetLog(hideInfo);
 			File.WriteAllText(fullpath, log, EncodingHandler.UTF8BOMEncoding);
 		}
 		catch (Exception)
@@ -803,22 +1074,30 @@ internal sealed partial class EmueraConsole : IDisposable
 			Dialog.Show(trmb.FailedOutputLog.Text, trmb.FailedOutputLogError.Text);
 			return false;
 		}
+
 		return true;
 	}
 
 	#region EE_OUTPUTLOG
+
 	public bool OutputLog(string? filename, bool hideInfo)
 	{
 		// if (filename == null)
 		if (filename == "" || filename == null)
+		{
 			filename = Program.ExeDir + "emuera.log";
+		}
 		else
+		{
 			filename = Program.ExeDir + filename;
+		}
+
 		if (filename.Contains("../"))
 		{
 			Dialog.Show(trmb.FailedOutputLog.Text, trmb.CanNotOutputToParentDirectory.Text);
 			return false;
 		}
+
 		if (!filename.StartsWith(Program.ExeDir, StringComparison.OrdinalIgnoreCase))
 		{
 			Dialog.Show(trmb.FailedOutputLog.Text, trmb.CanOnlyOutputToSubDirectory.Text);
@@ -832,16 +1111,21 @@ internal sealed partial class EmueraConsole : IDisposable
 				PrintSystemLine(string.Format(trsl.LogFileHasBeenCreated.Text, filename.Replace(Program.ExeDir, "")));
 				RefreshStrings(true);
 			}
+
 			return true;
 		}
 		else
+		{
 			return false;
+		}
 	}
 
 	public bool OutputSystemLog(string filename)
 	{
 		if (filename == "" || filename == null)
+		{
 			filename = Program.ExeDir + "emuera.log";
+		}
 
 		if (!filename.StartsWith(Program.ExeDir, StringComparison.OrdinalIgnoreCase))
 		{
@@ -856,16 +1140,20 @@ internal sealed partial class EmueraConsole : IDisposable
 				PrintSystemLine(string.Format(trsl.LogFileHasBeenCreated.Text, filename.Replace(Program.ExeDir, "")));
 				RefreshStrings(true);
 			}
+
 			return true;
 		}
 		else
+		{
 			return false;
+		}
 	}
 
 	#endregion
+
 	public string GetLog(bool hideInfo)
 	{
-		var builder = new StringBuilder();
+		StringBuilder builder = new();
 
 		if (!hideInfo)
 		{
@@ -874,63 +1162,94 @@ internal sealed partial class EmueraConsole : IDisposable
 			builder.AppendLine();
 			builder.AppendLine(trsl.Variant.Text);
 			if (string.IsNullOrEmpty(process.gameBase.ScriptTitle))
+			{
 				builder.AppendLine(trsl.NotDefinedGameBase.Text);
+			}
 			else
+			{
 				builder.AppendLine(process.gameBase.ScriptTitle + " " + process.gameBase.ScriptVersionText);
+			}
 
-			var patchVersionsPath = Path.Combine(Program.ExeDir, "patch_versions");
+			string patchVersionsPath = Path.Combine(Program.ExeDir, "patch_versions");
 			if (Directory.Exists(patchVersionsPath))
 			{
 				builder.AppendLine(trsl.PatchVersion.Text);
-				var versionTexts = Directory.EnumerateFiles(patchVersionsPath, "*.txt")
-						.Where(x => Path.GetExtension(x) == ".txt")
-						.OrderBy(x => x, StringComparer.Ordinal)
-						.Select(x => File.ReadAllText(x).Trim());
-				var versionText = string.Join("+", versionTexts);
+				IEnumerable<string> versionTexts = Directory.EnumerateFiles(patchVersionsPath, "*.txt")
+					.Where(x => Path.GetExtension(x) == ".txt")
+					.OrderBy(x => x, StringComparer.Ordinal)
+					.Select(x => File.ReadAllText(x).Trim());
+				string versionText = string.Join("+", versionTexts);
 				builder.AppendLine(versionText);
 			}
+
 			builder.AppendLine();
 			builder.AppendLine(trsl.Log.Text);
 			builder.AppendLine();
 		}
+
 		//builder.AppendLine();
 		for (int i = 0; i < displayLineList.Count; i++)
 		{
 			#region EE_AnchorのCB機能移植
+
 			//builder.AppendLine(displayLineList[i].ToString());]
 			builder.AppendLine(ClipboardProcessor.StripHTML(displayLineList[i].ToString()));
+
 			#endregion
 		}
+
 		return builder.ToString();
 	}
 
 	public ConsoleDisplayLine[]? GetDisplayLines(long lineNo)
 	{
 		if (lineNo < 0 || lineNo > displayLineList.Count)
+		{
 			return null;
+		}
+
 		int count = 0;
 		List<ConsoleDisplayLine> list = [];
 		for (int i = displayLineList.Count - 1; i >= 0; i--)
 		{
 			if (count == lineNo)
+			{
 				list.Insert(0, displayLineList[i]);
+			}
+
 			if (displayLineList[i].IsLogicalLine)
+			{
 				count++;
+			}
+
 			if (count > lineNo)
+			{
 				break;
+			}
 		}
+
 		if (list.Count == 0)
+		{
 			return null;
+		}
+
 		ConsoleDisplayLine[] ret = new ConsoleDisplayLine[list.Count];
 		list.CopyTo(ret);
 		return ret;
 	}
+
 	public ConsoleDisplayLine[]? PopDisplayingLines()
 	{
 		if (!Enabled)
+		{
 			return null;
+		}
+
 		if (printBuffer.IsEmpty)
+		{
 			return null;
+		}
+
 		return printBuffer.Flush(stringMeasure, force_temporary);
 	}
 }

@@ -9,12 +9,11 @@ namespace MinorShift.Emuera.Runtime.Utils;
 
 internal enum EraDataState
 {
-	OK = 0,//ロード可能
-	FILENOTFOUND = 1,//ファイルが存在せず
-	GAME_ERROR = 2,//ゲームが違う
-	VIRSION_ERROR = 3,//バージョンが違う
-	ETC_ERROR = 4,//その他のエラー
-
+	OK = 0, //ロード可能
+	FILENOTFOUND = 1, //ファイルが存在せず
+	GAME_ERROR = 2, //ゲームが違う
+	VIRSION_ERROR = 3, //バージョンが違う
+	ETC_ERROR = 4 //その他のエラー
 }
 
 internal sealed class EraDataResult
@@ -40,8 +39,9 @@ internal sealed class EraDataReader : IDisposable
 		file.Seek(0, SeekOrigin.Begin);
 		reader = new StreamReader(file, EncodingHandler.DetectEncoding(file));
 	}
-	FileStream file;
-	StreamReader reader;
+
+	private FileStream file;
+	private StreamReader reader;
 	public const string FINISHER = "__FINISHED";
 	public const string EMU_1700_START = "__EMUERA_STRAT__";
 	public const string EMU_1708_START = "__EMUERA_1708_STRAT__";
@@ -49,26 +49,43 @@ internal sealed class EraDataReader : IDisposable
 	public const string EMU_1803_START = "__EMUERA_1803_STRAT__";
 	public const string EMU_1808_START = "__EMUERA_1808_STRAT__";
 	public const string EMU_SEPARATOR = "__EMU_SEPARATOR__";
+
 	#region eramaker
+
 	public string ReadString()
 	{
 		if (reader == null)
+		{
 			throw new FileEE(trerror.InvalidStream.Text);
+		}
+
 		string? str = reader.ReadLine();
 		if (str == null)
+		{
 			throw new FileEE(trerror.NoStrToRead.Text);
+		}
+
 		return str;
 	}
 
 	public long ReadInt64()
 	{
 		if (reader == null)
+		{
 			throw new FileEE(trerror.InvalidStream.Text);
+		}
+
 		string? str = reader.ReadLine();
 		if (str == null)
+		{
 			throw new FileEE(trerror.NoNumToRead.Text);
+		}
+
 		if (!long.TryParse(str, out long ret))
+		{
 			throw new FileEE(trerror.CanNotInterpretNum.Text);
+		}
+
 		return ret;
 	}
 
@@ -76,9 +93,15 @@ internal sealed class EraDataReader : IDisposable
 	public void ReadInt64Array(long[] array)
 	{
 		if (reader == null)
+		{
 			throw new FileEE(trerror.InvalidStream.Text);
+		}
+
 		if (array == null)
+		{
 			throw new FileEE(trerror.InvalidArray.Text);
+		}
+
 		int i = -1;
 		string? str;
 		while (true)
@@ -86,25 +109,46 @@ internal sealed class EraDataReader : IDisposable
 			i++;
 			str = reader.ReadLine();
 			if (str == null)
+			{
 				throw new FileEE(trerror.UnexpectedSaveDataEnd.Text);
+			}
+
 			if (str.Equals(FINISHER, StringComparison.Ordinal))
+			{
 				break;
-			if (i >= array.Length)//配列を超えて保存されていても動じないで読み飛ばす。
+			}
+
+			if (i >= array.Length) //配列を超えて保存されていても動じないで読み飛ばす。
+			{
 				continue;
+			}
+
 			if (!long.TryParse(str, out long integer))
+			{
 				throw new FileEE(trerror.InvalidArray.Text);
+			}
+
 			array[i] = integer;
 		}
-		for (; i < array.Length; i++)//保存されている値が無いなら0に初期化
+
+		for (; i < array.Length; i++) //保存されている値が無いなら0に初期化
+		{
 			array[i] = 0;
+		}
 	}
 
 	public void ReadStringArray(string?[] array)
 	{
 		if (reader == null)
+		{
 			throw new FileEE(trerror.InvalidStream.Text);
+		}
+
 		if (array == null)
+		{
 			throw new FileEE(trerror.InvalidArray.Text);
+		}
+
 		int i = -1;
 		string? str;
 		while (true)
@@ -112,52 +156,80 @@ internal sealed class EraDataReader : IDisposable
 			i++;
 			str = reader.ReadLine();
 			if (str == null)
+			{
 				throw new FileEE(trerror.UnexpectedSaveDataEnd.Text);
+			}
+
 			if (str.Equals(FINISHER, StringComparison.Ordinal))
+			{
 				break;
-			if (i >= array.Length)//配列を超えて保存されていても動じないで読み飛ばす。
+			}
+
+			if (i >= array.Length) //配列を超えて保存されていても動じないで読み飛ばす。
+			{
 				continue;
+			}
+
 			array[i] = str;
 		}
-		for (; i < array.Length; i++)//保存されている値が無いなら""に初期化
+
+		for (; i < array.Length; i++) //保存されている値が無いなら""に初期化
+		{
 			array[i] = "";
+		}
 	}
+
 	#endregion
+
 	#region Emuera
-	int emu_version = -1;
-	public int DataVersion { get { return emu_version; } }
+
+	private int emu_version = -1;
+	public int DataVersion => emu_version;
+
 	public bool SeekEmuStart()
 	{
-
 		if (reader == null)
+		{
 			throw new FileEE(trerror.InvalidStream.Text);
+		}
+
 		if (reader.EndOfStream)
+		{
 			return false;
+		}
+
 		while (true)
 		{
 			string? str = reader.ReadLine();
 			if (str == null)
+			{
 				return false;
+			}
+
 			if (str.Equals(EMU_1700_START, StringComparison.Ordinal))
 			{
 				emu_version = 1700;
 				return true;
 			}
+
 			if (str.Equals(EMU_1708_START, StringComparison.Ordinal))
 			{
 				emu_version = 1708;
 				return true;
 			}
+
 			if (str.Equals(EMU_1729_START, StringComparison.Ordinal))
 			{
 				emu_version = 1729;
 				return true;
 			}
+
 			if (str.Equals(EMU_1803_START, StringComparison.Ordinal))
 			{
 				emu_version = 1803;
 				return true;
 			}
+
 			if (str.Equals(EMU_1808_START, StringComparison.Ordinal))
 			{
 				emu_version = 1808;
@@ -169,218 +241,375 @@ internal sealed class EraDataReader : IDisposable
 	public Dictionary<string, string> ReadStringExtended()
 	{
 		if (reader == null)
+		{
 			throw new FileEE(trerror.InvalidStream.Text);
+		}
+
 		Dictionary<string, string> strList = [];
 		string? str;
 		while (true)
 		{
 			str = reader.ReadLine();
 			if (str == null)
+			{
 				throw new FileEE(trerror.UnexpectedSaveDataEnd.Text);
+			}
+
 			if (str.Equals(FINISHER, StringComparison.Ordinal))
+			{
 				throw new FileEE(trerror.InvalidSaveDataFormat.Text);
+			}
+
 			if (str.Equals(EMU_SEPARATOR, StringComparison.Ordinal))
+			{
 				break;
+			}
+
 			int index = str.IndexOf(':', StringComparison.Ordinal);
 			if (index < 0)
+			{
 				throw new FileEE(trerror.InvalidSaveDataFormat.Text);
+			}
+
 			string key = str[..index];
 			string value = str.Substring(index + 1);
 			strList.TryAdd(key, value);
 		}
+
 		return strList;
 	}
+
 	public Dictionary<string, long> ReadInt64Extended()
 	{
 		if (reader == null)
+		{
 			throw new FileEE(trerror.InvalidStream.Text);
+		}
+
 		Dictionary<string, long> intList = [];
 		string? str;
 		while (true)
 		{
 			str = reader.ReadLine();
 			if (str == null)
+			{
 				throw new FileEE(trerror.UnexpectedSaveDataEnd.Text);
+			}
+
 			if (str.Equals(FINISHER, StringComparison.Ordinal))
+			{
 				throw new FileEE(trerror.InvalidSaveDataFormat.Text);
+			}
+
 			if (str.Equals(EMU_SEPARATOR, StringComparison.Ordinal))
+			{
 				break;
+			}
+
 			int index = str.IndexOf(':', StringComparison.Ordinal);
 			if (index < 0)
+			{
 				throw new FileEE(trerror.InvalidSaveDataFormat.Text);
+			}
+
 			string key = str[..index];
 			string valueStr = str.Substring(index + 1);
 			if (!long.TryParse(valueStr, out long value))
+			{
 				throw new FileEE(trerror.InvalidArray.Text);
+			}
+
 			intList.TryAdd(key, value);
 		}
+
 		return intList;
 	}
 
 	public Dictionary<string, List<long>> ReadInt64ArrayExtended()
 	{
 		if (reader == null)
+		{
 			throw new FileEE(trerror.InvalidStream.Text);
+		}
+
 		Dictionary<string, List<long>> ret = [];
 		string? str;
 		while (true)
 		{
 			str = reader.ReadLine();
 			if (str == null)
+			{
 				throw new FileEE(trerror.UnexpectedSaveDataEnd.Text);
+			}
+
 			if (str.Equals(FINISHER, StringComparison.Ordinal))
+			{
 				throw new FileEE(trerror.InvalidSaveDataFormat.Text);
+			}
+
 			if (str.Equals(EMU_SEPARATOR, StringComparison.Ordinal))
+			{
 				break;
+			}
+
 			string key = str;
 			List<long> valueList = [];
 			while (true)
 			{
 				str = reader.ReadLine();
 				if (str == null)
+				{
 					throw new FileEE(trerror.UnexpectedSaveDataEnd.Text);
+				}
+
 				if (str.Equals(EMU_SEPARATOR, StringComparison.Ordinal))
+				{
 					throw new FileEE(trerror.InvalidSaveDataFormat.Text);
+				}
+
 				if (str.Equals(FINISHER, StringComparison.Ordinal))
+				{
 					break;
+				}
+
 				if (!long.TryParse(str, out long value))
+				{
 					throw new FileEE(trerror.InvalidArray.Text);
+				}
+
 				valueList.Add(value);
 			}
+
 			ret.TryAdd(key, valueList);
 		}
+
 		return ret;
 	}
 
 	public Dictionary<string, List<string>> ReadStringArrayExtended()
 	{
 		if (reader == null)
+		{
 			throw new FileEE(trerror.InvalidStream.Text);
+		}
+
 		Dictionary<string, List<string>> ret = [];
 		string? str;
 		while (true)
 		{
 			str = reader.ReadLine();
 			if (str == null)
+			{
 				throw new FileEE(trerror.UnexpectedSaveDataEnd.Text);
+			}
+
 			if (str.Equals(FINISHER, StringComparison.Ordinal))
+			{
 				throw new FileEE(trerror.InvalidSaveDataFormat.Text);
+			}
+
 			if (str.Equals(EMU_SEPARATOR, StringComparison.Ordinal))
+			{
 				break;
+			}
+
 			string key = str;
 			List<string> valueList = [];
 			while (true)
 			{
 				str = reader.ReadLine();
 				if (str == null)
+				{
 					throw new FileEE(trerror.UnexpectedSaveDataEnd.Text);
+				}
+
 				if (str.Equals(EMU_SEPARATOR, StringComparison.Ordinal))
+				{
 					throw new FileEE(trerror.InvalidSaveDataFormat.Text);
+				}
+
 				if (str.Equals(FINISHER, StringComparison.Ordinal))
+				{
 					break;
+				}
+
 				valueList.Add(str);
 			}
+
 			ret.TryAdd(key, valueList);
 		}
+
 		return ret;
 	}
 
 	public Dictionary<string, List<long[]>> ReadInt64Array2DExtended()
 	{
 		if (reader == null)
+		{
 			throw new FileEE(trerror.InvalidStream.Text);
+		}
+
 		Dictionary<string, List<long[]>> ret = [];
 		if (emu_version < 1708)
+		{
 			return ret;
+		}
+
 		string? str;
 		while (true)
 		{
 			str = reader.ReadLine();
 			if (str == null)
+			{
 				throw new FileEE(trerror.UnexpectedSaveDataEnd.Text);
+			}
+
 			if (str.Equals(FINISHER, StringComparison.Ordinal))
+			{
 				throw new FileEE(trerror.InvalidSaveDataFormat.Text);
+			}
+
 			if (str.Equals(EMU_SEPARATOR, StringComparison.Ordinal))
+			{
 				break;
+			}
+
 			string key = str;
 			List<long[]> valueList = [];
 			while (true)
 			{
 				str = reader.ReadLine();
 				if (str == null)
+				{
 					throw new FileEE(trerror.UnexpectedSaveDataEnd.Text);
+				}
+
 				if (str.Equals(EMU_SEPARATOR, StringComparison.Ordinal))
+				{
 					throw new FileEE(trerror.InvalidSaveDataFormat.Text);
+				}
+
 				if (str.Equals(FINISHER, StringComparison.Ordinal))
+				{
 					break;
+				}
+
 				if (str.Length == 0)
 				{
 					valueList.Add([]);
 					continue;
 				}
+
 				string[] tokens = str.Split(',');
 				long[] intTokens = new long[tokens.Length];
 
 				for (int x = 0; x < tokens.Length; x++)
+				{
 					if (!long.TryParse(tokens[x], out intTokens[x]))
+					{
 						throw new FileEE(string.Format(trerror.CanNotInterpretNumValue.Text, tokens[x]));
+					}
+				}
+
 				valueList.Add(intTokens);
 			}
+
 			ret.TryAdd(key, valueList);
 		}
+
 		return ret;
 	}
 
 	public Dictionary<string, List<string[]>> ReadStringArray2DExtended()
 	{
 		if (reader == null)
+		{
 			throw new FileEE(trerror.InvalidStream.Text);
+		}
+
 		Dictionary<string, List<string[]>> ret = [];
 		if (emu_version < 1708)
+		{
 			return ret;
+		}
+
 		string? str;
 		while (true)
 		{
 			str = reader.ReadLine();
 			if (str == null)
+			{
 				throw new FileEE(trerror.UnexpectedSaveDataEnd.Text);
+			}
+
 			if (str.Equals(FINISHER, StringComparison.Ordinal))
+			{
 				throw new FileEE(trerror.InvalidSaveDataFormat.Text);
+			}
+
 			if (str.Equals(EMU_SEPARATOR, StringComparison.Ordinal))
+			{
 				break;
+			}
+
 			throw new FileEE(trerror.NotSupportStringArray2D.Text);
 		}
+
 		return ret;
 	}
 
 	public Dictionary<string, List<List<long[]>>> ReadInt64Array3DExtended()
 	{
 		if (reader == null)
+		{
 			throw new FileEE(trerror.InvalidStream.Text);
+		}
+
 		Dictionary<string, List<List<long[]>>> ret = [];
 		if (emu_version < 1729)
+		{
 			return ret;
+		}
+
 		string? str;
 		while (true)
 		{
 			str = reader.ReadLine();
 			if (str == null)
+			{
 				throw new FileEE(trerror.UnexpectedSaveDataEnd.Text);
+			}
+
 			if (str.Equals(FINISHER, StringComparison.Ordinal))
+			{
 				throw new FileEE(trerror.InvalidSaveDataFormat.Text);
+			}
+
 			if (str.Equals(EMU_SEPARATOR, StringComparison.Ordinal))
+			{
 				break;
+			}
+
 			string key = str;
 			List<List<long[]>> valueList = [];
 			while (true)
 			{
 				str = reader.ReadLine();
 				if (str == null)
+				{
 					throw new FileEE(trerror.UnexpectedSaveDataEnd.Text);
+				}
+
 				if (str.Equals(EMU_SEPARATOR, StringComparison.Ordinal))
+				{
 					throw new FileEE(trerror.InvalidSaveDataFormat.Text);
+				}
+
 				if (str.Equals(FINISHER, StringComparison.Ordinal))
+				{
 					break;
+				}
+
 				if (str.Contains('{'))
 				{
 					List<long[]> tokenList = [];
@@ -388,70 +617,104 @@ internal sealed class EraDataReader : IDisposable
 					{
 						str = reader.ReadLine();
 						if (str == "}")
+						{
 							break;
+						}
+
 						// A null line (EOF) is dereferenced as before; ! keeps the existing behavior
 						if (str!.Length == 0)
 						{
 							tokenList.Add([]);
 							continue;
 						}
+
 						string[] tokens = str.Split(',');
 						long[] intTokens = new long[tokens.Length];
 
 						for (int x = 0; x < tokens.Length; x++)
+						{
 							if (!long.TryParse(tokens[x], out intTokens[x]))
+							{
 								throw new FileEE(string.Format(trerror.CanNotInterpretNumValue.Text, tokens[x]));
+							}
+						}
+
 						tokenList.Add(intTokens);
 					}
+
 					valueList.Add(tokenList);
 				}
 			}
+
 			ret.TryAdd(key, valueList);
 		}
+
 		return ret;
 	}
 
 	public Dictionary<string, List<List<string[]>>> ReadStringArray3DExtended()
 	{
 		if (reader == null)
+		{
 			throw new FileEE(trerror.InvalidStream.Text);
+		}
+
 		Dictionary<string, List<List<string[]>>> ret = [];
 		if (emu_version < 1729)
+		{
 			return ret;
+		}
+
 		string? str;
 		while (true)
 		{
 			str = reader.ReadLine();
 			if (str == null)
+			{
 				throw new FileEE(trerror.UnexpectedSaveDataEnd.Text);
+			}
+
 			if (str.Equals(FINISHER, StringComparison.Ordinal))
+			{
 				throw new FileEE(trerror.InvalidSaveDataFormat.Text);
+			}
+
 			if (str.Equals(EMU_SEPARATOR, StringComparison.Ordinal))
+			{
 				break;
+			}
+
 			throw new FileEE(trerror.NotSupportStringArray2D.Text);
 		}
+
 		return ret;
 	}
 
 	#endregion
+
 	#region IDisposable メンバ
 
 	public void Dispose()
 	{
 		if (reader != null)
+		{
 			reader.Close();
+		}
 		else
+		{
 			file?.Close();
+		}
+
 		file = null!;
 		reader = null!;
 	}
 
 	#endregion
+
 	public void Close()
 	{
 		Dispose();
 	}
-
 }
 
 /// <summary>
@@ -474,13 +737,18 @@ internal sealed class EraDataWriter : IDisposable
 	public const string FINISHER = EraDataReader.FINISHER;
 	public const string EMU_START = EraDataReader.EMU_1808_START;
 	public const string EMU_SEPARATOR = EraDataReader.EMU_SEPARATOR;
-	FileStream file;
-	StreamWriter writer;
+	private FileStream file;
+	private StreamWriter writer;
+
 	#region eramaker
+
 	public void Write(long integer)
 	{
 		if (writer == null)
+		{
 			throw new FileEE(trerror.InvalidStream.Text);
+		}
+
 		writer.WriteLine(integer.ToString());
 	}
 
@@ -488,79 +756,138 @@ internal sealed class EraDataWriter : IDisposable
 	public void Write(string? str)
 	{
 		if (writer == null)
+		{
 			throw new FileEE(trerror.InvalidStream.Text);
+		}
+
 		if (str == null)
+		{
 			writer.WriteLine("");
+		}
 		else
+		{
 			writer.WriteLine(str);
+		}
 	}
 
 	public void Write(long[] array)
 	{
 		if (writer == null)
+		{
 			throw new FileEE(trerror.InvalidStream.Text);
+		}
+
 		if (array == null)
+		{
 			throw new FileEE(trerror.InvalidArray.Text);
+		}
+
 		int count = -1;
 		for (int i = 0; i < array.Length; i++)
+		{
 			if (array[i] != 0)
+			{
 				count = i;
+			}
+		}
+
 		count++;
 		for (int i = 0; i < count; i++)
+		{
 			writer.WriteLine(array[i].ToString());
+		}
+
 		writer.WriteLine(FINISHER);
 	}
+
 	public void Write(string?[] array)
 	{
 		if (writer == null)
+		{
 			throw new FileEE(trerror.InvalidStream.Text);
+		}
+
 		if (array == null)
+		{
 			throw new FileEE(trerror.InvalidArray.Text);
+		}
+
 		int count = -1;
 		for (int i = 0; i < array.Length; i++)
+		{
 			if (!string.IsNullOrEmpty(array[i]))
+			{
 				count = i;
+			}
+		}
+
 		count++;
 		for (int i = 0; i < count; i++)
 		{
 			if (array[i] == null)
+			{
 				writer.WriteLine("");
+			}
 			else
+			{
 				writer.WriteLine(array[i]);
+			}
 		}
+
 		writer.WriteLine(FINISHER);
 	}
+
 	#endregion
+
 	#region Emuera
 
 	public void EmuStart()
 	{
 		if (writer == null)
+		{
 			throw new FileEE(trerror.InvalidStream.Text);
+		}
+
 		writer.WriteLine(EMU_START);
 	}
+
 	public void EmuSeparete()
 	{
 		if (writer == null)
+		{
 			throw new FileEE(trerror.InvalidStream.Text);
+		}
+
 		writer.WriteLine(EMU_SEPARATOR);
 	}
 
 	public void WriteExtended(string key, long value)
 	{
 		if (writer == null)
+		{
 			throw new FileEE(trerror.InvalidStream.Text);
+		}
+
 		if (value == 0)
+		{
 			return;
+		}
+
 		writer.WriteLine(string.Format("{0}:{1}", key, value));
 	}
 
 	public void WriteExtended(string key, string? value)
 	{
 		if (writer == null)
+		{
 			throw new FileEE(trerror.InvalidStream.Text);
+		}
+
 		if (string.IsNullOrEmpty(value))
+		{
 			return;
+		}
+
 		writer.WriteLine(string.Format("{0}:{1}", key, value));
 	}
 
@@ -568,51 +895,94 @@ internal sealed class EraDataWriter : IDisposable
 	public void WriteExtended(string key, long[] array)
 	{
 		if (writer == null)
+		{
 			throw new FileEE(trerror.InvalidStream.Text);
+		}
+
 		if (array == null)
+		{
 			throw new FileEE(trerror.InvalidArray.Text);
+		}
+
 		int count = -1;
 		for (int i = 0; i < array.Length; i++)
+		{
 			if (array[i] != 0)
+			{
 				count = i;
+			}
+		}
+
 		count++;
 		if (count == 0)
+		{
 			return;
+		}
+
 		writer.WriteLine(key);
 		for (int i = 0; i < count; i++)
+		{
 			writer.WriteLine(array[i].ToString());
+		}
+
 		writer.WriteLine(FINISHER);
 	}
+
 	public void WriteExtended(string key, string?[] array)
 	{
 		if (writer == null)
+		{
 			throw new FileEE(trerror.InvalidStream.Text);
+		}
+
 		if (array == null)
+		{
 			throw new FileEE(trerror.InvalidArray.Text);
+		}
+
 		int count = -1;
 		for (int i = 0; i < array.Length; i++)
+		{
 			if (!string.IsNullOrEmpty(array[i]))
+			{
 				count = i;
+			}
+		}
+
 		count++;
 		if (count == 0)
+		{
 			return;
+		}
+
 		writer.WriteLine(key);
 		for (int i = 0; i < count; i++)
 		{
 			if (array[i] == null)
+			{
 				writer.WriteLine("");
+			}
 			else
+			{
 				writer.WriteLine(array[i]);
+			}
 		}
+
 		writer.WriteLine(FINISHER);
 	}
 
 	public void WriteExtended(string key, long[,] array2D)
 	{
 		if (writer == null)
+		{
 			throw new FileEE(trerror.InvalidStream.Text);
+		}
+
 		if (array2D == null)
+		{
 			throw new FileEE(trerror.InvalidArray.Text);
+		}
+
 		int countX = 0;
 		int length0 = array2D.GetLength(0);
 		int length1 = array2D.GetLength(1);
@@ -628,8 +998,12 @@ internal sealed class EraDataWriter : IDisposable
 				}
 			}
 		}
+
 		if (countX == 0)
+		{
 			return;
+		}
+
 		writer.WriteLine(key);
 		for (int x = 0; x < countX; x++)
 		{
@@ -638,15 +1012,20 @@ internal sealed class EraDataWriter : IDisposable
 				writer.WriteLine("");
 				continue;
 			}
+
 			StringBuilder builder = new("");
 			for (int y = 0; y < countY[x]; y++)
 			{
 				builder.Append(array2D[x, y]);
 				if (y != countY[x] - 1)
+				{
 					builder.Append(',');
+				}
 			}
+
 			writer.WriteLine(builder.ToString());
 		}
+
 		writer.WriteLine(FINISHER);
 	}
 
@@ -658,9 +1037,15 @@ internal sealed class EraDataWriter : IDisposable
 	public void WriteExtended(string key, long[,,] array3D)
 	{
 		if (writer == null)
+		{
 			throw new FileEE(trerror.InvalidStream.Text);
+		}
+
 		if (array3D == null)
+		{
 			throw new FileEE(trerror.InvalidArray.Text);
+		}
+
 		int countX = 0;
 		int length0 = array3D.GetLength(0);
 		int length1 = array3D.GetLength(1);
@@ -682,8 +1067,12 @@ internal sealed class EraDataWriter : IDisposable
 				}
 			}
 		}
+
 		if (countX == 0)
+		{
 			return;
+		}
+
 		writer.WriteLine(key);
 		for (int x = 0; x < countX; x++)
 		{
@@ -693,6 +1082,7 @@ internal sealed class EraDataWriter : IDisposable
 				writer.WriteLine("}");
 				continue;
 			}
+
 			for (int y = 0; y < countY[x]; y++)
 			{
 				StringBuilder builder = new("");
@@ -701,16 +1091,22 @@ internal sealed class EraDataWriter : IDisposable
 					writer.WriteLine("");
 					continue;
 				}
+
 				for (int z = 0; z < countZ[x, y]; z++)
 				{
 					builder.Append(array3D[x, y, z]);
 					if (z != countZ[x, y] - 1)
+					{
 						builder.Append(',');
+					}
 				}
+
 				writer.WriteLine(builder.ToString());
 			}
+
 			writer.WriteLine("}");
 		}
+
 		writer.WriteLine(FINISHER);
 	}
 
@@ -718,6 +1114,7 @@ internal sealed class EraDataWriter : IDisposable
 	{
 		throw new NotImplementedException(trerror.NotImplement.Text);
 	}
+
 	#endregion
 
 	#region IDisposable メンバ
@@ -725,14 +1122,20 @@ internal sealed class EraDataWriter : IDisposable
 	public void Dispose()
 	{
 		if (writer != null)
+		{
 			writer.Close();
+		}
 		else
+		{
 			file?.Close();
+		}
+
 		writer = null!;
 		file = null!;
 	}
 
 	#endregion
+
 	public void Close()
 	{
 		Dispose();

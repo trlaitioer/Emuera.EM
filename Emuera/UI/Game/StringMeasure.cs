@@ -24,7 +24,7 @@ internal sealed class StringMeasure : IDisposable
 		ownerThreadId = Environment.CurrentManagedThreadId;
 	}
 
-	readonly TextDrawingMode textDrawingMode;
+	private readonly TextDrawingMode textDrawingMode;
 	private Size layoutSize;
 
 	/// <summary>
@@ -35,9 +35,9 @@ internal sealed class StringMeasure : IDisposable
 		layoutSize = new Size(Config.WindowX * 2, Config.LineHeight);
 	}
 
-	readonly Graphics graph;
-	readonly Bitmap bmp;
-	readonly int ownerThreadId;
+	private readonly Graphics graph;
+	private readonly Bitmap bmp;
+	private readonly int ownerThreadId;
 
 	/// <summary>
 	/// The Graphics to measure through: the shared one on the thread that owns it, null anywhere else so
@@ -54,7 +54,10 @@ internal sealed class StringMeasure : IDisposable
 	private static int MeasureText(Graphics? graph, ReadOnlySpan<char> text, Font font, Size layoutSize)
 	{
 		if (graph == null)
+		{
 			return TextRenderer.MeasureText(new string(text), font, layoutSize, TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix).Width;
+		}
+
 		return TextRenderer.MeasureText(graph, text, font, layoutSize, TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix).Width;
 	}
 
@@ -62,8 +65,11 @@ internal sealed class StringMeasure : IDisposable
 	{
 		// The string overload answers empty text before it looks at the mode, so nothing here rejects it either
 		if (chars.IsEmpty)
+		{
 			return 0;
-		var measuringGraphics = MeasuringGraphics;
+		}
+
+		Graphics? measuringGraphics = MeasuringGraphics;
 		if (textDrawingMode == TextDrawingMode.TEXTRENDERER)
 		{
 			return MeasureText(measuringGraphics, chars, f, layoutSize);
@@ -74,7 +80,7 @@ internal sealed class StringMeasure : IDisposable
 			// Tab expansion stays with the string overload, which is the one the print paths use
 			return GraphicsTextRenderer.MeasureAdvance(measuringGraphics, chars, f, layoutSize);
 		}
-		else// if (StaticConfig.TextDrawingMode == TextDrawingMode.WINAPI)
+		else // if (StaticConfig.TextDrawingMode == TextDrawingMode.WINAPI)
 		{
 			throw new Exception("WIN32APIモードはサポートされていません");
 		}
@@ -83,12 +89,18 @@ internal sealed class StringMeasure : IDisposable
 	public int GetDisplayLength(string s, Font font)
 	{
 		if (string.IsNullOrEmpty(s))
+		{
 			return 0;
-		var measuringGraphics = MeasuringGraphics;
+		}
+
+		Graphics? measuringGraphics = MeasuringGraphics;
 		if (textDrawingMode == TextDrawingMode.GRAPHICS)
 		{
 			if (s.Contains('\t'))
+			{
 				s = s.Replace("\t", "        ");
+			}
+
 			// The advance width of the text, which is the quantity the layout is built on. Drawing uses GDI+
 			// without padding, so the pen it starts from is the same one the layout computed
 			// (see .scratch/ui-modernization/issues/04).
@@ -98,7 +110,7 @@ internal sealed class StringMeasure : IDisposable
 		{
 			return MeasureText(measuringGraphics, s.AsSpan(), font, layoutSize);
 		}
-		else// if (StaticConfig.TextDrawingMode == TextDrawingMode.WINAPI)
+		else // if (StaticConfig.TextDrawingMode == TextDrawingMode.WINAPI)
 		{
 			throw new Exception("WIN32APIモードはサポートされていません");
 		}
@@ -108,11 +120,15 @@ internal sealed class StringMeasure : IDisposable
 	}
 
 
-	bool disposed;
+	private bool disposed;
+
 	public void Dispose()
 	{
 		if (disposed)
+		{
 			return;
+		}
+
 		disposed = true;
 		graph.Dispose();
 		bmp.Dispose();

@@ -10,9 +10,19 @@ using static MinorShift.Emuera.Runtime.Utils.EvilMask.Utils;
 
 namespace MinorShift.Emuera.Runtime.Utils.EvilMask;
 
-class ConsoleDivPart : AConsoleDisplayNode
+internal class ConsoleDivPart : AConsoleDisplayNode
 {
-	public ConsoleDivPart(MixedNum xPos, MixedNum yPos, MixedNum width, MixedNum height, int depth, int color, StyledBoxModel? box, bool isRelative, ConsoleDisplayLine[] childs)
+	public ConsoleDivPart(
+		MixedNum xPos,
+		MixedNum yPos,
+		MixedNum width,
+		MixedNum height,
+		int depth,
+		int color,
+		StyledBoxModel? box,
+		bool isRelative,
+		ConsoleDisplayLine[] childs
+	)
 	{
 		backgroundColor = color >= 0 ? Color.FromArgb((int)(color | 0xff000000)) : Color.Transparent;
 		StringBuilder sb = new();
@@ -34,17 +44,21 @@ class ConsoleDivPart : AConsoleDisplayNode
 			{
 				borderColors = new Color[4];
 				for (int i = 0; i < 4; i++)
+				{
 					borderColors[i] = box.color[i] >= 0 ? Color.FromArgb((int)(box.color[i] | 0xff000000)) : Color.Transparent;
+				}
+
 				AddColorParam4(sb, "bcolor", borderColors);
 			}
 		}
+
 		sb.Append('>');
 		altHeadTag = sb.ToString();
 		Text = string.Empty;
 		this.xPos = xPos;
 		this.yPos = yPos;
-		this.rawWidth = width;
-		this.rawHeight = height;
+		rawWidth = width;
+		rawHeight = height;
 		this.box = box;
 		computeGeometry();
 
@@ -56,8 +70,8 @@ class ConsoleDivPart : AConsoleDisplayNode
 	}
 
 	// Raw tag values are kept so that the geometry can be recomputed when the font size changes
-	readonly MixedNum xPos, yPos, rawWidth, rawHeight;
-	readonly StyledBoxModel? box;
+	private readonly MixedNum xPos, yPos, rawWidth, rawHeight;
+	private readonly StyledBoxModel? box;
 
 	/// <summary>
 	/// Recomputes position and size, including the units that depend on the font size, from the tag values.
@@ -66,8 +80,13 @@ class ConsoleDivPart : AConsoleDisplayNode
 	{
 		xOffset = MixedNum.ToPixel(xPos, 0);
 		divXOffset = 0;
+
 		#region EE_div各要素の修正
-		margin = null; padding = null; border = null; radius = null;
+
+		margin = null;
+		padding = null;
+		border = null;
+		radius = null;
 		if (box != null)
 		{
 			MixedNum4ToInt4(box.margin, ref margin);
@@ -75,17 +94,45 @@ class ConsoleDivPart : AConsoleDisplayNode
 			MixedNum4ToInt4(box.border, ref border);
 			MixedNum4ToInt4(box.radius, ref radius);
 		}
-		if (margin != null) divXOffset += margin[Direction.Left];
-		if (padding != null) divXOffset += padding[Direction.Left];
-		if (border != null) divXOffset += border[Direction.Left];
+
+		if (margin != null)
+		{
+			divXOffset += margin[Direction.Left];
+		}
+
+		if (padding != null)
+		{
+			divXOffset += padding[Direction.Left];
+		}
+
+		if (border != null)
+		{
+			divXOffset += border[Direction.Left];
+		}
+
 		#endregion
+
 		PointY = MixedNum.ToPixel(yPos, 0);
 
 		yOffset = 0;
+
 		#region EE_div各要素の修正
-		if (margin != null) yOffset += margin[Direction.Top];
-		if (padding != null) yOffset += padding[Direction.Top];
-		if (border != null) yOffset += border[Direction.Top];
+
+		if (margin != null)
+		{
+			yOffset += margin[Direction.Top];
+		}
+
+		if (padding != null)
+		{
+			yOffset += padding[Direction.Top];
+		}
+
+		if (border != null)
+		{
+			yOffset += border[Direction.Top];
+		}
+
 		#endregion
 
 		width = MixedNum.ToPixel(rawWidth, 0);
@@ -100,64 +147,88 @@ class ConsoleDivPart : AConsoleDisplayNode
 	{
 		computeGeometry();
 		if (children == null)
+		{
 			return;
-		foreach (var child in children)
+		}
+
+		foreach (ConsoleDisplayLine child in children)
 		{
 			child.ReLayout(sm);
 			child.ShiftPositionX(PointX + xOffset + divXOffset);
 		}
 	}
 
-	int pointX;
-	int xOffset;
+	private int pointX;
+	private int xOffset;
+
 	#region EE_div各要素の修正
-	int divXOffset;
-	int yOffset;
+
+	private int divXOffset;
+	private int yOffset;
+
 	#endregion
-	int width;
+
+	private int width;
+
 	public override int PointX
 	{
 		get { return pointX; }
 		set
 		{
-			var diff = value - pointX;
+			int diff = value - pointX;
 			pointX = value;
+
 			#region EE_div各要素の修正
+
 			//foreach (var child in children)
 			//    child.ShiftPositionX(value + xOffset + divXOffset);
 			ShiftChildrenX(diff);
+
 			#endregion
 		}
 	}
-	int PointY;
-	int Height;
-	int[]? margin, padding, radius, border;
-	Color[]? borderColors;
-	Color backgroundColor;
-	string altHeadTag;
-	readonly ConsoleDisplayLine[] children;
+
+	private int PointY;
+	private int Height;
+	private int[]? margin, padding, radius, border;
+	private Color[]? borderColors;
+	private Color backgroundColor;
+	private string altHeadTag;
+	private readonly ConsoleDisplayLine[] children;
 	public bool IsEscaped { get; set; }
-	public override int Top { get { return PointY; } }
-	public override int Bottom { get { return PointY + Height; } }
+	public override int Top => PointY;
+	public override int Bottom => PointY + Height;
 	public bool IsRelative { get; private set; }
-	public ConsoleDisplayLine[] Children { get { return children; } }
+	public ConsoleDisplayLine[] Children => children;
 
 	public override bool CanDivide => false;
+
 	public ConsoleButtonString? TestChildHitbox(int pointX, int pointY, int relPointY)
 	{
 		ConsoleButtonString? pointing = null;
+
 		#region EE_div各要素の修正
-		var rect = new Rectangle(PointX + xOffset, relPointY + PointY + yOffset, width, Height);
+
+		Rectangle rect = new(PointX + xOffset, relPointY + PointY + yOffset, width, Height);
+
 		#endregion
-		if (!rect.Contains(pointX, pointY)) return null;
+
+		if (!rect.Contains(pointX, pointY))
+		{
+			return null;
+		}
+
 		relPointY = rect.Y;
-		foreach (var line in children)
+		foreach (ConsoleDisplayLine line in children)
 		{
 			for (int b = 0; b < line.Buttons.Length; b++)
 			{
 				ConsoleButtonString button = line.Buttons[line.Buttons.Length - b - 1];
 				if (button == null || button.StrArray == null)
+				{
 					continue;
+				}
+
 				if (button.PointX <= pointX && button.PointX + button.Width >= pointX)
 				{
 					//if (relPointY >= 0 && relPointY <= Config.Config.FontSize)
@@ -169,86 +240,120 @@ class ConsoleDivPart : AConsoleDisplayNode
 					foreach (AConsoleDisplayNode part in button.StrArray)
 					{
 						if (part == null)
+						{
 							continue;
+						}
+
 						if (part.PointX <= pointX && part.PointX + part.Width >= pointX
-							&& relPointY + part.Top <= pointY && relPointY + part.Bottom >= pointY)
+						                          && relPointY + part.Top <= pointY && relPointY + part.Bottom >= pointY)
 						{
 							pointing = button;
 							if (pointing.IsButton)
+							{
 								return pointing;
+							}
 						}
 					}
 				}
 			}
+
 			relPointY += Config.Config.LineHeight;
 		}
+
 		return pointing;
 	}
-	public override void DrawTo(Graphics graph, int pointY, bool isSelecting, bool isBackLog, bool isFocus, TextDrawingMode mode, bool isButton = false, bool scalePreview = false)
+
+	public override void DrawTo(
+		Graphics graph,
+		int pointY,
+		bool isSelecting,
+		bool isBackLog,
+		bool isFocus,
+		TextDrawingMode mode,
+		bool isButton = false,
+		bool scalePreview = false
+	)
 	{
-		if (GlobalStatic.EMediator.Console.Window == null) return;
-		var rect = IsRelative ? new Rectangle(PointX + xOffset, pointY + PointY, width + 2, Height)
+		if (GlobalStatic.EMediator.Console.Window == null)
+		{
+			return;
+		}
+
+		Rectangle rect = IsRelative
+			? new Rectangle(PointX + xOffset, pointY + PointY, width + 2, Height)
 			: new Rectangle(xOffset, GlobalStatic.EMediator.Console.LayoutCanvasHeight - PointY - Height, width + 2, Height); // 何故か+2pxが必要，なぞ
 
 		if (margin != null)
+		{
 			rect = new Rectangle(rect.X + margin[Direction.Left], rect.Y + margin[Direction.Top],
-				 rect.Width - margin[Direction.Left] - margin[Direction.Right], rect.Height - margin[Direction.Top] - margin[Direction.Bottom]);
+				rect.Width - margin[Direction.Left] - margin[Direction.Right], rect.Height - margin[Direction.Top] - margin[Direction.Bottom]);
+		}
+
 		graph.SetClip(rect, CombineMode.Replace);
 
-		var pxMode = graph.PixelOffsetMode;
+		PixelOffsetMode pxMode = graph.PixelOffsetMode;
 		graph.PixelOffsetMode = PixelOffsetMode.HighQuality; // ここを高品質にしておく、全体的高品質してもいいかな？
 		BoxBorder.DrawBorder(graph, rect, border, radius, borderColors, backgroundColor);
 		graph.PixelOffsetMode = pxMode;
 
 		if (border != null)
+		{
 			rect = new Rectangle(rect.X + border[Direction.Left], rect.Y + border[Direction.Top],
-				 rect.Width - border[Direction.Left] - border[Direction.Right], rect.Height - border[Direction.Top] - border[Direction.Bottom]);
+				rect.Width - border[Direction.Left] - border[Direction.Right], rect.Height - border[Direction.Top] - border[Direction.Bottom]);
+		}
 
 		if (padding != null)
+		{
 			rect = new Rectangle(rect.X + padding[Direction.Left], rect.Y + padding[Direction.Top],
-				 rect.Width - padding[Direction.Left] - padding[Direction.Right], rect.Height - padding[Direction.Top] - padding[Direction.Bottom]);
+				rect.Width - padding[Direction.Left] - padding[Direction.Right], rect.Height - padding[Direction.Top] - padding[Direction.Bottom]);
+		}
 
 		graph.SetClip(rect, CombineMode.Replace);
 
 		pointY = rect.Y;
-		foreach (var child in children)
+		foreach (ConsoleDisplayLine child in children)
 		{
 			child.DrawTo(graph, pointY, isBackLog, true, mode, scalePreview);
 			pointY += Config.Config.LineHeight;
 		}
+
 		graph.ResetClip();
 	}
 
 	private void ShiftChildrenX(int diff)
 	{
-		foreach (var child in children)
+		foreach (ConsoleDisplayLine child in children)
+		{
 			child.ShiftPositionX(diff);
+		}
 	}
 
 	public override void SetWidth(StringMeasure sm, float subPixel)
-	{
-	}
+	{ }
 
 	public override string ToString()
 	{
-		var sb = new StringBuilder();
+		StringBuilder sb = new();
 		sb.Append(altHeadTag);
-		foreach (var line in children)
+		foreach (ConsoleDisplayLine line in children)
 		{
 			line.BuildString(sb);
 			sb.Append("\r\n");
 		}
+
 		sb.Append("</div>");
 		return sb.ToString();
 	}
+
 	public override StringBuilder BuildString(StringBuilder sb)
 	{
 		sb.Append(altHeadTag);
-		foreach (var line in children)
+		foreach (ConsoleDisplayLine line in children)
 		{
 			line.BuildString(sb);
 			sb.Append("\r\n");
 		}
+
 		sb.Append("</div>");
 		return sb;
 	}

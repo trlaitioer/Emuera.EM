@@ -107,7 +107,6 @@ internal static partial class FunctionMethodCreator
 			["INRANGEARRAY"] = new InRangeArrayMethod(),
 			["INRANGECARRAY"] = new InRangeArrayMethod(true),
 			["GETNUMB"] = new GetnumBMethod(),
-
 			["ARRAYMSORT"] = new ArrayMultiSortMethod(),
 
 			//文字列操作系
@@ -136,7 +135,6 @@ internal static partial class FunctionMethodCreator
 			["GETLINESTR"] = new GetLineStrMethod(),
 			["STRFORM"] = new StrFormMethod(),
 			["STRJOIN"] = new JoinMethod(),
-
 			["GETCONFIG"] = new GetConfigMethod(true),
 			["GETCONFIGS"] = new GetConfigMethod(false),
 
@@ -155,27 +153,27 @@ internal static partial class FunctionMethodCreator
 			["SPRITESETPOS"] = new SpriteSetPosMethod(),
 			["SPRITEPOSX"] = new SpriteStateMethod(),
 			["SPRITEPOSY"] = new SpriteStateMethod(),
-
 			["CLIENTWIDTH"] = new ClientSizeMethod(),
 			["CLIENTHEIGHT"] = new ClientSizeMethod(),
-
 			["GETKEY"] = new GetKeyStateMethod(),
 			["GETKEYTRIGGERED"] = new GetKeyStateMethod(),
 			["MOUSEX"] = new MousePosMethod(),
 			["MOUSEY"] = new MousePosMethod(),
+
 			#region EE_MOUSEB
+
 			["MOUSEB"] = new MouseButtonMethod(),
+
 			#endregion
+
 			["ISACTIVE"] = new IsActiveMethod(),
 			["SAVETEXT"] = new SaveTextMethod(),
 			["LOADTEXT"] = new LoadTextMethod(),
-
-			["GCREATED"] = new GraphicsStateMethod(),// ("GCREATED");
-			["GWIDTH"] = new GraphicsStateMethod(),//("GWIDTH");
-			["GHEIGHT"] = new GraphicsStateMethod(),//("GHEIGHT");
+			["GCREATED"] = new GraphicsStateMethod(), // ("GCREATED");
+			["GWIDTH"] = new GraphicsStateMethod(), //("GWIDTH");
+			["GHEIGHT"] = new GraphicsStateMethod(), //("GHEIGHT");
 			["GGETCOLOR"] = new GraphicsGetColorMethod(),
 			["SPRITEGETCOLOR"] = new SpriteGetColorMethod(),
-
 			["GCREATE"] = new GraphicsCreateMethod(),
 			["GCREATEFROMFILE"] = new GraphicsCreateFromFileMethod(),
 			["GDISPOSE"] = new GraphicsDisposeMethod(),
@@ -185,45 +183,39 @@ internal static partial class FunctionMethodCreator
 			["GSETCOLOR"] = new GraphicsSetColorMethod(),
 			["GDRAWG"] = new GraphicsDrawGMethod(),
 			["GDRAWGWITHMASK"] = new GraphicsDrawGWithMaskMethod(),
-
 			["GSETBRUSH"] = new GraphicsSetBrushMethod(),
 			["GSETFONT"] = new GraphicsSetFontMethod(),
 			["GSETPEN"] = new GraphicsSetPenMethod(),
-
 			["SPRITECREATE"] = new SpriteCreateMethod(),
 			["SPRITEDISPOSE"] = new SpriteDisposeMethod(),
-
 			["CBGSETG"] = new CBGSetGraphicsMethod(),
 			["CBGSETSPRITE"] = new CBGSetCIMGMethod(),
 			["CBGCLEAR"] = new CBGClearMethod(),
-
 			["CBGCLEARBUTTON"] = new CBGClearButtonMethod(),
 			["CBGREMOVERANGE"] = new CBGRemoveRangeMethod(),
 			["CBGREMOVEBMAP"] = new CBGRemoveBMapMethod(),
 			["CBGSETBMAPG"] = new CBGSetBMapGMethod(),
 			["CBGSETBUTTONSPRITE"] = new CBGSETButtonSpriteMethod(),
-
 			["GSAVE"] = new GraphicsSaveMethod(),
 			["GLOAD"] = new GraphicsLoadMethod(),
-
-
 			["SPRITEANIMECREATE"] = new SpriteAnimeCreateMethod(),
 			["SPRITEANIMEADDFRAME"] = new SpriteAnimeAddFrameMethod(),
 			["SETANIMETIMER"] = new SetAnimeTimerMethod(),
 
 			#region EE_OUTPUTLOG拡張
+
 			["OUTPUTLOG"] = new OutputlogMethod(),
+
 			#endregion
 
 			#region EM_私家版_追加関数
+
 			["HTML_STRINGLEN"] = new HtmlStringLenMethod(),
 			["HTML_SUBSTRING"] = new HtmlSubStringMethod(),
 			["HTML_STRINGLINES"] = new HtmlStringLinesMethod(),
-
 			["EXISTFILE"] = new ExistFileMethod(),
 			["EXISTVAR"] = new ExistVarMethod(),
 			["ISDEFINED"] = new IsDefinedMethod(),
-
 			["ENUMFUNCBEGINSWITH"] = new EnumNameMethod(EnumNameMethod.EType.Function, EnumNameMethod.EAction.BeginsWith),
 			["ENUMFUNCENDSWITH"] = new EnumNameMethod(EnumNameMethod.EType.Function, EnumNameMethod.EAction.EndsWith),
 			["ENUMFUNCWITH"] = new EnumNameMethod(EnumNameMethod.EType.Function, EnumNameMethod.EAction.With),
@@ -234,16 +226,12 @@ internal static partial class FunctionMethodCreator
 			["ENUMMACROENDSWITH"] = new EnumNameMethod(EnumNameMethod.EType.Macro, EnumNameMethod.EAction.EndsWith),
 			["ENUMMACROWITH"] = new EnumNameMethod(EnumNameMethod.EType.Macro, EnumNameMethod.EAction.With),
 			["ENUMFILES"] = new EnumFilesMethod(),
-
 			["GETVAR"] = new GetVarMethod(),
 			["GETVARS"] = new GetVarsMethod(),
 			["SETVAR"] = new SetVarMethod(),
-
 			["VARSETEX"] = new VarSetExMethod(),
 			["ARRAYMSORTEX"] = new ArrayMultiSortExMethod(),
-
 			["REGEXPMATCH"] = new RegexpMatchMethod(),
-
 			["XML_DOCUMENT"] = new XmlDocumentMethod(XmlDocumentMethod.Operation.Create),
 			["XML_RELEASE"] = new XmlDocumentMethod(XmlDocumentMethod.Operation.Release),
 			["XML_GET"] = new XmlGetMethod(),
@@ -262,11 +250,9 @@ internal static partial class FunctionMethodCreator
 			["XML_ADDATTRIBUTE_BYNAME"] = new XmlAddNodeMethod(XmlAddNodeMethod.Operation.Attribute, true),
 			["XML_REMOVEATTRIBUTE"] = new XmlRemoveNodeMethod(XmlRemoveNodeMethod.Operation.Attribute),
 			["XML_REMOVEATTRIBUTE_BYNAME"] = new XmlRemoveNodeMethod(XmlRemoveNodeMethod.Operation.Attribute, true),
-
 			["MAP_CREATE"] = new MapManagementMethod(MapManagementMethod.Operation.Create),
 			["MAP_EXIST"] = new MapManagementMethod(MapManagementMethod.Operation.Check),
 			["MAP_RELEASE"] = new MapManagementMethod(MapManagementMethod.Operation.Release),
-
 			["MAP_GET"] = new MapGetStrMethod(MapGetStrMethod.Operation.Get),
 			["MAP_CLEAR"] = new MapDataOperationMethod(MapDataOperationMethod.Operation.Clear),
 			["MAP_SIZE"] = new MapDataOperationMethod(MapDataOperationMethod.Operation.Size),
@@ -274,50 +260,43 @@ internal static partial class FunctionMethodCreator
 			["MAP_SET"] = new MapDataOperationMethod(MapDataOperationMethod.Operation.Set),
 			["MAP_REMOVE"] = new MapDataOperationMethod(MapDataOperationMethod.Operation.Remove),
 			["MAP_GETKEYS"] = new MapGetStrMethod(MapGetStrMethod.Operation.GetKeys),
-
 			["MAP_TOXML"] = new MapGetStrMethod(MapGetStrMethod.Operation.ToXml),
 			["MAP_FROMXML"] = new MapFromXmlMethod(),
-
 			["DT_CREATE"] = new DataTableManagementMethod(DataTableManagementMethod.Operation.Create),
 			["DT_EXIST"] = new DataTableManagementMethod(DataTableManagementMethod.Operation.Check),
 			["DT_RELEASE"] = new DataTableManagementMethod(DataTableManagementMethod.Operation.Release),
 			["DT_NOCASE"] = new DataTableManagementMethod(DataTableManagementMethod.Operation.Case),
-
 			["DT_CLEAR"] = new DataTableManagementMethod(DataTableManagementMethod.Operation.Clear),
-
 			["DT_COLUMN_ADD"] = new DataTableColumnManagementMethod(DataTableColumnManagementMethod.Operation.Create),
 			["DT_COLUMN_NAMES"] = new DataTableColumnManagementMethod(DataTableColumnManagementMethod.Operation.Names),
 			["DT_COLUMN_EXIST"] = new DataTableColumnManagementMethod(DataTableColumnManagementMethod.Operation.Check),
 			["DT_COLUMN_REMOVE"] = new DataTableColumnManagementMethod(DataTableColumnManagementMethod.Operation.Remove),
 			["DT_COLUMN_LENGTH"] = new DataTableLengthMethod(DataTableLengthMethod.Operation.Column),
-
 			["DT_ROW_ADD"] = new DataTableRowSetMethod(DataTableRowSetMethod.Operation.Add),
 			["DT_ROW_SET"] = new DataTableRowSetMethod(DataTableRowSetMethod.Operation.Set),
 			["DT_ROW_REMOVE"] = new DataTableRowRemoveMethod(),
 			["DT_ROW_LENGTH"] = new DataTableLengthMethod(DataTableLengthMethod.Operation.Row),
-
 			["DT_CELL_GET"] = new DataTableCellGetMethod(DataTableCellGetMethod.Operation.Get),
 			["DT_CELL_ISNULL"] = new DataTableCellGetMethod(DataTableCellGetMethod.Operation.IsNull),
 			["DT_CELL_GETS"] = new DataTableCellGetMethod(DataTableCellGetMethod.Operation.Gets),
 			["DT_CELL_SET"] = new DataTableCellSetMethod(),
-
 			["DT_SELECT"] = new DataTableSelectMethod(),
-
 			["DT_TOXML"] = new DataTableToXmlMethod(),
 			["DT_FROMXML"] = new DataTableFromXmlMethod(),
-
 			["MOVETEXTBOX"] = new MoveTextBoxMethod(),
 			["RESUMETEXTBOX"] = new MoveTextBoxMethod(true),
+
 			#endregion
 
 			#region EEで追加されたやつ
+
 			["EXISTSOUND"] = new ExistSoundMethod(),
 			["EXISTFUNCTION"] = new ExistFunctionMethod(),
 			//["GROTATE"] = new GraphicsRotateMethod(),
 			["GDRAWGWITHROTATE"] = new GraphicsDrawGWithRotateMethod(),
 			["GDRAWTEXT"] = new GraphicsDrawStringMethod(),
-			["GGETFONT"] = new GraphicsStateStrMethod(),//("GGETFONT")
-			["GGETFONTSIZE"] = new GraphicsStateMethod(),//("GGETFONTSIZE")
+			["GGETFONT"] = new GraphicsStateStrMethod(), //("GGETFONT")
+			["GGETFONTSIZE"] = new GraphicsStateMethod(), //("GGETFONTSIZE")
 			["GGETFONTSTYLE"] = new GraphicsStateMethod(),
 			["GGETTEXTSIZE"] = new GraphicsGetTextSizeMethod(),
 			["GGETBRUSH"] = new GraphicsStateMethod(),
@@ -339,9 +318,11 @@ internal static partial class FunctionMethodCreator
 			#endregion
 
 			#region daughter-patch追加
+
 			["GETMETH"] = new GetMethMethod(),
 			["GETMETHS"] = new GetMethsMethod(),
 			["EXISTMETH"] = new ExistMethMethod(),
+
 			#endregion
 
 			//Bitmap Cache
@@ -349,16 +330,19 @@ internal static partial class FunctionMethodCreator
 
 			//HOTKEY STATE
 			["HOTKEY_STATE"] = new HotkeyStateMethod(),
-			["HOTKEY_STATE_INIT"] = new HotkeyStateInitMethod(),
+			["HOTKEY_STATE_INIT"] = new HotkeyStateInitMethod()
 		};
 
 
 		//1823 自分の関数名を知っていた方が何かと便利なので覚えさせることにした
-		foreach (var pair in methodList)
+		foreach (KeyValuePair<string, FunctionMethod> pair in methodList)
+		{
 			pair.Value.SetMethodName(pair.Key);
+		}
 	}
 
-	private static readonly Dictionary<string, FunctionMethod> methodList;
+	private readonly static Dictionary<string, FunctionMethod> methodList;
+
 	public static Dictionary<string, FunctionMethod> GetMethodList()
 	{
 		return methodList;

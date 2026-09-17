@@ -13,7 +13,7 @@ http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/SFMT/
 
 /*
  * Copyright (C) Rei HOBARA 2007
- * 
+ *
  * Name:
  *     SFMT.cs
  * Class:
@@ -27,7 +27,7 @@ http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/SFMT/
  *     See http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/SFMT/index.html for detail of SFMT.
  * History:
  *     2007/10/6 initial release.
- * 
+ *
  */
 
 #define MT19937
@@ -41,11 +41,11 @@ namespace MinorShift.Emuera.Runtime.Utils;
 /// </summary>
 public sealed class MTRandom
 {
-
 	/// <summary>
 	/// 現在時刻を種とした、(2^19937-1)周期のSFMT擬似乱数ジェネレーターを初期化します。
 	/// </summary>
-	public MTRandom() : this(Environment.TickCount) { }
+	public MTRandom() : this(Environment.TickCount)
+	{ }
 
 	/// <summary>
 	/// seedを種とした、(2^MEXP-1)周期の擬似乱数ジェネレーターを初期化します。
@@ -68,7 +68,10 @@ public sealed class MTRandom
 
 	public long NextInt64()
 	{
-		unchecked { return (long)NextUInt64(); }
+		unchecked
+		{
+			return (long)NextUInt64();
+		}
 	}
 
 	public ulong NextUInt64()
@@ -91,24 +94,36 @@ public sealed class MTRandom
 	public void SetRand(long[] array)
 	{
 		if (array == null || array.Length != N32 + 1)
+		{
 			throw new ArgumentOutOfRangeException();
+		}
 
 		for (int i = 0; i < N32; i++)
+		{
 			sfmt[i] = (uint)array[i];
+		}
+
 		idx = (int)array[N32];
 	}
 
 	public void GetRand(long[] array)
 	{
 		if (array == null || array.Length != N32 + 1)
+		{
 			throw new ArgumentOutOfRangeException();
+		}
+
 		for (int i = 0; i < N32; i++)
+		{
 			array[i] = sfmt[i];
+		}
+
 		array[N32] = idx;
 	}
 
 
 	#region private/protected
+
 #if MT607
 			private const int MEXP = 607;
 			private const int POS1 = 2;
@@ -254,7 +269,7 @@ public sealed class MTRandom
 		}
 #endif
 
-	private const int N = MEXP / 128 + 1;
+	private const int N = (MEXP / 128) + 1;
 	public const int N32 = N * 4;
 
 	/// <summary>
@@ -262,6 +277,7 @@ public sealed class MTRandom
 	/// </summary>
 	// Allocated by init_gen_rand, which every constructor calls
 	private uint[] sfmt = null!;
+
 	/// <summary>
 	/// 内部状態ベクトルのうち、次に乱数として使用するインデックス。
 	/// </summary>
@@ -277,6 +293,7 @@ public sealed class MTRandom
 			gen_rand_all();
 			idx = 0;
 		}
+
 		return sfmt[idx++];
 	}
 
@@ -292,7 +309,10 @@ public sealed class MTRandom
 		//内部状態配列初期化
 		sfmt[0] = seed;
 		for (i = 1; i < N32; i++)
-			sfmt[i] = (uint)(1812433253 * (sfmt[i - 1] ^ sfmt[i - 1] >> 30) + i);
+		{
+			sfmt[i] = (uint)((1812433253 * (sfmt[i - 1] ^ (sfmt[i - 1] >> 30))) + i);
+		}
+
 		//確認
 		period_certification();
 		//初期位置設定
@@ -309,11 +329,23 @@ public sealed class MTRandom
 		int i, j;
 		uint work;
 
-		for (i = 0; i < 4; i++) inner ^= sfmt[i] & PARITY[i];
-		for (i = 16; i > 0; i >>= 1) inner ^= inner >> i;
+		for (i = 0; i < 4; i++)
+		{
+			inner ^= sfmt[i] & PARITY[i];
+		}
+
+		for (i = 16; i > 0; i >>= 1)
+		{
+			inner ^= inner >> i;
+		}
+
 		inner &= 1;
 		// check OK
-		if (inner == 1) return;
+		if (inner == 1)
+		{
+			return;
+		}
+
 		// check NG, and modification
 		for (i = 0; i < 4; i++)
 		{
@@ -325,6 +357,7 @@ public sealed class MTRandom
 					sfmt[i] ^= work;
 					return;
 				}
+
 				work = work << 1;
 			}
 		}
@@ -365,7 +398,6 @@ public sealed class MTRandom
 				if (b >= N32) b = 0;
 			} while (a < N32);
 #endif
-
 	}
 
 	/// <summary>
@@ -384,7 +416,7 @@ public sealed class MTRandom
 		const uint cMSK4 = 0xbffffff6U;
 		const int cSL1 = 18;
 		const int cSR1 = 11;
-		const int cN = cMEXP / 128 + 1;
+		const int cN = (cMEXP / 128) + 1;
 		const int cN32 = cN * 4;
 
 		a = 0;
@@ -393,13 +425,22 @@ public sealed class MTRandom
 		d = (cN - 1) * 4;
 		do
 		{
-			p[a + 3] = p[a + 3] ^ p[a + 3] << 8 ^ p[a + 2] >> 24 ^ p[c + 3] >> 8 ^ p[b + 3] >> cSR1 & cMSK4 ^ p[d + 3] << cSL1;
-			p[a + 2] = p[a + 2] ^ p[a + 2] << 8 ^ p[a + 1] >> 24 ^ p[c + 3] << 24 ^ p[c + 2] >> 8 ^ p[b + 2] >> cSR1 & cMSK3 ^ p[d + 2] << cSL1;
-			p[a + 1] = p[a + 1] ^ p[a + 1] << 8 ^ p[a + 0] >> 24 ^ p[c + 2] << 24 ^ p[c + 1] >> 8 ^ p[b + 1] >> cSR1 & cMSK2 ^ p[d + 1] << cSL1;
-			p[a + 0] = p[a + 0] ^ p[a + 0] << 8 ^ p[c + 1] << 24 ^ p[c + 0] >> 8 ^ p[b + 0] >> cSR1 & cMSK1 ^ p[d + 0] << cSL1;
-			c = d; d = a; a += 4; b += 4;
-			if (b >= cN32) b = 0;
+			p[a + 3] = p[a + 3] ^ (p[a + 3] << 8) ^ (p[a + 2] >> 24) ^ (p[c + 3] >> 8) ^ ((p[b + 3] >> cSR1) & cMSK4) ^ (p[d + 3] << cSL1);
+			p[a + 2] = p[a + 2] ^ (p[a + 2] << 8) ^ (p[a + 1] >> 24) ^ (p[c + 3] << 24) ^ (p[c + 2] >> 8) ^ ((p[b + 2] >> cSR1) & cMSK3) ^
+			           (p[d + 2] << cSL1);
+			p[a + 1] = p[a + 1] ^ (p[a + 1] << 8) ^ (p[a + 0] >> 24) ^ (p[c + 2] << 24) ^ (p[c + 1] >> 8) ^ ((p[b + 1] >> cSR1) & cMSK2) ^
+			           (p[d + 1] << cSL1);
+			p[a + 0] = p[a + 0] ^ (p[a + 0] << 8) ^ (p[c + 1] << 24) ^ (p[c + 0] >> 8) ^ ((p[b + 0] >> cSR1) & cMSK1) ^ (p[d + 0] << cSL1);
+			c = d;
+			d = a;
+			a += 4;
+			b += 4;
+			if (b >= cN32)
+			{
+				b = 0;
+			}
 		} while (a < cN32);
 	}
+
 	#endregion
 }

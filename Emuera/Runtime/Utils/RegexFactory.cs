@@ -4,14 +4,13 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 //Regexをキャッシュする
-static class RegexFactory
+internal static class RegexFactory
 {
-	static readonly Dictionary<string, Regex> _dictionary = [];
+	private readonly static Dictionary<string, Regex> _dictionary = [];
 
 	public static Regex GetRegex(string regex)
 	{
-
-		if (_dictionary.TryGetValue(regex, out var ret))
+		if (_dictionary.TryGetValue(regex, out Regex? ret))
 		{
 			return ret;
 		}
@@ -29,6 +28,5 @@ static class RegexFactory
 		}
 
 		return ret;
-
 	}
 }

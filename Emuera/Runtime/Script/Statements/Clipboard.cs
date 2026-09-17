@@ -14,7 +14,9 @@ internal partial class ClipboardProcessor
 	private readonly Forms.MainWindow mainWin;
 
 	private bool minTimePassed; //Has enough time passed since the last Clipboard update?
+
 	private bool postWaiting; //Is there text waiting to be sent to clipboard?
+
 	//minTimer, OldText and lineBuffer are created by Init() and cleared by Reset(): they stay null while the clipboard feature is off
 	private static System.Timers.Timer? minTimer; //Minimum timer for refrehsing the clipboard to prevent spam
 
@@ -34,7 +36,7 @@ internal partial class ClipboardProcessor
 		MiddleClick,
 		DoubleLeftClick,
 		AnyKeyWait,
-		InputWait,
+		InputWait
 	}
 
 	public ClipboardProcessor(Forms.MainWindow parent)
@@ -52,7 +54,10 @@ internal partial class ClipboardProcessor
 		NewLineCount = 0;
 		OldNewLineCount = 0;
 
-		if (!Config.Config.CBUseClipboard) return;
+		if (!Config.Config.CBUseClipboard)
+		{
+			return;
+		}
 
 		Init();
 	}
@@ -60,7 +65,10 @@ internal partial class ClipboardProcessor
 	public void Init()
 	{
 		if (Initialized)
+		{
 			return;
+		}
+
 		lineBuffer = new CircularBuffer<string>(Config.Config.CBBufferSize);
 		minTimer = new System.Timers.Timer(Config.Config.CBMinTimer) { AutoReset = false };
 		minTimer.Elapsed += MinTimerDone;
@@ -80,7 +88,10 @@ internal partial class ClipboardProcessor
 	public void SetTimerInterval(int interval)
 	{
 		if (!Initialized)
+		{
 			return;
+		}
+
 		minTimer!.Interval = interval;
 	}
 
@@ -96,19 +107,42 @@ internal partial class ClipboardProcessor
 
 	public bool ScrollUp(int value)
 	{
-		if (!Config.Config.CBUseClipboard) return false;
-		if (ScrollPos == 0 && classicMode && ScrollCount > OldNewLineCount) ScrollPos = OldNewLineCount;
-		else ScrollPos += ScrollCount * value;
-		if (lineBuffer!.Count < ScrollPos) ScrollPos = lineBuffer.Count - ScrollCount;
+		if (!Config.Config.CBUseClipboard)
+		{
+			return false;
+		}
+
+		if (ScrollPos == 0 && classicMode && ScrollCount > OldNewLineCount)
+		{
+			ScrollPos = OldNewLineCount;
+		}
+		else
+		{
+			ScrollPos += ScrollCount * value;
+		}
+
+		if (lineBuffer!.Count < ScrollPos)
+		{
+			ScrollPos = lineBuffer.Count - ScrollCount;
+		}
+
 		SendToCB(true);
 		return true;
 	}
 
 	public bool ScrollDown(int value)
 	{
-		if (!Config.Config.CBUseClipboard) return false;
+		if (!Config.Config.CBUseClipboard)
+		{
+			return false;
+		}
+
 		ScrollPos -= ScrollCount;
-		if (ScrollPos < 0) ScrollPos = 0;
+		if (ScrollPos < 0)
+		{
+			ScrollPos = 0;
+		}
+
 		SendToCB(true);
 
 		return true;
@@ -117,7 +151,10 @@ internal partial class ClipboardProcessor
 	private void MinTimerDone(object? source, System.Timers.ElapsedEventArgs e)
 	{
 		minTimePassed = true;
-		if (postWaiting) SendToCB(true);
+		if (postWaiting)
+		{
+			SendToCB(true);
+		}
 	}
 
 	private bool MinTimeCheck()
@@ -128,13 +165,19 @@ internal partial class ClipboardProcessor
 			minTimer!.Start();
 			return true;
 		}
-		else return false;
+		else
+		{
+			return false;
+		}
 	}
 
 	//FIXIT - Autoprocess old lines or just ditch?
 	public void AddLine(ConsoleDisplayLine inputLine, bool left)
 	{
-		if (!Config.Config.CBUseClipboard) return;
+		if (!Config.Config.CBUseClipboard)
+		{
+			return;
+		}
 
 		NewLineCount++;
 		string processed = ProcessLine(inputLine.ToString());
@@ -143,10 +186,16 @@ internal partial class ClipboardProcessor
 
 	public void DelLine(int count)
 	{
-		if (!Config.Config.CBUseClipboard || count <= 0) return;
+		if (!Config.Config.CBUseClipboard || count <= 0)
+		{
+			return;
+		}
 
 		NewLineCount = Math.Max(0, NewLineCount - count);
-		if (count >= lineBuffer!.Count) lineBuffer.Clear();
+		if (count >= lineBuffer!.Count)
+		{
+			lineBuffer.Clear();
+		}
 		else
 		{
 			while (count > 0)
@@ -159,7 +208,11 @@ internal partial class ClipboardProcessor
 
 	public void ClearScreen()
 	{
-		if (!Config.Config.CBUseClipboard) return;
+		if (!Config.Config.CBUseClipboard)
+		{
+			return;
+		}
+
 		if (Config.Config.CBClearBuffer)
 		{
 			lineBuffer!.Clear();
@@ -174,27 +227,51 @@ internal partial class ClipboardProcessor
 
 	public void Check(CBTriggers type)
 	{
-		if (!Config.Config.CBUseClipboard) return;
+		if (!Config.Config.CBUseClipboard)
+		{
+			return;
+		}
+
 		switch (type)
 		{
 			case CBTriggers.LeftClick:
-				if (!Config.Config.CBTriggerLeftClick) return;
+				if (!Config.Config.CBTriggerLeftClick)
+				{
+					return;
+				}
+
 				break;
 
 			case CBTriggers.MiddleClick:
-				if (!Config.Config.CBTriggerMiddleClick) return;
+				if (!Config.Config.CBTriggerMiddleClick)
+				{
+					return;
+				}
+
 				break;
 
 			case CBTriggers.DoubleLeftClick:
-				if (!Config.Config.CBTriggerDoubleLeftClick) return;
+				if (!Config.Config.CBTriggerDoubleLeftClick)
+				{
+					return;
+				}
+
 				break;
 
 			case CBTriggers.AnyKeyWait:
-				if (!Config.Config.CBTriggerAnyKeyWait) return;
+				if (!Config.Config.CBTriggerAnyKeyWait)
+				{
+					return;
+				}
+
 				break;
 
 			case CBTriggers.InputWait:
-				if (!Config.Config.CBTriggerInputWait) return;
+				if (!Config.Config.CBTriggerInputWait)
+				{
+					return;
+				}
+
 				break;
 
 			default:
@@ -207,34 +284,64 @@ internal partial class ClipboardProcessor
 
 	private void SendToCB(bool force)
 	{
-		if (!Config.Config.CBUseClipboard) return;
-		if (NewLineCount == 0 && !force) return;
+		if (!Config.Config.CBUseClipboard)
+		{
+			return;
+		}
+
+		if (NewLineCount == 0 && !force)
+		{
+			return;
+		}
+
 		if (!MinTimeCheck())
 		{
 			postWaiting = true;
 			return;
 		}
 
-		if (NewLineCount == 0 && ScrollPos == 0) NewLineCount = OldNewLineCount;
+		if (NewLineCount == 0 && ScrollPos == 0)
+		{
+			NewLineCount = OldNewLineCount;
+		}
 
 		int length;
-		if (classicMode && ScrollPos == 0) length = Math.Min(NewLineCount, lineBuffer!.Count);
-		else length = Math.Min(MaxCB, lineBuffer!.Count - ScrollPos);
-		if (length <= 0) return;
+		if (classicMode && ScrollPos == 0)
+		{
+			length = Math.Min(NewLineCount, lineBuffer!.Count);
+		}
+		else
+		{
+			length = Math.Min(MaxCB, lineBuffer!.Count - ScrollPos);
+		}
 
-		var builder = new DefaultInterpolatedStringHandler(length * 2, 0);
+		if (length <= 0)
+		{
+			return;
+		}
+
+		DefaultInterpolatedStringHandler builder = new(length * 2, 0);
 		for (int count = 0; count < length; count++)
 		{
 			builder.AppendLiteral(lineBuffer[lineBuffer.Count - length - ScrollPos + count]);
 			builder.AppendLiteral("\n");
 		}
-		var newText = builder.ToString();
 
-		if (newText == OldText) return;
+		string newText = builder.ToString();
+
+		if (newText == OldText)
+		{
+			return;
+		}
+
 		try
 		{
 			mainWin.Invoke(() => Clipboard.SetDataObject(newText, false, 3, 200));
-			if (ScrollPos == 0) OldNewLineCount = NewLineCount;
+			if (ScrollPos == 0)
+			{
+				OldNewLineCount = NewLineCount;
+			}
+
 			NewLineCount = 0;
 			OldText = newText;
 			postWaiting = false;
@@ -257,6 +364,7 @@ internal partial class ClipboardProcessor
 			// regex is faster and simpler than a for loop you nerds
 			return HTMLTagRegex().Replace(input, Config.Config.CBReplaceTags);
 		}
+
 		return input;
 	}
 

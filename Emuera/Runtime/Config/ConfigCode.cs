@@ -6,21 +6,21 @@ internal enum DisplayWarningFlag
 	IGNORE = 0,
 	LATER = 1,
 	ONCE = 2,
-	DISPLAY = 3,
+	DISPLAY = 3
 }
 
 internal enum ReduceArgumentOnLoadFlag
 {
 	YES = 0,
 	ONCE = 1,
-	NO = 2,
+	NO = 2
 }
 
 internal enum TextDrawingMode
 {
 	GRAPHICS = 0,
 	TEXTRENDERER = 1,
-	WINAPI = 2,
+	WINAPI = 2
 }
 
 internal enum UseLanguage
@@ -28,7 +28,7 @@ internal enum UseLanguage
 	JAPANESE = 0,
 	KOREAN = 1,
 	CHINESE_HANS = 2,
-	CHINESE_HANT = 3,
+	CHINESE_HANT = 3
 }
 
 internal enum TextEditorType
@@ -36,7 +36,7 @@ internal enum TextEditorType
 	SAKURA = 0,
 	TERAPAD = 1,
 	EMEDITOR = 2,
-	USER_SETTING = 3,
+	USER_SETTING = 3
 }
 
 internal enum ConfigCode
@@ -70,10 +70,12 @@ internal enum ConfigCode
 	DisplayWarningLevel = 26,
 	DisplayReport = 27,
 	ReduceArgumentOnLoad = 28,
+
 	//ReduceFormattedStringOnLoad = 29,
 	IgnoreUncalledFunction = 30,
 	FunctionNotFoundWarning = 31,
 	FunctionNotCalledWarning = 32,
+
 	//IgnoreWarningFiles = 33,
 	ChangeMasterNameIfDebug = 34,
 	LastKey = 35,
@@ -117,6 +119,7 @@ internal enum ConfigCode
 	SystemIgnoreTripleSymbol,
 	CompatiSPChara,
 	TimesNotRigorousCalculation,
+
 	//一文字変数の禁止オプションを考えた名残
 	//ForbidOneCodeVariable,
 	SystemNoTarget,
@@ -142,47 +145,81 @@ internal enum ConfigCode
 	UseKeyMacro = 162,
 
 	#region EE_UPDATECHECK
+
 	ForbidUpdateCheck,
+
 	#endregion
+
 	#region EE_ERDConfig
+
 	UseERD,
+
 	#endregion
+
 	#region EE_ERDNAME
+
 	VarsizeDimConfig,
+
 	#endregion
+
 	#region EE_重複定義の確認
+
 	CheckDuplicateIdentifier,
+
 	#endregion
+
 	#region EE_行連結の改行コード置換
+
 	ReplaceContinuationBR,
+
 	#endregion
+
 	#region EE_CALLSHARP注意
+
 	PluginAvailableWarn,
+
 	#endregion
 
 
 	#region EM_私家版_LoadText＆SaveText機能拡張
+
 	ValidExtension = 200,
+
 	#endregion
+
 	#region EM_私家版_セーブ圧縮
+
 	ZipSaveData,
+
 	#endregion
+
 	#region EmuEra-Rikaichan related settings
+
 	RikaiEnabled = 250,
 	RikaiFilename,
 	RikaiColorBack,
 	RikaiColorText,
 	RikaiUseSeparateBoxes,
+
 	#endregion
+
 	Ctrl_Z_Enabled,
+
 	#region EM_私家版_Emuera多言語化改造
+
 	EnglishConfigOutput,
 	EmueraLang,
+
 	#endregion
+
 	#region EM_私家版_Icon指定機能
+
 	EmueraIcon,
+
 	#endregion
+
 	#region EE_AnchorのCB機能移植
+
 	CBUseClipboard,
 	CBIgnoreTags,
 	CBReplaceTags,
@@ -197,5 +234,6 @@ internal enum ConfigCode
 	CBBufferSize,
 	CBScrollCount,
 	CBMinTimer,
+
 	#endregion
 }

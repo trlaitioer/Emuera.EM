@@ -20,10 +20,12 @@ internal sealed class FunctionMethodTerm : AExpression
 	{
 		return Method.GetIntValue(exm, Arguments);
 	}
+
 	public override string GetStrValue(ExpressionMediator exm)
 	{
 		return Method.GetStrValue(exm, Arguments);
 	}
+
 	public override SingleTerm GetValue(ExpressionMediator exm)
 	{
 		return Method.GetReturnValue(exm, Arguments);
@@ -34,21 +36,30 @@ internal sealed class FunctionMethodTerm : AExpression
 		if (Method.HasUniqueRestructure)
 		{
 			if (Method.UniqueRestructure(exm, [.. Arguments]) && Method.CanRestructure)
+			{
 				return GetValue(exm);
+			}
+
 			return this;
 		}
+
 		bool argIsConst = true;
 		for (int i = 0; i < Arguments.Count; i++)
 		{
 			if (Arguments[i] == null)
+			{
 				continue;
+			}
+
 			Arguments[i] = Arguments.Required(i).Restructure(exm);
 			argIsConst &= Arguments[i] is SingleTerm;
 		}
+
 		if (Method.CanRestructure && argIsConst)
+		{
 			return GetValue(exm);
+		}
+
 		return this;
-
 	}
-
 }

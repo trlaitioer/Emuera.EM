@@ -8,9 +8,10 @@ using static MinorShift.Emuera.Runtime.Utils.EvilMask.Utils;
 
 namespace MinorShift.Emuera.UI.Game;
 
-sealed class ConsoleImagePart : AConsoleDisplayNode
+internal sealed class ConsoleImagePart : AConsoleDisplayNode
 {
 	#region EM_私家版_HTMLパラメータ拡張
+
 	//public ConsoleImagePart(string resName, string resNameb, int raw_height, int raw_width, int raw_ypos)
 	public ConsoleImagePart(string resName, string? resNameb, string? resNamem, MixedNum? raw_height, MixedNum? raw_width, MixedNum? raw_ypos)
 	{
@@ -26,13 +27,19 @@ sealed class ConsoleImagePart : AConsoleDisplayNode
 		StringBuilder sb = new();
 		sb.Append("<img src='").Append(ResourceName).Append('\'');
 		if (ButtonResourceName != null)
+		{
 			AddTagArg(sb, "srcb", ButtonResourceName);
+		}
+
 		//{
 		//	sb.Append("' srcb='");
 		//	sb.Append(ButtonResourceName);
 		//}
 		if (!string.IsNullOrEmpty(MappingGraphName))
+		{
 			AddTagArg(sb, "srcm", MappingGraphName);
+		}
+
 		AddTagMixedNumArg(sb, "height", raw_height);
 		AddTagMixedNumArg(sb, "width", raw_width);
 		AddTagMixedNumArg(sb, "ypos", raw_ypos);
@@ -72,6 +79,7 @@ sealed class ConsoleImagePart : AConsoleDisplayNode
 			Text = AltText;
 			return;
 		}
+
 		computeGeometry();
 		if (ButtonResourceName != null)
 		{
@@ -79,30 +87,37 @@ sealed class ConsoleImagePart : AConsoleDisplayNode
 			//if (cImageB != null && !cImageB.IsCreated)
 			//	cImageB = null;
 		}
+
 		if (MappingGraphName != null)
 		{
 			cImageM = AppContents.GetSprite(MappingGraphName);
 		}
 	}
+
 	public readonly string? MappingGraphName;
 	private readonly ASprite? cImageM;
+
 	#endregion
+
 	private readonly ASprite? cImage;
 	private readonly ASprite? cImageB;
 	private int top;
 	private int bottom;
+
 	private Rectangle destRect;
+
 	// Raw tag values are kept so that the geometry can be recomputed when the font size changes
 	private readonly MixedNum? rawHeight, rawWidth, rawYPos;
+
 	//#pragma warning disable CS0649 // フィールド 'ConsoleImagePart.ia' は割り当てられません。常に既定値 null を使用します。
 	//		private readonly ImageAttributes ia;
 	//#pragma warning restore CS0649 // フィールド 'ConsoleImagePart.ia' は割り当てられません。常に既定値 null を使用します。
 	public readonly string ResourceName;
 	public readonly string? ButtonResourceName;
-	public override int Top { get { return top; } }
-	public override int Bottom { get { return bottom; } }
+	public override int Top => top;
+	public override int Bottom => bottom;
 
-	public override bool CanDivide { get { return false; } }
+	public override bool CanDivide => false;
 
 	/// <summary>
 	/// Resolves the tag values into pixels again. Sizes given without a unit are relative to the font size and
@@ -111,18 +126,25 @@ sealed class ConsoleImagePart : AConsoleDisplayNode
 	private void computeGeometry()
 	{
 		int height;
-		if (rawHeight == null || rawHeight.num == 0)//no height: the font size itself is the height in px
+		if (rawHeight == null || rawHeight.num == 0) //no height: the font size itself is the height in px
+		{
 			height = Config.FontSize;
+		}
 		else if (rawHeight.isPx)
+		{
 			height = rawHeight.num;
+		}
 		else //the height is a percentage of the font size
+		{
 			height = Config.FontSize * rawHeight.num / 100;
+		}
+
 		//without a width the aspect ratio of the image is kept; the fraction is recorded as the sub pixel
 		if (rawWidth == null || rawWidth.num == 0)
 		{
 			//both callers of this method returned when cImage was null
 			Width = cImage!.DestBaseSize.Width * height / cImage.DestBaseSize.Height;
-			XsubPixel = (float)cImage.DestBaseSize.Width * height / cImage.DestBaseSize.Height - Width;
+			XsubPixel = ((float)cImage.DestBaseSize.Width * height / cImage.DestBaseSize.Height) - Width;
 		}
 		else if (rawWidth.isPx)
 		{
@@ -131,8 +153,9 @@ sealed class ConsoleImagePart : AConsoleDisplayNode
 		else
 		{
 			Width = Config.FontSize * rawWidth.num / 100;
-			XsubPixel = (float)Config.FontSize * rawWidth.num / 100f - Width;
+			XsubPixel = ((float)Config.FontSize * rawWidth.num / 100f) - Width;
 		}
+
 		top = rawYPos != null ? rawYPos.isPx ? rawYPos.num : rawYPos.num * Config.FontSize / 100 : 0;
 		destRect = new Rectangle(0, top, Width, height);
 		//a negative size was specified: the rectangle is moved instead
@@ -141,11 +164,13 @@ sealed class ConsoleImagePart : AConsoleDisplayNode
 			destRect.X = -destRect.Width;
 			Width = -destRect.Width;
 		}
+
 		if (destRect.Height < 0)
 		{
 			destRect.Y = destRect.Y - destRect.Height;
 			height = -destRect.Height;
 		}
+
 		bottom = top + height;
 	}
 
@@ -163,6 +188,7 @@ sealed class ConsoleImagePart : AConsoleDisplayNode
 			bottom = Config.FontSize;
 			return;
 		}
+
 		computeGeometry();
 	}
 
@@ -173,8 +199,12 @@ sealed class ConsoleImagePart : AConsoleDisplayNode
 			Width = 0;
 			return;
 		}
+
 		if (cImage != null)
+		{
 			return;
+		}
+
 		Width = sm.GetDisplayLength(Text!, Config.DefaultFont);
 		XsubPixel = subPixel;
 	}
@@ -182,17 +212,29 @@ sealed class ConsoleImagePart : AConsoleDisplayNode
 	public override string ToString()
 	{
 		if (AltText == null)
+		{
 			return "";
+		}
+
 		return AltText;
 	}
+
 	#region EM_私家版_描画拡張
+
 	public override StringBuilder BuildString(StringBuilder sb)
 	{
-		if (AltText != null) sb.Append(AltText);
+		if (AltText != null)
+		{
+			sb.Append(AltText);
+		}
+
 		return sb;
 	}
+
 	#endregion
+
 	#region EM_私家版_imgマースク
+
 	public long GetMappingColor(int pointX, int pointY)
 	{
 		if (cImageM != null && cImageM.IsCreated)
@@ -206,22 +248,43 @@ sealed class ConsoleImagePart : AConsoleDisplayNode
 			{
 				spriteSize = sg.DestBaseSize;
 			}
-			else return 0;
+			else
+			{
+				return 0;
+			}
+
 			pointX = pointX * spriteSize.Width / destRect.Width;
 			pointY = pointY * spriteSize.Height / destRect.Height;
-			var c = cImageM.SpriteGetColor(pointX, pointY);
+			Color c = cImageM.SpriteGetColor(pointX, pointY);
 			return c.ToArgb() & 0xFFFFFF;
 		}
+
 		return 0;
 	}
+
 	#endregion
-	public override void DrawTo(Graphics graph, int pointY, bool isSelecting, bool isFocus, bool isBackLog, TextDrawingMode mode, bool isButton = false, bool scalePreview = false)
+
+	public override void DrawTo(
+		Graphics graph,
+		int pointY,
+		bool isSelecting,
+		bool isFocus,
+		bool isBackLog,
+		TextDrawingMode mode,
+		bool isButton = false,
+		bool scalePreview = false
+	)
 	{
 		if (Error)
+		{
 			return;
+		}
+
 		ASprite? img = cImage;
 		if ((isSelecting || isFocus) && cImageB != null)
+		{
 			img = cImageB;
+		}
 
 		if (img != null && img.IsCreated)
 		{
@@ -235,9 +298,14 @@ sealed class ConsoleImagePart : AConsoleDisplayNode
 		{
 			if (mode == TextDrawingMode.GRAPHICS)
 				// AltText is assigned unconditionally in the constructor
+			{
 				GraphicsTextRenderer.Draw(graph, AltText!, Config.DefaultFont, Config.ForeColor, PointX, XsubPixel, pointY);
+			}
 			else
-				System.Windows.Forms.TextRenderer.DrawText(graph, AltText.AsSpan(), Config.DefaultFont, new Point(PointX, pointY), Config.ForeColor, System.Windows.Forms.TextFormatFlags.NoPrefix);
+			{
+				System.Windows.Forms.TextRenderer.DrawText(graph, AltText.AsSpan(), Config.DefaultFont, new Point(PointX, pointY), Config.ForeColor,
+					System.Windows.Forms.TextFormatFlags.NoPrefix);
+			}
 		}
 	}
 }

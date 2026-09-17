@@ -10,9 +10,13 @@ public static class AssemblyData
 	static AssemblyData()
 	{
 		ExePath = Environment.ProcessPath!;
+
 		#region eee_カレントディレクトリー
+
 		WorkingDir = Directory.GetCurrentDirectory() + "\\";
+
 		#endregion
+
 		ExeDir = Path.GetDirectoryName(ExePath) + "\\";
 		ExeName = Path.GetFileName(ExePath)!;
 		emueraVer = typeof(AssemblyData).Assembly.GetName().Version!;
@@ -23,7 +27,7 @@ public static class AssemblyData
 	/// <summary>
 	/// 実行ファイルのパス
 	/// </summary>
-	public static readonly string ExePath;
+	public readonly static string ExePath;
 
 	public readonly static Version emueraVer;
 
@@ -32,19 +36,21 @@ public static class AssemblyData
 	/// <summary>
 	/// 実行ファイルのディレクトリ。最後に\を付けたstring
 	/// </summary>
-	public static readonly string ExeDir;
+	public readonly static string ExeDir;
 
 	#region eee_カレントディレクトリー
+
 	/// <summary>
 	/// 実行ファイルのディレクトリ。最後に\を付けたstring
 	/// </summary>
-	public static readonly string WorkingDir;
+	public readonly static string WorkingDir;
+
 	#endregion
 
 	/// <summary>
 	/// 実行ファイルの名前。ディレクトリなし
 	/// </summary>
-	public static readonly string ExeName;
+	public readonly static string ExeName;
 
 	/// <summary>
 	/// 2重起動防止。既に同名exeが実行されているならばtrueを返す
@@ -57,7 +63,7 @@ public static class AssemblyData
 		{
 			return true;
 		}
-		return false;
 
+		return false;
 	}
 }

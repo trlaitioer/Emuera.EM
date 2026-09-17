@@ -13,10 +13,11 @@ using System.Globalization;
 using System.IO;
 using System.Runtime;
 using System.Windows.Forms;
+using MinorShift.Emuera.Forms;
 
 namespace MinorShift.Emuera;
 #nullable enable
-static partial class Program
+internal static partial class Program
 {
 	/*
 	コードの開始地点。
@@ -44,7 +45,7 @@ static partial class Program
 	/// アプリケーションのメイン エントリ ポイントです。
 	/// </summary>
 	[STAThread]
-	static void Main(string[] args)
+	private static void Main(string[] args)
 	{
 		// memo: Shift-JISを扱うためのおまじない
 		System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
@@ -52,43 +53,43 @@ static partial class Program
 		CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
 		CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
 
-		var rootCommand = new RootCommand("Emuera");
+		RootCommand rootCommand = new("Emuera");
 
 		#region eee_カレントディレクトリー
-		var exeDirOption = new Option<string>(
-			name: "--ExeDir",
-			description: "与えられたフォルダのEraを起動します"
+
+		Option<string> exeDirOption = new(
+			"--ExeDir",
+			"与えられたフォルダのEraを起動します"
 		);
 		exeDirOption.AddAlias("-exedir");
 		exeDirOption.AddAlias("-EXEDIR");
 		rootCommand.AddOption(exeDirOption);
 
-		var debugModeOption = new Option<bool>(
-			name: "-Debug",
-			description: "デバッグモード"
+		Option<bool> debugModeOption = new(
+			"-Debug",
+			"デバッグモード"
 		);
 		debugModeOption.AddAlias("-debug");
 		debugModeOption.AddAlias("-DEBUG");
 		rootCommand.AddOption(debugModeOption);
 
-		var genLangOption = new Option<bool>(
-			name: "-GenLang",
-			description: "言語ファイルテンプレ生成"
+		Option<bool> genLangOption = new(
+			"-GenLang",
+			"言語ファイルテンプレ生成"
 		);
 		genLangOption.AddAlias("-genlang");
 		genLangOption.AddAlias("-GENLANG");
 		rootCommand.AddOption(genLangOption);
 
-		var filesArg = new Argument<string[]>(
-					"解析するファイル"
-				)
-		{ Arity = ArgumentArity.ZeroOrMore };
+		Argument<string[]> filesArg = new(
+			"解析するファイル"
+		) { Arity = ArgumentArity.ZeroOrMore };
 		rootCommand.AddArgument(filesArg);
 
-		var result = rootCommand.Parse(args);
+		ParseResult result = rootCommand.Parse(args);
 
 		//実行ディレクトリが引数で与えられた場合
-		var exeDir = result.GetValueForOption(exeDirOption);
+		string? exeDir = result.GetValueForOption(exeDirOption);
 		if (exeDir != null)
 		{
 			SetDirPaths(exeDir);
@@ -99,24 +100,28 @@ static partial class Program
 		}
 
 		#endregion
+
 		//エラー出力用
 		//1815 .exeが東方板のNGワードに引っかかるそうなので除去
 		ExeName = Path.GetFileNameWithoutExtension(AssemblyData.ExeName);
 
 
-		var debugMode = result.GetValueForOption(debugModeOption);
+		bool debugMode = result.GetValueForOption(debugModeOption);
 		DebugMode = debugMode;
 
-		var genLang = result.GetValueForOption(genLangOption);
+		bool genLang = result.GetValueForOption(genLangOption);
 		if (genLang)
+		{
 			Lang.GenerateDefaultLangFile();
+		}
 
 		#region EM_私家版_Emuera多言語化改造
+
 		List<string> otherArgs = [];
 
 		//引数の後ろにある他のフラグにマッチしなかった文字列を解析指定されたファイルとみなす
-		var fileArgs = result.GetValueForArgument(filesArg);
-		var analysisRequestPaths = fileArgs;
+		string[] fileArgs = result.GetValueForArgument(filesArg);
+		string[] analysisRequestPaths = fileArgs;
 		if (analysisRequestPaths.Length > 0)
 		{
 			/*
@@ -143,6 +148,7 @@ static partial class Program
 			AnalysisMode = true;
 			//}
 		}
+
 		#endregion
 
 		Application.SetCompatibleTextRenderingDefault(false);
@@ -153,16 +159,23 @@ static partial class Program
 		//Font files are registered before the configuration is loaded: loading it derives the render font size
 		//by measuring the configured font, and FontFactory gives the private font collection priority over the
 		//installed families.
+
 		#region EE_フォントファイル対応
+
 		//フォントファイルを読み込む
 		if (Directory.Exists(FontDir))
 		{
 			foreach (string fontFile in Directory.GetFiles(FontDir, "*.ttf", SearchOption.AllDirectories))
+			{
 				GlobalStatic.Pfc.AddFontFile(fontFile);
+			}
 
 			foreach (string fontFile in Directory.GetFiles(FontDir, "*.otf", SearchOption.AllDirectories))
+			{
 				GlobalStatic.Pfc.AddFontFile(fontFile);
+			}
 		}
+
 		#endregion
 
 		ConfigData.Instance.LoadConfig();
@@ -176,40 +189,48 @@ static partial class Program
 		}
 
 		#region EM_私家版_Emuera多言語化改造
+
 		Lang.LoadLanguageFiles();
 		Lang.SetLanguage();
+
 		#endregion
+
 		#region EM_私家版_Icon指定機能
+
 		Icon? icon = null;
 		{
-			var bmp = Utils.LoadImage(Utils.GetValidPath(Config.EmueraIcon));
+			Bitmap? bmp = Utils.LoadImage(Utils.GetValidPath(Config.EmueraIcon));
 			if (bmp != null)
 			{
 				icon = Utils.MakeIconFromBmpFile(bmp);
 				bmp.Dispose();
 			}
 		}
+
 		#endregion
 
 		//二重起動の禁止かつ二重起動
-		if ((!Config.AllowMultipleInstances) && AssemblyData.PrevInstance())
+		if (!Config.AllowMultipleInstances && AssemblyData.PrevInstance())
 		{
 			//Dialog.Show("既に起動しています", "多重起動を許可する場合、emuera.configを書き換えて下さい");
 			Dialog.Show(Lang.UI.MainWindow.MsgBox.InstaceExists.Text, Lang.UI.MainWindow.MsgBox.MultiInstanceInfo.Text);
 			return;
 		}
+
 		if (!Directory.Exists(CsvDir))
 		{
 			//Dialog.Show("フォルダなし", "csvフォルダが見つかりません");
 			Dialog.Show(Lang.UI.MainWindow.MsgBox.FolderNotFound.Text, Lang.UI.MainWindow.MsgBox.NoCsvFolder.Text);
 			return;
 		}
+
 		if (!Directory.Exists(ErbDir))
 		{
 			//Dialog.Show("フォルダなし", "erbフォルダが見つかりません");
 			Dialog.Show(Lang.UI.MainWindow.MsgBox.FolderNotFound.Text, Lang.UI.MainWindow.MsgBox.NoErbFolder.Text);
 			return;
 		}
+
 		if (DebugMode)
 		{
 			ConfigData.Instance.LoadDebugConfig();
@@ -230,9 +251,11 @@ static partial class Program
 		if (AnalysisMode)
 		{
 			AnalysisFiles = [];
+
 			#region EM_私家版_Emuera多言語化改造
+
 			// for (int i = argsStart; i < args.Length; i++)
-			foreach (var path in analysisRequestPaths)
+			foreach (string path in analysisRequestPaths)
 			{
 				//if (!File.Exists(args[i]) && !Directory.Exists(args[i]))
 				if (!File.Exists(path) && !Directory.Exists(path))
@@ -240,6 +263,7 @@ static partial class Program
 					MessageBox.Show(Lang.UI.MainWindow.MsgBox.ArgPathNotExists.Text);
 					return;
 				}
+
 				//if ((File.GetAttributes(args[i]) & FileAttributes.Directory) == FileAttributes.Directory)
 				if ((File.GetAttributes(path) & FileAttributes.Directory) == FileAttributes.Directory)
 				{
@@ -258,23 +282,32 @@ static partial class Program
 						MessageBox.Show(Lang.UI.MainWindow.MsgBox.InvalidArg.Text);
 						return;
 					}
+
 					//AnalysisFiles.Add(args[i]);
 					AnalysisFiles.Add(path);
 				}
 			}
+
 			#endregion
 		}
 
 		ApplicationConfiguration.Initialize();
 
-		using var win = new Forms.MainWindow(args);
+		using MainWindow win = new(args);
 		{
 			#region EM_私家版_Emuera多言語化改造
+
 			win.TranslateUI();
+
 			#endregion
+
 			#region EM_私家版_Icon指定機能
+
 			if (icon != null)
+			{
 				win.SetupIcon(icon);
+			}
+
 			#endregion
 
 			Application.Run(win);
@@ -330,10 +363,8 @@ static partial class Program
 	[MemberNotNull(nameof(DebugDir))]
 	[MemberNotNull(nameof(DatDir))]
 	[MemberNotNull(nameof(ContentDir))]
-
 	private static void SetDirPaths(string exeDir)
 	{
-
 		ExeDir = Path.GetFullPath(new DirectoryInfo(exeDir).FullName + Path.DirectorySeparatorChar);
 
 		CsvDir = Path.Combine(ExeDir, "csv") + Path.DirectorySeparatorChar;
@@ -341,11 +372,17 @@ static partial class Program
 		DebugDir = Path.Combine(ExeDir, "debug") + Path.DirectorySeparatorChar;
 		DatDir = Path.Combine(ExeDir, "dat") + Path.DirectorySeparatorChar;
 		ContentDir = Path.Combine(ExeDir, "resources") + Path.DirectorySeparatorChar;
+
 		#region EE_PLAYSOUND系
+
 		SoundDir = Path.Combine(ExeDir, "sound") + Path.DirectorySeparatorChar;
+
 		#endregion
+
 		#region EE_フォントファイル対応
+
 		FontDir = Path.Combine(ExeDir, "font") + Path.DirectorySeparatorChar;
+
 		#endregion
 
 		/*
@@ -361,26 +398,36 @@ static partial class Program
 	}
 
 	#region eee_カレントディレクトリー
+
 	/// <summary>
 	/// 実行ファイルのディレクトリ。最後にPath.DirectorySeparatorCharを付けたstring
 	/// </summary>
 	public static string ExeDir { get; private set; }
+
 	#endregion
+
 	public static string CsvDir { get; private set; }
 	public static string ErbDir { get; private set; }
 	public static string DebugDir { get; private set; }
 	public static string DatDir { get; private set; }
 	public static string ContentDir { get; private set; }
 	public static string? ExeName { get; private set; }
+
 	#region EE_PLAYSOUND系
+
 	public static string? SoundDir { get; private set; }
+
 	#endregion
+
 	#region EE_フォントファイル対応
+
 	public static string? FontDir { get; private set; }
+
 	#endregion
 
 
 	public static bool rebootFlag;
+
 	//public static int RebootClientX = 0;
 	//public static int RebootClientY = 0;
 	public static FormWindowState RebootWinState = FormWindowState.Normal;
@@ -395,11 +442,12 @@ static partial class Program
 
 	static Program()
 	{
-		var baseDirectory = AppContext.BaseDirectory;
+		string baseDirectory = AppContext.BaseDirectory;
 		if (Directory.Exists(Path.Combine(baseDirectory, "Data", "erb")))
 		{
 			baseDirectory = Path.Combine(baseDirectory, "Data");
 		}
+
 		SetDirPaths(baseDirectory);
 	}
 }

@@ -15,8 +15,17 @@ internal static class WindowZoom
 	/// Canvas width and the sizes derived from it for a client width.
 	/// The scroll bar grows with the zoom and shrinks the canvas, so both are solved from a pre-scale.
 	/// </summary>
-	public static void Compute(int clientWidth, int baseCanvasWidth, int baseScrollBarWidth, int baseFontSize, int baseLineHeight,
-		out float scale, out int scrollBarWidth, out int fontSize, out int lineHeight)
+	public static void Compute(
+		int clientWidth,
+		int baseCanvasWidth,
+		int baseScrollBarWidth,
+		int baseFontSize,
+		int baseLineHeight,
+		out float scale,
+		out int scrollBarWidth,
+		out int fontSize,
+		out int lineHeight
+	)
 	{
 		int baseWidth = Math.Max(1, baseCanvasWidth);
 		float preScale = Math.Max(0.01f, (clientWidth - baseScrollBarWidth) / (float)baseWidth);
@@ -34,7 +43,10 @@ internal static class WindowZoom
 	public static float PreviewScale(int canvasWidth, int committedCanvasWidth)
 	{
 		if (canvasWidth <= 0)
+		{
 			return 1.0f;
+		}
+
 		return committedCanvasWidth > 0 ? canvasWidth / (float)committedCanvasWidth : 1.0f;
 	}
 
@@ -58,8 +70,8 @@ internal static class WindowZoom
 		double scale = Math.Min(workingArea.Width / (double)currentSize.Width, maxHeight / (double)currentSize.Height);
 		int width = Math.Max(1, (int)Math.Round(currentSize.Width * scale));
 		int height = Math.Max(1, (int)Math.Round(currentSize.Height * scale));
-		int left = workingArea.Left + (workingArea.Width - width) / 2;
-		int top = workingArea.Top + (workingArea.Height - height) / 2;
+		int left = workingArea.Left + ((workingArea.Width - width) / 2);
+		int top = workingArea.Top + ((workingArea.Height - height) / 2);
 		return new Rectangle(left, top, width, height);
 	}
 }

@@ -8,8 +8,7 @@ namespace MinorShift.Emuera.UI;
 
 internal class FontFactory
 {
-
-	static readonly Dictionary<(string fontname, int fontSize, FontStyle fontStyle), Font> fontDic = [];
+	private readonly static Dictionary<(string fontname, int fontSize, FontStyle fontStyle), Font> fontDic = [];
 
 	public static Font? GetFont(string requestFontName, FontStyle style)
 	{
@@ -46,7 +45,9 @@ internal class FontFactory
 		*/
 
 		if (string.IsNullOrEmpty(requestFontName))
+		{
 			requestFontName = Config.FontName;
+		}
 
 		//The configured font is built at the size the derived geometry was recomputed with. A font a script
 		//named explicitly is a different face, so it is not built at the derived size of the configured font:
@@ -55,9 +56,9 @@ internal class FontFactory
 			? Config.RenderFontSizePx
 			: FontMetrics.FindRenderSizePx(requestFontName, Config.FontSize);
 
-		var key = (requestFontName, fontSize, style);
+		(string requestFontName, int fontSize, FontStyle style) key = (requestFontName, fontSize, style);
 
-		if (fontDic.TryGetValue(key, out var existingFont))
+		if (fontDic.TryGetValue(key, out Font? existingFont))
 		{
 			return existingFont;
 		}
@@ -67,6 +68,7 @@ internal class FontFactory
 		{
 			return null;
 		}
+
 		return fontDic[key] = createdFont;
 	}
 
@@ -98,10 +100,11 @@ internal class FontFactory
 
 	public static void ClearFont()
 	{
-		foreach (var font in fontDic)
+		foreach (KeyValuePair<(string fontname, int fontSize, FontStyle fontStyle), Font> font in fontDic)
 		{
 			font.Value.Dispose();
 		}
+
 		fontDic.Clear();
 	}
 }

@@ -14,19 +14,25 @@ namespace MinorShift.Emuera.Runtime.Script.Statements.Variable;
 internal sealed class VariableIdentifier
 {
 	private VariableIdentifier(VariableCode code)
-	{ this.code = code; }
+	{
+		this.code = code;
+	}
+
 	private VariableIdentifier(VariableCode code, string scope)
-	{ this.code = code; this.scope = scope; }
-	readonly VariableCode code;
-	readonly string? scope;
-	public VariableCode Code
-	{ get { return code; } }
-	public string? Scope
-	{ get { return scope; } }
-	public int CodeInt
-	{ get { return (int)(code & VariableCode.__LOWERCASE__); } }
-	public VariableCode CodeFlag
-	{ get { return code & VariableCode.__UPPERCASE__; } }
+	{
+		this.code = code;
+		this.scope = scope;
+	}
+
+	private readonly VariableCode code;
+	private readonly string? scope;
+	public VariableCode Code => code;
+
+	public string? Scope => scope;
+
+	public int CodeInt => (int)(code & VariableCode.__LOWERCASE__);
+
+	public VariableCode CodeFlag => code & VariableCode.__UPPERCASE__;
 	//public int Dimension
 	//{
 	//    get
@@ -42,76 +48,26 @@ internal sealed class VariableIdentifier
 	//    }
 	//}
 
-	public bool IsNull
-	{
-		get
-		{
-			return code == VariableCode.__NULL__;
-		}
-	}
-	public bool IsCharacterData
-	{
-		get
-		{
-			return (code & VariableCode.__CHARACTER_DATA__) == VariableCode.__CHARACTER_DATA__;
-		}
-	}
-	public bool IsInteger
-	{
-		get
-		{
-			return (code & VariableCode.__INTEGER__) == VariableCode.__INTEGER__;
-		}
-	}
-	public bool IsString
-	{
-		get
-		{
-			return (code & VariableCode.__STRING__) == VariableCode.__STRING__;
-		}
-	}
-	public bool IsArray1D
-	{
-		get
-		{
-			return (code & VariableCode.__ARRAY_1D__) == VariableCode.__ARRAY_1D__;
-		}
-	}
-	public bool IsArray2D
-	{
-		get
-		{
-			return (code & VariableCode.__ARRAY_2D__) == VariableCode.__ARRAY_2D__;
-		}
-	}
-	public bool IsArray3D
-	{
-		get
-		{
-			return (code & VariableCode.__ARRAY_3D__) == VariableCode.__ARRAY_3D__;
-		}
-	}
-	public bool Readonly
-	{
-		get
-		{
-			return (code & VariableCode.__UNCHANGEABLE__) == VariableCode.__UNCHANGEABLE__;
-		}
-	}
-	public bool IsCalc
-	{
-		get
-		{
-			return (code & VariableCode.__CALC__) == VariableCode.__CALC__;
-		}
-	}
-	public bool IsLocal
-	{
-		get
-		{
-			return (code & VariableCode.__LOCAL__) == VariableCode.__LOCAL__;
-		}
-	}
+	public bool IsNull => code == VariableCode.__NULL__;
+
+	public bool IsCharacterData => (code & VariableCode.__CHARACTER_DATA__) == VariableCode.__CHARACTER_DATA__;
+
+	public bool IsInteger => (code & VariableCode.__INTEGER__) == VariableCode.__INTEGER__;
+
+	public bool IsString => (code & VariableCode.__STRING__) == VariableCode.__STRING__;
+
+	public bool IsArray1D => (code & VariableCode.__ARRAY_1D__) == VariableCode.__ARRAY_1D__;
+
+	public bool IsArray2D => (code & VariableCode.__ARRAY_2D__) == VariableCode.__ARRAY_2D__;
+
+	public bool IsArray3D => (code & VariableCode.__ARRAY_3D__) == VariableCode.__ARRAY_3D__;
+
+	public bool Readonly => (code & VariableCode.__UNCHANGEABLE__) == VariableCode.__UNCHANGEABLE__;
+
+	public bool IsCalc => (code & VariableCode.__CALC__) == VariableCode.__CALC__;
+
+	public bool IsLocal => (code & VariableCode.__LOCAL__) == VariableCode.__LOCAL__;
+
 	//public bool IsConstant
 	//{
 	//    get
@@ -119,65 +75,94 @@ internal sealed class VariableIdentifier
 	//        return ((code & VariableCode.__CONSTANT__) == VariableCode.__CONSTANT__);
 	//    }
 	//}
-	public bool CanForbid
-	{
-		get
-		{
-			return (code & VariableCode.__CAN_FORBID__) == VariableCode.__CAN_FORBID__;
-		}
-	}
-	readonly static Dictionary<string, VariableCode> nameDic = [];
-	readonly static Dictionary<string, VariableCode> localvarNameDic = [];
-	readonly static Dictionary<VariableCode, List<VariableCode>> extSaveListDic = [];
+	public bool CanForbid => (code & VariableCode.__CAN_FORBID__) == VariableCode.__CAN_FORBID__;
+
+	private readonly static Dictionary<string, VariableCode> nameDic = [];
+	private readonly static Dictionary<string, VariableCode> localvarNameDic = [];
+	private readonly static Dictionary<VariableCode, List<VariableCode>> extSaveListDic = [];
 
 	static VariableIdentifier()
 	{
-		var array = Enum.GetValues<VariableCode>();
+		VariableCode[] array = Enum.GetValues<VariableCode>();
 
 		// The three pseudo variables are declared explicitly, their enum names are fixed
 		nameDic.Add(Enum.GetName(VariableCode.__FILE__)!, VariableCode.__FILE__);
 		nameDic.Add(Enum.GetName(VariableCode.__LINE__)!, VariableCode.__LINE__);
 		nameDic.Add(Enum.GetName(VariableCode.__FUNCTION__)!, VariableCode.__FUNCTION__);
-		foreach (var code in array)
+		foreach (VariableCode code in array)
 		{
-			var key = Enum.GetName(code);
-			if (key == null || key.StartsWith("__") && key.EndsWith("__"))
+			string? key = Enum.GetName(code);
+			if (key == null || (key.StartsWith("__") && key.EndsWith("__")))
+			{
 				continue;
+			}
+
 			if (nameDic.ContainsKey(key))
+			{
 				continue;
+			}
 #if DEBUG
 			if ((code & VariableCode.__ARRAY_2D__) == VariableCode.__ARRAY_2D__)
 			{
 				if ((code & VariableCode.__ARRAY_1D__) == VariableCode.__ARRAY_1D__)
+				{
 					throw new ExeEE(trerror.Array2DAndArray1DExclusive.Text);
+				}
 			}
-			if (((code & VariableCode.__INTEGER__) != VariableCode.__INTEGER__)
-				&& ((code & VariableCode.__STRING__) != VariableCode.__STRING__))
+
+			if ((code & VariableCode.__INTEGER__) != VariableCode.__INTEGER__
+			    && (code & VariableCode.__STRING__) != VariableCode.__STRING__)
+			{
 				throw new ExeEE(trerror.IntegerOrStringRequired.Text);
-			if (((code & VariableCode.__INTEGER__) == VariableCode.__INTEGER__)
-				&& ((code & VariableCode.__STRING__) == VariableCode.__STRING__))
+			}
+
+			if ((code & VariableCode.__INTEGER__) == VariableCode.__INTEGER__
+			    && (code & VariableCode.__STRING__) == VariableCode.__STRING__)
+			{
 				throw new ExeEE(trerror.IntegerAndStringExclusive.Text);
+			}
+
 			if ((code & VariableCode.__EXTENDED__) != VariableCode.__EXTENDED__)
 			{
 				if ((code & VariableCode.__SAVE_EXTENDED__) == VariableCode.__SAVE_EXTENDED__)
+				{
 					throw new ExeEE(trerror.SaveExtendedRequiresExtended.Text);
+				}
+
 				if ((code & VariableCode.__LOCAL__) == VariableCode.__LOCAL__)
+				{
 					throw new ExeEE(trerror.LocalRequiresExtended.Text);
+				}
+
 				if ((code & VariableCode.__GLOBAL__) == VariableCode.__GLOBAL__)
+				{
 					throw new ExeEE(trerror.GlobalRequiresExtended.Text);
+				}
+
 				if ((code & VariableCode.__ARRAY_2D__) == VariableCode.__ARRAY_2D__)
+				{
 					throw new ExeEE(trerror.Array2DRequiresExtended.Text);
+				}
 			}
-			if (((code & VariableCode.__SAVE_EXTENDED__) == VariableCode.__SAVE_EXTENDED__)
-				&& ((code & VariableCode.__UNCHANGEABLE__) == VariableCode.__UNCHANGEABLE__))
+
+			if ((code & VariableCode.__SAVE_EXTENDED__) == VariableCode.__SAVE_EXTENDED__
+			    && (code & VariableCode.__UNCHANGEABLE__) == VariableCode.__UNCHANGEABLE__)
+			{
 				throw new ExeEE(trerror.UnchangeableAndSaveExtendedExclusive.Text);
-			if (((code & VariableCode.__SAVE_EXTENDED__) == VariableCode.__SAVE_EXTENDED__)
-				&& ((code & VariableCode.__CALC__) == VariableCode.__CALC__))
+			}
+
+			if ((code & VariableCode.__SAVE_EXTENDED__) == VariableCode.__SAVE_EXTENDED__
+			    && (code & VariableCode.__CALC__) == VariableCode.__CALC__)
+			{
 				throw new ExeEE(trerror.CalcAndSaveExtendedExclusive.Text);
-			if (((code & VariableCode.__SAVE_EXTENDED__) == VariableCode.__SAVE_EXTENDED__)
-				&& ((code & VariableCode.__ARRAY_2D__) == VariableCode.__ARRAY_2D__)
-				&& ((code & VariableCode.__STRING__) == VariableCode.__STRING__))
+			}
+
+			if ((code & VariableCode.__SAVE_EXTENDED__) == VariableCode.__SAVE_EXTENDED__
+			    && (code & VariableCode.__ARRAY_2D__) == VariableCode.__ARRAY_2D__
+			    && (code & VariableCode.__STRING__) == VariableCode.__STRING__)
+			{
 				throw new ExeEE(trerror.StringArray2DSaveExtendedNotImplemented.Text);
+			}
 #endif
 			nameDic.Add(key, code);
 			////セーブが必要な変数リストの作成
@@ -238,13 +223,20 @@ internal sealed class VariableIdentifier
 
 
 			if ((code & VariableCode.__LOCAL__) == VariableCode.__LOCAL__)
+			{
 				localvarNameDic.Add(key, code);
+			}
+
 			if ((code & VariableCode.__SAVE_EXTENDED__) == VariableCode.__SAVE_EXTENDED__)
 			{
 				VariableCode flag = code &
-					(VariableCode.__ARRAY_1D__ | VariableCode.__ARRAY_2D__ | VariableCode.__ARRAY_3D__ | VariableCode.__CHARACTER_DATA__ | VariableCode.__STRING__ | VariableCode.__INTEGER__);
+				                    (VariableCode.__ARRAY_1D__ | VariableCode.__ARRAY_2D__ | VariableCode.__ARRAY_3D__ |
+				                     VariableCode.__CHARACTER_DATA__ | VariableCode.__STRING__ | VariableCode.__INTEGER__);
 				if (!extSaveListDic.ContainsKey(flag))
+				{
 					extSaveListDic.Add(flag, []);
+				}
+
 				extSaveListDic[flag].Add(code);
 			}
 		}
@@ -253,9 +245,13 @@ internal sealed class VariableIdentifier
 	public static List<VariableCode> GetExtSaveList(VariableCode flag)
 	{
 		VariableCode gFlag = flag &
-			(VariableCode.__ARRAY_1D__ | VariableCode.__ARRAY_2D__ | VariableCode.__ARRAY_3D__ | VariableCode.__CHARACTER_DATA__ | VariableCode.__STRING__ | VariableCode.__INTEGER__);
+		                     (VariableCode.__ARRAY_1D__ | VariableCode.__ARRAY_2D__ | VariableCode.__ARRAY_3D__ | VariableCode.__CHARACTER_DATA__ |
+		                      VariableCode.__STRING__ | VariableCode.__INTEGER__);
 		if (!extSaveListDic.TryGetValue(gFlag, out List<VariableCode>? value))
+		{
 			return [];
+		}
+
 		return value;
 	}
 
@@ -268,24 +264,40 @@ internal sealed class VariableIdentifier
 	{
 		return GetVariableId(key, null);
 	}
+
 	public static VariableIdentifier? GetVariableId(string key, string? subStr)
 	{
 		VariableCode ret;
 		if (string.IsNullOrEmpty(key))
+		{
 			return null;
+		}
+
 		if (subStr != null)
 		{
 			if (localvarNameDic.TryGetValue(key, out ret))
+			{
 				return new VariableIdentifier(ret, subStr);
+			}
+
 			if (nameDic.ContainsKey(key))
+			{
 				throw new CodeEE(string.Format(trerror.UsedAtForGlobalVar.Text, key));
+			}
+
 			throw new CodeEE(trerror.InvalidAt.Text);
 		}
+
 		if (nameDic.TryGetValue(key, out ret))
+		{
 			return new VariableIdentifier(ret);
+		}
 		else
+		{
 			return null;
+		}
 	}
+
 	public override string ToString()
 	{
 		return code.ToString();

@@ -42,7 +42,9 @@ internal class HotkeyState
 {
 	private bool enabled = false;
 	private bool availableStateArray = false;
+
 	private bool availableHotkeyFile = false;
+
 	// Allocated by HotkeyStateInit before any state slot is read
 	private nint[] state = null!;
 	private List<int> bytecode = new(0x200);
@@ -60,6 +62,7 @@ internal class HotkeyState
 		{
 			throw new Exception("use HOTKEY_STATE_INIT before using HOTKEY_STATE");
 		}
+
 		state[index] = value;
 	}
 
@@ -68,13 +71,13 @@ internal class HotkeyState
 		NUMBER = 0,
 		KEYCOMPARE = 1,
 		STATECOMPARE = 2,
-		STATEGET = 3,
+		STATEGET = 3
 	}
 
 	private enum Command
 	{
 		RETURN = 0,
-		GOTOIFNOT = 1,
+		GOTOIFNOT = 1
 	}
 
 	//private void DebugPrintBytecodeEval(StreamWriter writetext, ref int i)
@@ -142,30 +145,37 @@ internal class HotkeyState
 			Keys keys;
 			//bool success = Enum.TryParse<Keys>("S", out keys);
 			bool success = Enum.TryParse(line, out keys);
-			if (!success) return 1;
+			if (!success)
+			{
+				return 1;
+			}
+
 			bytecode.Add((int)Eval.KEYCOMPARE);
 			bytecode.Add((int)keys);
 			return 0;
 		}
+
 		if (line.StartsWith("STATE:"))
 		{
 			line = line.Substring("STATE:".Length);
 			int index = line.IndexOf(" == ");
 			if (index != -1)
 			{
-				var line1 = line.Substring(0, index);
-				var line2 = line.Substring(index + " == ".Length);
+				string line1 = line.Substring(0, index);
+				string line2 = line.Substring(index + " == ".Length);
 				bytecode.Add((int)Eval.STATECOMPARE);
 				bytecode.Add(int.Parse(line1));
 				bytecode.Add(int.Parse(line2));
 				//throw new Exception("not implemented yet");
 				return 0;
 			}
+
 			bytecode.Add((int)Eval.STATEGET);
 			bytecode.Add(int.Parse(line));
 			//throw new Exception("not implemented yet");
 			return 0;
 		}
+
 		bytecode.Add((int)Eval.NUMBER);
 		bytecode.Add(int.Parse(line));
 		//throw new Exception("not implemented yet");
@@ -175,23 +185,34 @@ internal class HotkeyState
 	//returns 0 on success
 	private int Parse(string[] lines)
 	{
-		if (lines.Length < 2) return 1;
-		if (lines[0] != "@HOTKEY(KEY)") return 1;
+		if (lines.Length < 2)
+		{
+			return 1;
+		}
+
+		if (lines[0] != "@HOTKEY(KEY)")
+		{
+			return 1;
+		}
 
 		bool lastLineWasSIF = false;
-		var gotoStack = new Stack<int>();
-		
+		Stack<int> gotoStack = new();
+
 		for (int i = 1; i < lines.Length; i++)
 		{
-			var line = lines[i];
+			string line = lines[i];
 			line = line.TrimStart();
 			int semicolonIndex = line.IndexOf(';');
 			if (semicolonIndex != -1)
 			{
 				line = line.Substring(0, semicolonIndex);
 			}
+
 			line = line.TrimEnd();
-			if (line.Length == 0) continue;
+			if (line.Length == 0)
+			{
+				continue;
+			}
 
 			if (line.StartsWith("IF "))
 			{
@@ -200,14 +221,22 @@ internal class HotkeyState
 				gotoStack.Push(bytecode.Count);
 				bytecode.Add(777); //placeholder, will be overwritten
 				int res = ParseEval(line);
-				if (res != 0) return res;
-			} else if (line.StartsWith("RETURN "))
+				if (res != 0)
+				{
+					return res;
+				}
+			}
+			else if (line.StartsWith("RETURN "))
 			{
 				line = line.Substring("RETURN ".Length);
 				bytecode.Add((int)Command.RETURN);
 				int res = ParseEval(line);
-				if (res != 0) return res;
-			} else if (line.StartsWith("SIF "))
+				if (res != 0)
+				{
+					return res;
+				}
+			}
+			else if (line.StartsWith("SIF "))
 			{
 				lastLineWasSIF = true;
 				line = line.Substring("SIF ".Length);
@@ -215,13 +244,19 @@ internal class HotkeyState
 				gotoStack.Push(bytecode.Count);
 				bytecode.Add(777); //placeholder, will be overwritten
 				int res = ParseEval(line);
-				if (res != 0) return res;
+				if (res != 0)
+				{
+					return res;
+				}
+
 				continue;
-			} else if (line == "ENDIF")
+			}
+			else if (line == "ENDIF")
 			{
 				int lastGoto = gotoStack.Pop();
 				bytecode[lastGoto] = bytecode.Count;
-			} else
+			}
+			else
 			{
 				throw new Exception("invalid line");
 			}
@@ -232,11 +267,10 @@ internal class HotkeyState
 				bytecode[lastGoto] = bytecode.Count;
 				lastLineWasSIF = false;
 			}
-
 		}
 
 		//DebugPrintBytecode();
-		
+
 		return 0;
 	}
 
@@ -256,7 +290,7 @@ internal class HotkeyState
 			return;
 		}
 
-		var filename = Program.ExeDir + "HOTKEY.ERB";
+		string filename = Program.ExeDir + "HOTKEY.ERB";
 		if (!File.Exists(filename))
 		{
 			MessageBox.Show("HOTKEY.ERB not found.");
@@ -277,11 +311,11 @@ internal class HotkeyState
 		if (availableStateArray)
 		{
 			MessageBox.Show("hotkeys ON");
-		} else
+		}
+		else
 		{
 			MessageBox.Show("hotkeys ON, HOTKEY_STATE_INIT not called.");
 		}
-		
 	}
 
 	private int InterpreterEval(ref int i, int key)
@@ -291,19 +325,22 @@ internal class HotkeyState
 		{
 			b = bytecode[i++];
 			return b;
-		} else if (b == (int)Eval.KEYCOMPARE)
+		}
+		else if (b == (int)Eval.KEYCOMPARE)
 		{
 			b = bytecode[i++];
 			//return (int)(key == b); //Cannot convert type bool to int
 			return Convert.ToInt32(key == b);
-		} else if (b == (int)Eval.STATECOMPARE)
+		}
+		else if (b == (int)Eval.STATECOMPARE)
 		{
 			b = bytecode[i++];
 			int stateIndex = b;
 			b = bytecode[i++];
 			int valueToCompare = b;
 			return Convert.ToInt32(state[stateIndex] == valueToCompare);
-		} else if (b == (int)Eval.STATEGET)
+		}
+		else if (b == (int)Eval.STATEGET)
 		{
 			b = bytecode[i++];
 			return (int)state[b]; //Maybe should use int instead of nint.
@@ -314,13 +351,24 @@ internal class HotkeyState
 
 	public int keyToNumberRunInterpreter(KeyEventArgs e)
 	{
-		if (!enabled) return -1;
-		if (!availableStateArray) return -1;
-		if (!availableHotkeyFile) return -1;
+		if (!enabled)
+		{
+			return -1;
+		}
+
+		if (!availableStateArray)
+		{
+			return -1;
+		}
+
+		if (!availableHotkeyFile)
+		{
+			return -1;
+		}
 
 		int key = (int)e.KeyData;
 
-		for (int i = 0; i < bytecode.Count; )
+		for (int i = 0; i < bytecode.Count;)
 		{
 			int b = bytecode[i++];
 			if (b == (int)Command.GOTOIFNOT)
@@ -330,17 +378,23 @@ internal class HotkeyState
 				if (res == 0)
 				{
 					i = b;
-					if (i < 0 || i + 1 > bytecode.Count) throw new Exception("something is wrong");
+					if (i < 0 || i + 1 > bytecode.Count)
+					{
+						throw new Exception("something is wrong");
+					}
 				}
-			} else if (b == (int)Command.RETURN)
+			}
+			else if (b == (int)Command.RETURN)
 			{
 				int res = InterpreterEval(ref i, key);
 				return res;
-			} else
+			}
+			else
 			{
 				throw new Exception("something is wrong");
 			}
 		}
+
 		return -1;
 	}
 
@@ -509,8 +563,6 @@ internal class HotkeyState
 	//	//{
 	//	//	return 0; //where everyone is stop
 	//	//}
-
-
 
 
 	//	else if (key == Keys.B)

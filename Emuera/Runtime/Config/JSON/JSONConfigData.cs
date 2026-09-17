@@ -2,8 +2,9 @@
 using System.Text.Json.Serialization;
 
 namespace MinorShift.Emuera.Runtime.Config.JSON;
+
 //JSONの定義
-sealed class JSONConfigData
+internal sealed class JSONConfigData
 {
 	//ボタンにカーソルを合わせたときに背景色を変更するか
 	[JsonPropertyName("UseButtonFocusBackgroundColor")]

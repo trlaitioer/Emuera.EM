@@ -12,7 +12,9 @@ namespace MinorShift.Emuera.Runtime.Utils;
 internal class CtrlZ
 {
 	public int mLastSave = -1;
+
 	private int mLastSaveExpected = -1;
+
 	//^ only exists because save can have a "confirm" dialogue.
 	public List<string> mInputs = new(0x40);
 
@@ -23,22 +25,38 @@ internal class CtrlZ
 
 	public void Add(string s)
 	{
-		if (!Config.Config.Ctrl_Z_Enabled) return;
-		if (mRewindInProgress) return;
+		if (!Config.Config.Ctrl_Z_Enabled)
+		{
+			return;
+		}
+
+		if (mRewindInProgress)
+		{
+			return;
+		}
+
 		mInputs.Add(s);
 	}
 
 	// Called on clicking save file.
 	public void OnSavePrepare(int aLastSaveExpected)
 	{
-		if (!Config.Config.Ctrl_Z_Enabled) return;
+		if (!Config.Config.Ctrl_Z_Enabled)
+		{
+			return;
+		}
+
 		mLastSaveExpected = aLastSaveExpected;
 	}
 
 	// Called on confirming save overwrite
 	public void OnSave()
 	{
-		if (!Config.Config.Ctrl_Z_Enabled) return;
+		if (!Config.Config.Ctrl_Z_Enabled)
+		{
+			return;
+		}
+
 		mLastSave = mLastSaveExpected;
 		mInputs.Clear();
 		GlobalStatic.VEvaluator.Rand.GetRand(mRandomSeed);
@@ -47,8 +65,16 @@ internal class CtrlZ
 	// Called on clicking on a file to load.
 	public void OnLoad(int aSaveFile)
 	{
-		if (!Config.Config.Ctrl_Z_Enabled) return;
-		if (mRewindInProgress) return;
+		if (!Config.Config.Ctrl_Z_Enabled)
+		{
+			return;
+		}
+
+		if (mRewindInProgress)
+		{
+			return;
+		}
+
 		mLastSave = aSaveFile;
 		mInputs.Clear();
 		GlobalStatic.VEvaluator.Rand.GetRand(mRandomSeed);

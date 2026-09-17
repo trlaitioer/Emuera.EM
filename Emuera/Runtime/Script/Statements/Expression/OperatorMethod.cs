@@ -19,18 +19,22 @@ internal abstract class OperatorMethod : FunctionMethod
 	{
 		argumentTypeArray = null;
 	}
-	public override string? CheckArgumentType(string name, List<AExpression?> arguments) { throw new ExeEE(trerror.TypeCheckIsCallersResponsibility.Text); }
+
+	public override string? CheckArgumentType(string name, List<AExpression?> arguments)
+	{
+		throw new ExeEE(trerror.TypeCheckIsCallersResponsibility.Text);
+	}
 }
 
 internal static class OperatorMethodManager
 {
-	readonly static Dictionary<OperatorCode, OperatorMethod> unaryDic = [];
-	readonly static Dictionary<OperatorCode, OperatorMethod> unaryAfterDic = [];
-	readonly static Dictionary<OperatorCode, OperatorMethod> binaryIntIntDic = [];
-	readonly static Dictionary<OperatorCode, OperatorMethod> binaryStrStrDic = [];
-	readonly static OperatorMethod binaryMultIntStr;
-	readonly static OperatorMethod ternaryIntIntInt;
-	readonly static OperatorMethod ternaryIntStrStr;
+	private readonly static Dictionary<OperatorCode, OperatorMethod> unaryDic = [];
+	private readonly static Dictionary<OperatorCode, OperatorMethod> unaryAfterDic = [];
+	private readonly static Dictionary<OperatorCode, OperatorMethod> binaryIntIntDic = [];
+	private readonly static Dictionary<OperatorCode, OperatorMethod> binaryStrStrDic = [];
+	private readonly static OperatorMethod binaryMultIntStr;
+	private readonly static OperatorMethod ternaryIntIntInt;
+	private readonly static OperatorMethod ternaryIntStrStr;
 
 	static OperatorMethodManager()
 	{
@@ -80,33 +84,54 @@ internal static class OperatorMethodManager
 	}
 
 
-
 	public static AExpression ReduceUnaryTerm(OperatorCode op, AExpression o1)
 	{
 		OperatorMethod? method = null;
 		if (op == OperatorCode.Increment || op == OperatorCode.Decrement)
 		{
 			if (!(o1 is VariableTerm var))
+			{
 				throw new CodeEE(trerror.IncrementNonVar.Text);
+			}
+
 			if (var.Identifier.IsConst)
+			{
 				throw new CodeEE(trerror.IncrementConst.Text);
+			}
 		}
+
 		if (o1.GetOperandType() == typeof(long))
 		{
 			if (op == OperatorCode.Plus)
+			{
 				return o1;
+			}
+
 			if (unaryDic.TryGetValue(op, out OperatorMethod? value))
+			{
 				method = value;
+			}
 		}
+
 		if (method != null)
+		{
 			return new FunctionMethodTerm(method, [o1]);
+		}
+
 		string errMes;
 		if (o1.GetOperandType() == typeof(long))
+		{
 			errMes = trerror.NumericType.Text;
+		}
 		else if (o1.GetOperandType() == typeof(string))
+		{
 			errMes = trerror.StringType.Text;
+		}
 		else
+		{
 			errMes = trerror.UnknownType.Text;
+		}
+
 		errMes = string.Format(trerror.CanNotAppliedUnaryOp.Text, errMes, OperatorManager.ToOperatorString(op));
 		throw new CodeEE(errMes);
 	}
@@ -117,24 +142,43 @@ internal static class OperatorMethodManager
 		if (op == OperatorCode.Increment || op == OperatorCode.Decrement)
 		{
 			if (!(o1 is VariableTerm var))
+			{
 				throw new CodeEE(trerror.IncrementNonVar.Text);
+			}
+
 			if (var.Identifier.IsConst)
+			{
 				throw new CodeEE(trerror.IncrementConst.Text);
+			}
 		}
+
 		if (o1.GetOperandType() == typeof(long))
 		{
 			if (unaryAfterDic.TryGetValue(op, out OperatorMethod? value))
+			{
 				method = value;
+			}
 		}
+
 		if (method != null)
+		{
 			return new FunctionMethodTerm(method, [o1]);
+		}
+
 		string errMes;
 		if (o1.GetOperandType() == typeof(long))
+		{
 			errMes = trerror.NumericType.Text;
+		}
 		else if (o1.GetOperandType() == typeof(string))
+		{
 			errMes = trerror.StringType.Text;
+		}
 		else
+		{
 			errMes = trerror.UnknownType.Text;
+		}
+
 		errMes = string.Format(trerror.CanNotAppliedUnaryOp.Text, errMes, OperatorManager.ToOperatorString(op));
 		throw new CodeEE(errMes);
 	}
@@ -143,33 +187,54 @@ internal static class OperatorMethodManager
 	{
 		//定数同士なら型付きオーバーロードに転送する。
 		if (left is SingleLongTerm leftLong && right is SingleLongTerm rightLong)
+		{
 			return ReduceBinaryTerm(op, leftLong.Int, rightLong.Int);
+		}
+
 		if (left is SingleStrTerm leftStr && right is SingleStrTerm rightStr)
+		{
 			return ReduceBinaryTerm(op, leftStr.Str, rightStr.Str);
+		}
+
 		if (left is SingleLongTerm leftLong2 && right is SingleStrTerm rightStr2)
+		{
 			return ReduceBinaryTerm(op, leftLong2.Int, rightStr2.Str);
+		}
+
 		if (left is SingleStrTerm leftStr3 && right is SingleLongTerm rightLong3)
+		{
 			return ReduceBinaryTerm(op, leftStr3.Str, rightLong3.Int);
+		}
 
 		OperatorMethod? method = null;
 		if (left.GetOperandType() == typeof(long) && right.GetOperandType() == typeof(long))
 		{
 			if (binaryIntIntDic.TryGetValue(op, out OperatorMethod? value))
+			{
 				method = value;
+			}
 		}
 		else if (left.GetOperandType() == typeof(string) && right.GetOperandType() == typeof(string))
 		{
 			if (binaryStrStrDic.TryGetValue(op, out OperatorMethod? value))
+			{
 				method = value;
+			}
 		}
-		else if (left.GetOperandType() == typeof(long) && right.GetOperandType() == typeof(string)
-			 || left.GetOperandType() == typeof(string) && right.GetOperandType() == typeof(long))
+		else if ((left.GetOperandType() == typeof(long) && right.GetOperandType() == typeof(string))
+		         || (left.GetOperandType() == typeof(string) && right.GetOperandType() == typeof(long)))
 		{
 			if (op == OperatorCode.Mult)
+			{
 				method = binaryMultIntStr;
+			}
 		}
+
 		if (method != null)
+		{
 			return new FunctionMethodTerm(method, [left, right]);
+		}
+
 		throw CreateBinaryOpTypeError(left.GetOperandType(), right.GetOperandType(), op);
 	}
 
@@ -181,21 +246,30 @@ internal static class OperatorMethodManager
 	public static AExpression ReduceBinaryTerm(OperatorCode op, string left, string right)
 	{
 		if (op == OperatorCode.Plus)
+		{
 			return new SingleStrTerm(left + right);
+		}
+
 		return new SingleLongTerm(CalcBinaryStrStr(op, left, right));
 	}
 
 	public static AExpression ReduceBinaryTerm(OperatorCode op, long left, string right)
 	{
 		if (op != OperatorCode.Mult)
+		{
 			throw CreateBinaryOpTypeError(typeof(long), typeof(string), op);
+		}
+
 		return new SingleStrTerm(CalcStringMultiply(left, right));
 	}
 
 	public static AExpression ReduceBinaryTerm(OperatorCode op, string left, long right)
 	{
 		if (op != OperatorCode.Mult)
+		{
 			throw CreateBinaryOpTypeError(typeof(string), typeof(long), op);
+		}
+
 		return new SingleStrTerm(CalcStringMultiply(right, left));
 	}
 
@@ -207,7 +281,10 @@ internal static class OperatorMethodManager
 	public static bool ReduceBinaryBool(OperatorCode op, string left, string right)
 	{
 		if (op == OperatorCode.Plus)
+		{
 			throw new ExeEE(trerror.ReturnTypeDifferentOrNotImpelemnt.Text);
+		}
+
 		return CalcBinaryStrStr(op, left, right) != 0;
 	}
 
@@ -223,11 +300,17 @@ internal static class OperatorMethodManager
 				return left * right;
 			case OperatorCode.Div:
 				if (right == 0)
+				{
 					throw new CodeEE(trerror.DivideByZero.Text);
+				}
+
 				return left / right;
 			case OperatorCode.Mod:
 				if (right == 0)
+				{
 					throw new CodeEE(trerror.DivideByZero.Text);
+				}
+
 				return left % right;
 			case OperatorCode.Equal:
 				return left == right ? 1L : 0L;
@@ -242,15 +325,15 @@ internal static class OperatorMethodManager
 			case OperatorCode.LessEqual:
 				return left <= right ? 1L : 0L;
 			case OperatorCode.And:
-				return (left != 0 && right != 0) ? 1L : 0L;
+				return left != 0 && right != 0 ? 1L : 0L;
 			case OperatorCode.Or:
-				return (left != 0 || right != 0) ? 1L : 0L;
+				return left != 0 || right != 0 ? 1L : 0L;
 			case OperatorCode.Xor:
-				return ((left == 0 && right != 0) || (left != 0 && right == 0)) ? 1L : 0L;
+				return (left == 0 && right != 0) || (left != 0 && right == 0) ? 1L : 0L;
 			case OperatorCode.Nand:
-				return (left == 0 || right == 0) ? 1L : 0L;
+				return left == 0 || right == 0 ? 1L : 0L;
 			case OperatorCode.Nor:
-				return (left == 0 && right == 0) ? 1L : 0L;
+				return left == 0 && right == 0 ? 1L : 0L;
 			case OperatorCode.BitAnd:
 				return left & right;
 			case OperatorCode.BitOr:
@@ -295,19 +378,26 @@ internal static class OperatorMethodManager
 	private static string CalcStringMultiply(long value, string str)
 	{
 		if (value < 0)
-			throw new CodeEE(string.Format(trerror.MultiplyNegativeToStr.Text, value.ToString()));
-		if (value >= 10000)
-			throw new CodeEE(string.Format(trerror.Multiply10kToStr.Text, value.ToString()));
-		if (string.IsNullOrEmpty(str) || value == 0)
-			return "";
-		StringBuilder builder = new()
 		{
-			Capacity = str.Length * (int)value
-		};
+			throw new CodeEE(string.Format(trerror.MultiplyNegativeToStr.Text, value.ToString()));
+		}
+
+		if (value >= 10000)
+		{
+			throw new CodeEE(string.Format(trerror.Multiply10kToStr.Text, value.ToString()));
+		}
+
+		if (string.IsNullOrEmpty(str) || value == 0)
+		{
+			return "";
+		}
+
+		StringBuilder builder = new() { Capacity = str.Length * (int)value };
 		for (int i = 0; i < value; i++)
 		{
 			builder.Append(str);
 		}
+
 		return builder.ToString();
 	}
 
@@ -315,18 +405,32 @@ internal static class OperatorMethodManager
 	{
 		string typeName1;
 		if (leftType == typeof(long))
+		{
 			typeName1 = trerror.NumericType.Text;
+		}
 		else if (leftType == typeof(string))
+		{
 			typeName1 = trerror.StringType.Text;
+		}
 		else
+		{
 			typeName1 = trerror.UnknownType.Text;
+		}
+
 		string typeName2;
 		if (rightType == typeof(long))
+		{
 			typeName2 = trerror.NumericType.Text;
+		}
 		else if (rightType == typeof(string))
+		{
 			typeName2 = trerror.StringType.Text;
+		}
 		else
+		{
 			typeName2 = trerror.UnknownType.Text;
+		}
+
 		return new CodeEE(string.Format(trerror.CanNotAppliedBinaryOp.Text, typeName1, typeName2, OperatorManager.ToOperatorString(op)));
 	}
 
@@ -334,13 +438,20 @@ internal static class OperatorMethodManager
 	{
 		OperatorMethod? method = null;
 		if (o1.GetOperandType() == typeof(long) && o2.GetOperandType() == typeof(long) && o3.GetOperandType() == typeof(long))
+		{
 			method = ternaryIntIntInt;
+		}
 		else if (o1.GetOperandType() == typeof(long) && o2.GetOperandType() == typeof(string) && o3.GetOperandType() == typeof(string))
+		{
 			method = ternaryIntStrStr;
-		if (method != null)
-			return new FunctionMethodTerm(method, [o1, o2, o3]);
-		throw new CodeEE(trerror.InvalidTernaryOp.Text);
+		}
 
+		if (method != null)
+		{
+			return new FunctionMethodTerm(method, [o1, o2, o3]);
+		}
+
+		throw new CodeEE(trerror.InvalidTernaryOp.Text);
 	}
 
 	#region OperatorMethod SubClasses
@@ -409,6 +520,7 @@ internal static class OperatorMethodManager
 			CanRestructure = true;
 			ReturnType = typeof(string);
 		}
+
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string str;
@@ -423,20 +535,28 @@ internal static class OperatorMethodManager
 				str = arguments.Required(0).GetStrValue(exm);
 				value = arguments.Required(1).GetIntValue(exm);
 			}
+
 			if (value < 0)
-				throw new CodeEE(string.Format(trerror.MultiplyNegativeToStr.Text, value.ToString()));
-			if (value >= 10000)
-				throw new CodeEE(string.Format(trerror.Multiply10kToStr.Text, value.ToString()));
-			if (string.IsNullOrEmpty(str) || value == 0)
-				return "";
-			StringBuilder builder = new()
 			{
-				Capacity = str.Length * (int)value
-			};
+				throw new CodeEE(string.Format(trerror.MultiplyNegativeToStr.Text, value.ToString()));
+			}
+
+			if (value >= 10000)
+			{
+				throw new CodeEE(string.Format(trerror.Multiply10kToStr.Text, value.ToString()));
+			}
+
+			if (string.IsNullOrEmpty(str) || value == 0)
+			{
+				return "";
+			}
+
+			StringBuilder builder = new() { Capacity = str.Length * (int)value };
 			for (int i = 0; i < value; i++)
 			{
 				builder.Append(str);
 			}
+
 			return builder.ToString();
 		}
 	}
@@ -453,7 +573,10 @@ internal static class OperatorMethodManager
 		{
 			long right = arguments.Required(1).GetIntValue(exm);
 			if (right == 0)
+			{
 				throw new CodeEE(trerror.DivideByZero.Text);
+			}
+
 			return arguments.Required(0).GetIntValue(exm) / right;
 		}
 	}
@@ -470,7 +593,10 @@ internal static class OperatorMethodManager
 		{
 			long right = arguments.Required(1).GetIntValue(exm);
 			if (right == 0)
+			{
 				throw new CodeEE(trerror.DivideByZero.Text);
+			}
+
 			return arguments.Required(0).GetIntValue(exm) % right;
 		}
 	}
@@ -487,10 +613,12 @@ internal static class OperatorMethodManager
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (arguments.Required(0).GetIntValue(exm) == arguments.Required(1).GetIntValue(exm))
+			{
 				return 1L;
+			}
+
 			return 0L;
 		}
-
 	}
 
 	private sealed class EqualStrStr : OperatorMethod
@@ -504,7 +632,10 @@ internal static class OperatorMethodManager
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (arguments.Required(0).GetStrValue(exm) == arguments.Required(1).GetStrValue(exm))
+			{
 				return 1L;
+			}
+
 			return 0L;
 		}
 	}
@@ -520,7 +651,10 @@ internal static class OperatorMethodManager
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (arguments.Required(0).GetIntValue(exm) != arguments.Required(1).GetIntValue(exm))
+			{
 				return 1L;
+			}
+
 			return 0L;
 		}
 	}
@@ -532,13 +666,16 @@ internal static class OperatorMethodManager
 			CanRestructure = true;
 			ReturnType = typeof(long);
 		}
+
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (arguments.Required(0).GetStrValue(exm) != arguments.Required(1).GetStrValue(exm))
+			{
 				return 1L;
+			}
+
 			return 0L;
 		}
-
 	}
 
 	private sealed class GreaterIntInt : OperatorMethod
@@ -552,7 +689,10 @@ internal static class OperatorMethodManager
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (arguments.Required(0).GetIntValue(exm) > arguments.Required(1).GetIntValue(exm))
+			{
 				return 1L;
+			}
+
 			return 0L;
 		}
 	}
@@ -564,14 +704,19 @@ internal static class OperatorMethodManager
 			CanRestructure = true;
 			ReturnType = typeof(long);
 		}
+
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			int c = string.Compare(arguments.Required(0).GetStrValue(exm), arguments.Required(1).GetStrValue(exm), Config.Config.SCExpression);
 			if (c > 0)
+			{
 				return 1L;
+			}
+
 			return 0L;
 		}
 	}
+
 	private sealed class LessIntInt : OperatorMethod
 	{
 		public LessIntInt()
@@ -583,10 +728,14 @@ internal static class OperatorMethodManager
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (arguments.Required(0).GetIntValue(exm) < arguments.Required(1).GetIntValue(exm))
+			{
 				return 1L;
+			}
+
 			return 0L;
 		}
 	}
+
 	private sealed class LessStrStr : OperatorMethod
 	{
 		public LessStrStr()
@@ -594,14 +743,17 @@ internal static class OperatorMethodManager
 			CanRestructure = true;
 			ReturnType = typeof(long);
 		}
+
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			int c = string.Compare(arguments.Required(0).GetStrValue(exm), arguments.Required(1).GetStrValue(exm), Config.Config.SCExpression);
 			if (c < 0)
+			{
 				return 1L;
+			}
+
 			return 0L;
 		}
-
 	}
 
 	private sealed class GreaterEqualIntInt : OperatorMethod
@@ -615,7 +767,10 @@ internal static class OperatorMethodManager
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (arguments.Required(0).GetIntValue(exm) >= arguments.Required(1).GetIntValue(exm))
+			{
 				return 1L;
+			}
+
 			return 0L;
 		}
 	}
@@ -627,14 +782,19 @@ internal static class OperatorMethodManager
 			CanRestructure = true;
 			ReturnType = typeof(long);
 		}
+
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			int c = string.Compare(arguments.Required(0).GetStrValue(exm), arguments.Required(1).GetStrValue(exm), Config.Config.SCExpression);
 			if (c >= 0)
+			{
 				return 1L;
+			}
+
 			return 0L;
 		}
 	}
+
 	private sealed class LessEqualIntInt : OperatorMethod
 	{
 		public LessEqualIntInt()
@@ -646,11 +806,14 @@ internal static class OperatorMethodManager
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (arguments.Required(0).GetIntValue(exm) <= arguments.Required(1).GetIntValue(exm))
+			{
 				return 1L;
+			}
+
 			return 0L;
 		}
-
 	}
+
 	private sealed class LessEqualStrStr : OperatorMethod
 	{
 		public LessEqualStrStr()
@@ -658,11 +821,15 @@ internal static class OperatorMethodManager
 			CanRestructure = true;
 			ReturnType = typeof(long);
 		}
+
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			int c = string.Compare(arguments.Required(0).GetStrValue(exm), arguments.Required(1).GetStrValue(exm), Config.Config.SCExpression);
 			if (c <= 0)
+			{
 				return 1L;
+			}
+
 			return 0L;
 		}
 	}
@@ -678,10 +845,12 @@ internal static class OperatorMethodManager
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (arguments.Required(0).GetIntValue(exm) != 0 && arguments.Required(1).GetIntValue(exm) != 0)
+			{
 				return 1L;
+			}
+
 			return 0L;
 		}
-
 	}
 
 	private sealed class OrIntInt : OperatorMethod
@@ -695,7 +864,10 @@ internal static class OperatorMethodManager
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (arguments.Required(0).GetIntValue(exm) != 0 || arguments.Required(1).GetIntValue(exm) != 0)
+			{
 				return 1L;
+			}
+
 			return 0L;
 		}
 	}
@@ -712,11 +884,13 @@ internal static class OperatorMethodManager
 		{
 			long i1 = arguments.Required(0).GetIntValue(exm);
 			long i2 = arguments.Required(1).GetIntValue(exm);
-			if (i1 == 0 && i2 != 0 || i1 != 0 && i2 == 0)
+			if ((i1 == 0 && i2 != 0) || (i1 != 0 && i2 == 0))
+			{
 				return 1L;
+			}
+
 			return 0L;
 		}
-
 	}
 
 	private sealed class NandIntInt : OperatorMethod
@@ -730,10 +904,12 @@ internal static class OperatorMethodManager
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (arguments.Required(0).GetIntValue(exm) == 0 || arguments.Required(1).GetIntValue(exm) == 0)
+			{
 				return 1L;
+			}
+
 			return 0L;
 		}
-
 	}
 
 	private sealed class NorIntInt : OperatorMethod
@@ -747,7 +923,10 @@ internal static class OperatorMethodManager
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (arguments.Required(0).GetIntValue(exm) == 0 && arguments.Required(1).GetIntValue(exm) == 0)
+			{
 				return 1L;
+			}
+
 			return 0L;
 		}
 	}
@@ -851,6 +1030,7 @@ internal static class OperatorMethodManager
 			{
 				exm.Console.PrintSystemLine(string.Format(Lang.SystemLine.MinusWontWork.Text, long.MinValue));
 			}
+
 			return -ret;
 		}
 	}
@@ -866,10 +1046,14 @@ internal static class OperatorMethodManager
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			if (arguments.Required(0).GetIntValue(exm) == 0)
+			{
 				return 1L;
+			}
+
 			return 0L;
 		}
 	}
+
 	private sealed class BitNotInt : OperatorMethod
 	{
 		public BitNotInt()
@@ -898,6 +1082,7 @@ internal static class OperatorMethodManager
 			return var.ChangeValue(1L, exm);
 		}
 	}
+
 	private sealed class DecrementInt : OperatorMethod
 	{
 		public DecrementInt()
@@ -912,6 +1097,7 @@ internal static class OperatorMethodManager
 			return var.ChangeValue(-1L, exm);
 		}
 	}
+
 	private sealed class IncrementAfterInt : OperatorMethod
 	{
 		public IncrementAfterInt()

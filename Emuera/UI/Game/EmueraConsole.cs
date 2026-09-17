@@ -41,11 +41,11 @@ namespace MinorShift.Emuera.GameView;
 internal enum ConsoleState
 {
 	Initializing = 0,
-	Quit = 5,//QUIT
-	Error = 6,//Exceptionによる強制終了
+	Quit = 5, //QUIT
+	Error = 6, //Exceptionによる強制終了
 	Running = 7,
 	WaitInput = 20,
-	Sleep = 21,//DoEvents
+	Sleep = 21 //DoEvents
 
 	//WaitKey = 1,//WAIT
 	//WaitSystemInteger = 2,//Systemが要求するInput
@@ -62,7 +62,6 @@ internal enum ConsoleState
 	//WaitOneIntegerWithTimer = 16,
 	//WaitOneStringWithTimer = 17,
 	//WaitAnyKey = 18,
-
 }
 
 //難読化用属性。enum.ToString()やenum.Parse()を行うなら(Exclude=true)にすること。
@@ -70,13 +69,15 @@ internal enum ConsoleState
 internal enum ConsoleRedraw
 {
 	None = 0,
-	Normal = 1,
+	Normal = 1
 }
 
 internal sealed partial class EmueraConsole : IDisposable
 {
 	#region EmuEra-Rikaichan
+
 	public Rikaichan rikaichan = new();
+
 	#endregion
 
 	//Bitmap Cache
@@ -90,48 +91,61 @@ internal sealed partial class EmueraConsole : IDisposable
 		window = parent;
 		baseCanvasWidth = parent.MainPicBox.Width;
 		baseCanvasHeight = parent.MainPicBox.Height;
+
 		#region EE_AnchorのCB機能移植
+
 		CBProc = new ClipboardProcessor(parent);
+
 		#endregion
 
 		//1.713 この段階でsetStBarを使用してはいけない
 		//setStBar(StaticConfig.DrawLineString);
 		state = ConsoleState.Initializing;
 		if (Config.FPS > 0)
+		{
 			msPerFrame = 1000 / (uint)Config.FPS;
+		}
+
 		displayLineList = [];
 		printBuffer = new PrintStringBuffer(this);
 
-		genericTimer = new();
+		genericTimer = new System.Timers.Timer();
 		genericTimer.Elapsed += tickTimer;
 		genericTimer.Interval = 10;
 		genericTimer.Enabled = false;
-		CBG_Clear();//文字列描画用ダミー追加
+		CBG_Clear(); //文字列描画用ダミー追加
 
 		redrawTimer = new Timer
 		{
-			Enabled = false//TODO:1824アニメ用再描画タイマー有効化関数の追加
+			Enabled = false //TODO:1824アニメ用再描画タイマー有効化関数の追加
 		};
 		redrawTimer.Tick += new EventHandler(tickRedrawTimer);
 		redrawTimer.Interval = 10;
 	}
+
 	#region 1823 cbg関連
+
 	private readonly List<ClientBackGroundImage> cbgList = [];
+
 	// null while no button map is registered
 	private GraphicsImage? cbgButtonMap;
 	private int selectingCBGButtonInt = -1;
+
 	private int lastSelectingCBGButtonInt = -1;
 	//ConsoleButtonString selectingButton = null;
 	//ConsoleButtonString lastSelectingButton = null;
 
-	sealed class ClientBackGroundImage : IComparable<ClientBackGroundImage>
+	private sealed class ClientBackGroundImage : IComparable<ClientBackGroundImage>
 	{
 		/// <summary>
 		/// zdepth == 0は文字列用ダミーなので他で使ってはいけない
 		/// </summary>
 		/// <param name="zdepth"></param>
 		internal ClientBackGroundImage(int zdepth)
-		{ this.zdepth = zdepth; }
+		{
+			this.zdepth = zdepth;
+		}
+
 		// null unless an image was set for this layer
 		public ASprite? Img;
 		public ASprite? ImgB;
@@ -141,22 +155,30 @@ internal sealed partial class EmueraConsole : IDisposable
 		public bool isButton;
 		public int buttonValue;
 		public string? tooltipString;
+
 		public int CompareTo(ClientBackGroundImage? other)
 		{
 			if (other == null)
+			{
 				return -1;
+			}
+
 			//逆順でSort
 			return -zdepth.CompareTo(other.zdepth);
 		}
 	}
+
 	public void CBG_Clear()
 	{
 		foreach (ClientBackGroundImage cimg in cbgList)
 		{
 			//使い捨て無名Imageを一応disposeしておく
 			if (cimg.Img != null && cimg.Img.Name.Length == 0)
+			{
 				cimg.Img.Dispose();
+			}
 		}
+
 		cbgList.Clear();
 		CBG_ClearBMap();
 		cbgList.Add(new ClientBackGroundImage(0));
@@ -165,16 +187,24 @@ internal sealed partial class EmueraConsole : IDisposable
 	public void CBG_ClearRange(int zmin, int zmax)
 	{
 		if (zmin > zmax)
+		{
 			return;
+		}
+
 		for (int i = 0; i < cbgList.Count; i++)
 		{
 			ClientBackGroundImage cimg = cbgList[i];
-			if (cimg.zdepth < zmin || cimg.zdepth > zmax || cimg.zdepth == 0)//0はダミーなので削除しない
+			if (cimg.zdepth < zmin || cimg.zdepth > zmax || cimg.zdepth == 0) //0はダミーなので削除しない
+			{
 				continue;
+			}
 
 			//使い捨て無名Imageを一応disposeしておく
 			if (cimg.Img != null && cimg.Img.Name.Length == 0)
+			{
 				cimg.Img.Dispose();
+			}
+
 			cbgList.RemoveAt(i);
 			i--;
 		}
@@ -186,14 +216,20 @@ internal sealed partial class EmueraConsole : IDisposable
 		{
 			ClientBackGroundImage cimg = cbgList[i];
 			if (!cimg.isButton)
+			{
 				continue;
+			}
 
 			//使い捨て無名Imageを一応disposeしておく
 			if (cimg.Img != null && cimg.Img.Name.Length == 0)
+			{
 				cimg.Img.Dispose();
+			}
+
 			cbgList.RemoveAt(i);
 			i--;
 		}
+
 		CBG_ClearBMap();
 	}
 
@@ -207,20 +243,22 @@ internal sealed partial class EmueraConsole : IDisposable
 	public bool CBG_SetGraphics(GraphicsImage gra, int x, int y, int zdepth)
 	{
 		if (gra == null || !gra.IsCreated)
+		{
 			return false;
+		}
+
 		return CBG_SetImage(new SpriteG("", gra, new Rectangle(0, 0, gra.Width, gra.Height)), x, y, zdepth);
 	}
+
 	public bool CBG_SetImage(ASprite image, int x, int y, int zdepth)
 	{
 		if (image == null || !image.IsCreated)
-			return false;
-		ArgumentOutOfRangeException.ThrowIfZero(zdepth);
-		ClientBackGroundImage cbg = new(zdepth)
 		{
-			Img = image,
-			x = x,
-			y = y
-		};
+			return false;
+		}
+
+		ArgumentOutOfRangeException.ThrowIfZero(zdepth);
+		ClientBackGroundImage cbg = new(zdepth) { Img = image, x = x, y = y };
 		//cbg.zdepth = zdepth;
 		cbgList.Add(cbg);
 		cbgList.Sort();
@@ -230,9 +268,15 @@ internal sealed partial class EmueraConsole : IDisposable
 	public bool CBG_SetButtonMap(GraphicsImage gra)
 	{
 		if (gra == null || !gra.IsCreated)
+		{
 			return false;
+		}
+
 		if (cbgButtonMap == gra)
+		{
 			return false;
+		}
+
 		cbgButtonMap = gra;
 		selectingCBGButtonInt = -1;
 		lastSelectingCBGButtonInt = -1;
@@ -257,33 +301,49 @@ internal sealed partial class EmueraConsole : IDisposable
 		cbgList.Sort();
 		return true;
 	}
-	public int ClientWidth { get { return window.MainPicBox.Width; } }
-	public int ClientHeight { get { return window.MainPicBox.Height; } }
+
+	public int ClientWidth => window.MainPicBox.Width;
+	public int ClientHeight => window.MainPicBox.Height;
+
 	#endregion
 
-	const string ErrorButtonsText = "__openFileWithDebug__";
+	private const string ErrorButtonsText = "__openFileWithDebug__";
 	private readonly MainWindow window;
+
 	#region EE_MOUSEB
-	public MainWindow Window { get { return window; } }
+
+	public MainWindow Window => window;
+
 	#endregion
+
 	#region EE_BINPUT
-	public List<ConsoleDisplayLine> DisplayLineList { get { return displayLineList; } }
+
+	public List<ConsoleDisplayLine> DisplayLineList => displayLineList;
+
 	#endregion
+
 	#region EE_AnchorのCB機能移植
+
 	public readonly ClipboardProcessor CBProc;
+
 	#endregion
+
 	private List<KeyValuePair<long, ConsoleBackground>> backgroundList = [];
+
 	// null until ValidateBackground creates it for the current canvas size
 	private Bitmap? bakedBackground;
 
 	// assigned by Initialize before anything else touches the process
-	GameProc.Process process = null!;
+	private GameProc.Process process = null!;
 	// ConsoleState state = ConsoleState.Initializing;
+
 	#region EM_私家版_描画拡張
-	ConsoleState _state = ConsoleState.Initializing;
-	ConsoleState state
+
+	private ConsoleState _state = ConsoleState.Initializing;
+
+	private ConsoleState state
 	{
-		get { return _state; }
+		get => _state;
 		set
 		{
 			switch (value)
@@ -293,17 +353,23 @@ internal sealed partial class EmueraConsole : IDisposable
 					ConsoleEscapedParts.Clear();
 					break;
 			}
+
 			_state = value;
 		}
 	}
+
 	#endregion
-	public bool Enabled { get { return window.Created; } }
+
+	public bool Enabled => window.Created;
 
 	#region Runtime window zoom
+
 	/// <summary>Version of the last measurement. Compared against ConsoleDisplayLine.LayoutVersion.</summary>
 	private int layoutVersion;
+
 	/// <summary>Preview scale while dragging. 1.0 means normal rendering.</summary>
 	private float resizePreviewScale = 1.0f;
+
 	/// <summary>Canvas size of the committed layout. The transform of the preview is based on it.</summary>
 	private int baseCanvasWidth, baseCanvasHeight;
 
@@ -317,7 +383,10 @@ internal sealed partial class EmueraConsole : IDisposable
 		get
 		{
 			if (resizePreviewScale == 1.0f)
+			{
 				return window.MainPicBox.Height;
+			}
+
 			return Math.Max(1, (int)Math.Round(window.MainPicBox.Height / resizePreviewScale));
 		}
 	}
@@ -357,17 +426,20 @@ internal sealed partial class EmueraConsole : IDisposable
 	private void ensureLineLayout(ConsoleDisplayLine line)
 	{
 		if (line.LayoutVersion == layoutVersion)
+		{
 			return;
+		}
+
 		line.ReLayout(stringMeasure);
 		line.LayoutVersion = layoutVersion;
 	}
+
 	#endregion
 
 	/// <summary>
 	/// 現在、Emueraがアクティブかどうか
 	/// </summary>
-	internal bool IsActive
-	{ get { return !(window == null || !window.Created || Form.ActiveForm == null); } }
+	internal bool IsActive => !(window == null || !window.Created || Form.ActiveForm == null);
 
 	/// <summary>
 	/// スクリプトが継続中かどうか
@@ -378,55 +450,63 @@ internal sealed partial class EmueraConsole : IDisposable
 		get
 		{
 			if (state == ConsoleState.Initializing)
+			{
 				return true;
+			}
+
 			return state == ConsoleState.Running || runningERBfromMemory;
 		}
 	}
+
 	#region EM_私家版_INPUT系機能拡張
-	internal bool IsWaintingInputWithMouse
-	{
-		get
-		{
-			return state == ConsoleState.WaitInput && inputReq.MouseInput;
-		}
-	}
+
+	internal bool IsWaintingInputWithMouse => state == ConsoleState.WaitInput && inputReq.MouseInput;
+
 	#endregion
+
 	internal bool IsInProcess
 	{
 		get
 		{
 			if (state == ConsoleState.Initializing)
+			{
 				return true;
+			}
+
 			if (state == ConsoleState.Sleep)
+			{
 				return true;
+			}
+
 			if (inProcess)
+			{
 				return true;
+			}
+
 			return state == ConsoleState.Running || runningERBfromMemory;
 		}
 	}
 
-	internal bool IsError
-	{
-		get
-		{
-			return state == ConsoleState.Error;
-		}
-	}
+	internal bool IsError => state == ConsoleState.Error;
+
 	#region EE_連続FORCE_QUIT_AND_RESTAR対策
+
 	internal bool IsWaitingEnterKey
 	{
 		get
 		{
-			if ((state == ConsoleState.Quit) || (state == ConsoleState.Error))
+			if (state == ConsoleState.Quit || state == ConsoleState.Error)
 			{
 				GlobalStatic.ForceQuitAndRestart = false;
 				return true;
 			}
+
 			if (state == ConsoleState.WaitInput)
 			{
 				GlobalStatic.ForceQuitAndRestart = false;
 				return inputReq.InputType == InputType.AnyKey || inputReq.InputType == InputType.EnterKey;
 			}
+
 			return false;
 		}
 	}
@@ -439,29 +519,22 @@ internal sealed partial class EmueraConsole : IDisposable
 			return state == ConsoleState.WaitInput && inputReq.InputType == InputType.AnyKey;
 		}
 	}
-	#endregion
-	internal bool IsWaintingOnePhrase
-	{
-		get
-		{
-			return state == ConsoleState.WaitInput && inputReq.OneInput;
-		}
-	}
 
-	internal bool IsRunningTimer
-	{
-		get
-		{
-			return state == ConsoleState.WaitInput && inputReq.Timelimit > 0 && !isTimeout;
-		}
-	}
+	#endregion
+
+	internal bool IsWaintingOnePhrase => state == ConsoleState.WaitInput && inputReq.OneInput;
+
+	internal bool IsRunningTimer => state == ConsoleState.WaitInput && inputReq.Timelimit > 0 && !isTimeout;
 
 	internal bool IsWaitingPrimitive
 	{
 		get
 		{
 			if (state == ConsoleState.WaitInput)
+			{
 				return inputReq.InputType == InputType.PrimitiveMouseKey;
+			}
+
 			return false;
 		}
 	}
@@ -471,30 +544,55 @@ internal sealed partial class EmueraConsole : IDisposable
 		get
 		{
 			if (selectingButton == null)
+			{
 				return null;
+			}
+
 			if (state == ConsoleState.Error)
+			{
 				return selectingButton.Inputs;
+			}
+
 			if (state != ConsoleState.WaitInput)
+			{
 				return null;
+			}
+
 			#region EE_BINPUT
+
 			if ((inputReq.InputType == InputType.IntValue || inputReq.InputType == InputType.IntButton) && selectingButton.IsInteger)
+			{
 				return selectingButton.Input.ToString();
+			}
+
 			if (inputReq.InputType == InputType.StrValue || inputReq.InputType == InputType.StrButton)
+			{
 				return selectingButton.Inputs;
+			}
+
 			#endregion
+
 			#region EE_INPUTANY
+
 			if (inputReq.InputType == InputType.AnyValue && selectingButton.IsInteger)
+			{
 				return selectingButton.Input.ToString();
+			}
+
 			if (inputReq.InputType == InputType.AnyValue)
+			{
 				return selectingButton.Inputs;
+			}
+
 			#endregion
+
 			return null;
 		}
 	}
 
 	public async Task Initialize()
 	{
-		var boottimeDebugStopwatch = Stopwatch.StartNew();
+		Stopwatch boottimeDebugStopwatch = Stopwatch.StartNew();
 		FileStream? fs = null;
 		StreamWriter? logWriter = null;
 		try
@@ -511,6 +609,7 @@ internal sealed partial class EmueraConsole : IDisposable
 			{
 				ParserMediator.Warn(trerror.TimeLogFileLocked.Text, null, 0);
 			}
+
 			logWriter?.WriteLine("Init:Start");
 			logWriter?.WriteLine("File:Preload:Start");
 			//必要なソースファイルを事前にメモリに一気に読み込む
@@ -531,6 +630,7 @@ internal sealed partial class EmueraConsole : IDisposable
 				OpenDebugDialog();
 				window.Focus();
 			}
+
 			ClearDisplay();
 			if (!await process.Initialize(logWriter))
 			{
@@ -540,6 +640,7 @@ internal sealed partial class EmueraConsole : IDisposable
 				RefreshStrings(true);
 				return;
 			}
+
 			RunEmueraProgram("");
 			RefreshStrings(true);
 
@@ -554,32 +655,43 @@ internal sealed partial class EmueraConsole : IDisposable
 	}
 
 
-	public void Quit() { state = ConsoleState.Quit; }
+	public void Quit()
+	{
+		state = ConsoleState.Quit;
+	}
+
 	#region EE_FORCE_QUIT系
+
 	public void ForceQuit()
 	{
-
 		if (GlobalStatic.ForceQuitAndRestart == true)
 		{
-			var result = MessageBox.Show(trmb.ForceQuitAndRestart.Text,
+			DialogResult result = MessageBox.Show(trmb.ForceQuitAndRestart.Text,
 				"FORCE_QUIT_AND_RESTART",
 				MessageBoxButtons.YesNo
 				//System.Windows.MessageBoxIcon.None,
 				//System.Windows.MessageBoxDefaultButton.Button1
-				);
+			);
 			if (result == DialogResult.Yes)
 			{
 				Program.rebootFlag = false;
 				throw new CodeEE(trerror.ForceQuitAndRestartError.Text);
 			}
 		}
+
 		if (Program.rebootFlag)
+		{
 			window.Reboot();
+		}
 		else
+		{
 			Application.Exit();
+		}
+
 		GlobalStatic.ForceQuitAndRestart = true;
 		return;
 	}
+
 	#endregion
 
 	public void ThrowTitleError(bool error)
@@ -588,10 +700,14 @@ internal sealed partial class EmueraConsole : IDisposable
 		notToTitle = true;
 		byError = error;
 	}
+
 	public void ThrowError(bool playSound)
 	{
 		if (playSound)
+		{
 			System.Media.SystemSounds.Hand.Play();
+		}
+
 		forceUpdateGeneration();
 		UseUserStyle = false;
 		PrintFlush(false);
@@ -604,57 +720,104 @@ internal sealed partial class EmueraConsole : IDisposable
 	//public ScriptPosition? ErrPos = null;
 
 	#region button関連
-	bool lastButtonIsInput = true;
+
+	private bool lastButtonIsInput = true;
 	public bool updatedGeneration;
-	int lastButtonGeneration;//最後に追加された選択肢の世代。これと世代が一致しない選択肢は選択できない。
+	private int lastButtonGeneration; //最後に追加された選択肢の世代。これと世代が一致しない選択肢は選択できない。
+
 	#region EE_BINPUT
-	public int LastButtonGeneration { get { return lastButtonGeneration; } }
+
+	public int LastButtonGeneration => lastButtonGeneration;
+
 	#endregion
-	int newButtonGeneration;//次に追加される選択肢の世代。Input又はInputsごとに増加
-							//public int LastButtonGeneration { get { return lastButtonGeneration; } }
-	public int NewButtonGeneration { get { return newButtonGeneration; } }
-	public void UpdateGeneration() { lastButtonGeneration = newButtonGeneration; updatedGeneration = true; }
-	public void forceUpdateGeneration() { newButtonGeneration++; lastButtonGeneration = newButtonGeneration; updatedGeneration = true; }
+
+	private int newButtonGeneration; //次に追加される選択肢の世代。Input又はInputsごとに増加
+
+	//public int LastButtonGeneration { get { return lastButtonGeneration; } }
+	public int NewButtonGeneration => newButtonGeneration;
+
+	public void UpdateGeneration()
+	{
+		lastButtonGeneration = newButtonGeneration;
+		updatedGeneration = true;
+	}
+
+	public void forceUpdateGeneration()
+	{
+		newButtonGeneration++;
+		lastButtonGeneration = newButtonGeneration;
+		updatedGeneration = true;
+	}
+
 	// null until the first newGeneration call records it
-	LogicalLine? lastInputLine;
+	private LogicalLine? lastInputLine;
 
 	private void newGeneration()
 	{
 		//値の入力を求められない時は更新は必要ないはず
 		if (state != ConsoleState.WaitInput || !inputReq.NeedValue)
+		{
 			return;
+		}
+
 		if (!updatedGeneration && process.getCurrentLine != lastInputLine)
 		{
 			//ボタン無しで次の入力に来たなら強制で世代更新
 			lastButtonGeneration = newButtonGeneration;
 		}
 		else
+		{
 			updatedGeneration = false;
+		}
+
 		lastInputLine = process.getCurrentLine;
+
 		#region EE_BINPUT
+
 		switch (inputReq.InputType)
 		{
 			//古い選択肢を選択できないように。INPUTで使った選択肢をINPUTSには流用できないように。
 			case InputType.IntValue:
 			case InputType.IntButton:
 				if (lastButtonGeneration == newButtonGeneration)
-					unchecked { newButtonGeneration++; }
+				{
+					unchecked
+					{
+						newButtonGeneration++;
+					}
+				}
 				else if (!lastButtonIsInput)
+				{
 					lastButtonGeneration = newButtonGeneration;
+				}
+
 				lastButtonIsInput = true;
 				break;
 			case InputType.StrValue:
+
 			#region EE_INPUTANY
+
 			case InputType.AnyValue:
+
 			#endregion
+
 			case InputType.StrButton:
 				if (lastButtonGeneration == newButtonGeneration)
-					unchecked { newButtonGeneration++; }
+				{
+					unchecked
+					{
+						newButtonGeneration++;
+					}
+				}
 				else if (lastButtonIsInput)
+				{
 					lastButtonGeneration = newButtonGeneration;
+				}
+
 				lastButtonIsInput = false;
 				break;
 		}
+
 		#endregion
 	}
 
@@ -662,28 +825,44 @@ internal sealed partial class EmueraConsole : IDisposable
 	/// 選択中のボタン。INPUTやINPUTSに対応したものでなければならない
 	/// </summary>
 	// null while no button is selected (never selected yet, or cleared by RefreshStrings/LeaveMouse)
-	ConsoleButtonString? selectingButton;
-	ConsoleButtonString? lastSelectingButton;
-	public ConsoleButtonString? SelectingButton { get { return selectingButton; } }
-	public bool ButtonIsSelected(ConsoleButtonString button) { return selectingButton == button; }
-	public bool ButtonIsPointing(ConsoleButtonString button) { return pointingStrings.Contains(button); }
+	private ConsoleButtonString? selectingButton;
+
+	private ConsoleButtonString? lastSelectingButton;
+	public ConsoleButtonString? SelectingButton => selectingButton;
+
+	public bool ButtonIsSelected(ConsoleButtonString button)
+	{
+		return selectingButton == button;
+	}
+
+	public bool ButtonIsPointing(ConsoleButtonString button)
+	{
+		return pointingStrings.Contains(button);
+	}
 
 	/// <summary>
 	/// ToolTip表示したフラグ
 	/// </summary>
-	bool tooltipUsed;
+	private bool tooltipUsed;
+
 	/// <summary>
 	/// マウスの直下にあるテキスト。ボタンであってもよい。
 	/// ToolTip表示用。世代無視、履歴中も表示
 	/// </summary>
 	// null while the mouse points at no part of the console
-	ConsoleButtonString? pointingString;
+	private ConsoleButtonString? pointingString;
+
 	// pointingStrings记录鼠标下所有Button图像。当多个Button重叠时，被鼠标划到的图像都会变化
-	HashSet<ConsoleButtonString> pointingStrings = [];
+	private HashSet<ConsoleButtonString> pointingStrings = [];
+
 	#region EE_MOUSEB
-	public ConsoleButtonString? PointingSring { get { return pointingString; } }
+
+	public ConsoleButtonString? PointingSring => pointingString;
+
 	#endregion
-	ConsoleButtonString? lastPointingString;
+
+	private ConsoleButtonString? lastPointingString;
+
 	#endregion
 
 	#region Input & Timer系
@@ -694,9 +873,13 @@ internal sealed partial class EmueraConsole : IDisposable
 
 	// set by WaitInput/ReadAnyKey before any read; the DEBUG check in PressEnterKey guards the invariant
 	public InputRequest inputReq = null!;
+
 	#region EE_INPUT第二引数修正
-	public InputType NowInputType { get { return inputReq.InputType; } }
+
+	public InputType NowInputType => inputReq.InputType;
+
 	#endregion
+
 	public void Await(int time)
 	{
 		if (!Enabled || state != ConsoleState.Running)
@@ -704,12 +887,15 @@ internal sealed partial class EmueraConsole : IDisposable
 			Quit();
 			return;
 		}
+
 		RefreshStrings(true);
 		state = ConsoleState.Sleep;
 		process.UpdateCheckInfiniteLoopState();
 		Application.DoEvents();
 		if (time > 0)
+		{
 			System.Threading.Thread.Sleep(time);
+		}
 		////DoEvents()の間にウインドウが閉じられたらおしまい。
 		//if (!Enabled || state != ConsoleState.Sleep)
 		//{
@@ -723,15 +909,23 @@ internal sealed partial class EmueraConsole : IDisposable
 	public void WaitInput(InputRequest req)
 	{
 		#region EE_AnchorのCB機能移植
+
 		if (Config.CBUseClipboard)
+		{
 			CBProc.Check(ClipboardProcessor.CBTriggers.InputWait);
+		}
+
 		#endregion
+
 		state = ConsoleState.WaitInput;
 		inputReq = req;
 		if (req.Timelimit > 0)
 		{
 			if (req.OneInput)
+			{
 				window.update_lastinput();
+			}
+
 			presetTimer();
 			//				setTimer();
 		}
@@ -747,14 +941,24 @@ internal sealed partial class EmueraConsole : IDisposable
 	public void ReadAnyKey(bool anykey = false, bool stopMesskip = false)
 	{
 		#region EE_AnchorのCB機能移植
+
 		if (Config.CBUseClipboard)
+		{
 			CBProc.Check(ClipboardProcessor.CBTriggers.AnyKeyWait);
+		}
+
 		#endregion
+
 		InputRequest req = new();
 		if (!anykey)
+		{
 			req.InputType = InputType.EnterKey;
+		}
 		else
+		{
 			req.InputType = InputType.AnyKey;
+		}
+
 		req.StopMesskip = stopMesskip;
 		inputReq = req;
 		state = ConsoleState.WaitInput;
@@ -764,15 +968,16 @@ internal sealed partial class EmueraConsole : IDisposable
 
 	public void AddBackgroundImage(string name, long depth, float opacity)
 	{
-		var spr = AppContents.GetSprite(name) as SpriteF;
+		SpriteF? spr = AppContents.GetSprite(name) as SpriteF;
 		if (spr == null)
 		{
 			return;
 		}
-		var bg = new ConsoleBackground(spr, opacity);
-		var pair = new KeyValuePair<long, ConsoleBackground>(depth, bg);
+
+		ConsoleBackground bg = new(spr, opacity);
+		KeyValuePair<long, ConsoleBackground> pair = new(depth, bg);
 		backgroundList.Add(pair);
-		backgroundList.Sort((v1, v2) => (v1.Key >= v2.Key) ? -1 : 1);
+		backgroundList.Sort((v1, v2) => v1.Key >= v2.Key ? -1 : 1);
 		BakeBackground();
 	}
 
@@ -787,6 +992,7 @@ internal sealed partial class EmueraConsole : IDisposable
 		backgroundList.RemoveAt(backgroundList.FindIndex((v) => v.Value.bgImage.Name == key));
 		BakeBackground();
 	}
+
 	public void ValidateBackground(int width, int height)
 	{
 		if (bakedBackground == null)
@@ -801,43 +1007,50 @@ internal sealed partial class EmueraConsole : IDisposable
 			BakeBackground();
 		}
 	}
+
 	private void BakeBackground()
 	{
 		if (bakedBackground == null)
 		{
 			return;
 		}
-		var graph = Graphics.FromImage(bakedBackground);
+
+		Graphics graph = Graphics.FromImage(bakedBackground);
 		graph.Clear(Color.Transparent);
-		foreach (var pair in backgroundList)
+		foreach (KeyValuePair<long, ConsoleBackground> pair in backgroundList)
 		{
-			var bg = pair.Value.bgImage;
-			var scaleW = bakedBackground.Width / (float)bg.BaseImage.Bitmap.Width;
-			var scaleH = bakedBackground.Height / (float)bg.BaseImage.Bitmap.Height;
-			var cropHorizontally = bg.BaseImage.Bitmap.Height * scaleW < bakedBackground.Height;
-			var newWidth = bg.BaseImage.Bitmap.Width * (cropHorizontally ? scaleH : scaleW);
-			var newHeight = bg.BaseImage.Bitmap.Height * (cropHorizontally ? scaleH : scaleW);
-			var paddingX = (int)((bakedBackground.Width - newWidth) / 2);
-			var attributes = new ImageAttributes();
+			SpriteF bg = pair.Value.bgImage;
+			float scaleW = bakedBackground.Width / (float)bg.BaseImage.Bitmap.Width;
+			float scaleH = bakedBackground.Height / (float)bg.BaseImage.Bitmap.Height;
+			bool cropHorizontally = bg.BaseImage.Bitmap.Height * scaleW < bakedBackground.Height;
+			float newWidth = bg.BaseImage.Bitmap.Width * (cropHorizontally ? scaleH : scaleW);
+			float newHeight = bg.BaseImage.Bitmap.Height * (cropHorizontally ? scaleH : scaleW);
+			int paddingX = (int)((bakedBackground.Width - newWidth) / 2);
+			ImageAttributes attributes = new();
 			attributes.SetColorMatrix(pair.Value.GetColorMatrix(), ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
 			bg.GraphicsDraw(graph, new Rectangle(paddingX, 0, (int)newWidth, (int)newHeight), attributes);
 		}
 	}
+
 	/// <summary>
 	/// INPUT中のアニメーション用タイマー
 	/// </summary>
-	Timer redrawTimer;
+	private Timer redrawTimer;
 
 	private void tickRedrawTimer(object? sender, EventArgs e)
 	{
 		if (!redrawTimer.Enabled)
+		{
 			return;
+		}
+
 		//INPUT待ちでないとき、又はタイマー付きINPUT状態の場合はこれ以外の処理に任せる
 		if (state != ConsoleState.WaitInput || genericTimer.Enabled)
 		{
 			return;
 		}
-		window.Refresh();//OnPaint発行
+
+		window.Refresh(); //OnPaint発行
 	}
 
 	/// <summary>
@@ -850,39 +1063,43 @@ internal sealed partial class EmueraConsole : IDisposable
 			redrawTimer.Enabled = false;
 			return;
 		}
+
 		if (tickcount < 10)
+		{
 			tickcount = 10;
+		}
+
 		redrawTimer.Interval = tickcount;
 		redrawTimer.Enabled = true;
 	}
 
 
-
-	System.Timers.Timer genericTimer = new();
-	long timerID = -1;
-	readonly Stopwatch _genericTimerStopwatch = new();//現在のタイマーを開始した時のミリ秒数（WinmmTimer.TickCount基準）
-	long timer_endTime;//現在のタイマーを終了する時のTickCountミリ秒数
-	bool isTimeout;
-	long timeDisplayCount;
-	bool inputed;
-	public bool IsTimeOut { get { return isTimeout; } }
+	private System.Timers.Timer genericTimer = new();
+	private long timerID = -1;
+	private readonly Stopwatch _genericTimerStopwatch = new(); //現在のタイマーを開始した時のミリ秒数（WinmmTimer.TickCount基準）
+	private long timer_endTime; //現在のタイマーを終了する時のTickCountミリ秒数
+	private bool isTimeout;
+	private long timeDisplayCount;
+	private bool inputed;
+	public bool IsTimeOut => isTimeout;
 
 	/// <summary>
 	/// 1824 TINPUT時に直接タイマーをセットせずに最初の再描画が終わってからタイマーをセットする（そうしないとTINPUTと再描画だけでループしてしまうので）
 	/// </summary>
-	bool need_settimer;
+	private bool need_settimer;
 
 	private void presetTimer()
 	{
 		need_settimer = true;
 		if (inputReq.DisplayTime)
 		{
-			var remainingMs = inputReq.Timelimit - _genericTimerStopwatch.ElapsedMilliseconds;
+			long remainingMs = inputReq.Timelimit - _genericTimerStopwatch.ElapsedMilliseconds;
 			PrintSingleLine(trsl.Remaining.Text + $"{remainingMs / 1000.0f:0.0}");
 			timeDisplayCount = 0;
 			inputed = false;
 		}
 	}
+
 	private void setTimer()
 	{
 		isTimeout = false;
@@ -896,13 +1113,17 @@ internal sealed partial class EmueraConsole : IDisposable
 	private void tickTimer(object? sender, EventArgs e)
 	{
 		if (!genericTimer.Enabled)
+		{
 			return;
+		}
+
 		if (state != ConsoleState.WaitInput || inputReq.Timelimit <= 0 || timerID != inputReq.ID)
 		{
 			stopTimer();
 			return;
 		}
-		var elapsedMs = _genericTimerStopwatch.ElapsedMilliseconds;
+
+		long elapsedMs = _genericTimerStopwatch.ElapsedMilliseconds;
 		if (elapsedMs >= timer_endTime)
 		{
 			endTimer();
@@ -911,10 +1132,12 @@ internal sealed partial class EmueraConsole : IDisposable
 
 		if (inputReq.DisplayTime)
 		{
-			var remainingMs = inputReq.Timelimit - _genericTimerStopwatch.ElapsedMilliseconds;
+			long remainingMs = inputReq.Timelimit - _genericTimerStopwatch.ElapsedMilliseconds;
 			timeDisplayCount++;
 			if (timeDisplayCount % 10 == 0 && !inputed)
+			{
 				window.Invoke(() => changeLastLine(trsl.Remaining.Text + $"{remainingMs / 1000.0f:0.0}"));
+			}
 		}
 	}
 
@@ -943,35 +1166,51 @@ internal sealed partial class EmueraConsole : IDisposable
 		if (IsWaitingPrimitive)
 		{
 			//callEmueraProgramは呼び出し先で行う。
+
 			#region EE_INPUTMOUSEKEY拡張
+
 			// InputMouseKey(4, 0, 0, 0, 0);
 			InputMouseKey(4, 0, 0, 0, 0, 0);
 			if (state == ConsoleState.WaitInput && inputReq.NeedValue)
 			{
 				Point point = window.MainPicBox.PointToClient(Control.MousePosition);
 				if (window.MainPicBox.ClientRectangle.Contains(point))
+				{
 					MoveMouse(point);
+				}
 			}
+
 			RefreshStrings(true);
+
 			#endregion
+
 			return;
 		}
+
 		if (inputReq.DisplayTime)
+		{
 			changeLastLine(inputReq.TimeUpMes);
+		}
 		else if (inputReq.TimeUpMes != null)
+		{
 			PrintSingleLine(inputReq.TimeUpMes);
+		}
+
 		window.Invoke(() =>
 		{
-			RunEmueraProgram("");//ディフォルト入力の処理はcallEmueraProgram側で
+			RunEmueraProgram(""); //ディフォルト入力の処理はcallEmueraProgram側で
 			if (state == ConsoleState.WaitInput && inputReq.NeedValue)
 			{
 				window.Invoke(() =>
 				{
 					Point point = window.MainPicBox.PointToClient(Control.MousePosition);
 					if (window.MainPicBox.ClientRectangle.Contains(point))
+					{
 						MoveMouse(point);
+					}
 				});
 			}
+
 			RefreshStrings(true);
 		});
 	}
@@ -983,9 +1222,11 @@ internal sealed partial class EmueraConsole : IDisposable
 			genericTimer.Enabled = false;
 		}
 	}
+
 	#endregion
 
 	#region Call系
+
 	/// <summary>
 	/// スクリプト実行。RefreshStringsはしないので呼び出し側がすること
 	/// </summary>
@@ -997,21 +1238,33 @@ internal sealed partial class EmueraConsole : IDisposable
 		{
 			//INPUT文字列をPRINTする処理など
 			if (!doInputToEmueraProgram(input))
+			{
 				return;
+			}
+
 			if (state == ConsoleState.Error)
+			{
 				return;
+			}
 		}
+
 		state = ConsoleState.Running;
 		process.DoScript();
 		if (state == ConsoleState.Running)
-		{//RunningならProcessは処理を継続するべき
+		{
+			//RunningならProcessは処理を継続するべき
 			state = ConsoleState.Error;
 			PrintError(trerror.ProgramStatusError.Text);
 		}
+
 		#region EE_OUTPUTLOG
+
 		if (state == ConsoleState.Error && !noOutputLog)
 			//OutputLog(Program.ExeDir + "emuera.log");
+		{
 			OutputSystemLog(Program.ExeDir + "emuera.log");
+		}
+
 		#endregion
 
 		PrintFlush(false);
@@ -1036,13 +1289,23 @@ internal sealed partial class EmueraConsole : IDisposable
 						str = inputValue.ToString();
 					}
 					else if (!long.TryParse(str, out inputValue))
+					{
 						return false;
+					}
+
 					if (inputReq.IsSystemInput)
+					{
 						process.InputSystemInteger(inputValue);
+					}
 					else
+					{
 						process.InputInteger(inputValue);
+					}
+
 					break;
+
 				#region EE_BINPUT
+
 				case InputType.IntButton:
 					if (string.IsNullOrEmpty(str) && inputReq.HasDefValue && !IsRunningTimer)
 					{
@@ -1050,10 +1313,12 @@ internal sealed partial class EmueraConsole : IDisposable
 						str = inputValue.ToString();
 					}
 					else if (!long.TryParse(str, out inputValue))
+					{
 						return false;
+					}
+
 					foreach (ConsoleDisplayLine line in Enumerable.Reverse(displayLineList).ToList())
 					{
-
 						foreach (ConsoleButtonString button in line.Buttons)
 						{
 							if (button.IsInteger && button.Generation == lastButtonGeneration && button.Input == inputValue)
@@ -1063,14 +1328,17 @@ internal sealed partial class EmueraConsole : IDisposable
 							}
 							//後ろから回してるので世代が違うボタンに到達したらもう無い
 							else if (button.Generation != 0 && button.Generation != lastButtonGeneration)
+							{
 								goto loopepint;
+							}
 						}
 					}
-				loopepint:
-					foreach (var value in escapedParts)
+
+					loopepint:
+					foreach (KeyValuePair<int, List<AConsoleDisplayNode>> value in escapedParts)
 					{
 						ep = value.Value;
-						foreach (var part in ep)
+						foreach (AConsoleDisplayNode part in ep)
 						{
 							if (part is ConsoleDivPart div)
 							{
@@ -1088,48 +1356,72 @@ internal sealed partial class EmueraConsole : IDisposable
 							}
 						}
 					}
+
 					return false;
-				loopendint:
+					loopendint:
 					break;
+
 				#endregion
+
 				case InputType.StrValue:
 					if (string.IsNullOrEmpty(str) && inputReq.HasDefValue && !IsRunningTimer)
+					{
 						str = inputReq.DefStrValue;
+					}
+
 					//空入力と時間切れ
 					if (str == null)
+					{
 						str = "";
+					}
+
 					//SHOP等の数値を求められる場面用にFLOWINPUTでINPUTSにしててもRESULTを処理する
 					if (inputReq.IsSystemInput)
+					{
 						process.InputSystemInteger(inputReq.DefIntValue);
+					}
+
 					process.InputString(str);
 					break;
+
 				#region EE_BINPUT
+
 				case InputType.StrButton:
 					if (string.IsNullOrEmpty(str) && inputReq.HasDefValue && !IsRunningTimer)
+					{
 						str = inputReq.DefStrValue;
+					}
+
 					//空入力と時間切れ
 					if (str == null)
+					{
 						str = "";
+					}
+
 					foreach (ConsoleDisplayLine line in Enumerable.Reverse(displayLineList).ToList())
 					{
 						foreach (ConsoleButtonString button in line.Buttons)
 						{
-							if (button.Generation == lastButtonGeneration && ((button.IsInteger && button.Input.ToString() == str) || button.Inputs == str))
+							if (button.Generation == lastButtonGeneration &&
+							    ((button.IsInteger && button.Input.ToString() == str) || button.Inputs == str))
 							{
 								process.InputString(str);
 								goto loopendstr;
 							}
 							//後ろから回してるので世代が違うボタンに到達したらもう無い
 							else if (button.Generation != 0 && button.Generation != lastButtonGeneration)
+							{
 								goto loopepstr;
+							}
 						}
 					}
-				loopepstr:
-					foreach (var value in escapedParts)
+
+					loopepstr:
+					foreach (KeyValuePair<int, List<AConsoleDisplayNode>> value in escapedParts)
 					{
 						ep = value.Value;
 
-						foreach (var part in ep)
+						foreach (AConsoleDisplayNode part in ep)
 						{
 							if (part is ConsoleDivPart div)
 							{
@@ -1147,66 +1439,94 @@ internal sealed partial class EmueraConsole : IDisposable
 							}
 						}
 					}
+
 					return false;
-				loopendstr:
+					loopendstr:
 					break;
+
 				#endregion
+
 				#region EE_INPUTANY
+
 				case InputType.AnyValue:
 					if (long.TryParse(str, out inputValue))
 					{
 						if (inputReq.IsSystemInput)
+						{
 							process.InputSystemInteger(inputValue);
+						}
 						else
+						{
 							process.InputInteger(inputValue);
+						}
 					}
 					else
 					{
 						process.InputString(str);
 					}
-					break;
-				#endregion
 
+					break;
+
+				#endregion
 			}
+
 			stopTimer();
 		}
+
 		Print(str);
 		inputed = true;
 		PrintFlush(false);
+
 		#region EM_textbox位置指定拡張
+
 		// 入力成功した
 		if (window.TextBoxPosChanged)
+		{
 			window.ResetTextBoxPos();
+		}
+
 		#endregion
+
 		return true;
 	}
+
 	#endregion
 
 	#region 入力系
-	readonly string[] spliter = ["\\n", "\r\n", "\n", "\r"];//本物の改行コードが来ることは無いはずだけど一応
+
+	private readonly string[] spliter = ["\\n", "\r\n", "\n", "\r"]; //本物の改行コードが来ることは無いはずだけど一応
 
 	public bool MesSkip;
 	private bool inProcess;
-	volatile public bool KillMacro;
+	public volatile bool KillMacro;
 
 	internal void MouseWheel(Point point, int delta)
 	{
 		if (!IsWaitingPrimitive)
+		{
 			return;
+		}
+
 		//pointはクライアント左上基準の座標。
 		//clientPointをクライアント左下基準の座標に置き換え
 		Point clientPoint = point;
 		clientPoint.Y = point.Y - ClientHeight;
+
 		#region EE_INPUTMOUSEKEY拡張
+
 		// InputMouseKey(2, delta, clientPoint.X, clientPoint.Y, 0);
 		InputMouseKey(2, delta, clientPoint.X, clientPoint.Y, 0, 0);
+
 		#endregion
 	}
 
 	internal void MouseDown(Point point, MouseButtons button)
 	{
 		if (!IsWaitingPrimitive)
+		{
 			return;
+		}
+
 		//pointはクライアント左上基準の座標。
 		//clientPointをクライアント左下基準の座標に置き換え
 		Point clientPoint = point;
@@ -1225,9 +1545,10 @@ internal sealed partial class EmueraConsole : IDisposable
 					buttonNum = c.ToArgb() & 0xFFFFFF;
 				}
 			}
-
 		}
+
 		#region EE_INPUTMOUSEKEY拡張
+
 		// InputMouseKey(1, (int)button, clientPoint.X, clientPoint.Y, buttonNum);
 		//ボタン押された場合にRESULT:5にボタンの値が代入される
 		if (selectingButton != null)
@@ -1247,6 +1568,7 @@ internal sealed partial class EmueraConsole : IDisposable
 		{
 			InputMouseKey(1, (int)button, clientPoint.X, clientPoint.Y, buttonNum, 0);
 		}
+
 		#endregion
 	}
 
@@ -1254,14 +1576,21 @@ internal sealed partial class EmueraConsole : IDisposable
 	internal void PressPrimitiveKey(Keys keycode, Keys keydata, Keys keymod)
 	{
 		if (IsWaitingPrimitive)
+
 			#region EE_INPUTMOUSEKEY拡張
+
 			// InputMouseKey(3, (int)keycode, (int)keydata, 0, 0);
+		{
 			InputMouseKey(3, (int)keycode, (int)keydata, 0, 0, 0);
-			#endregion
+		}
+
+		#endregion
 	}
 
 	//1823 Key入力を捕まえる
+
 	#region EE_INPUTMOUSEKEY拡張
+
 	//internal void InputMouseKey(int type, int result1, int result2, int result3, int result4)
 	internal void InputMouseKey(int type, int result1, int result2, int result3, int result4, long result5)
 	{
@@ -1276,52 +1605,71 @@ internal sealed partial class EmueraConsole : IDisposable
 			{
 				Point point = window.MainPicBox.PointToClient(Control.MousePosition);
 				if (window.MainPicBox.ClientRectangle.Contains(point))
+				{
 					MoveMouse(point);
+				}
 			}
 		}
 		finally
 		{
 			inProcess = false;
 		}
+
 		RefreshStrings(true);
 	}
+
 	#endregion
 
 	public void PressEnterKey(bool keySkip, string input, bool changedByMouse)
 	{
 		MesSkip = keySkip;
-		if ((state == ConsoleState.Running) || (state == ConsoleState.Initializing))
+		if (state == ConsoleState.Running || state == ConsoleState.Initializing)
+		{
 			return;
+		}
 		else if (state == ConsoleState.Quit)
 		{
 			if (Program.rebootFlag)
+			{
 				window.Reboot();
+			}
 			else
+			{
 				window.Close();
+			}
+
 			return;
 		}
 		else if (state == ConsoleState.Error)
 		{
 			if (Program.DebugMode)
+			{
 				return;
+			}
+
 			if (input == ErrorButtonsText && selectingButton != null && selectingButton.ErrPos != null)
 			{
 				OpenErrorFile(selectingButton.ErrPos);
 				return;
 			}
+
 			window.Close();
 			return;
 		}
 #if DEBUG
 		if (state != ConsoleState.WaitInput || inputReq == null)
+		{
 			throw new ExeEE("");
+		}
 #endif
 		KillMacro = false;
 		try
 		{
 			string[] text;
-			if (changedByMouse)//1823 マウスによって入力されたならマクロ解析を行わない
-			{ text = [input]; }
+			if (changedByMouse) //1823 マウスによって入力されたならマクロ解析を行わない
+			{
+				text = [input];
+			}
 			else
 			{
 				//INPUTSでも"@"のみが弾かれないようにおまじない
@@ -1330,14 +1678,24 @@ internal sealed partial class EmueraConsole : IDisposable
 					doSystemCommand(input);
 					return;
 				}
+
 				if (inputReq.InputType == InputType.Void)
+				{
 					return;
+				}
+
 				if (genericTimer.Enabled &&
-						(inputReq.InputType == InputType.AnyKey || inputReq.InputType == InputType.EnterKey))
+				    (inputReq.InputType == InputType.AnyKey || inputReq.InputType == InputType.EnterKey))
+				{
 					stopTimer();
+				}
+
 				//if((inputReq.InputType == InputType.IntValue || inputReq.InputType == InputType.StrValue)
 				if (input.Contains('(', StringComparison.Ordinal))
+				{
 					input = parseInput(new CharStream(input), false);
+				}
+
 				text = input.Split(spliter, StringSplitOptions.None);
 			}
 
@@ -1347,12 +1705,15 @@ internal sealed partial class EmueraConsole : IDisposable
 				string inputs = text[i];
 				if (inputs.Contains("\\e", StringComparison.Ordinal))
 				{
-					inputs = inputs.Replace("\\e", "", StringComparison.Ordinal);//\eの除去
+					inputs = inputs.Replace("\\e", "", StringComparison.Ordinal); //\eの除去
 					MesSkip = true;
 				}
 
 				if (inputReq.OneInput && (!Config.AllowLongInputByMouse || !changedByMouse) && inputs.Length > 1)
+				{
 					inputs = inputs.Remove(1);
+				}
+
 				//1819 TODO:入力無効系（強制待ちTWAIT）でスキップとマクロを止めるかそのままか
 				//現在はそのまま。強制待ち中はスキップの開始もできないのにスキップ中なら飛ばせる。
 				if (inputReq.InputType == InputType.Void)
@@ -1360,29 +1721,42 @@ internal sealed partial class EmueraConsole : IDisposable
 					i--;
 					inputs = "";
 				}
+
 				RunEmueraProgram(inputs);
 				RefreshStrings(false);
 				while (MesSkip && state == ConsoleState.WaitInput)
 				{
 					//TODO:入力無効を通していいか？スキップ停止をマクロでは飛ばせていいのか？
 					if (inputReq.NeedValue)
+					{
 						break;
+					}
+
 					if (inputReq.StopMesskip)
+					{
 						break;
+					}
+
 					RunEmueraProgram("");
 					RefreshStrings(false);
 					//EscがマクロストップかつEscがスキップ開始だからEscでスキップを止められても即開始しちゃったりするからあんまり意味ないよね
 					//if (KillMacro)
 					//	goto endMacro;
 				}
+
 				MesSkip = false;
 				if (state != ConsoleState.WaitInput)
+				{
 					break;
+				}
+
 				//マクロループ時は待ち処理が起こらないのでここでシステムキューを捌く
 				Application.DoEvents();
 #if DEBUG
 				if (state != ConsoleState.WaitInput || inputReq == null)
+				{
 					throw new ExeEE("");
+				}
 #endif
 				if (KillMacro)
 				{
@@ -1395,6 +1769,7 @@ internal sealed partial class EmueraConsole : IDisposable
 		{
 			inProcess = false;
 		}
+
 		endMacro();
 
 		void endMacro()
@@ -1403,25 +1778,28 @@ internal sealed partial class EmueraConsole : IDisposable
 			{
 				Point point = window.MainPicBox.PointToClient(Control.MousePosition);
 				if (window.MainPicBox.ClientRectangle.Contains(point))
+				{
 					MoveMouse(point);
+				}
 			}
+
 			RefreshStrings(true);
 		}
 	}
 
 	private void OpenErrorFile(ScriptPosition? pos)
 	{
-		ProcessStartInfo pInfo = new()
-		{
-			FileName = Config.TextEditor
-		};
-		var ignoreCaseCmp = StringComparison.OrdinalIgnoreCase;
+		ProcessStartInfo pInfo = new() { FileName = Config.TextEditor };
+		StringComparison ignoreCaseCmp = StringComparison.OrdinalIgnoreCase;
 		// the only caller checks the position before passing it
 		string fname = pos!.Value.Filename.ToUpper();
 		if (fname.EndsWith(".CSV", ignoreCaseCmp))
 		{
 			if (fname.Contains(Program.CsvDir, ignoreCaseCmp))
+			{
 				fname = fname.Replace(Program.CsvDir, "", ignoreCaseCmp);
+			}
+
 			fname = Program.CsvDir + fname;
 		}
 		else
@@ -1430,10 +1808,14 @@ internal sealed partial class EmueraConsole : IDisposable
 			if (!Program.AnalysisMode)
 			{
 				if (fname.Contains(Program.ErbDir, ignoreCaseCmp))
+				{
 					fname = fname.Replace(Program.ErbDir, "", ignoreCaseCmp);
+				}
+
 				fname = Path.Combine(Program.ErbDir + fname);
 			}
 		}
+
 		switch (Config.EditorType)
 		{
 			case TextEditorType.SAKURA:
@@ -1447,11 +1829,17 @@ internal sealed partial class EmueraConsole : IDisposable
 				break;
 			case TextEditorType.USER_SETTING:
 				if (!string.IsNullOrEmpty(Config.EditorArg) && Config.EditorArg != null)
+				{
 					pInfo.Arguments = Config.EditorArg + pos.Value.LineNo.ToString() + " \"" + fname + "\"";
+				}
 				else
+				{
 					pInfo.Arguments = fname;
+				}
+
 				break;
 		}
+
 		try
 		{
 			Process.Start(pInfo);
@@ -1462,10 +1850,11 @@ internal sealed partial class EmueraConsole : IDisposable
 			PrintError(trerror.FailedOpenEditor.Text);
 			forceUpdateGeneration();
 		}
+
 		return;
 	}
 
-	static string parseInput(CharStream st, bool isNest)
+	private static string parseInput(CharStream st, bool isNest)
 	{
 		StringBuilder sb = new(20);
 		StringBuilder num = new(20);
@@ -1489,18 +1878,25 @@ internal sealed partial class EmueraConsole : IDisposable
 							num.Append(st.Current);
 							st.ShiftNext();
 						}
+
 						if (num.ToString() != "" && num.ToString() != null)
 						{
 							if (int.TryParse(num.ToString(), out res))
 							{
 								for (int i = 0; i < res; i++)
+								{
 									sb.Append(tstr);
+								}
 							}
+
 							num.Remove(0, num.Length);
 						}
 					}
 					else
+					{
 						sb.Append(tstr);
+					}
+
 					continue;
 				}
 				else
@@ -1516,9 +1912,14 @@ internal sealed partial class EmueraConsole : IDisposable
 				{
 					case 'n':
 						if (!hasRet)
+						{
 							sb.Append('\n');
+						}
 						else
+						{
 							hasRet = false;
+						}
+
 						break;
 					case 'r':
 						sb.Append('\r');
@@ -1535,42 +1936,57 @@ internal sealed partial class EmueraConsole : IDisposable
 				}
 			}
 			else
+			{
 				sb.Append(st.Current);
+			}
+
 			st.ShiftNext();
 		}
+
 		return sb.ToString();
 	}
 
 
-	bool runningERBfromMemory;
+	private bool runningERBfromMemory;
+
 	/// <summary>
 	/// 通常コンソールからのDebugコマンド、及びデバッグウインドウの変数ウォッチなど、
 	/// *.ERBファイルが存在しないスクリプトを実行中
 	/// 1750 IsDebugから改名
 	/// </summary>
-	public bool RunERBFromMemory { get { return runningERBfromMemory; } set { runningERBfromMemory = value; } }
-	void doSystemCommand(string command)
+	public bool RunERBFromMemory
+	{
+		get => runningERBfromMemory;
+		set => runningERBfromMemory = value;
+	}
+
+	private void doSystemCommand(string command)
 	{
 		if (genericTimer.Enabled)
 		{
 			PrintError(trerror.CanNotInputTimerWait.Text);
-			PrintError("");//タイマー表示処理に消されちゃうかもしれないので
+			PrintError(""); //タイマー表示処理に消されちゃうかもしれないので
 			RefreshStrings(true);
 			return;
 		}
+
 		if (IsInProcess)
 		{
 			PrintError(trerror.CanNotInputScriptRunning.Text);
 			RefreshStrings(true);
 			return;
 		}
+
 		StringComparison sc = Config.StringComparison;
 		Print(command);
 		PrintFlush(false);
 		RefreshStrings(true);
 		string com = command[1..];
 		if (com.Length == 0)
+		{
 			return;
+		}
+
 		if (com.Equals("REBOOT", sc))
 		{
 			window.Reboot();
@@ -1579,8 +1995,10 @@ internal sealed partial class EmueraConsole : IDisposable
 		else if (com.Equals("OUTPUT", sc) || com.Equals("OUTPUTLOG", sc))
 		{
 			#region EE_OUTPUTLOG
+
 			// this.OutputLog(Program.ExeDir + "emuera.log");
 			OutputSystemLog(Program.ExeDir + "emuera.log");
+
 			#endregion
 
 			return;
@@ -1603,6 +2021,7 @@ internal sealed partial class EmueraConsole : IDisposable
 				RefreshStrings(true);
 				return;
 			}
+
 			OpenDebugDialog();
 		}
 		else
@@ -1613,31 +2032,44 @@ internal sealed partial class EmueraConsole : IDisposable
 				RefreshStrings(true);
 				return;
 			}
+
 			//処理をDebugMode系へ移動
 			DebugCommand(com, Config.ChangeMasterNameIfDebug, false);
 			PrintFlush(false);
 		}
+
 		RefreshStrings(true);
 	}
+
 	#endregion
 
 	#region 描画系
-	Stopwatch _frameDeltaTimer = Stopwatch.StartNew();
-	uint msPerFrame = 1000 / 60;//60FPS
-	ConsoleRedraw redraw = ConsoleRedraw.Normal;
-	public ConsoleRedraw Redraw { get { return redraw; } }
+
+	private Stopwatch _frameDeltaTimer = Stopwatch.StartNew();
+	private uint msPerFrame = 1000 / 60; //60FPS
+	private ConsoleRedraw redraw = ConsoleRedraw.Normal;
+	public ConsoleRedraw Redraw => redraw;
+
 	public void SetRedraw(long i)
 	{
 		if ((i & 1) == 0)
+		{
 			redraw = ConsoleRedraw.None;
+		}
 		else
+		{
 			redraw = ConsoleRedraw.Normal;
+		}
+
 		if ((i & 2) != 0)
+		{
 			RefreshStrings(true);
+		}
 	}
 
 	// null unless the title was set while running in debug mode
-	string? debugTitle;
+	private string? debugTitle;
+
 	public void SetWindowTitle(string str)
 	{
 		if (Program.DebugMode)
@@ -1646,17 +2078,23 @@ internal sealed partial class EmueraConsole : IDisposable
 			window.Text = str + " (Debug Mode)";
 		}
 		else
+		{
 			window.Text = str;
+		}
 	}
 
 	public void SetEmueraVersionInfo(string str)
 	{
 		window.TextBox.Text = str;
 	}
+
 	public string GetWindowTitle()
 	{
 		if (Program.DebugMode && debugTitle != null)
+		{
 			return debugTitle;
+		}
+
 		return window.Text;
 	}
 
@@ -1668,8 +2106,11 @@ internal sealed partial class EmueraConsole : IDisposable
 	{
 		bool isBackLog = window.ScrollBar.Value != window.ScrollBar.Maximum;
 		//ログ表示はREDRAWの設定に関係なく行うようにする
-		if ((redraw == ConsoleRedraw.None) && (!force_Paint) && (!isBackLog))
+		if (redraw == ConsoleRedraw.None && !force_Paint && !isBackLog)
+		{
 			return;
+		}
+
 		//選択中ボタンの適性チェック
 		if (selectingButton != null)
 		{
@@ -1678,26 +2119,40 @@ internal sealed partial class EmueraConsole : IDisposable
 			//	selectingButton = null;
 			//数値か文字列の入力待ち状態でなければ無効
 			if (state != ConsoleState.Error && state != ConsoleState.WaitInput)
+			{
 				selectingButton = null;
-			else if ((state == ConsoleState.WaitInput) && !inputReq.NeedValue)
+			}
+			else if (state == ConsoleState.WaitInput && !inputReq.NeedValue)
+			{
 				selectingButton = null;
+			}
 			//選択肢が最新でないなら無効
 			else if (selectingButton.Generation != lastButtonGeneration)
+			{
 				selectingButton = null;
+			}
 		}
+
 		if (!force_Paint)
-		{//forceならば確実に再描画。
-		 //履歴表示中でなく、最終行を表示済みであり、選択中ボタンが変更されていないなら更新不要
-			if ((!isBackLog) && (lastDrawnLineNo == lineNo) && (lastSelectingButton == selectingButton))
+		{
+			//forceならば確実に再描画。
+			//履歴表示中でなく、最終行を表示済みであり、選択中ボタンが変更されていないなら更新不要
+			if (!isBackLog && lastDrawnLineNo == lineNo && lastSelectingButton == selectingButton)
+			{
 				return;
+			}
+
 			//まだ書き換えるタイミングでないなら次の更新を待ってみる
 			//ただし、入力待ちなど、しばらく更新のタイミングがない場合には強制的に書き換えてみる
 			if (_frameDeltaTimer.ElapsedMilliseconds < msPerFrame && (state == ConsoleState.Running || state == ConsoleState.Initializing))
+			{
 				return;
+			}
 		}
+
 		if (forceTextBoxColor)
 		{
-			var sec = _genericTimerStopwatch.ElapsedMilliseconds;
+			long sec = _genericTimerStopwatch.ElapsedMilliseconds;
 			//色変化が速くなりすぎないように一定時間以内の再呼び出しは強制待ちにする
 			if (_drawStopwatch == null)
 			{
@@ -1710,37 +2165,50 @@ internal sealed partial class EmueraConsole : IDisposable
 					Application.DoEvents();
 				}
 			}
+
 			window.TextBox.BackColor = bgColor;
 
 			_drawStopwatch.Restart();
 		}
+
 		window.Invoke(() =>
 		{
 			verticalScrollBarUpdate();
-			window.Refresh();//OnPaint発行
+			window.Refresh(); //OnPaint発行
 		});
 	}
 
 	#region EM_私家版_描画拡張
+
 	// null until the first draw or hit test fills it; EscapedParts stays non-nullable for its ERB consumers
-	Dictionary<int, List<AConsoleDisplayNode>> escapedParts = null!;
+	private Dictionary<int, List<AConsoleDisplayNode>> escapedParts = null!;
+
 	#endregion
+
 	#region EE_BINPUT
-	public Dictionary<int, List<AConsoleDisplayNode>> EscapedParts { get { return escapedParts; } }
+
+	public Dictionary<int, List<AConsoleDisplayNode>> EscapedParts => escapedParts;
+
 	#endregion
+
 	#region EM_私家版_imgマースク
+
 	public int GetLinePointY(int lineNo)
 	{
 		int pointY = LayoutCanvasHeight - Config.LineHeight;
 		int bottomLineNo = window.ScrollBar.Value - 1;
 		if (displayLineList.Count - 1 < bottomLineNo)
-			bottomLineNo = displayLineList.Count - 1;//1820 この処理不要な気がするけどエラー報告があったので入れとく
+		{
+			bottomLineNo = displayLineList.Count - 1; //1820 この処理不要な気がするけどエラー報告があったので入れとく
+		}
+
 		pointY -= (bottomLineNo - lineNo) * Config.LineHeight;
 		return pointY;
 	}
+
 	#endregion
 
-	List<ConsoleDisplayLine> _htmlElementList = new(10);
+	private List<ConsoleDisplayLine> _htmlElementList = new(10);
 
 	/// <summary>
 	/// 1818以前のRefreshStringsの後半とm_RefreshStringsを融合
@@ -1755,7 +2223,9 @@ internal sealed partial class EmueraConsole : IDisposable
 		//描画中にEmueraが閉じられると廃棄されたPictureBoxにアクセスしてしまったりするので
 		//OnPaintからgraphをもらった直後だから大丈夫だとは思うけど一応
 		if (!Enabled)
+		{
 			return;
+		}
 
 		//1824 アニメスプライト用・現在フレームの時間を決定
 		_frameDeltaTimer.Restart();
@@ -1784,13 +2254,15 @@ internal sealed partial class EmueraConsole : IDisposable
 
 
 		int bottomLineNo = window.ScrollBar.Value - 1;
-		int topLineNo = bottomLineNo - (pointY / Config.LineHeight + 1);
+		int topLineNo = bottomLineNo - ((pointY / Config.LineHeight) + 1);
 		if (topLineNo < 0)
+		{
 			topLineNo = 0;
+		}
+
 		pointY -= (bottomLineNo - topLineNo) * Config.LineHeight;
 		if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
-		{
-		}
+		{ }
 		else
 		{
 			//the baked background is kept at the committed size while previewing and stretched below,
@@ -1803,62 +2275,87 @@ internal sealed partial class EmueraConsole : IDisposable
 			}
 
 			//1823 cbg追加
+
 			#region EM_私家版_描画拡張
-			if (escapedParts == null) escapedParts = [];
+
+			if (escapedParts == null)
+			{
+				escapedParts = [];
+			}
+
 			if (ConsoleEscapedParts.Changed || !ConsoleEscapedParts.TestedInRange(topLineNo, bottomLineNo, lastButtonGeneration))
+			{
 				ConsoleEscapedParts.GetPartsInRange(topLineNo, bottomLineNo, lastButtonGeneration, escapedParts);
-			var edepth = escapedParts.Keys.ToArray();
+			}
+
+			int[] edepth = escapedParts.Keys.ToArray();
 			Array.Sort(edepth, (int a, int b) => -a.CompareTo(b));
 			int eidx = 0, cidx = 0;
 			int topPointY = pointY;
 			while (eidx < edepth.Length || cidx < cbgList.Count)
 			{
-				var depth = Math.Max(eidx < edepth.Length ? edepth[eidx] : int.MinValue,
+				int depth = Math.Max(eidx < edepth.Length ? edepth[eidx] : int.MinValue,
 					cidx < cbgList.Count ? cbgList[cidx].zdepth : int.MinValue);
 				if (cidx < cbgList.Count && cbgList[cidx].zdepth == depth)
 				{
 					// 先にCBGを描画
 					ASprite? img = cbgList[cidx].Img;
 					if (cbgList[cidx].isButton && cbgList[cidx].buttonValue == selectingCBGButtonInt)
+					{
 						img = cbgList[cidx].ImgB;
+					}
+
 					if (img != null && img.IsCreated)
+					{
 						img.GraphicsDraw(graph, new Point(cbgList[cidx].x, cbgList[cidx].y + canvasHeight - img.DestBaseSize.Height));
+					}
+
 					cidx++;
 				}
+
 				if (depth == 0)
 				{
 					// 普通のパーツを描画
 					for (int i = topLineNo;
-					i <= bottomLineNo &&
-					i < displayLineList.Count;//何処かで非同期にDisplayLineListを触ってるやつがいる気がする...
-					i++)
+					     i <= bottomLineNo &&
+					     i < displayLineList.Count; //何処かで非同期にDisplayLineListを触ってるやつがいる気がする...
+					     i++)
 					{
 						ensureLineLayout(displayLineList[i]);
 						displayLineList[i].DrawTo(graph, pointY, isBackLog, true, Config.TextDrawingMode, scalePreview);
 						pointY += Config.LineHeight;
 					}
 				}
+
 				if (eidx < edepth.Length && edepth[eidx] == depth)
 				{
 					// 行範囲を超えたパーツを描画
-					foreach (var p in escapedParts[edepth[eidx]])
+					foreach (AConsoleDisplayNode p in escapedParts[edepth[eidx]])
 					{
 						if (p.Parent?.ParentLine != null)
+						{
 							ensureLineLayout(p.Parent.ParentLine);
+						}
+
 						// escaped parts are registered with their parent button, so Parent is set; the
 						// conditional access above only left the null state unclear
-						var baseLineNo = p.Parent!.ParentLine.LineNo;
+						int baseLineNo = p.Parent!.ParentLine.LineNo;
 						if (GlobalStatic.Console?.GetLineNo > Config.MaxLog)
 						{
-							var correction = GlobalStatic.Console.GetLineNo - Config.MaxLog;
+							int correction = GlobalStatic.Console.GetLineNo - Config.MaxLog;
 							baseLineNo -= correction;
 						}
-						p.Parent.DrawPartTo(graph, p, topPointY + (baseLineNo - topLineNo) * Config.LineHeight, isBackLog, Config.TextDrawingMode, scalePreview);
+
+						p.Parent.DrawPartTo(graph, p, topPointY + ((baseLineNo - topLineNo) * Config.LineHeight), isBackLog, Config.TextDrawingMode,
+							scalePreview);
 					}
+
 					eidx++;
 				}
 			}
+
 			#endregion
+
 			//for (int j = 0; j < cbgList.Count; j++)
 			//{
 			//	if (cbgList[j].zdepth == 0)
@@ -1882,16 +2379,20 @@ internal sealed partial class EmueraConsole : IDisposable
 			//	//	new Rectangle(cbgList[j].x + img.DestBasePosition.X, window.MainPicBox.Height - img.SrcRectangle.Height + cbgList[j].y + img.DestBasePosition.Y, img.SrcRectangle.Width, img.SrcRectangle.Height),
 			//	//	img.SrcRectangle, GraphicsUnit.Pixel);
 			//}
-
 		}
+
 		#region EmuEra-Rikaichan
+
 		if (Config.RikaiEnabled)
+		{
 			rikaichan.OnPaint(graph, stringMeasure, canvasWidth, scalePreview);
+		}
+
 		#endregion
 
 		//真のHTML描画
-		var y = 0;
-		foreach (var element in _htmlElementList)
+		int y = 0;
+		foreach (ConsoleDisplayLine element in _htmlElementList)
 		{
 			ensureLineLayout(element);
 			element.DrawTo(graph, y, false, false, Config.TextDrawingMode, scalePreview);
@@ -1902,27 +2403,40 @@ internal sealed partial class EmueraConsole : IDisposable
 		if (lastPointingString != pointingString || lastSelectingCBGButtonInt != selectingCBGButtonInt)
 		{
 			if (tooltipUsed)
+			{
 				window.ToolTip.RemoveAll();
+			}
 
 			string? title = null;
 			if (pointingString != null)
+			{
 				title = pointingString.Title;
+			}
 			else if (selectingCBGButtonInt > 0)
 			{
-				foreach (var cbg in cbgList)
+				foreach (ClientBackGroundImage cbg in cbgList)
 				{
 					if (!cbg.isButton || cbg.buttonValue != selectingCBGButtonInt)
+					{
 						continue;
+					}
+
 					if (string.IsNullOrEmpty(cbg.tooltipString))
+					{
 						continue;
+					}
+
 					title = cbg.tooltipString;
 					break;
 				}
 			}
+
 			if (!string.IsNullOrEmpty(title))
 			{
 				title = title.Replace("<br>", Environment.NewLine);
+
 				#region EE_ツールチップ拡張での位置調整
+
 				//if (tooltip_duration == 0 || window.ToolTip.OwnerDraw == true)
 				//{
 				//	//window.ToolTip.SetToolTip(window.MainPicBox, title);
@@ -1951,7 +2465,10 @@ internal sealed partial class EmueraConsole : IDisposable
 						if (window.ToolTip.InitialDelay != 0)
 							//	await Task.Delay(500);
 							//else
+						{
 							await Task.Delay(window.ToolTip.InitialDelay);
+						}
+
 						context.Post((state) =>
 						{
 							MoveMouse(GetMousePosition());
@@ -1959,28 +2476,46 @@ internal sealed partial class EmueraConsole : IDisposable
 							{
 								Point mousePos = window.MainPicBox.PointToClient(Control.MousePosition);
 								// null only while no cursor is available; the same expression is read below
-								Point p = new Point(mousePos.X + 2, mousePos.Y + Cursor.Current!.Size.Height);
+								Point p = new(mousePos.X + 2, mousePos.Y + Cursor.Current!.Size.Height);
 								Point absoluteP = Cursor.Position;
-								if (absoluteP.Y + tooltip_size.Height > Screen.FromPoint(mousePos).WorkingArea.Height) p.Y -= Cursor.Current.Size.Height * 2;
+								if (absoluteP.Y + tooltip_size.Height > Screen.FromPoint(mousePos).WorkingArea.Height)
+								{
+									p.Y -= Cursor.Current.Size.Height * 2;
+								}
+
 								if (tooltip_duration == 0)
+								{
 									window.ToolTip.Show(title, window.MainPicBox, p);
+								}
 								else
+								{
 									window.ToolTip.Show(title, window.MainPicBox, p, tooltip_duration);
+								}
 							}
 						}, null);
 					});
 				}
+
 				//}
+
 				#endregion
+
 				tooltipUsed = true;
 			}
+
 			lastPointingString = pointingString;
 			lastSelectingCBGButtonInt = selectingCBGButtonInt;
 		}
+
 		if (isBackLog)
+		{
 			lastDrawnLineNo = -1;
+		}
 		else
+		{
 			lastDrawnLineNo = lineNo;
+		}
+
 		lastSelectingButton = selectingButton;
 		/*デバッグ用。描画が超重い環境を想定2
 		System.Threading.Thread.Sleep(50);
@@ -1991,24 +2526,27 @@ internal sealed partial class EmueraConsole : IDisposable
 			need_settimer = false;
 			setTimer();
 		}
+
 		//the Graphics may be reused by the next paint
 		if (scalePreview)
+		{
 			graph.ResetTransform();
+		}
 	}
 
 	private void ToolTip_Draw(object? sender, DrawToolTipEventArgs e)
 	{
 		if (tooltip_img && int.TryParse(e.ToolTipText, out int i))
 		{
-			var g = GameData.Function.FunctionMethodCreator.ReadGraphics(i);
+			GraphicsImage g = GameData.Function.FunctionMethodCreator.ReadGraphics(i);
 			if (g.IsCreated)
 			{
 				Image img = g.Bitmap;
 				e.Graphics.DrawImage(img, 0, 0);
 				return;
 			}
-
 		}
+
 		e.DrawBackground();
 		e.DrawBorder();
 		foreach (FontFamily ff in GlobalStatic.Pfc.Families)
@@ -2019,27 +2557,32 @@ internal sealed partial class EmueraConsole : IDisposable
 				{
 					TextRenderer.DrawText(e.Graphics, e.ToolTipText, f, e.Bounds, window.ToolTip.ForeColor, window.ToolTip.BackColor, tooltip_format);
 				}
+
 				return;
 			}
 		}
+
 		using (Font f = new(tooltip_fontname, tooltip_fontsize))
 		{
 			TextRenderer.DrawText(e.Graphics, e.ToolTipText, f, e.Bounds, window.ToolTip.ForeColor, window.ToolTip.BackColor, tooltip_format);
 		}
 	}
-	Size tooltip_size;
+
+	private Size tooltip_size;
+
 	private void ToolTip_Popup(object? sender, PopupEventArgs e)
 	{
 		// the handlers are registered on this console's ToolTip
 		if (tooltip_img && int.TryParse((sender as ToolTip)!.GetToolTip(e.AssociatedControl), out int i))
 		{
-			var g = GameData.Function.FunctionMethodCreator.ReadGraphics(i);
+			GraphicsImage g = GameData.Function.FunctionMethodCreator.ReadGraphics(i);
 			if (g.IsCreated)
 			{
 				e.ToolTipSize = new Size(g.Width, g.Height);
 				return;
 			}
 		}
+
 		Font f;
 		foreach (FontFamily ff in GlobalStatic.Pfc.Families)
 		{
@@ -2049,9 +2592,11 @@ internal sealed partial class EmueraConsole : IDisposable
 				goto foundfont;
 			}
 		}
+
 		f = new Font(tooltip_fontname, tooltip_fontsize);
-	foundfont:
-		var size = TextRenderer.MeasureText((sender as ToolTip)!.GetToolTip(e.AssociatedControl), f, new Size(int.MaxValue, int.MaxValue), tooltip_format);
+		foundfont:
+		Size size = TextRenderer.MeasureText((sender as ToolTip)!.GetToolTip(e.AssociatedControl), f, new Size(int.MaxValue, int.MaxValue),
+			tooltip_format);
 		e.ToolTipSize = new Size(size.Width, size.Height);
 		tooltip_size = e.ToolTipSize;
 	}
@@ -2068,6 +2613,7 @@ internal sealed partial class EmueraConsole : IDisposable
 			window.ToolTip.Draw += new DrawToolTipEventHandler(ToolTip_Draw);
 			window.ToolTip.Popup += new PopupEventHandler(ToolTip_Popup);
 		}
+
 		window.ToolTip.OwnerDraw = b;
 	}
 
@@ -2075,36 +2621,43 @@ internal sealed partial class EmueraConsole : IDisposable
 	{
 		window.ToolTip.ForeColor = foreColor;
 		window.ToolTip.BackColor = backColor;
-
 	}
+
 	public void SetToolTipDelay(int delay)
 	{
 		window.ToolTip.InitialDelay = delay;
 	}
 
-	int tooltip_duration;
-	string tooltip_fontname = Config.FontName;
+	private int tooltip_duration;
+
+	private string tooltip_fontname = Config.FontName;
+
 	//The tooltip follows the console, which draws at the derived render size (see .scratch/ui-modernization/issues/03).
-	long tooltip_fontsize = Config.RenderFontSizePx;
-	TextFormatFlags tooltip_format;
-	bool tooltip_img;
+	private long tooltip_fontsize = Config.RenderFontSizePx;
+	private TextFormatFlags tooltip_format;
+	private bool tooltip_img;
+
 	public void SetToolTipDuration(int duration)
 	{
 		tooltip_duration = duration;
 		window.ToolTip.AutoPopDelay = duration;
 	}
+
 	public void SetToolTipFontName(string fn)
 	{
 		tooltip_fontname = fn;
 	}
+
 	public void SetToolTipFontSize(long fs)
 	{
 		tooltip_fontsize = fs;
 	}
+
 	public void SetToolTipFormat(long f)
 	{
 		tooltip_format = (TextFormatFlags)f;
 	}
+
 	public void SetToolTipImg(bool b)
 	{
 		tooltip_img = b;
@@ -2124,12 +2677,14 @@ internal sealed partial class EmueraConsole : IDisposable
 	#endregion
 
 	#region DebugMode系
+
 	// null while the debug dialog is not open
-	DebugDialog? dd;
-	public DebugDialog? DebugDialog { get { return dd; } }
-	StringBuilder dConsoleLog = new("");
-	public string DebugConsoleLog { get { return dConsoleLog.ToString(); } }
-	List<string> dTraceLogList = [];
+	private DebugDialog? dd;
+	public DebugDialog? DebugDialog => dd;
+	private StringBuilder dConsoleLog = new("");
+	public string DebugConsoleLog => dConsoleLog.ToString();
+	private List<string> dTraceLogList = [];
+
 	public string GetDebugTraceLog(bool force)
 	{
 		//if (!dTraceLogChanged && !force)
@@ -2137,7 +2692,7 @@ internal sealed partial class EmueraConsole : IDisposable
 		StringBuilder builder = new("");
 		LogicalLine? line = process.GetScaningLine();
 		builder.AppendLine(trsl.Processing.Text);
-		if ((line == null) || (line.Position == null))
+		if (line == null || line.Position == null)
 		{
 			builder.AppendLine(trsl.FileNone.Text);
 			builder.AppendLine(trsl.LineFuncNone.Text);
@@ -2150,17 +2705,23 @@ internal sealed partial class EmueraConsole : IDisposable
 			builder.AppendLine(string.Format(trsl.LineFuncName.Text, line.Position.Value.LineNo.ToString(), line.ParentLabelLine!.LabelName));
 			builder.AppendLine("");
 		}
+
 		builder.AppendLine(trsl.FuncCallStack.Text);
 		for (int i = dTraceLogList.Count - 1; i >= 0; i--)
 		{
 			builder.AppendLine(dTraceLogList[i]);
 		}
+
 		return builder.ToString();
 	}
+
 	public void OpenDebugDialog()
 	{
 		if (!Program.DebugMode)
+		{
 			return;
+		}
+
 		if (dd != null)
 		{
 			if (dd.Created)
@@ -2174,6 +2735,7 @@ internal sealed partial class EmueraConsole : IDisposable
 				dd = null;
 			}
 		}
+
 		dd = new DebugDialog();
 		dd.SetParent(this, process);
 		dd.TranslateUI();
@@ -2183,7 +2745,10 @@ internal sealed partial class EmueraConsole : IDisposable
 	public void DebugPrint(string str)
 	{
 		if (!Program.DebugMode)
+		{
 			return;
+		}
+
 		dConsoleLog.Append(str);
 	}
 
@@ -2195,7 +2760,10 @@ internal sealed partial class EmueraConsole : IDisposable
 	public void DebugNewLine()
 	{
 		if (!Program.DebugMode)
+		{
 			return;
+		}
+
 		dConsoleLog.Append(Environment.NewLine);
 	}
 
@@ -2204,20 +2772,33 @@ internal sealed partial class EmueraConsole : IDisposable
 		//Emueraがデバッグモードで起動されていないなら無視
 		//ERBファイル以外のもの(デバッグコマンド、変数ウォッチ)を実行中なら無視
 		if (!Program.DebugMode || runningERBfromMemory)
+		{
 			return;
+		}
+
 		dTraceLogList.Add(str);
 	}
+
 	public void DebugRemoveTraceLog()
 	{
 		if (!Program.DebugMode || runningERBfromMemory)
+		{
 			return;
+		}
+
 		if (dTraceLogList.Count > 0)
+		{
 			dTraceLogList.RemoveAt(dTraceLogList.Count - 1);
+		}
 	}
+
 	public void DebugClearTraceLog()
 	{
 		if (!Program.DebugMode || runningERBfromMemory)
+		{
 			return;
+		}
+
 		dTraceLogList.Clear();
 	}
 
@@ -2230,71 +2811,118 @@ internal sealed partial class EmueraConsole : IDisposable
 		try
 		{
 			//デバッグコマンドはReadEnabledLineを通してないのでRename変換を入れる
-			if (Config.UseRenameFile && (com.Contains("[[")) && (com.Contains("]]")))
+			if (Config.UseRenameFile && com.Contains("[[") && com.Contains("]]"))
 			{
 				foreach (KeyValuePair<string, string> pair in ParserMediator.RenameDic)
+				{
 					com = com.Replace(pair.Key, pair.Value);
+				}
 			}
+
 			LogicalLine? line = null;
 			if (!com.StartsWith('@') && !com.StartsWith('"') && !com.StartsWith('\\'))
+			{
 				line = LogicalLineParser.ParseLine(com, null);
-			if (line == null || (line is InvalidLine))
+			}
+
+			if (line == null || line is InvalidLine)
 			{
 				WordCollection wc = LexicalAnalyzer.Analyse(new CharStream(com), LexEndWith.EoL, LexAnalyzeFlag.None);
 				AExpression? term = ExpressionParser.ReduceExpressionTerm(wc, TermEndWith.EoL);
 				if (term == null)
+				{
 					throw new CodeEE(trerror.CanNotInterpretedLine.Text);
+				}
+
 				if (term.GetOperandType() == typeof(long))
 				{
 					if (outputDebugConsole)
+					{
 						com = "DEBUGPRINTFORML {" + com + "}";
+					}
 					else
+					{
 						com = "PRINTVL " + com;
+					}
 				}
 				else
 				{
 					if (outputDebugConsole)
+					{
 						com = "DEBUGPRINTFORML %" + com + "%";
+					}
 					else
+					{
 						com = "PRINTFORMSL " + com;
+					}
 				}
+
 				line = LogicalLineParser.ParseLine(com, null);
 			}
+
 			if (line == null)
+			{
 				throw new CodeEE(trerror.CanNotInterpretedLine.Text);
+			}
+
 			if (line is InvalidLine)
+			{
 				throw new CodeEE(line.ErrMes);
+			}
+
 			if (!(line is InstructionLine))
+			{
 				throw new CodeEE(trerror.InvalidDebugCommand.Text);
+			}
+
 			InstructionLine func = (InstructionLine)line;
 			if (func.Function.IsFlowContorol())
+			{
 				throw new CodeEE(trerror.CanNotUseFlowInstruction.Text);
+			}
+
 			//__METHOD_SAFE__をみるならいらないかも
 			if (func.Function.IsWaitInput())
+			{
 				throw new CodeEE(string.Format(trerror.CanNotUseInstruction.Text, func.Function.Name));
+			}
+
 			//1750 __METHOD_SAFE__とほぼ条件同じだよねってことで
 			if (!func.Function.IsMethodSafe())
+			{
 				throw new CodeEE(string.Format(trerror.CanNotUseInstruction.Text, func.Function.Name));
+			}
+
 			//1756 SIFの次に来てはいけないものはここでも不可。
 			if (func.Function.IsPartial())
+			{
 				throw new CodeEE(string.Format(trerror.CanNotUseInstruction.Text, func.Function.Name));
+			}
+
 			switch (func.FunctionCode)
-			{//取りこぼし
-			 //逆にOUTPUTLOG、QUITはDebugCommandの前に捕まえる
+			{
+				//取りこぼし
+				//逆にOUTPUTLOG、QUITはDebugCommandの前に捕まえる
 				case FunctionCode.PUTFORM:
 				case FunctionCode.UPCHECK:
 				case FunctionCode.CUPCHECK:
 				case FunctionCode.SAVEDATA:
 					throw new CodeEE(string.Format(trerror.CanNotUseInstruction.Text, func.Function.Name));
 			}
+
 			ArgumentParser.SetArgumentTo(func);
 			if (func.IsError)
+			{
 				throw new CodeEE(func.ErrMes);
+			}
+
 			process.DoDebugNormalFunction(func, munchkin);
 			if (func.FunctionCode == FunctionCode.SET)
 			{
 				if (!outputDebugConsole)
+				{
 					PrintSingleLine(com);
+				}
 				//DebugWindowのほうは少しくどくなるのでいらないかな
 			}
 		}
@@ -2306,7 +2934,10 @@ internal sealed partial class EmueraConsole : IDisposable
 				DebugNewLine();
 			}
 			else
+			{
 				PrintError(e.Message);
+			}
+
 			process.clearMethodStack();
 		}
 		finally
@@ -2317,6 +2948,7 @@ internal sealed partial class EmueraConsole : IDisposable
 			state = temp_state;
 		}
 	}
+
 	#endregion
 
 	#region Window.Form系
@@ -2324,20 +2956,29 @@ internal sealed partial class EmueraConsole : IDisposable
 	internal Point GetMousePosition()
 	{
 		if (window == null || !window.Created)
+		{
 			return new Point();
+		}
+
 		//クライアント左上基準の座標取得
 		Point pos = window.MainPicBox.PointToClient(Cursor.Position);
 		//クライアント左下基準の座標に置き換え
 		pos.Y -= ClientHeight;
 		return pos;
 	}
+
 	#region EE_MOUSEB
+
 	public bool AlwaysRefresh;
+
 	#endregion
 
 	#region EM_私家版_描画拡張
-	int[] dummy = [0];
+
+	private int[] dummy = [0];
+
 	#endregion
+
 	/// <summary>
 	/// マウス位置をボタンの選択状態に反映させる
 	/// </summary>
@@ -2346,11 +2987,15 @@ internal sealed partial class EmueraConsole : IDisposable
 	public bool MoveMouse(Point point)
 	{
 		if (resizePreviewScale != 1.0f)
-		{//convert back to the coordinates the transform is based on before hit testing
+		{
+			//convert back to the coordinates the transform is based on before hit testing
 			point = new Point((int)(point.X / resizePreviewScale), (int)(point.Y / resizePreviewScale));
 		}
+
 		#region EmuEra-Rikaichan
+
 		int curLineY = -1;
+
 		#endregion
 
 		if (cbgButtonMap != null && cbgButtonMap.IsCreated)
@@ -2371,6 +3016,7 @@ internal sealed partial class EmueraConsole : IDisposable
 					buttonNum = c.ToArgb() & 0xFFFFFF;
 				}
 			}
+
 			if (buttonNum >= 0)
 			{
 				bool ret = pointingString != null || selectingButton != null || buttonNum != selectingCBGButtonInt;
@@ -2389,6 +3035,7 @@ internal sealed partial class EmueraConsole : IDisposable
 				return true;
 			}
 		}
+
 		selectingCBGButtonInt = -1;
 		ConsoleButtonString? select = null;
 		ConsoleButtonString? pointing = null;
@@ -2398,14 +3045,26 @@ internal sealed partial class EmueraConsole : IDisposable
 		bool canSelect = false;
 		//数値か文字列の入力待ち状態でなければ選択中にはならない
 		if (state == ConsoleState.Error)
+		{
 			canSelect = true;
+		}
 		else if (state == ConsoleState.WaitInput && inputReq.NeedValue)
+		{
 			canSelect = true;
+		}
+
 		//スクリプト実行中は無視//入力・マクロ処理中は無視
+
 		#region EE_MOUSEB
+
 		if (IsInProcess && AlwaysRefresh == false)
-		#endregion
+
+			#endregion
+
+		{
 			goto end;
+		}
+
 		//履歴表示中は無視
 		//if (window.ScrollBar.Value != window.ScrollBar.Maximum)
 		//	goto end;
@@ -2415,26 +3074,39 @@ internal sealed partial class EmueraConsole : IDisposable
 
 		int bottomLineNo = window.ScrollBar.Value - 1;
 		if (displayLineList.Count - 1 < bottomLineNo)
-			bottomLineNo = displayLineList.Count - 1;//1820 この処理不要な気がするけどエラー報告があったので入れとく
+		{
+			bottomLineNo = displayLineList.Count - 1; //1820 この処理不要な気がするけどエラー報告があったので入れとく
+		}
+
 		int topLineNo = bottomLineNo - (LayoutCanvasHeight / Config.LineHeight);
 		if (topLineNo < 0)
+		{
 			topLineNo = 0;
+		}
+
 		int relPointY = pointY - LayoutCanvasHeight;
 		//下から上へ探索し発見次第打ち切り
+
 		#region EM_私家版_描画拡張
+
 		if (ConsoleEscapedParts.Changed || !ConsoleEscapedParts.TestedInRange(topLineNo, bottomLineNo, lastButtonGeneration))
 		{
-			if (escapedParts == null) escapedParts = [];
+			if (escapedParts == null)
+			{
+				escapedParts = [];
+			}
+
 			ConsoleEscapedParts.GetPartsInRange(topLineNo, bottomLineNo, lastButtonGeneration, escapedParts);
 		}
-		var edepth = escapedParts == null || escapedParts.Keys.Count == 0 ? dummy : escapedParts.Keys.ToArray();
+
+		int[] edepth = escapedParts == null || escapedParts.Keys.Count == 0 ? dummy : escapedParts.Keys.ToArray();
 		Array.Sort(edepth);
 		int eidx = 0;
 		bool zeroTested = false;
-		var bottomLineBase = LayoutCanvasHeight - Config.LineHeight;
+		int bottomLineBase = LayoutCanvasHeight - Config.LineHeight;
 		while (eidx < edepth.Length)
 		{
-			var depth = edepth[eidx];
+			int depth = edepth[eidx];
 			if (!zeroTested && depth >= 0)
 			{
 				depth = 0;
@@ -2450,8 +3122,11 @@ internal sealed partial class EmueraConsole : IDisposable
 					{
 						ConsoleButtonString button = curLine.Buttons[curLine.Buttons.Length - b - 1];
 						if (button == null || button.StrArray == null)
+						{
 							continue;
-						if ((button.PointX <= pointX) && (button.PointX + button.Width >= pointX))
+						}
+
+						if (button.PointX <= pointX && button.PointX + button.Width >= pointX)
 						{
 							//if (relPointY >= 0 && relPointY <= Config.Config.FontSize)
 							//{
@@ -2462,19 +3137,26 @@ internal sealed partial class EmueraConsole : IDisposable
 							foreach (AConsoleDisplayNode part in button.StrArray)
 							{
 								if (part == null || part is ConsoleDivPart)
-									continue;
-								if ((part.PointX <= pointX) && (part.PointX + part.Width >= pointX)
-									&& (relPointY >= part.Top) && (relPointY <= part.Bottom))
 								{
-									curLineY = LayoutCanvasHeight - Config.LineHeight * (bottomLineNo - i + 1);
+									continue;
+								}
+
+								if (part.PointX <= pointX && part.PointX + part.Width >= pointX
+								                          && relPointY >= part.Top && relPointY <= part.Bottom)
+								{
+									curLineY = LayoutCanvasHeight - (Config.LineHeight * (bottomLineNo - i + 1));
 									if (!firstPointngSelected)
+									{
 										pointing = button;
+									}
+
 									if (button.IsButton)
 									{
 										if (!canSelect)
 										{
 											goto breakfor;
 										}
+
 										pointingStrings.Add(button);
 										firstPointngSelected = true;
 										break; //退出button.StrArray的for循环
@@ -2483,46 +3165,59 @@ internal sealed partial class EmueraConsole : IDisposable
 							}
 						}
 					}
+
 					if (firstPointngSelected && bottomLineNo - i > 100)
 					{
 						break;
 					}
 				}
 			}
+
 			if (eidx < edepth.Length && edepth[eidx] == depth)
 			{
 				// 行範囲を超えたパーツのヒットテスト
-				var correction = lineNo > Config.MaxLog ? lineNo - Config.MaxLog : 0;
+				int correction = lineNo > Config.MaxLog ? lineNo - Config.MaxLog : 0;
 				// the field was filled in above when it was still null; only the null test in the
 				// edepth expression above lost that state
 				if (depth != 0 || escapedParts!.ContainsKey(depth))
-					foreach (var part in escapedParts![depth])
+				{
+					foreach (AConsoleDisplayNode part in escapedParts![depth])
 					{
 						if (part.Parent?.ParentLine != null)
+						{
 							ensureLineLayout(part.Parent.ParentLine);
+						}
+
 						if (part is ConsoleDivPart div)
 						{
-							var lineY = bottomLineBase + (div.Parent.ParentLine.LineNo - bottomLineNo - correction) * Config.LineHeight;
-							var childPointing = div.TestChildHitbox(pointX, pointY, lineY);
+							int lineY = bottomLineBase + ((div.Parent.ParentLine.LineNo - bottomLineNo - correction) * Config.LineHeight);
+							ConsoleButtonString? childPointing = div.TestChildHitbox(pointX, pointY, lineY);
 							if (childPointing != null)
 							{
 								pointing = childPointing;
 								if (pointing.IsButton)
+								{
 									goto breakfor;
+								}
 							}
 						}
-						else if ((part.PointX <= pointX) && (part.PointX + part.Width >= pointX)
-							&& (relPointY >= part.Top) && (relPointY <= part.Bottom))
+						else if (part.PointX <= pointX && part.PointX + part.Width >= pointX
+						                               && relPointY >= part.Top && relPointY <= part.Bottom)
 						{
 							pointing = part.Parent;
 							// Parent is non-nullable; only the null state was lost by the conditional access above
 							if (pointing!.IsButton)
+							{
 								goto breakfor;
+							}
 						}
 					}
+				}
+
 				eidx++;
 			}
 		}
+
 		#endregion
 
 
@@ -2539,50 +3234,76 @@ internal sealed partial class EmueraConsole : IDisposable
 		//	goto end;
 
 		//pointing = curLine.GetPointingButton(pointX);
-	breakfor:
+		breakfor:
+
 		#region EE_ボタン判定の改善
+
 		if (pointingStrings.Count > 0)
 		{
 			foreach (var p in pointingStrings)
 			{
-				if ((p == null) || (p.Generation != lastButtonGeneration))
+				if (p == null || p.Generation != lastButtonGeneration)
+				{
 					continue;
+				}
 				else if (!p.IsButton)
+				{
 					continue;
+				}
 				else if (state == ConsoleState.WaitInput && !p.IsInteger)
 				{
-					if ((inputReq.InputType == InputType.IntValue) || (inputReq.InputType == InputType.IntButton))
+					if (inputReq.InputType == InputType.IntValue || inputReq.InputType == InputType.IntButton)
+					{
 						continue;
+					}
 				}
+
 				pointing = p;
 				goto end;
 			}
+
 			canSelect = false;
 		}
 		else
 		{
-			if ((pointing == null) || (pointing.Generation != lastButtonGeneration))
+			if (pointing == null || pointing.Generation != lastButtonGeneration)
+			{
 				canSelect = false;
+			}
 			else if (!pointing.IsButton)
+			{
 				canSelect = false;
+			}
 			else if (state == ConsoleState.WaitInput && !pointing.IsInteger)
 			{
-				if ((inputReq.InputType == InputType.IntValue) || (inputReq.InputType == InputType.IntButton))
+				if (inputReq.InputType == InputType.IntValue || inputReq.InputType == InputType.IntButton)
+				{
 					canSelect = false;
+				}
 			}
 		}
+
 		#endregion
-	end:
+
+		end:
 		if (canSelect)
+		{
 			select = pointing;
+		}
+
 		bool needRefresh = select != selectingButton || pointing != pointingString || pointingStrings.Count != prevPointingStringsLen;
 		pointingString = pointing;
 		selectingButton = select;
+
 		#region EmuEra-Rikaichan
+
 		if (Config.RikaiEnabled && rikaichan.enabled)
 		{
 			//if (_pointingString != _lastPointingString && 
-			if (pointing == null || pointing.StrArray.Length == 0) goto rikaichan_not_found;
+			if (pointing == null || pointing.StrArray.Length == 0)
+			{
+				goto rikaichan_not_found;
+			}
 
 			AConsoleDisplayNode cdp;
 			ConsoleStyledString css;
@@ -2602,7 +3323,7 @@ internal sealed partial class EmueraConsole : IDisposable
 
 			goto rikaichan_not_found;
 
-		rikaichan_found:
+			rikaichan_found:
 			int xpos = point.X - css.PointX;
 			//rikaichan.laststr_css = pointing; //LATER: do I even need this?
 			//rikaichan.laststr = rikaichan.laststr_css.ToString();
@@ -2617,11 +3338,18 @@ internal sealed partial class EmueraConsole : IDisposable
 			rikaichan.strpos = css.Ends.Length - 1;
 			for (int i = css.Ends.Length - 1; i >= 0; i--)
 			{
-				if (css.Ends[i] < xpos) break;
+				if (css.Ends[i] < xpos)
+				{
+					break;
+				}
+
 				rikaichan.strpos = i;
 			}
 
-			if (pointingString == lastPointingString && rikaichan.strpos == rikaichan.laststrpos) goto rikaichan_end;
+			if (pointingString == lastPointingString && rikaichan.strpos == rikaichan.laststrpos)
+			{
+				goto rikaichan_end;
+			}
 
 			rikaichan.css = css;
 			rikaichan.point = point;
@@ -2640,14 +3368,16 @@ internal sealed partial class EmueraConsole : IDisposable
 			needRefresh = true;
 			goto rikaichan_end;
 
-		rikaichan_not_found:
+			rikaichan_not_found:
 			if (rikaichan.hidden == false)
 			{
 				rikaichan.hidden = true;
 				needRefresh = true;
 			}
 		} //if rikaichan.enabled
-	rikaichan_end:
+
+		rikaichan_end:
+
 		#endregion
 
 		// if (pointingStrings.Count != 0)
@@ -2670,12 +3400,16 @@ internal sealed partial class EmueraConsole : IDisposable
 	}
 
 	#region EM_textbox位置指定拡張
+
 	private void verticalScrollBarUpdate()
 	{
 		int max = displayLineList.Count;
 		int move = max - window.ScrollBar.Maximum;
 		if (move == 0)
+		{
 			return;
+		}
+
 		window.TextBoxIgnoreScrollBarChanges = true;
 		if (move > 0)
 		{
@@ -2685,15 +3419,20 @@ internal sealed partial class EmueraConsole : IDisposable
 		else
 		{
 			if (max > window.ScrollBar.Value)
+			{
 				window.ScrollBar.Value = max;
+			}
+
 			window.ScrollBar.Maximum = max;
 		}
+
 		window.ScrollBar.Enabled = max > 0;
 		window.TextBoxIgnoreScrollBarChanges = false;
 	}
-	#endregion
+
 	#endregion
 
+	#endregion
 
 
 	public void GotoTitle()
@@ -2718,7 +3457,11 @@ internal sealed partial class EmueraConsole : IDisposable
 	// Used by ctrlZ.
 	public void GotoTitleAndLoadAndRepeatInput()
 	{
-		if (!Config.Ctrl_Z_Enabled) return;
+		if (!Config.Ctrl_Z_Enabled)
+		{
+			return;
+		}
+
 		if (JSONConfig.Data.UseNewRandom)
 		{
 			MessageBox.Show("CtrlZ: JSONConfig.Data.UseNewRandom not supported");
@@ -2735,15 +3478,24 @@ internal sealed partial class EmueraConsole : IDisposable
 			// * Approach 3 is to pretend that UseNewRandom doesn't exist.
 			// I'm not sure what games currently use that anyway.
 		}
-		if (GlobalStatic.ctrlZ.mLastSave < 0) return;
-		if (GlobalStatic.ctrlZ.mInputs.Count == 0) return;
+
+		if (GlobalStatic.ctrlZ.mLastSave < 0)
+		{
+			return;
+		}
+
+		if (GlobalStatic.ctrlZ.mInputs.Count == 0)
+		{
+			return;
+		}
+
 		if (GlobalStatic.ctrlZ.mRewindInProgress)
 		{
 			GlobalStatic.ctrlZ.mRepeatedUndoRequested = true;
 			return;
 		}
 
-	again:
+		again:
 
 		//GotoTitle
 		forceStopTimer();
@@ -2768,7 +3520,7 @@ internal sealed partial class EmueraConsole : IDisposable
 		PressEnterKey(true, GlobalStatic.ctrlZ.mLastSave.ToString(), false);
 
 		//RepeatInput
-		var inputs = GlobalStatic.ctrlZ.mInputs;
+		List<string> inputs = GlobalStatic.ctrlZ.mInputs;
 		if (inputs.Count > 0)
 		{
 			inputs.RemoveAt(inputs.Count - 1);
@@ -2790,11 +3542,13 @@ internal sealed partial class EmueraConsole : IDisposable
 		//^ because it's possible to leave it true overwise. I think.
 	}
 
-	bool force_temporary;
-	bool timer_suspended;
-	ConsoleState prevState;
+	private bool force_temporary;
+	private bool timer_suspended;
+
+	private ConsoleState prevState;
+
 	// saved by ReloadErb and restored by ReloadErbFinished
-	InputRequest prevReq = null!;
+	private InputRequest prevReq = null!;
 
 	public async Task ReloadErb()
 	{
@@ -2803,22 +3557,26 @@ internal sealed partial class EmueraConsole : IDisposable
 			MessageBox.Show(trerror.CanNotUseWhenError.Text);
 			return;
 		}
+
 		if (state == ConsoleState.Initializing)
 		{
 			MessageBox.Show(trerror.CanNotUseWhenInitialize.Text);
 			return;
 		}
+
 		bool notRedraw = false;
 		if (redraw == ConsoleRedraw.None)
 		{
 			notRedraw = true;
 			redraw = ConsoleRedraw.Normal;
 		}
+
 		if (genericTimer.Enabled)
 		{
 			genericTimer.Enabled = false;
 			timer_suspended = true;
 		}
+
 		prevState = state;
 		prevReq = inputReq;
 		state = ConsoleState.Initializing;
@@ -2831,7 +3589,9 @@ internal sealed partial class EmueraConsole : IDisposable
 		//強制的にボタン世代が切り替わるのを防ぐ
 		updatedGeneration = true;
 		if (notRedraw)
+		{
 			redraw = ConsoleRedraw.None;
+		}
 	}
 
 	public void ReloadErbFinished()
@@ -2854,22 +3614,26 @@ internal sealed partial class EmueraConsole : IDisposable
 			MessageBox.Show(trerror.CanNotUseWhenError.Text);
 			return;
 		}
+
 		if (state == ConsoleState.Initializing)
 		{
 			MessageBox.Show(trerror.CanNotUseWhenInitialize.Text);
 			return;
 		}
+
 		bool notRedraw = false;
 		if (redraw == ConsoleRedraw.None)
 		{
 			notRedraw = true;
 			redraw = ConsoleRedraw.Normal;
 		}
+
 		if (genericTimer.Enabled)
 		{
 			genericTimer.Enabled = false;
 			timer_suspended = true;
 		}
+
 		prevState = state;
 		prevReq = inputReq;
 		state = ConsoleState.Initializing;
@@ -2882,7 +3646,9 @@ internal sealed partial class EmueraConsole : IDisposable
 		//強制的にボタン世代が切り替わるのを防ぐ
 		updatedGeneration = true;
 		if (notRedraw)
+		{
 			redraw = ConsoleRedraw.None;
+		}
 	}
 
 	public async Task ReloadFolder(string erbPath)
@@ -2892,32 +3658,42 @@ internal sealed partial class EmueraConsole : IDisposable
 			MessageBox.Show(trerror.CanNotUseWhenError.Text);
 			return;
 		}
+
 		if (state == ConsoleState.Initializing)
 		{
 			MessageBox.Show(trerror.CanNotUseWhenInitialize.Text);
 			return;
 		}
+
 		if (genericTimer.Enabled)
 		{
 			genericTimer.Enabled = false;
 			timer_suspended = true;
 		}
+
 		List<string> paths = [];
 		SearchOption op = SearchOption.AllDirectories;
 		if (!Config.SearchSubdirectory)
+		{
 			op = SearchOption.TopDirectoryOnly;
-		var fnames = Directory.EnumerateFiles(erbPath, "*.ERB", op);
-		foreach (var fname in fnames)
+		}
+
+		IEnumerable<string> fnames = Directory.EnumerateFiles(erbPath, "*.ERB", op);
+		foreach (string fname in fnames)
 		{
 			if (Ascii.EqualsIgnoreCase(Path.GetExtension(fname), ".ERB"))
+			{
 				paths.Add(fname);
+			}
 		}
+
 		bool notRedraw = false;
 		if (redraw == ConsoleRedraw.None)
 		{
 			notRedraw = true;
 			redraw = ConsoleRedraw.Normal;
 		}
+
 		prevState = state;
 		prevReq = inputReq;
 		state = ConsoleState.Initializing;
@@ -2930,8 +3706,11 @@ internal sealed partial class EmueraConsole : IDisposable
 		//強制的にボタン世代が切り替わるのを防ぐ
 		updatedGeneration = true;
 		if (notRedraw)
+		{
 			redraw = ConsoleRedraw.None;
+		}
 	}
+
 	public void ReloadResource()
 	{
 		/*
@@ -2997,6 +3776,7 @@ internal class ConsoleBackground
 	{
 		colorMatrix.Matrix33 = opacity;
 	}
+
 	public ColorMatrix GetColorMatrix()
 	{
 		return colorMatrix;

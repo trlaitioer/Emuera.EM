@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Text;
 using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 
 namespace MinorShift.Emuera.Runtime.Config;
@@ -19,28 +20,44 @@ namespace MinorShift.Emuera.Runtime.Config;
 internal sealed class ConfigData
 {
 	#region eee_カレントディレクトリー
-	readonly static string configPath = Program.ExeDir + "emuera.config";
+
+	private readonly static string configPath = Program.ExeDir + "emuera.config";
+
 	#endregion
-	readonly static string configdebugPath = Program.DebugDir + "debug.config";
 
-	static ConfigData() { }
+	private readonly static string configdebugPath = Program.DebugDir + "debug.config";
+
+	static ConfigData()
+	{ }
+
 	private static ConfigData instance = new();
-	public static ConfigData Instance { get { return instance; } }
+	public static ConfigData Instance => instance;
 
-	private ConfigData() { setDefault(); }
+	private ConfigData()
+	{
+		setDefault();
+	}
+
 	#region EM_私家版_Emuera多言語化改造
+
 	//適当に大き目の配列を作っておく。
+
 	#region EE_configArrayの拡張
+
 	// private AConfigItem[] configArray = new AConfigItem[80];
 	private List<AConfigItem> configArray = [];
+
 	#endregion
+
 	//private AConfigItem[] replaceArray = new AConfigItem[50];
 	//private AConfigItem[] debugArray = new AConfigItem[20];
 	private List<AConfigItem> replaceArray = [];
 	private List<AConfigItem> debugArray = [];
+
 	#endregion
 
 	#region EM_私家版_Emuera多言語化改造
+
 	private void setDefault()
 	{
 		configArray.Add(new ConfigItem<bool>(ConfigCode.IgnoreCase, "大文字小文字の違いを無視する", "Ignore case", true));
@@ -67,24 +84,29 @@ internal sealed class ConfigData
 		configArray.Add(new ConfigItem<string>(ConfigCode.FontName, "フォント名", "Font name", "ＭＳ ゴシック"));
 		configArray.Add(new ConfigItem<int>(ConfigCode.FontSize, "フォントサイズ", "Font size", 18));
 		configArray.Add(new ConfigItem<int>(ConfigCode.LineHeight, "一行の高さ", "Line height", 19));
-		configArray.Add(new ConfigItem<Color>(ConfigCode.ForeColor, "文字色", "Text color", Color.FromArgb(192, 192, 192)));//LIGHTGRAY
-		configArray.Add(new ConfigItem<Color>(ConfigCode.BackColor, "背景色", "Background color", Color.FromArgb(0, 0, 0)));//BLACK
-		configArray.Add(new ConfigItem<Color>(ConfigCode.FocusColor, "選択中文字色", "Highlight color", Color.FromArgb(255, 255, 0)));//YELLOW
-		configArray.Add(new ConfigItem<Color>(ConfigCode.LogColor, "履歴文字色", "History log color", Color.FromArgb(192, 192, 192)));//LIGHTGRAY//Color.FromArgb(128, 128, 128));//GRAY
+		configArray.Add(new ConfigItem<Color>(ConfigCode.ForeColor, "文字色", "Text color", Color.FromArgb(192, 192, 192))); //LIGHTGRAY
+		configArray.Add(new ConfigItem<Color>(ConfigCode.BackColor, "背景色", "Background color", Color.FromArgb(0, 0, 0))); //BLACK
+		configArray.Add(new ConfigItem<Color>(ConfigCode.FocusColor, "選択中文字色", "Highlight color", Color.FromArgb(255, 255, 0))); //YELLOW
+		configArray.Add(new ConfigItem<Color>(ConfigCode.LogColor, "履歴文字色", "History log color",
+			Color.FromArgb(192, 192, 192))); //LIGHTGRAY//Color.FromArgb(128, 128, 128));//GRAY
 		configArray.Add(new ConfigItem<int>(ConfigCode.FPS, "フレーム毎秒", "FPS", 5));
 		configArray.Add(new ConfigItem<int>(ConfigCode.SkipFrame, "最大スキップフレーム数", "Skip frames", 3));
 		configArray.Add(new ConfigItem<int>(ConfigCode.ScrollHeight, "スクロール行数", "Lines per scroll", 1));
 		configArray.Add(new ConfigItem<int>(ConfigCode.InfiniteLoopAlertTime, "無限ループ警告までのミリ秒数", "Milliseconds for infinite loop warning", 5000));
 		configArray.Add(new ConfigItem<int>(ConfigCode.DisplayWarningLevel, "表示する最低警告レベル", "Minimum warning level", 1));
 		configArray.Add(new ConfigItem<bool>(ConfigCode.DisplayReport, "ロード時にレポートを表示する", "Display loading report", false));
-		configArray.Add(new ConfigItem<ReduceArgumentOnLoadFlag>(ConfigCode.ReduceArgumentOnLoad, "ロード時に引数を解析する", "Reduce argument on load", ReduceArgumentOnLoadFlag.NO));
+		configArray.Add(new ConfigItem<ReduceArgumentOnLoadFlag>(ConfigCode.ReduceArgumentOnLoad, "ロード時に引数を解析する", "Reduce argument on load",
+			ReduceArgumentOnLoadFlag.NO));
 
 		configArray.Add(new ConfigItem<bool>(ConfigCode.IgnoreUncalledFunction, "呼び出されなかった関数を無視する", "Ignore uncalled functions", true));
-		configArray.Add(new ConfigItem<DisplayWarningFlag>(ConfigCode.FunctionNotFoundWarning, "関数が見つからない警告の扱い", "Function is not found warning", DisplayWarningFlag.IGNORE));
-		configArray.Add(new ConfigItem<DisplayWarningFlag>(ConfigCode.FunctionNotCalledWarning, "関数が呼び出されなかった警告の扱い", "Function not called warning", DisplayWarningFlag.IGNORE));
+		configArray.Add(new ConfigItem<DisplayWarningFlag>(ConfigCode.FunctionNotFoundWarning, "関数が見つからない警告の扱い", "Function is not found warning",
+			DisplayWarningFlag.IGNORE));
+		configArray.Add(new ConfigItem<DisplayWarningFlag>(ConfigCode.FunctionNotCalledWarning, "関数が呼び出されなかった警告の扱い", "Function not called warning",
+			DisplayWarningFlag.IGNORE));
 
 
-		configArray.Add(new ConfigItem<bool>(ConfigCode.ChangeMasterNameIfDebug, "デバッグコマンドを使用した時にMASTERの名前を変更する", "Change MASTER mame in debug", true));
+		configArray.Add(
+			new ConfigItem<bool>(ConfigCode.ChangeMasterNameIfDebug, "デバッグコマンドを使用した時にMASTERの名前を変更する", "Change MASTER mame in debug", true));
 		configArray.Add(new ConfigItem<bool>(ConfigCode.ButtonWrap, "ボタンの途中で行を折りかえさない", "Button wrapping", false));
 		configArray.Add(new ConfigItem<bool>(ConfigCode.SearchSubdirectory, "サブディレクトリを検索する", "Search subfolders", false));
 		configArray.Add(new ConfigItem<bool>(ConfigCode.SortWithFilename, "読み込み順をファイル名順にソートする", "Sort filenames", false));
@@ -94,68 +116,116 @@ internal sealed class ConfigData
 		configArray.Add(new ConfigItem<bool>(ConfigCode.AllowFunctionOverloading, "システム関数の上書きを許可する", "Allow overriding system functions", true));
 		configArray.Add(new ConfigItem<bool>(ConfigCode.WarnFunctionOverloading, "システム関数が上書きされたとき警告を表示する", "System function override warning", true));
 		configArray.Add(new ConfigItem<string>(ConfigCode.TextEditor, "関連づけるテキストエディタ", "Text editor", "notepad"));
-		configArray.Add(new ConfigItem<TextEditorType>(ConfigCode.EditorType, "テキストエディタコマンドライン指定", "Text editor command line setting", TextEditorType.USER_SETTING));
+		configArray.Add(new ConfigItem<TextEditorType>(ConfigCode.EditorType, "テキストエディタコマンドライン指定", "Text editor command line setting",
+			TextEditorType.USER_SETTING));
 		configArray.Add(new ConfigItem<string>(ConfigCode.EditorArgument, "エディタに渡す行指定引数", "Text editor command line arguments", ""));
-		configArray.Add(new ConfigItem<bool>(ConfigCode.WarnNormalFunctionOverloading, "同名の非イベント関数が複数定義されたとき警告する", "Duplicated functions warning", false));
+		configArray.Add(new ConfigItem<bool>(ConfigCode.WarnNormalFunctionOverloading, "同名の非イベント関数が複数定義されたとき警告する", "Duplicated functions warning",
+			false));
 		configArray.Add(new ConfigItem<bool>(ConfigCode.CompatiErrorLine, "解釈不可能な行があっても実行する", "Execute error lines", false));
 		configArray.Add(new ConfigItem<bool>(ConfigCode.CompatiCALLNAME, "CALLNAMEが空文字列の時にNAMEを代入する", "Use NAME if CALLNAME is empty", false));
 		configArray.Add(new ConfigItem<bool>(ConfigCode.UseSaveFolder, "セーブデータをsavフォルダ内に作成する", "Use sav folder", false));
 		configArray.Add(new ConfigItem<bool>(ConfigCode.CompatiRAND, "擬似変数RANDの仕様をeramakerに合わせる", "Imitate behavior for RAND", false));
 		configArray.Add(new ConfigItem<bool>(ConfigCode.CompatiDRAWLINE, "DRAWLINEを常に新しい行で行う", "Always start DRAWLINE in a new line", false));
-		configArray.Add(new ConfigItem<bool>(ConfigCode.CompatiFunctionNoignoreCase, "関数・属性については大文字小文字を無視しない", "Do not ignore case for functions and attributes", false));
+		configArray.Add(new ConfigItem<bool>(ConfigCode.CompatiFunctionNoignoreCase, "関数・属性については大文字小文字を無視しない",
+			"Do not ignore case for functions and attributes", false));
 		configArray.Add(new ConfigItem<bool>(ConfigCode.SystemAllowFullSpace, "全角スペースをホワイトスペースに含める", "Whitespace includes full-width space", true));
-		configArray.Add(new ConfigItem<bool>(ConfigCode.CompatiLinefeedAs1739, "ver1739以前の非ボタン折り返しを再現する", "Reproduce wrapping behavior like in pre ver1739", false));
+		configArray.Add(new ConfigItem<bool>(ConfigCode.CompatiLinefeedAs1739, "ver1739以前の非ボタン折り返しを再現する",
+			"Reproduce wrapping behavior like in pre ver1739", false));
 		configArray.Add(new ConfigItem<UseLanguage>(ConfigCode.useLanguage, "内部で使用する東アジア言語", "Default ANSI encoding", UseLanguage.JAPANESE));
-		configArray.Add(new ConfigItem<bool>(ConfigCode.AllowLongInputByMouse, "ONEINPUT系命令でマウスによる2文字以上の入力を許可する", "Allow long input by mouse for ONEINPUT", false));
+		configArray.Add(new ConfigItem<bool>(ConfigCode.AllowLongInputByMouse, "ONEINPUT系命令でマウスによる2文字以上の入力を許可する",
+			"Allow long input by mouse for ONEINPUT", false));
 		configArray.Add(new ConfigItem<bool>(ConfigCode.CompatiCallEvent, "イベント関数のCALLを許可する", "Allow CALL on event functions", false));
 		configArray.Add(new ConfigItem<bool>(ConfigCode.CompatiSPChara, "SPキャラを使用する", "Allow SP characters", false));
 
 		configArray.Add(new ConfigItem<bool>(ConfigCode.SystemSaveInBinary, "セーブデータをバイナリ形式で保存する", "Use the binary format for saving data", false));
-		configArray.Add(new ConfigItem<bool>(ConfigCode.CompatiFuncArgOptional, "ユーザー関数の全ての引数の省略を許可する", "Allow arguments omission for user functions", false));
-		configArray.Add(new ConfigItem<bool>(ConfigCode.CompatiFuncArgAutoConvert, "ユーザー関数の引数に自動的にTOSTRを補完する", "Auto TOSTR conversion for user function arguments", false));
-		configArray.Add(new ConfigItem<bool>(ConfigCode.SystemIgnoreTripleSymbol, "FORM中の三連記号を展開しない", "Do not process triple symbols inside FORM", false));
+		configArray.Add(new ConfigItem<bool>(ConfigCode.CompatiFuncArgOptional, "ユーザー関数の全ての引数の省略を許可する", "Allow arguments omission for user functions",
+			false));
+		configArray.Add(new ConfigItem<bool>(ConfigCode.CompatiFuncArgAutoConvert, "ユーザー関数の引数に自動的にTOSTRを補完する",
+			"Auto TOSTR conversion for user function arguments", false));
+		configArray.Add(new ConfigItem<bool>(ConfigCode.SystemIgnoreTripleSymbol, "FORM中の三連記号を展開しない", "Do not process triple symbols inside FORM",
+			false));
 		configArray.Add(new ConfigItem<bool>(ConfigCode.TimesNotRigorousCalculation, "TIMESの計算をeramakerにあわせる", "Imitate behavior for TIMES", false));
 
-		configArray.Add(new ConfigItem<bool>(ConfigCode.SystemNoTarget, "キャラクタ変数の引数を補完しない", "Do not auto-complete arguments for character variables", false));
-		configArray.Add(new ConfigItem<bool>(ConfigCode.SystemIgnoreStringSet, "文字列変数の代入に文字列式を強制する", "String variable assignment on valid with string expression", false));
+		configArray.Add(new ConfigItem<bool>(ConfigCode.SystemNoTarget, "キャラクタ変数の引数を補完しない", "Do not auto-complete arguments for character variables",
+			false));
+		configArray.Add(new ConfigItem<bool>(ConfigCode.SystemIgnoreStringSet, "文字列変数の代入に文字列式を強制する",
+			"String variable assignment on valid with string expression", false));
 
 		#region EE_UPDATECHECK
+
 		configArray.Add(new ConfigItem<bool>(ConfigCode.ForbidUpdateCheck, "UPDATECHECKを許可しない", "Disallow UPDATECHECK", false));
+
 		#endregion
+
 		#region EE_ERDConfig
+
 		configArray.Add(new ConfigItem<bool>(ConfigCode.UseERD, "ERD機能を利用する", "Use ERD", true));
+
 		#endregion
+
 		#region EE_ERDNAME
-		configArray.Add(new ConfigItem<bool>(ConfigCode.VarsizeDimConfig, "VARSIZEの次元指定をERD機能に合わせる", "Imitate ERD to VARSIZE dimension specification", false));
+
+		configArray.Add(new ConfigItem<bool>(ConfigCode.VarsizeDimConfig, "VARSIZEの次元指定をERD機能に合わせる", "Imitate ERD to VARSIZE dimension specification",
+			false));
+
 		#endregion
+
 		#region EE_重複定義の確認
-		configArray.Add(new ConfigItem<bool>(ConfigCode.CheckDuplicateIdentifier, "ERDで定義した識別子とローカル変数の重複を確認する", "Check duplicate ERD identifier and private variablea", false));
+
+		configArray.Add(new ConfigItem<bool>(ConfigCode.CheckDuplicateIdentifier, "ERDで定義した識別子とローカル変数の重複を確認する",
+			"Check duplicate ERD identifier and private variablea", false));
+
 		#endregion
+
 		#region EE_行連結の改行コード置換
-		configArray.Add(new ConfigItem<string>(ConfigCode.ReplaceContinuationBR, "行連結の改行コードの置換文字列", "String of replacing new line code inside continuation", "\" \""));
+
+		configArray.Add(new ConfigItem<string>(ConfigCode.ReplaceContinuationBR, "行連結の改行コードの置換文字列",
+			"String of replacing new line code inside continuation", "\" \""));
+
 		#endregion
+
 		#region EE_CALLSHARP注意
+
 		configArray.Add(new ConfigItem<bool>(ConfigCode.PluginAvailableWarn, "外部プラグインが有効時に警告を表示する", "If available pllugins, Show warning", true));
+
 		#endregion
+
 		#region EM_私家版_LoadText＆SaveText機能拡張
-		configArray.Add(new ConfigItem<List<string>>(ConfigCode.ValidExtension, "LOADTEXTとSAVETEXTで使える拡張子", "Valid extensions for LOADTEXT and SAVETEXT", ["txt"]));
+
+		configArray.Add(new ConfigItem<List<string>>(ConfigCode.ValidExtension, "LOADTEXTとSAVETEXTで使える拡張子",
+			"Valid extensions for LOADTEXT and SAVETEXT", ["txt"]));
+
 		#endregion
+
 		#region EM_私家版_セーブ圧縮
+
 		configArray.Add(new ConfigItem<bool>(ConfigCode.ZipSaveData, "セーブデータを圧縮して保存する", "Compress save data", false));
+
 		#endregion
+
 		#region EM_私家版_Emuera多言語化改造
-		configArray.Add(new ConfigItem<bool>(ConfigCode.EnglishConfigOutput, "CONFIGファイルの内容を英語で保存する", "Output English items in the config file", false));
+
+		configArray.Add(new ConfigItem<bool>(ConfigCode.EnglishConfigOutput, "CONFIGファイルの内容を英語で保存する", "Output English items in the config file",
+			false));
 		configArray.Add(new ConfigItem<string>(ConfigCode.EmueraLang, "Emueraの表示言語", "Emuera interface language", string.Empty));
+
 		#endregion
+
 		#region EM_私家版_Icon指定機能
+
 		configArray.Add(new ConfigItem<string>(ConfigCode.EmueraIcon, "Emueraのアイコンのパス", "Path to a custom window icon", string.Empty));
+
 		#endregion
+
 		#region EE_AnchorのCB機能移植
-		configArray.Add(new ConfigItem<bool>(ConfigCode.CBUseClipboard, "表示したテキストをクリップボードにコピーする", "Clipboard- Copy text to Clipboard during Game", false));
+
+		configArray.Add(new ConfigItem<bool>(ConfigCode.CBUseClipboard, "表示したテキストをクリップボードにコピーする", "Clipboard- Copy text to Clipboard during Game",
+			false));
 		configArray.Add(new ConfigItem<bool>(ConfigCode.CBIgnoreTags, "テキスト中の<>タグを無視する", "Clipboard- ignore <> tags in text", false));
 		configArray.Add(new ConfigItem<string>(ConfigCode.CBReplaceTags, "<>を次の文で置き換える", "Clipboard- Replace <> with this", "."));
 		configArray.Add(new ConfigItem<bool>(ConfigCode.CBNewLinesOnly, "新しい行のみコピーする", "Clipboard- Show new lines only", true));
-		configArray.Add(new ConfigItem<bool>(ConfigCode.CBClearBuffer, "画面のリフレッシュ時にクリップボードとバッファを消去する", "Clipboard- Clear Buffer when game clears screen", false));
+		configArray.Add(new ConfigItem<bool>(ConfigCode.CBClearBuffer, "画面のリフレッシュ時にクリップボードとバッファを消去する",
+			"Clipboard- Clear Buffer when game clears screen", false));
 		configArray.Add(new ConfigItem<bool>(ConfigCode.CBTriggerLeftClick, "左クリックをトリガーにする", "Clipboard- LeftClick Trigger", true));
 		configArray.Add(new ConfigItem<bool>(ConfigCode.CBTriggerMiddleClick, "ホイールクリックをトリガーにする", "Clipboard- MiddleClick Trigger", false));
 		configArray.Add(new ConfigItem<bool>(ConfigCode.CBTriggerDoubleLeftClick, "ダブルクリックをトリガーにする", "Clipboard- Double Left Click Trigger", false));
@@ -165,13 +235,20 @@ internal sealed class ConfigData
 		configArray.Add(new ConfigItem<int>(ConfigCode.CBBufferSize, "総バッファサイズ", "Clipboard- Buffer Size", 300));
 		configArray.Add(new ConfigItem<int>(ConfigCode.CBScrollCount, "スクロールの行数", "Clipboard- Scrolled Lines per Key", 5));
 		configArray.Add(new ConfigItem<int>(ConfigCode.CBMinTimer, "クリップボードの更新間隔(ミリ秒)", "Clipboard- min time between pastes", 800));
+
 		#endregion
+
 		#region EmuEra-Rikaichan related settings
+
 		configArray.Add(new ConfigItem<bool>(ConfigCode.RikaiEnabled, "Rikaichanを使用する", "Rikai- Enabled", false));
-		configArray.Add(new ConfigItem<string>(ConfigCode.RikaiFilename, "Rikaichanのファイルパス", "Rikai- Dictionary Filename", "Emuera-Rikai-edict.txt-eucjp"));
-		configArray.Add(new ConfigItem<Color>(ConfigCode.RikaiColorBack, "ポップアップの背景色", "Rikai- Back Color", Color.FromArgb(0, 0, 0x8B))); ////Color.DarkBlue
-		configArray.Add(new ConfigItem<Color>(ConfigCode.RikaiColorText, "ポップアップの文字色", "Rikai- Text Color", Color.FromArgb(0xFF, 0xFF, 0xFF))); ////Color.White
+		configArray.Add(new ConfigItem<string>(ConfigCode.RikaiFilename, "Rikaichanのファイルパス", "Rikai- Dictionary Filename",
+			"Emuera-Rikai-edict.txt-eucjp"));
+		configArray.Add(new ConfigItem<Color>(ConfigCode.RikaiColorBack, "ポップアップの背景色", "Rikai- Back Color",
+			Color.FromArgb(0, 0, 0x8B))); ////Color.DarkBlue
+		configArray.Add(new ConfigItem<Color>(ConfigCode.RikaiColorText, "ポップアップの文字色", "Rikai- Text Color",
+			Color.FromArgb(0xFF, 0xFF, 0xFF))); ////Color.White
 		configArray.Add(new ConfigItem<bool>(ConfigCode.RikaiUseSeparateBoxes, "翻訳中の語句を強調表示する", "Rikai- Use Separate Boxes", true));
+
 		#endregion
 
 		configArray.Add(new ConfigItem<bool>(ConfigCode.Ctrl_Z_Enabled, "Ctrl-Zで元に戻す機能を有効にする", "Enable undo with ctrl-z", false));
@@ -194,13 +271,17 @@ internal sealed class ConfigData
 		replaceArray.Add(new ConfigItem<string>(ConfigCode.TitleMenuString0, "システムメニュー0", "System menu 0", "最初からはじめる"));
 		replaceArray.Add(new ConfigItem<string>(ConfigCode.TitleMenuString1, "システムメニュー1", "System menu 1", "ロードしてはじめる"));
 		replaceArray.Add(new ConfigItem<int>(ConfigCode.ComAbleDefault, "COM_ABLE初期値", "Default COM_ABLE", 1));
-		replaceArray.Add(new ConfigItem<List<long>>(ConfigCode.StainDefault, "汚れの初期値", "Default Stain", new List<long>(new long[] { 0, 0, 2, 1, 8 })));
+		replaceArray.Add(new ConfigItem<List<long>>(ConfigCode.StainDefault, "汚れの初期値", "Default Stain",
+			new List<long>(new long[] { 0, 0, 2, 1, 8 })));
 		replaceArray.Add(new ConfigItem<string>(ConfigCode.TimeupLabel, "時間切れ表示", "Time up message", "時間切れ"));
-		replaceArray.Add(new ConfigItem<List<long>>(ConfigCode.ExpLvDef, "EXPLVの初期値", "Default EXPLV", new List<long>(new long[] { 0, 1, 4, 20, 50, 200 })));
-		replaceArray.Add(new ConfigItem<List<long>>(ConfigCode.PalamLvDef, "PALAMLVの初期値", "Default PALAMLV", new List<long>(new long[] { 0, 100, 500, 3000, 10000, 30000, 60000, 100000, 150000, 250000 })));
+		replaceArray.Add(new ConfigItem<List<long>>(ConfigCode.ExpLvDef, "EXPLVの初期値", "Default EXPLV",
+			new List<long>(new long[] { 0, 1, 4, 20, 50, 200 })));
+		replaceArray.Add(new ConfigItem<List<long>>(ConfigCode.PalamLvDef, "PALAMLVの初期値", "Default PALAMLV",
+			new List<long>(new long[] { 0, 100, 500, 3000, 10000, 30000, 60000, 100000, 150000, 250000 })));
 		replaceArray.Add(new ConfigItem<long>(ConfigCode.pbandDef, "PBANDの初期値", "Default PBAND", 4));
 		replaceArray.Add(new ConfigItem<long>(ConfigCode.RelationDef, "RELATIONの初期値", "Default RELATION", 0));
 	}
+
 	#endregion
 
 	/*
@@ -330,34 +411,57 @@ internal sealed class ConfigData
 	public ConfigData Copy()
 	{
 		#region EM_私家版_Emuera多言語化改造
+
 		ConfigData config = new();
 		// for (int i = 0; i < configArray.Length; i++)
 		for (int i = 0; i < configArray.Count; i++)
-			if ((configArray[i] != null) && (config.configArray[i] != null))
+		{
+			if (configArray[i] != null && config.configArray[i] != null)
+			{
 				configArray[i].CopyTo(config.configArray[i]);
+			}
+		}
+
 		//for (int i = 0; i < configArray.Length; i++)
 		for (int i = 0; i < debugArray.Count; i++)
-			if ((debugArray[i] != null) && (config.debugArray[i] != null))
+		{
+			if (debugArray[i] != null && config.debugArray[i] != null)
+			{
 				debugArray[i].CopyTo(config.debugArray[i]);
+			}
+		}
+
 		//for (int i = 0; i < replaceArray.Length; i++)
 		for (int i = 0; i < replaceArray.Count; i++)
-			if ((replaceArray[i] != null) && (config.replaceArray[i] != null))
+		{
+			if (replaceArray[i] != null && config.replaceArray[i] != null)
+			{
 				replaceArray[i].CopyTo(config.replaceArray[i]);
+			}
+		}
+
 		return config;
+
 		#endregion
 	}
 
 	public Dictionary<ConfigCode, string> GetConfigNameDic()
 	{
 		Dictionary<ConfigCode, string> ret = [];
+
 		#region EM_私家版_Emuera多言語化改造
+
 		foreach (AConfigItem item in configArray)
 		{
 			if (item != null)
 				// ret.Add(item.Code, item.Text);
+			{
 				ret.Add(item.Code, $"{item.Text}/{item.EngText}");
+			}
 		}
+
 		#endregion
+
 		return ret;
 	}
 
@@ -370,6 +474,7 @@ internal sealed class ConfigData
 	}
 
 	#region getitem
+
 	public AConfigItem? GetItem(ConfigCode code)
 	{
 		AConfigItem? item = GetConfigItem(code);
@@ -381,8 +486,10 @@ internal sealed class ConfigData
 				item = GetDebugItem(code);
 			}
 		}
+
 		return item;
 	}
+
 	public AConfigItem? GetItem(string key)
 	{
 		AConfigItem? item = GetConfigItem(key);
@@ -394,6 +501,7 @@ internal sealed class ConfigData
 				item = GetDebugItem(key);
 			}
 		}
+
 		return item;
 	}
 
@@ -402,28 +510,49 @@ internal sealed class ConfigData
 		foreach (AConfigItem item in configArray)
 		{
 			if (item == null)
+			{
 				continue;
+			}
+
 			if (item.Code == code)
+			{
 				return item;
+			}
 		}
+
 		return null;
 	}
+
 	public AConfigItem? GetConfigItem(string key)
 	{
 		#region EM_私家版_Emuera多言語化改造
+
 		key = key.ToUpper();
 		foreach (AConfigItem item in configArray)
 		{
 			if (item == null)
+			{
 				continue;
+			}
+
 			if (item.Name == key)
+			{
 				return item;
+			}
+
 			if (item.Text == key)
+			{
 				return item;
+			}
+
 			if (item.EngText == key)
+			{
 				return item;
+			}
 		}
+
 		return null;
+
 		#endregion
 	}
 
@@ -432,26 +561,44 @@ internal sealed class ConfigData
 		foreach (AConfigItem item in replaceArray)
 		{
 			if (item == null)
+			{
 				continue;
+			}
+
 			if (item.Code == code)
+			{
 				return item;
+			}
 		}
+
 		return null;
 	}
+
 	public AConfigItem? GetReplaceItem(string key)
 	{
 		#region EM_私家版_Emuera多言語化改造
+
 		key = key.ToUpper();
 		foreach (AConfigItem item in replaceArray)
 		{
 			if (item == null)
+			{
 				continue;
+			}
+
 			if (item.Name == key)
+			{
 				return item;
+			}
+
 			if (item.Text == key)
+			{
 				return item;
+			}
 		}
+
 		return null;
+
 		#endregion
 	}
 
@@ -460,26 +607,44 @@ internal sealed class ConfigData
 		foreach (AConfigItem item in debugArray)
 		{
 			if (item == null)
+			{
 				continue;
+			}
+
 			if (item.Code == code)
+			{
 				return item;
+			}
 		}
+
 		return null;
 	}
+
 	public AConfigItem? GetDebugItem(string key)
 	{
 		#region EM_私家版_Emuera多言語化改造
+
 		key = key.ToUpper();
 		foreach (AConfigItem item in debugArray)
 		{
 			if (item == null)
+			{
 				continue;
+			}
+
 			if (item.Name == key)
+			{
 				return item;
+			}
+
 			if (item.Text == key)
+			{
 				return item;
+			}
 		}
+
 		return null;
+
 		#endregion
 	}
 
@@ -490,18 +655,22 @@ internal sealed class ConfigData
 	{
 		return GetItem(code)!;
 	}
+
 	internal AConfigItem GetRequiredConfigItem(ConfigCode code)
 	{
 		return GetConfigItem(code)!;
 	}
+
 	internal ConfigItem<T> GetRequiredConfigItem<T>(ConfigCode code)
 	{
 		return (ConfigItem<T>)GetConfigItem(code)!;
 	}
+
 	internal AConfigItem GetRequiredDebugItem(ConfigCode code)
 	{
 		return GetDebugItem(code)!;
 	}
+
 	internal ConfigItem<T> GetRequiredDebugItem<T>(ConfigCode code)
 	{
 		return (ConfigItem<T>)GetDebugItem(code)!;
@@ -515,122 +684,136 @@ internal sealed class ConfigData
 			errMes = string.Format(trerror.InvalidConfigName.Text, text);
 			return null;
 		}
+
 		SingleTerm term;
 		switch (item.Code)
 		{
 			//<bool>
-			case ConfigCode.AutoSave://"オートセーブを行なう"
-			case ConfigCode.MoneyFirst://"単位の位置"
+			case ConfigCode.AutoSave: //"オートセーブを行なう"
+			case ConfigCode.MoneyFirst: //"単位の位置"
 				if (item.GetValue<bool>())
+				{
 					term = new SingleLongTerm(1);
+				}
 				else
+				{
 					term = new SingleLongTerm(0);
+				}
+
 				break;
 			//<int>
-			case ConfigCode.WindowX:// "ウィンドウ幅"
-			case ConfigCode.PrintCPerLine:// "PRINTCを並べる数"
-			case ConfigCode.PrintCLength:// "PRINTCの文字数"
-			case ConfigCode.FontSize:// "フォントサイズ"
-			case ConfigCode.LineHeight:// "一行の高さ"
-			case ConfigCode.SaveDataNos:// "表示するセーブデータ数"
-			case ConfigCode.MaxShopItem:// "販売アイテム数"
-			case ConfigCode.ComAbleDefault:// "COM_ABLE初期値"
+			case ConfigCode.WindowX: // "ウィンドウ幅"
+			case ConfigCode.PrintCPerLine: // "PRINTCを並べる数"
+			case ConfigCode.PrintCLength: // "PRINTCの文字数"
+			case ConfigCode.FontSize: // "フォントサイズ"
+			case ConfigCode.LineHeight: // "一行の高さ"
+			case ConfigCode.SaveDataNos: // "表示するセーブデータ数"
+			case ConfigCode.MaxShopItem: // "販売アイテム数"
+			case ConfigCode.ComAbleDefault: // "COM_ABLE初期値"
 				term = new SingleLongTerm(item.GetValue<int>());
 				break;
 			//<Color>
-			case ConfigCode.ForeColor://"文字色"
-			case ConfigCode.BackColor://"背景色"
-			case ConfigCode.FocusColor://"選択中文字色"
-			case ConfigCode.LogColor://"履歴文字色"
-				{
-					Color color = item.GetValue<Color>();
-					term = new SingleLongTerm(((color.R * 256) + color.G) * 256 + color.B);
-				}
+			case ConfigCode.ForeColor: //"文字色"
+			case ConfigCode.BackColor: //"背景色"
+			case ConfigCode.FocusColor: //"選択中文字色"
+			case ConfigCode.LogColor: //"履歴文字色"
+			{
+				Color color = item.GetValue<Color>();
+				term = new SingleLongTerm((((color.R * 256) + color.G) * 256) + color.B);
+			}
 				break;
 
 			//<Int64>
-			case ConfigCode.pbandDef:// "PBANDの初期値"
-			case ConfigCode.RelationDef:// "RELATIONの初期値"
+			case ConfigCode.pbandDef: // "PBANDの初期値"
+			case ConfigCode.RelationDef: // "RELATIONの初期値"
 				term = new SingleLongTerm(item.GetValue<long>());
 				break;
 
 			//<string>
-			case ConfigCode.FontName:// "フォント名"
-			case ConfigCode.MoneyLabel:// "お金の単位"
-			case ConfigCode.LoadLabel:// "起動時簡略表示"
-			case ConfigCode.DrawLineString:// "DRAWLINE文字"
-			case ConfigCode.TitleMenuString0:// "システムメニュー0"
-			case ConfigCode.TitleMenuString1:// "システムメニュー1"
-			case ConfigCode.TimeupLabel:// "時間切れ表示"
+			case ConfigCode.FontName: // "フォント名"
+			case ConfigCode.MoneyLabel: // "お金の単位"
+			case ConfigCode.LoadLabel: // "起動時簡略表示"
+			case ConfigCode.DrawLineString: // "DRAWLINE文字"
+			case ConfigCode.TitleMenuString0: // "システムメニュー0"
+			case ConfigCode.TitleMenuString1: // "システムメニュー1"
+			case ConfigCode.TimeupLabel: // "時間切れ表示"
 				term = new SingleStrTerm(item.GetValue<string>());
 				break;
 
 			//<char>
-			case ConfigCode.BarChar1:// "BAR文字1"
-			case ConfigCode.BarChar2:// "BAR文字2"
+			case ConfigCode.BarChar1: // "BAR文字1"
+			case ConfigCode.BarChar2: // "BAR文字2"
 				term = new SingleStrTerm(item.GetValue<char>().ToString());
 				break;
 			//<TextDrawingMode>
-			case ConfigCode.TextDrawingMode:// "描画インターフェース"
+			case ConfigCode.TextDrawingMode: // "描画インターフェース"
 				term = new SingleStrTerm(item.GetValue<TextDrawingMode>().ToString());
 				break;
 			default:
+			{
+				if (Enum.IsDefined(item.Code))
 				{
-					if (Enum.IsDefined(item.Code))
+					switch (item.ValueToString())
 					{
-						switch (item.ValueToString())
-						{
-							case "YES":
-								term = new SingleLongTerm(1);
-								break;
-							case "NO":
-								term = new SingleLongTerm(0);
-								break;
-							default:
-								string val = item.ValueToString();
-								if (long.TryParse(val, out long i))
-									term = new SingleLongTerm(i);
-								else
-									term = new SingleStrTerm(val);
-								break;
-						}
+						case "YES":
+							term = new SingleLongTerm(1);
+							break;
+						case "NO":
+							term = new SingleLongTerm(0);
+							break;
+						default:
+							string val = item.ValueToString();
+							if (long.TryParse(val, out long i))
+							{
+								term = new SingleLongTerm(i);
+							}
+							else
+							{
+								term = new SingleStrTerm(val);
+							}
+
+							break;
 					}
-					else
-					{
-						errMes = string.Format(trerror.NotAllowGetConfigValue.Text, text);
-						return null;
-					}
-					break;
-					/** try-catchで解決しようとした名残
+				}
+				else
+				{
+					errMes = string.Format(trerror.NotAllowGetConfigValue.Text, text);
+					return null;
+				}
+
+				break;
+				/** try-catchで解決しようとした名残
+				try
+				{
+					term = item.GetValue<bool>() == true ? new SingleTerm(1) : new SingleTerm(0) ;
+				}
+				catch
+				{
 					try
 					{
-						term = item.GetValue<bool>() == true ? new SingleTerm(1) : new SingleTerm(0) ;
+						term = new SingleTerm(item.GetValue<int>());
 					}
 					catch
 					{
 						try
 						{
-							term = new SingleTerm(item.GetValue<int>());
+							term = new SingleTerm(item.GetValue<string>());
 						}
 						catch
 						{
-							try
-							{
-								term = new SingleTerm(item.GetValue<string>());
-							}
-							catch
-							{
-								errMes = string.Format(trerror.NotAllowGetConfigValue.Text, text);
-								return null;
-							}
+							errMes = string.Format(trerror.NotAllowGetConfigValue.Text, text);
+							return null;
 						}
 					}
-					break;
-					**/
 				}
+				break;
+				**/
+			}
 		}
+
 		return term;
 	}
+
 	#endregion
 
 
@@ -641,42 +824,64 @@ internal sealed class ConfigData
 		try
 		{
 			#region EM_私家版_Emuera多言語化改造
+
 			// writer = new StreamWriter(configPath, false, Config.Encode);
 			writer = new StreamWriter(configPath, false, Config.Encode);
 
 			// for (int i = 0; i < configArray.Length; i++)
 			for (int i = 0; i < configArray.Count; i++)
-			#endregion
+
+				#endregion
+
 			{
 				AConfigItem item = configArray[i];
 				if (item == null)
+				{
 					continue;
+				}
 
 				//1806beta001 CompatiDRAWLINEの廃止、CompatiLinefeedAs1739へ移行
 				if (item.Code == ConfigCode.CompatiDRAWLINE)
+				{
 					continue;
-				if ((item.Code == ConfigCode.ChangeMasterNameIfDebug) && item.GetValue<bool>())
+				}
+
+				if (item.Code == ConfigCode.ChangeMasterNameIfDebug && item.GetValue<bool>())
+				{
 					continue;
-				if ((item.Code == ConfigCode.LastKey) && (item.GetValue<long>() == 0))
+				}
+
+				if (item.Code == ConfigCode.LastKey && item.GetValue<long>() == 0)
+				{
 					continue;
+				}
+
 				#region EM_私家版_LoadText＆SaveText機能拡張
+
 				if (item.Code == ConfigCode.ValidExtension)
 				{
-					var ex = (ConfigItem<List<string>>)item;
-					var sb = new System.Text.StringBuilder();
+					ConfigItem<List<string>> ex = (ConfigItem<List<string>>)item;
+					StringBuilder sb = new();
+
 					#region EM_私家版_Emuera多言語化改造
+
 					// sb.Append(ex.Text).Append(":");
 					sb.Append(Config.EnglishConfigOutput ? ex.EngText : ex.Text).Append(':');
+
 					#endregion
-					foreach (var str in ex.Value)
+
+					foreach (string str in ex.Value)
 					{
 						sb.Append(str).Append(',');
 					}
+
 					sb.Remove(sb.Length - 1, 1);
 					writer.WriteLine(sb.ToString());
 					continue;
 				}
+
 				#endregion
+
 				//if (item.Code == ConfigCode.IgnoreWarningFiles)
 				//{
 				//    List<string> files = item.GetValue<List<string>>();
@@ -695,6 +900,7 @@ internal sealed class ConfigData
 		{
 			writer?.Close();
 		}
+
 		return true;
 	}
 
@@ -704,10 +910,16 @@ internal sealed class ConfigData
 		foreach (AConfigItem item in configArray)
 		{
 			if (item == null)
+			{
 				continue;
+			}
+
 			if (item.Fixed)
+			{
 				item.Fixed = false;
+			}
 		}
+
 		LoadConfig();
 		return true;
 	}
@@ -717,9 +929,14 @@ internal sealed class ConfigData
 		string defaultConfigPath = Program.CsvDir + "_default.config";
 		string fixedConfigPath = Program.CsvDir + "_fixed.config";
 		if (!File.Exists(defaultConfigPath))
+		{
 			defaultConfigPath = Program.CsvDir + "default.config";
+		}
+
 		if (!File.Exists(fixedConfigPath))
+		{
 			fixedConfigPath = Program.CsvDir + "fixed.config";
+		}
 
 		loadConfig(defaultConfigPath, false);
 		loadConfig(configPath, false);
@@ -728,24 +945,37 @@ internal sealed class ConfigData
 		Config.SetConfig(this);
 		bool needSave = false;
 		if (!File.Exists(configPath))
+		{
 			needSave = true;
+		}
+
 		if (Config.CheckUpdate())
 		{
 			GetRequiredItem(ConfigCode.LastKey).SetValue(Config.LastKey);
 			needSave = true;
 		}
+
 		if (needSave)
+		{
 			SaveConfig();
+		}
+
 		return true;
 	}
 
 	private bool loadConfig(string confPath, bool fix)
 	{
 		if (!File.Exists(confPath))
+		{
 			return false;
-		using var eReader = new EraStreamReader(false);
+		}
+
+		using EraStreamReader eReader = new(false);
 		if (!eReader.Open(confPath))
+		{
 			return false;
+		}
+
 		ScriptPosition? pos = null;
 		try
 		{
@@ -753,15 +983,24 @@ internal sealed class ConfigData
 			//bool defineIgnoreWarningFiles = false;
 			while ((line = eReader.ReadLine()) != null)
 			{
-				if ((line.Length == 0) || (line[0] == ';'))
+				if (line.Length == 0 || line[0] == ';')
+				{
 					continue;
+				}
+
 				pos = new ScriptPosition(eReader.Filename, eReader.LineNo);
 				string[] tokens = line.Split([':']);
 				if (tokens.Length < 2)
+				{
 					continue;
+				}
+
 				#region EM_私家版_Emuera多言語化改造
+
 				AConfigItem? item = GetConfigItem(tokens[0].Trim());
+
 				#endregion
+
 				if (item != null)
 				{
 					//1806beta001 CompatiDRAWLINEの廃止、CompatiLinefeedAs1739へ移行
@@ -784,7 +1023,10 @@ internal sealed class ConfigData
 						if (tokens.Length > 2)
 						{
 							if (tokens[2].StartsWith('\\'))
+							{
 								tokens[1] += ":" + tokens[2];
+							}
+
 							if (tokens.Length > 3)
 							{
 								for (int i = 3; i < tokens.Length; i++)
@@ -794,19 +1036,24 @@ internal sealed class ConfigData
 							}
 						}
 					}
+
 					if (item.Code == ConfigCode.EditorArgument)
 					{
 						//半角スペースを要求する引数が必要なエディタがあるので別処理で
 						((ConfigItem<string>)item).Value = tokens[1];
 						continue;
 					}
+
 					if (item.Code == ConfigCode.MaxLog && Program.AnalysisMode)
 					{
 						//解析モード時はここを上書きして十分な長さを確保する
 						tokens[1] = "10000";
 					}
+
 					if (item.TryParse(tokens[1]) && fix)
+					{
 						item.Fixed = true;
+					}
 				}
 			}
 		}
@@ -818,17 +1065,25 @@ internal sealed class ConfigData
 		{
 			ParserMediator.ConfigWarn(exc.GetType().ToString() + ":" + exc.Message, pos, 1, exc.StackTrace);
 		}
-		finally { eReader.Dispose(); }
+		finally
+		{
+			eReader.Dispose();
+		}
+
 		return true;
 	}
 
 	#region replace
+
 	// 1.52a改変部分　（単位の差し替えおよび前置、後置のためのコンフィグ処理）
 	public void LoadReplaceFile(string filename)
 	{
-		using var eReader = new EraStreamReader(false);
+		using EraStreamReader eReader = new(false);
 		if (!eReader.Open(filename))
+		{
 			return;
+		}
+
 		ScriptPosition? pos = null;
 		try
 		{
@@ -837,17 +1092,29 @@ internal sealed class ConfigData
 			{
 				line = line.Trim();
 				if (line.Length == 0)
+				{
 					continue;
+				}
+
 				if (line[0] == ';')
+				{
 					continue;
+				}
+
 				pos = new ScriptPosition(eReader.Filename, eReader.LineNo);
 				string[] tokens = line.Split(',', ':');
 				if (tokens.Length < 2)
+				{
 					continue;
+				}
+
 				string itemName = tokens[0].Trim();
 				tokens[1] = line[(tokens[0].Length + 1)..];
 				if (string.IsNullOrEmpty(tokens[1].Trim()))
+				{
 					continue;
+				}
+
 				AConfigItem? item = GetReplaceItem(itemName);
 				item?.TryParse(tokens[1]);
 			}
@@ -860,13 +1127,15 @@ internal sealed class ConfigData
 		{
 			ParserMediator.Warn(exc.GetType().ToString() + ":" + exc.Message, pos, 1, exc.StackTrace);
 		}
-		finally { eReader.Dispose(); }
+		finally
+		{
+			eReader.Dispose();
+		}
 	}
 
 	#endregion
 
 	#region debug
-
 
 	public bool SaveDebugConfig()
 	{
@@ -874,16 +1143,22 @@ internal sealed class ConfigData
 		try
 		{
 			#region EM_私家版_Emuera多言語化改造
+
 			// writer = new StreamWriter(configdebugPath, false, Config.Encode);
 			writer = new StreamWriter(configdebugPath, false, Config.Encode);
 
 			// for (int i = 0; i < debugArray.Length; i++)
 			for (int i = 0; i < debugArray.Count; i++)
-			#endregion
+
+				#endregion
+
 			{
 				AConfigItem item = debugArray[i];
 				if (item == null)
+				{
 					continue;
+				}
+
 				writer.WriteLine(item.ToString());
 			}
 		}
@@ -895,28 +1170,41 @@ internal sealed class ConfigData
 		{
 			writer?.Close();
 		}
+
 		return true;
 	}
 
 	public bool LoadDebugConfig()
 	{
-		using var eReader = new EraStreamReader(false);
+		using EraStreamReader eReader = new(false);
 		if (!File.Exists(configdebugPath))
+		{
 			goto err;
+		}
+
 		if (!eReader.Open(configdebugPath))
+		{
 			goto err;
+		}
+
 		ScriptPosition? pos = null;
 		try
 		{
 			string? line = null;
 			while ((line = eReader.ReadLine()) != null)
 			{
-				if ((line.Length == 0) || (line[0] == ';'))
+				if (line.Length == 0 || line[0] == ';')
+				{
 					continue;
+				}
+
 				pos = new ScriptPosition(eReader.Filename, eReader.LineNo);
 				string[] tokens = line.Split([':']);
 				if (tokens.Length < 2)
+				{
 					continue;
+				}
+
 				AConfigItem? item = GetDebugItem(tokens[0].Trim());
 				item?.TryParse(tokens[1]);
 #if DEBUG
@@ -935,10 +1223,14 @@ internal sealed class ConfigData
 			ParserMediator.ConfigWarn(exc.GetType().ToString() + ":" + exc.Message, pos, 1, exc.StackTrace);
 			goto err;
 		}
-		finally { eReader.Dispose(); }
+		finally
+		{
+			eReader.Dispose();
+		}
+
 		Config.SetDebugConfig(this);
 		return true;
-	err:
+		err:
 		Config.SetDebugConfig(this);
 		return false;
 	}

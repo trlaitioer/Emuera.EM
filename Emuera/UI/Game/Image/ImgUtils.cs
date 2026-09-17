@@ -5,7 +5,7 @@ using System.IO;
 
 namespace MinorShift.Emuera.UI.Game.Image;
 
-static class ImgUtils
+internal static class ImgUtils
 {
 	public static Bitmap? LoadImage(string filepath)
 	{
@@ -13,6 +13,7 @@ static class ImgUtils
 		{
 			return null;
 		}
+
 		Bitmap bmp;
 
 		if (Path.GetExtension(filepath).Equals(".WEBP", System.StringComparison.InvariantCultureIgnoreCase))
