@@ -1317,7 +1317,7 @@ internal sealed partial class FunctionIdentifier
 
 			#endregion
 
-			long z = tinputarg.Disp != null ? tinputarg.Disp.GetIntValue(exm) : 1;
+			long z = tinputarg.Disp?.GetIntValue(exm) ?? 1;
 			req.Timelimit = x;
 			req.DefIntValue = y;
 			req.DisplayTime = z != 0;
@@ -1380,7 +1380,7 @@ internal sealed partial class FunctionIdentifier
 
 			#endregion
 
-			long z = tinputarg.Disp != null ? tinputarg.Disp.GetIntValue(exm) : 1;
+			long z = tinputarg.Disp?.GetIntValue(exm) ?? 1;
 			req.Timelimit = x;
 			req.DefStrValue = strs;
 			req.DisplayTime = z != 0;

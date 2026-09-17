@@ -33,7 +33,7 @@ internal sealed partial class Lang
 		private readonly string text;
 		private string? tr;
 
-		public string Text => tr == null ? text : tr;
+		public string Text => tr ?? text;
 	}
 
 	[AttributeUsage(AttributeTargets.Property | AttributeTargets.Class)] private sealed class Managed : Attribute;

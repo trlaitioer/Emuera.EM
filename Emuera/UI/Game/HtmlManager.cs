@@ -627,7 +627,7 @@ internal static class HtmlManager
 
 		List<AConsoleDisplayNode> cssList = [];
 		// List<ConsoleButtonString> buttonList = new List<ConsoleButtonString>();
-		List<ConsoleButtonString> buttonList = buttonsOutput == null ? [] : buttonsOutput;
+		List<ConsoleButtonString> buttonList = buttonsOutput ?? [];
 
 		#endregion
 
@@ -635,8 +635,8 @@ internal static class HtmlManager
 		// str is null only on the recursive call, which always passes a parent
 		CharStream st = parent != null ? parent.Stream : new CharStream(str!);
 		int found;
-		bool hasComment = parent != null ? parent.HasComment : str!.Contains("<!--", StringComparison.Ordinal);
-		bool hasReturn = parent != null ? parent.HasReturn : str!.Contains('\n', StringComparison.Ordinal);
+		bool hasComment = parent?.HasComment ?? str!.Contains("<!--", StringComparison.Ordinal);
+		bool hasReturn = parent?.HasReturn ?? str!.Contains('\n', StringComparison.Ordinal);
 		HtmlAnalzeState state = new();
 
 		#region EM_私家版_HTML_divタグ
