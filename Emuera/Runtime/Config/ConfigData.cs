@@ -29,8 +29,7 @@ internal sealed class ConfigData
 	static ConfigData()
 	{ }
 
-	private readonly static ConfigData instance = new();
-	public static ConfigData Instance => instance;
+	public static ConfigData Instance { get; } = new();
 
 	private ConfigData()
 	{

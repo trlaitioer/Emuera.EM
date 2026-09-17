@@ -20,14 +20,13 @@ internal sealed class VariableIdentifier
 	private VariableIdentifier(VariableCode code, string scope)
 	{
 		this.code = code;
-		this.scope = scope;
+		this.Scope = scope;
 	}
 
 	private readonly VariableCode code;
-	private readonly string? scope;
 	public VariableCode Code => code;
 
-	public string? Scope => scope;
+	public string? Scope { get; }
 
 	public int CodeInt => (int)(code & VariableCode.__LOWERCASE__);
 

@@ -53,9 +53,9 @@ internal sealed partial class VariableData : IDisposable
 	//public VariableLocal<Int64, Int64Calculator> ArgVars { get { return argVars; } }
 	//public VariableLocal<string, StringCalculator> ArgString { get { return argString; } }
 	public List<CharacterData> CharacterList => characterList;
-	private readonly GameBase gamebase;
 	private readonly ConstantData constant;
-	internal GameBase GameBase => gamebase;
+	internal GameBase GameBase { get; }
+
 	internal ConstantData Constant => constant;
 
 	public long LastLoadVersion = -1;
@@ -92,7 +92,7 @@ internal sealed partial class VariableData : IDisposable
 
 	public VariableData(GameBase gamebase, ConstantData constant)
 	{
-		this.gamebase = gamebase;
+		this.GameBase = gamebase;
 		this.constant = constant;
 		characterList = [];
 		//localVars = new VariableLocal<Int64, Int64Calculator>(constant.VariableIntArrayLength[(int)(VariableCode.__LOWERCASE__ & VariableCode.LOCAL)]);

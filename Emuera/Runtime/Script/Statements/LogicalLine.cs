@@ -19,16 +19,11 @@ internal abstract class LogicalLine
 	protected ScriptPosition? scriptPosition;
 
 	//LogicalLine prevLine;
-	private LogicalLine nextLine = null!;
 	public ScriptPosition? Position => scriptPosition;
 
 	public FunctionLabelLine? ParentLabelLine { get; set; }
 
-	public LogicalLine NextLine
-	{
-		get => nextLine;
-		set => nextLine = value;
-	}
+	public LogicalLine NextLine { get; set; } = null!;
 
 	public override string ToString()
 	{
@@ -120,7 +115,6 @@ internal sealed class InstructionLine : LogicalLine
 
 	private WordCollection? assigndest;
 	public OperatorCode AssignOperator { get; private set; }
-	private long subData;
 	public FunctionCode FunctionCode => func.Code;
 
 	public FunctionIdentifier Function => func;
@@ -150,37 +144,17 @@ internal sealed class InstructionLine : LogicalLine
 	/// <summary>
 	/// 繰り返しの終了を記憶する
 	/// </summary>
-	public long LoopEnd
-	{
-		get => subData;
-		set => subData = value;
-	}
-
-	private VariableTerm? cnt;
+	public long LoopEnd { get; set; }
 
 	/// <summary>
 	/// 繰り返しにつかう変数を記憶する
 	/// </summary>
-	public VariableTerm? LoopCounter
-	{
-		get => cnt;
-		set => cnt = value;
-	}
-
-	private long step;
+	public VariableTerm? LoopCounter { get; set; }
 
 	/// <summary>
 	/// 繰り返しのたびに増加する値を記憶する
 	/// </summary>
-	public long LoopStep
-	{
-		get => step;
-		set => step = value;
-	}
-
-	private LogicalLine? jumpto;
-
-	private LogicalLine? jumptoendcatch;
+	public long LoopStep { get; set; }
 
 	//IF文とSELECT文のみが使う。
 	public List<InstructionLine> IfCaseList = null!;
@@ -191,17 +165,9 @@ internal sealed class InstructionLine : LogicalLine
 	//TRYCALLLIST系が使う
 	public List<InstructionLine> callList = null!;
 
-	public LogicalLine? JumpTo
-	{
-		get => jumpto;
-		set => jumpto = value;
-	}
+	public LogicalLine? JumpTo { get; set; }
 
-	public LogicalLine? JumpToEndCatch
-	{
-		get => jumptoendcatch;
-		set => jumptoendcatch = value;
-	}
+	public LogicalLine? JumpToEndCatch { get; set; }
 }
 
 /// <summary>

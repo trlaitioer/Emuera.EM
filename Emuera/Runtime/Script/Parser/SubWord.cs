@@ -7,11 +7,11 @@ internal abstract class SubWord
 {
 	protected SubWord(WordCollection? w)
 	{
-		words = w;
+		Words = w;
 	}
 
-	private readonly WordCollection? words;
-	public WordCollection? Words => words;
+	public WordCollection? Words { get; }
+
 	public bool IsMacro;
 
 	public virtual void SetIsMacro()
@@ -25,11 +25,10 @@ internal sealed class TripleSymbolSubWord : SubWord
 {
 	public TripleSymbolSubWord(char c) : base(null)
 	{
-		code = c;
+		Code = c;
 	}
 
-	private readonly char code;
-	public char Code => code;
+	public char Code { get; }
 }
 
 internal sealed class CurlyBraceSubWord : SubWord
@@ -49,14 +48,13 @@ internal sealed class YenAtSubWord : SubWord
 	public YenAtSubWord(WordCollection w, StrFormWord fsLeft, StrFormWord? fsRight)
 		: base(w)
 	{
-		left = fsLeft;
-		right = fsRight;
+		Left = fsLeft;
+		Right = fsRight;
 	}
 
-	private readonly StrFormWord left;
-	private readonly StrFormWord? right;
-	public StrFormWord Left => left;
-	public StrFormWord? Right => right;
+	public StrFormWord Left { get; }
+
+	public StrFormWord? Right { get; }
 
 	public override void SetIsMacro()
 	{

@@ -75,14 +75,13 @@ internal sealed class UserDefinedMethodTerm : SuperUserDefinedMethodTerm
 	private UserDefinedMethodTerm(UserDefinedFunctionArgument arg, Type returnType, CalledFunction call)
 		: base(returnType)
 	{
-		argment = arg;
-		called = call;
+		Argument = arg;
+		Call = call;
 	}
 
-	public override UserDefinedFunctionArgument Argument => argment;
-	public override CalledFunction Call => called;
-	private readonly UserDefinedFunctionArgument argment;
-	private readonly CalledFunction called;
+	public override UserDefinedFunctionArgument Argument { get; }
+
+	public override CalledFunction Call { get; }
 
 	public override AExpression Restructure(ExpressionMediator exm)
 	{

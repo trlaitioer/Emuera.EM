@@ -91,7 +91,7 @@ internal sealed partial class FunctionIdentifier
 	{
 		Dictionary<FunctionArgType, ArgumentBuilder> argb = ArgumentParser.GetArgumentBuilderDictionary();
 		methodInstruction = new METHOD_Instruction();
-		setFunc = new FunctionIdentifier("SET", FunctionCode.SET, new SET_Instruction()); //代入文
+		SETFunction = new FunctionIdentifier("SET", FunctionCode.SET, new SET_Instruction()); //代入文
 
 		#region PRINT or INPUT
 
@@ -525,9 +525,7 @@ internal sealed partial class FunctionIdentifier
 		funcParent[FunctionCode.LOOP] = FunctionCode.DO;
 	}
 
-	private readonly static FunctionIdentifier setFunc;
-
-	public static FunctionIdentifier SETFunction => setFunc;
+	public static FunctionIdentifier SETFunction { get; }
 
 	internal static string? getMatchFunction(FunctionCode func)
 	{
@@ -572,8 +570,8 @@ internal sealed partial class FunctionIdentifier
 
 	private FunctionIdentifier(string name, FunctionCode code, AInstruction instruction, int additionalFlag)
 	{
-		this.code = code;
-		arg = instruction.ArgBuilder;
+		this.Code = code;
+		ArgBuilder = instruction.ArgBuilder;
 		flag = instruction.Flag | additionalFlag;
 		method = null;
 		Name = name;
@@ -582,8 +580,8 @@ internal sealed partial class FunctionIdentifier
 
 	private FunctionIdentifier(string name, FunctionCode code, ArgumentBuilder arg, int flag)
 	{
-		this.code = code;
-		this.arg = arg;
+		this.Code = code;
+		this.ArgBuilder = arg;
 		this.flag = flag;
 		method = null;
 		Name = name;
@@ -592,8 +590,8 @@ internal sealed partial class FunctionIdentifier
 
 	private FunctionIdentifier(string methodName, FunctionMethod method, AInstruction instruction)
 	{
-		code = FunctionCode.__NULL__;
-		arg = instruction.ArgBuilder;
+		Code = FunctionCode.__NULL__;
+		ArgBuilder = instruction.ArgBuilder;
 		flag = instruction.Flag;
 		this.method = method;
 		Name = methodName;
@@ -603,12 +601,12 @@ internal sealed partial class FunctionIdentifier
 	// Both are null for identifiers created from an ArgumentBuilder instead of an AInstruction,
 	// and method stays null for plain instructions.
 	public readonly AInstruction? Instruction;
-	private readonly FunctionCode code;
-	private readonly ArgumentBuilder? arg;
 	private readonly int flag;
 	private readonly FunctionMethod? method;
-	public FunctionCode Code => code;
-	public ArgumentBuilder? ArgBuilder => arg;
+	public FunctionCode Code { get; }
+
+	public ArgumentBuilder? ArgBuilder { get; }
+
 	public FunctionMethod? Method => method;
 
 	public string Name { get; private set; }

@@ -114,14 +114,14 @@ internal sealed class StrFormWord : Word
 {
 	public StrFormWord(string[] s, SubWord[] SWT)
 	{
-		strs = s;
-		subwords = SWT;
+		Strs = s;
+		SubWords = SWT;
 	}
 
-	private readonly string[] strs;
-	private readonly SubWord[] subwords;
-	public string[] Strs => strs;
-	public SubWord[] SubWords => subwords;
+	public string[] Strs { get; }
+
+	public SubWord[] SubWords { get; }
+
 	public override char Type => 'F'; //@はSymbolがつかっちゃった
 
 	public override void SetIsMacro()
