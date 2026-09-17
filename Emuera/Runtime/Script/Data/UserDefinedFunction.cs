@@ -1,10 +1,12 @@
-﻿using MinorShift.Emuera.Runtime.Script.Parser;
+﻿using System;
+using MinorShift.Emuera.Runtime.Script.Parser;
 using MinorShift.Emuera.Runtime.Utils;
 using System.Collections.Generic;
 using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 
 namespace MinorShift.Emuera.Runtime.Script.Data;
 
+[Flags]
 internal enum UserDifinedFunctionDataArgType
 {
 	Null,

@@ -1,5 +1,10 @@
-﻿namespace MinorShift.Emuera.Runtime.Script.Statements.Variable;
+﻿using System;
 
+namespace MinorShift.Emuera.Runtime.Script.Statements.Variable;
+
+/**
+ * only use high bits as Flag
+ */
 internal enum VariableCode
 {
 	__NULL__ = 0x00000000,

@@ -51,6 +51,7 @@ internal enum StrEndWith
 	LeftParenthesis_Bracket_Comma_Semicolon //[または(または,または;により終了。関数名部分。
 }
 
+[Flags]
 internal enum LexAnalyzeFlag
 {
 	None = 0,

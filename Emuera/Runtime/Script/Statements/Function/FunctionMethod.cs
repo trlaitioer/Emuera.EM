@@ -17,6 +17,7 @@ internal abstract class FunctionMethod
 
 	#region EM_私家版_Emuera多言語化改造
 
+	[Flags]
 	protected enum ArgType
 	{
 		Invalid = 0,

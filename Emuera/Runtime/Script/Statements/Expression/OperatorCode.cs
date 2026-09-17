@@ -1,7 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace MinorShift.Emuera.Runtime.Script.Statements.Expression;
 
+/**
+ * only use high bits as Flag
+ */
 internal enum OperatorCode
 {
 	//単項 > "*/%" > "+-" > 比較                > ビット演算  > 論理演算 > 代入

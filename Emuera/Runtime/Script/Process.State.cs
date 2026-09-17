@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.GameData.Variable;
+﻿using System;
+using MinorShift.Emuera.GameData.Variable;
 using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 using trsl = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.SystemLine;
 using System.Diagnostics;
@@ -14,6 +15,7 @@ namespace MinorShift.Emuera.Runtime.Script;
 
 //1756 インナークラス解除して一般に開放
 
+[Flags]
 internal enum SystemStateCode
 {
 	__CAN_SAVE__ = 0x10000, //セーブロード画面を呼び出し可能か？

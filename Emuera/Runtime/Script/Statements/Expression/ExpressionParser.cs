@@ -19,6 +19,7 @@ internal enum ArgsEndWith
 	RightBracket //]終端
 }
 
+[Flags]
 internal enum TermEndWith
 {
 	None = 0x0000,
