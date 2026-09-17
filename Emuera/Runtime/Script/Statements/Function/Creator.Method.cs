@@ -9855,17 +9855,17 @@ internal static partial class FunctionMethodCreator
 			exm.Process.flowinputDef = arguments.Required(0).GetIntValue(exm);
 			if (arguments.Count > 1)
 			{
-				exm.Process.flowinput = arguments.Required(1).GetIntValue(exm) != 0 ? true : false;
+				exm.Process.flowinput = arguments.Required(1).GetIntValue(exm) != 0;
 			}
 
 			if (arguments.Count > 2)
 			{
-				exm.Process.flowinputCanSkip = arguments.Required(2).GetIntValue(exm) != 0 ? true : false;
+				exm.Process.flowinputCanSkip = arguments.Required(2).GetIntValue(exm) != 0;
 			}
 
 			if (arguments.Count > 3)
 			{
-				exm.Process.flowinputForceSkip = arguments.Required(3).GetIntValue(exm) != 0 ? true : false;
+				exm.Process.flowinputForceSkip = arguments.Required(3).GetIntValue(exm) != 0;
 			}
 
 			return 0;
@@ -9886,7 +9886,7 @@ internal static partial class FunctionMethodCreator
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			exm.Process.flowinputString = arguments.Required(0).GetIntValue(exm) != 0 ? true : false;
+			exm.Process.flowinputString = arguments.Required(0).GetIntValue(exm) != 0;
 			if (arguments.Count > 1)
 			{
 				exm.Process.flowinputDefString = arguments.Required(1).GetStrValue(exm);
