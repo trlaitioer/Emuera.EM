@@ -791,7 +791,7 @@ internal static partial class FunctionMethodCreator
 					: var.Identifier.IsArray1D ? var.Identifier.GetLength()
 					: var.Identifier.IsArray2D ? var.Identifier.GetLength(1)
 					: var.Identifier.IsArray2D ? var.Identifier.GetLength(2) : 0);
-				bool setAllDims = arguments.Count >= 3 ? arguments.Required(2).GetIntValue(exm) != 0 : true;
+				bool setAllDims = arguments.Count < 3 || arguments.Required(2).GetIntValue(exm) != 0;
 				if (var.IsString)
 				{
 					string val = string.Empty;
@@ -1212,7 +1212,7 @@ internal static partial class FunctionMethodCreator
 				throw new CodeEE(string.Format(trerror.XmlXPathParseError.Text, Name, path, e.Message));
 			}
 
-			bool setAllNodes = arguments.Count >= 4 ? arguments.Required(3).GetIntValue(exm) != 0 : false;
+			bool setAllNodes = arguments.Count >= 4 && arguments.Required(3).GetIntValue(exm) != 0;
 			long style = arguments.Count == 5 ? arguments.Required(4).GetIntValue(exm) : 0;
 			if (style > 2 || style < 0)
 			{
@@ -1503,7 +1503,7 @@ internal static partial class FunctionMethodCreator
 			if (nodes.Count > 0)
 			{
 				int setAllPos = op == Operation.Node ? 5 : 6;
-				bool setAllNodes = arguments.Count == setAllPos ? arguments.Required(setAllPos - 1).GetIntValue(exm) != 0 : false;
+				bool setAllNodes = arguments.Count == setAllPos && arguments.Required(setAllPos - 1).GetIntValue(exm) != 0;
 				XmlNode child;
 				if (op == Operation.Node)
 				{
@@ -1672,7 +1672,7 @@ internal static partial class FunctionMethodCreator
 
 			if (nodes.Count > 0)
 			{
-				bool setAllNodes = arguments.Count == 3 ? arguments.Required(2).GetIntValue(exm) != 0 : false;
+				bool setAllNodes = arguments.Count == 3 && arguments.Required(2).GetIntValue(exm) != 0;
 				if (nodes.Count != 1)
 				{
 					if (setAllNodes)
@@ -1809,7 +1809,7 @@ internal static partial class FunctionMethodCreator
 				}
 
 				child.InnerXml = newNode.InnerXml;
-				bool setAllNodes = arguments.Count >= 4 ? arguments.Required(3).GetIntValue(exm) != 0 : false;
+				bool setAllNodes = arguments.Count >= 4 && arguments.Required(3).GetIntValue(exm) != 0;
 				if (nodes.Count != 1)
 				{
 					if (setAllNodes)
@@ -2052,7 +2052,7 @@ internal static partial class FunctionMethodCreator
 				}
 			}
 
-			bool nullable = arguments.Count == 4 ? arguments.Required(3).GetIntValue(exm) != 0 : true;
+			bool nullable = arguments.Count != 4 || arguments.Required(3).GetIntValue(exm) != 0;
 			DataColumn dc;
 			if (t != null)
 			{
@@ -2383,7 +2383,7 @@ internal static partial class FunctionMethodCreator
 				return op == Operation.IsNull ? -1 : 0;
 			}
 
-			bool asId = arguments.Count == 4 ? arguments.Required(3).GetIntValue(exm) != 0 : false;
+			bool asId = arguments.Count == 4 && arguments.Required(3).GetIntValue(exm) != 0;
 			long idx = arguments.Required(1).GetIntValue(exm);
 			string name = arguments.Required(2).GetStrValue(exm);
 			if (asId)
@@ -2415,7 +2415,7 @@ internal static partial class FunctionMethodCreator
 				return string.Empty;
 			}
 
-			bool asId = arguments.Count == 4 ? arguments.Required(3).GetIntValue(exm) != 0 : false;
+			bool asId = arguments.Count == 4 && arguments.Required(3).GetIntValue(exm) != 0;
 			long idx = arguments.Required(1).GetIntValue(exm);
 			string name = arguments.Required(2).GetStrValue(exm);
 			if (asId)
@@ -2477,7 +2477,7 @@ internal static partial class FunctionMethodCreator
 				return -1;
 			}
 
-			bool asId = arguments.Count == 5 ? arguments.Required(4).GetIntValue(exm) != 0 : false;
+			bool asId = arguments.Count == 5 && arguments.Required(4).GetIntValue(exm) != 0;
 			long idx = arguments.Required(1).GetIntValue(exm);
 			string name = arguments.Required(2).GetStrValue(exm);
 			if (name.Equals("id", StringComparison.CurrentCultureIgnoreCase))
@@ -3376,7 +3376,7 @@ internal static partial class FunctionMethodCreator
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long no = arguments.Required(0).GetIntValue(exm);
-			bool isSp = arguments is [_, not null] ? arguments.Required(1).GetIntValue(exm) != 0 : false;
+			bool isSp = arguments is [_, not null] && arguments.Required(1).GetIntValue(exm) != 0;
 			if (!Config.CompatiSPChara && isSp)
 				// throw new CodeEE("SPキャラ関係の機能は標準では使用できません(互換性オプション「SPキャラを使用する」をONにしてください)");
 			{

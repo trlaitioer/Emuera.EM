@@ -392,7 +392,7 @@ internal sealed partial class FunctionIdentifier
 			}
 			else
 			{
-				exm.Console.PrintHtml(arg.Str.GetStrValue(exm), arg.Opt == null ? false : arg.Opt.GetIntValue(exm) != 0);
+				exm.Console.PrintHtml(arg.Str.GetStrValue(exm), arg.Opt != null && arg.Opt.GetIntValue(exm) != 0);
 			}
 
 			//if (func.Argument.IsConst)

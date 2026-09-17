@@ -145,7 +145,7 @@ internal abstract class FunctionMethod
 			ArgTypeList list = rules[idx];
 			_ArgType[]? vs = list.LastVariadics;
 			bool variadic = vs != null;
-			bool argsNotMoreThanRule = variadic ? true : arguments.Count <= list.ArgTypes.Count;
+			bool argsNotMoreThanRule = variadic || arguments.Count <= list.ArgTypes.Count;
 			bool argsNotLessThanRule = list.OmitStart > -1 ? arguments.Count >= list.OmitStart : arguments.Count >= list.ArgTypes.Count;
 			if (argsNotMoreThanRule && argsNotLessThanRule)
 			{
