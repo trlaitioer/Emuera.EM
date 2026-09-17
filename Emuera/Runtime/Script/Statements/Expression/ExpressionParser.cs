@@ -301,7 +301,7 @@ internal static class ExpressionParser
 	{
 		wc.ShiftNext();
 		SymbolWord? symbol = wc.Current as SymbolWord;
-		if (symbol != null && symbol.Type == '.')
+		if (symbol is { Type: '.' })
 		{
 			//名前空間
 			throw new NotImplCodeEE();

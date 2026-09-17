@@ -236,7 +236,7 @@ internal sealed class ConsoleImagePart : AConsoleDisplayNode
 
 	public long GetMappingColor(int pointX, int pointY)
 	{
-		if (cImageM != null && cImageM.IsCreated)
+		if (cImageM is { IsCreated: true })
 		{
 			Size spriteSize;
 			if (cImageM is SpriteF sf)
@@ -285,7 +285,7 @@ internal sealed class ConsoleImagePart : AConsoleDisplayNode
 			img = cImageB;
 		}
 
-		if (img != null && img.IsCreated)
+		if (img is { IsCreated: true })
 		{
 			Rectangle rect = destRect;
 			//PointX微調整

@@ -70,7 +70,7 @@ internal abstract class ConsoleShapePart : AConsoleColoredPart
 				break;
 			case "rect":
 				// if (paramPixel.Length == 1 && paramPixel[0] >= 0)
-				if (param.Length == 1 && param[0].num > 0)
+				if (param is [{ num: > 0 }])
 				{
 					ret = new ConsoleRectangleShapePart(param[0]);
 				}
@@ -81,7 +81,7 @@ internal abstract class ConsoleShapePart : AConsoleColoredPart
 					RectangleF rectF = new(MixedNum.ToPixelf(param[0]), MixedNum.ToPixelf(param[1]), MixedNum.ToPixelf(param[2]),
 						MixedNum.ToPixelf(param[3]));
 					//1820a12 サイズ上限撤廃
-					if (rectF.X >= 0 && rectF.Width > 0 && rectF.Height > 0)
+					if (rectF is { X: >= 0, Width: > 0, Height: > 0 })
 						//	rectF.Y >= 0 && (rectF.Y + rectF.Height) <= lineHeight)
 					{
 						ret = new ConsoleRectangleShapePart(param);
@@ -225,7 +225,7 @@ internal sealed class ConsoleRectangleShapePart : ConsoleShapePart
 		rect.X = (int)(subPixel + originalRectF.X);
 		rect.Width = Width - rect.X;
 		rect.X += Config.DrawingParam_ShapePositionShift;
-		visible = rect.X >= 0 && rect.Width > 0; // && rect.Y >= 0 && (rect.Y + rect.Height) <= Config.Config.FontSize);
+		visible = rect is { X: >= 0, Width: > 0 }; // && rect.Y >= 0 && (rect.Y + rect.Height) <= Config.Config.FontSize);
 	}
 }
 

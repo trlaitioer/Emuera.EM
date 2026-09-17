@@ -402,7 +402,7 @@ internal sealed partial class Process(EmueraConsole view)
 		catch (Exception ec)
 		{
 			LogicalLine? currentLine = state.ErrorLine;
-			if (currentLine != null && currentLine is NullLine)
+			if (currentLine is NullLine)
 			{
 				currentLine = null;
 			}
@@ -624,11 +624,11 @@ internal sealed partial class Process(EmueraConsole view)
 	{
 		console.ThrowError(playSound);
 		ScriptPosition? position = null;
-		if (exc is EmueraException ee && ee.Position != null)
+		if (exc is EmueraException { Position: not null } ee)
 		{
 			position = ee.Position;
 		}
-		else if (current != null && current.Position != null)
+		else if (current is { Position: not null })
 		{
 			position = current.Position;
 		}
@@ -650,7 +650,7 @@ internal sealed partial class Process(EmueraConsole view)
 		{
 			if (position != default)
 			{
-				if (current is InstructionLine procline && procline.FunctionCode == FunctionCode.THROW)
+				if (current is InstructionLine { FunctionCode: FunctionCode.THROW })
 				{
 					console.PrintErrorButton(string.Format(trerror.HasThrow.Text, posString), position);
 					printRawLine(position);

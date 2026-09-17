@@ -232,7 +232,7 @@ internal sealed class StrForm
 
 	public AExpression? GetAExpression()
 	{
-		if (strs.Length == 2 && strs[0].Length == 0 && strs[1].Length == 0)
+		if (strs is [{ Length: 0 }, { Length: 0 }])
 		{
 			return terms[0];
 		}

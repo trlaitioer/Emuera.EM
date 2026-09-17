@@ -522,13 +522,13 @@ internal sealed partial class FunctionIdentifier
 				arg.Name.GetStrValue(exm),
 				strb,
 				strm,
-				arg.Param != null && arg.Param.Length > 1
+				arg.Param is { Length: > 1 }
 					? new MixedNum { num = (int)arg.Param[1].num.GetIntValue(exm), isPx = arg.Param[1].isPx }
 					: null,
-				arg.Param != null && arg.Param.Length > 0
+				arg.Param is { Length: > 0 }
 					? new MixedNum { num = (int)arg.Param[0].num.GetIntValue(exm), isPx = arg.Param[0].isPx }
 					: null,
-				arg.Param != null && arg.Param.Length > 2
+				arg.Param is { Length: > 2 }
 					? new MixedNum { num = (int)arg.Param[2].num.GetIntValue(exm), isPx = arg.Param[2].isPx }
 					: null);
 
@@ -1688,7 +1688,7 @@ internal sealed partial class FunctionIdentifier
 				{
 					//decimal型は強制的にOverFlowExceptionを投げるので対策が必要
 					//OverFlowの場合は昔の挙動に近づけてみる
-					if (d <= long.MaxValue && d >= long.MinValue)
+					if (d is <= long.MaxValue and >= long.MinValue)
 					{
 						var.SetValue((long)d, exm);
 					}
@@ -2462,7 +2462,7 @@ internal sealed partial class FunctionIdentifier
 						//    throw new CodeEE("式中関数" + str + "が見つかりません");
 						//if (!label.IsMethod)
 						//    throw new CodeEE("#FUNCTION(S)属性を持たない関数" + str + "は参照できません");
-						if (label != null && label.IsMethod)
+						if (label is { IsMethod: true })
 						{
 							call = CalledFunction.CreateCalledFunctionMethod(label, str);
 						}
@@ -2714,7 +2714,7 @@ internal sealed partial class FunctionIdentifier
 						{
 							goto loopep;
 						}
-						else if (button.IsButton && button.IsInteger)
+						else if (button is { IsButton: true, IsInteger: true })
 						{
 							count++;
 						}
@@ -2734,7 +2734,7 @@ internal sealed partial class FunctionIdentifier
 							{
 								foreach (ConsoleButtonString button in line.Buttons)
 								{
-									if (button.IsButton && button.IsInteger)
+									if (button is { IsButton: true, IsInteger: true })
 									{
 										count++;
 										goto loopend;
@@ -2941,7 +2941,7 @@ internal sealed partial class FunctionIdentifier
 						{
 							goto loopep;
 						}
-						else if (button.IsButton && button.IsInteger)
+						else if (button is { IsButton: true, IsInteger: true })
 						{
 							count++;
 						}
@@ -2961,7 +2961,7 @@ internal sealed partial class FunctionIdentifier
 							{
 								foreach (ConsoleButtonString button in line.Buttons)
 								{
-									if (button.IsButton && button.IsInteger)
+									if (button is { IsButton: true, IsInteger: true })
 									{
 										count++;
 										goto loopend;
@@ -3187,7 +3187,7 @@ internal sealed partial class FunctionIdentifier
 		{
 			long waittime = -1;
 			ExpressionArgument? arg = func.Argument as ExpressionArgument;
-			if (arg != null && arg.Term != null)
+			if (arg is { Term: not null })
 			{
 				waittime = arg.Term.GetIntValue(exm);
 				if (waittime < 0)

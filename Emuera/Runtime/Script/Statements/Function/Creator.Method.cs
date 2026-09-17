@@ -497,7 +497,7 @@ internal static partial class FunctionMethodCreator
 				return string.Format(trerror.IsCharaVarFunc.Text, Name, vname);
 			}
 
-			if (!varTerm.Identifier.IsArray1D && !varTerm.Identifier.IsArray2D && !varTerm.Identifier.IsArray3D)
+			if (varTerm.Identifier is { IsArray1D: false, IsArray2D: false, IsArray3D: false })
 			{
 				return string.Format(trerror.NotDimVarFunc.Text, Name, vname);
 			}
@@ -3185,7 +3185,7 @@ internal static partial class FunctionMethodCreator
 		{
 			long x = arguments.Required(0).GetIntValue(exm);
 			long y = arguments.Required(1).GetIntValue(exm);
-			long z = arguments.Count == 3 && arguments[2] != null ? arguments.Required(2).GetIntValue(exm) : 0;
+			long z = arguments is [_, _, not null] ? arguments.Required(2).GetIntValue(exm) : 0;
 			if (!Config.CompatiSPChara && z != 0)
 				// throw new CodeEE("SPキャラ関係の機能は標準では使用できません(互換性オプション「SPキャラを使用する」をONにしてください)");
 			{
@@ -3248,7 +3248,7 @@ internal static partial class FunctionMethodCreator
 		{
 			long x = arguments.Required(0).GetIntValue(exm);
 			long y = arguments.Required(1).GetIntValue(exm);
-			long z = arguments.Count == 3 && arguments[2] != null ? arguments.Required(2).GetIntValue(exm) : 0;
+			long z = arguments is [_, _, not null] ? arguments.Required(2).GetIntValue(exm) : 0;
 			if (!Config.CompatiSPChara && z != 0)
 				// throw new CodeEE("SPキャラ関係の機能は標準では使用できません(互換性オプション「SPキャラを使用する」をONにしてください)");
 			{
@@ -3318,12 +3318,12 @@ internal static partial class FunctionMethodCreator
 
 			long startindex = 0;
 			long lastindex = exm.VEvaluator.CHARANUM;
-			if (arguments.Count >= 3 && arguments[2] != null)
+			if (arguments is [_, _, not null, ..])
 			{
 				startindex = arguments.Required(2).GetIntValue(exm);
 			}
 
-			if (arguments.Count >= 4 && arguments[3] != null)
+			if (arguments is [_, _, _, not null, ..])
 			{
 				lastindex = arguments.Required(3).GetIntValue(exm);
 			}
@@ -3388,7 +3388,7 @@ internal static partial class FunctionMethodCreator
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long no = arguments.Required(0).GetIntValue(exm);
-			bool isSp = arguments.Count == 2 && arguments[1] != null ? arguments.Required(1).GetIntValue(exm) != 0 : false;
+			bool isSp = arguments is [_, not null] ? arguments.Required(1).GetIntValue(exm) != 0 : false;
 			if (!Config.CompatiSPChara && isSp)
 				// throw new CodeEE("SPキャラ関係の機能は標準では使用できません(互換性オプション「SPキャラを使用する」をONにしてください)");
 			{
@@ -3452,7 +3452,7 @@ internal static partial class FunctionMethodCreator
 			}
 
 			int dim = 0;
-			if (arguments.Count == 2 && arguments[1] != null)
+			if (arguments is [_, not null])
 			{
 				dim = (int)arguments.Required(1).GetIntValue(exm);
 			}
@@ -4576,8 +4576,8 @@ internal static partial class FunctionMethodCreator
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			VariableTerm varTerm = (VariableTerm)arguments.Required(0);
-			long index1 = arguments.Count >= 2 && arguments[1] != null ? arguments.Required(1).GetIntValue(exm) : 0;
-			long index2 = arguments.Count == 3 && arguments[2] != null ? arguments.Required(2).GetIntValue(exm) :
+			long index1 = arguments is [_, not null, ..] ? arguments.Required(1).GetIntValue(exm) : 0;
+			long index2 = arguments is [_, _, not null] ? arguments.Required(2).GetIntValue(exm) :
 				isCharaRange ? exm.VEvaluator.CHARANUM : varTerm.GetLastLength();
 
 			FixedVariableTerm p = varTerm.GetFixedVariableTerm(exm);
@@ -5777,12 +5777,12 @@ internal static partial class FunctionMethodCreator
 			string str = arguments.Required(0).GetStrValue(exm);
 			int start = 0;
 			int length = -1;
-			if (arguments.Count >= 2 && arguments[1] != null)
+			if (arguments is [_, not null, ..])
 			{
 				start = (int)arguments.Required(1).GetIntValue(exm);
 			}
 
-			if (arguments.Count >= 3 && arguments[2] != null)
+			if (arguments is [_, _, not null, ..])
 			{
 				length = (int)arguments.Required(2).GetIntValue(exm);
 			}
@@ -5828,12 +5828,12 @@ internal static partial class FunctionMethodCreator
 			string str = arguments.Required(0).GetStrValue(exm);
 			int start = 0;
 			int length = -1;
-			if (arguments.Count >= 2 && arguments[1] != null)
+			if (arguments is [_, not null, ..])
 			{
 				start = (int)arguments.Required(1).GetIntValue(exm);
 			}
 
-			if (arguments.Count >= 3 && arguments[2] != null)
+			if (arguments is [_, _, not null, ..])
 			{
 				length = (int)arguments.Required(2).GetIntValue(exm);
 			}
@@ -5911,7 +5911,7 @@ internal static partial class FunctionMethodCreator
 			string target = arguments.Required(0).GetStrValue(exm);
 			string word = arguments.Required(1).GetStrValue(exm);
 			int UFTstart = 0;
-			if (arguments.Count >= 3 && arguments[2] != null)
+			if (arguments is [_, _, not null, ..])
 			{
 				if (unicode)
 				{
@@ -6258,7 +6258,7 @@ internal static partial class FunctionMethodCreator
 
 			//改行関係以外の制御文字は警告扱いに変更
 			//とはいえ、改行以外の制御文字を意図的に渡すのはそもそもコーディングに問題がありすぎるので、エラーでもいい気はする
-			if ((i < 0x001F && i != 0x000A && i != 0x000D) || (i >= 0x007F && i <= 0x009F))
+			if ((i < 0x001F && i != 0x000A && i != 0x000D) || i is >= 0x007F and <= 0x009F)
 			{
 				//コード実行中の場合
 				if (GlobalStatic.Process.getCurrentLine != null)
@@ -6619,9 +6619,9 @@ internal static partial class FunctionMethodCreator
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			VariableTerm varTerm = (VariableTerm)arguments.Required(0);
-			string delimiter = arguments.Count >= 2 && arguments[1] != null ? arguments.Required(1).GetStrValue(exm) : ",";
-			long index1 = arguments.Count >= 3 && arguments[2] != null ? arguments.Required(2).GetIntValue(exm) : 0;
-			long index2 = arguments.Count == 4 && arguments[3] != null ? arguments.Required(3).GetIntValue(exm) : varTerm.GetLastLength() - index1;
+			string delimiter = arguments is [_, not null, ..] ? arguments.Required(1).GetStrValue(exm) : ",";
+			long index1 = arguments is [_, _, not null, ..] ? arguments.Required(2).GetIntValue(exm) : 0;
+			long index2 = arguments is [_, _, _, not null] ? arguments.Required(3).GetIntValue(exm) : varTerm.GetLastLength() - index1;
 
 			FixedVariableTerm p = varTerm.GetFixedVariableTerm(exm);
 
@@ -8095,7 +8095,7 @@ internal static partial class FunctionMethodCreator
 			}
 
 			ASprite? img = AppContents.GetSprite(imgname);
-			if (img != null && img.IsCreated)
+			if (img is { IsCreated: true })
 			{
 				return 0;
 			}
@@ -8636,7 +8636,7 @@ internal static partial class FunctionMethodCreator
 
 			//リソースチェック・既に存在しているならば失敗
 			ASprite? img = AppContents.GetSprite(imgname);
-			if (img != null && img.IsCreated)
+			if (img is { IsCreated: true })
 			{
 				return 0;
 			}

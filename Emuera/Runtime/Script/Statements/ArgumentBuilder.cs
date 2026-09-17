@@ -885,7 +885,7 @@ internal static partial class ArgumentParser
 				warn(string.Format(trerror.ArgIsNotVariable.Text, "1"), line, 2, false);
 				return null;
 			}
-			else if ((!id.IsArray1D && !id.IsArray2D && !id.IsArray3D) || id.Code == VariableCode.RAND)
+			else if (id is { IsArray1D: false, IsArray2D: false, IsArray3D: false } || id.Code == VariableCode.RAND)
 			{
 				warn(string.Format(trerror.ArgIsNotArrayVar.Text, "1"), line, 2, false);
 				return null;
@@ -2573,7 +2573,7 @@ internal static partial class ArgumentParser
 				return null;
 			}
 
-			if (!x.Identifier.IsArray1D && !x.Identifier.IsArray2D && !x.Identifier.IsArray3D)
+			if (x.Identifier is { IsArray1D: false, IsArray2D: false, IsArray3D: false })
 			{
 				warn(string.Format(trerror.ArgIsNotArrayVar.Text, "3"), line, 2, false);
 				return null;

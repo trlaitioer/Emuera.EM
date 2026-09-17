@@ -337,7 +337,7 @@ internal sealed class ConstantData
 			return;
 		}
 
-		if (!id.IsArray1D && !id.IsArray2D && !id.IsArray3D)
+		if (id is { IsArray1D: false, IsArray2D: false, IsArray3D: false })
 		{
 			ParserMediator.Warn(string.Format(trerror.CanNotChange0DVarSize.Text, id), position, 1);
 			return;

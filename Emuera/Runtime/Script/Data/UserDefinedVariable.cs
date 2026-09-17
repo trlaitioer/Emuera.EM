@@ -508,12 +508,12 @@ internal sealed class UserDefinedVariableData
 
 		ret.Private = isPrivate;
 		ret.Dimension = sizeNum.Count;
-		if (ret.Const && ret.Dimension > 1)
+		if (ret is { Const: true, Dimension: > 1 })
 		{
 			throw new CodeEE(trerror.CanNotDeclareConstArray.Text);
 		}
 
-		if (ret.CharaData && ret.Dimension > 2)
+		if (ret is { CharaData: true, Dimension: > 2 })
 		{
 			throw new CodeEE(trerror.CharaVarCanNotDeclareMoreThan3D.Text, sc);
 		}

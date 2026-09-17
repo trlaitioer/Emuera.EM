@@ -1428,7 +1428,7 @@ internal sealed class ErbLoader
 						else if (iLine.FunctionCode == FunctionCode.FOR)
 						{
 							VariableTerm cnt = (iLine.Argument as SpForNextArgment)!.Cnt;
-							if (cnt.Identifier.Name == "COUNT" && cnt.isAllConst && cnt.getEl1forArg == 0)
+							if (cnt.Identifier.Name == "COUNT" && cnt is { isAllConst: true, getEl1forArg: 0 })
 							{
 								ParserMediator.Warn(string.Format(trerror.RepeatInsideFor.Text, "0"), func, 1, false, false);
 							}
@@ -1467,7 +1467,7 @@ internal sealed class ErbLoader
 						{
 							foreach (InstructionLine iLine in nestStack)
 							{
-								if (iLine.FunctionCode == FunctionCode.REPEAT && Cnt.isAllConst && Cnt.getEl1forArg == 0)
+								if (iLine.FunctionCode == FunctionCode.REPEAT && Cnt is { isAllConst: true, getEl1forArg: 0 })
 								{
 									ParserMediator.Warn(string.Format(trerror.RepeatInsideFor.Text, "0"), func, 1, false, false);
 								}

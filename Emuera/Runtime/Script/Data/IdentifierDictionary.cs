@@ -510,7 +510,7 @@ internal partial class IdentifierDictionary
 		if (allowPrivate)
 		{
 			LogicalLine? line = GlobalStatic.Process.GetScaningLine();
-			if (line != null && line.ParentLabelLine != null)
+			if (line is { ParentLabelLine: not null })
 			{
 				ret = line.ParentLabelLine.GetPrivateVariable(key);
 				if (ret != null)
@@ -654,7 +654,7 @@ internal partial class IdentifierDictionary
 			return null;
 		}
 
-		if (labelDic != null && labelDic.Initialized)
+		if (labelDic is { Initialized: true })
 		{
 			if (refmethodDic.TryGetValue(codeStr, out UserDefinedRefMethod? value))
 			{

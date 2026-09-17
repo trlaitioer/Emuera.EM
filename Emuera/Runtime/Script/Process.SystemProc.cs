@@ -733,7 +733,7 @@ internal sealed partial class Process
 	private void ablupWaitInput()
 	{
 		//定義されていなくても100未満ならABLUPが呼ばれ、USERABLUPは呼ばれない。そうしないと[99]反発刻印とかが出来ない。
-		if (systemResult >= 0 && systemResult < 100)
+		if (systemResult is >= 0 and < 100)
 		{
 			state.SystemState = SystemStateCode.Ablup_CallAblupXX;
 			string ablName = $"ABLUP{systemResult}";

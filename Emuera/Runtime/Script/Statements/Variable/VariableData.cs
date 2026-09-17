@@ -1316,7 +1316,7 @@ internal sealed partial class VariableData : IDisposable
 		foreach (KeyValuePair<string, VariableToken> pair in varTokenDic)
 		{
 			VariableToken var = pair.Value;
-			if (var.IsSavedata && !var.IsCharacterData && var.IsGlobal)
+			if (var.IsSavedata && var is { IsCharacterData: false, IsGlobal: true })
 			{
 				writer.WriteWithKey(pair.Key, var.GetArray());
 			}
@@ -1336,7 +1336,7 @@ internal sealed partial class VariableData : IDisposable
 		foreach (KeyValuePair<string, VariableToken> pair in varTokenDic)
 		{
 			VariableToken var = pair.Value;
-			if (var.IsSavedata && !var.IsCharacterData && !var.IsGlobal)
+			if (var.IsSavedata && var is { IsCharacterData: false, IsGlobal: false })
 			{
 				writer.WriteWithKey(pair.Key, var.GetArray());
 			}

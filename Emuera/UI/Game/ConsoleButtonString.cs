@@ -304,7 +304,7 @@ internal sealed class ConsoleButtonString
 	public void CalcWidth(StringMeasure sm, float subpixel)
 	{
 		Width = -1;
-		if (strArray != null && strArray.Length > 0)
+		if (strArray is { Length: > 0 })
 		{
 			Width = 0;
 			foreach (AConsoleDisplayNode css in strArray)
@@ -347,7 +347,7 @@ internal sealed class ConsoleButtonString
 		{
 			#region EM_私家版_HTML_divタグ
 
-			if (strArray[i] is ConsoleDivPart div && !div.IsRelative)
+			if (strArray[i] is ConsoleDivPart { IsRelative: false })
 			{
 				continue;
 			}

@@ -246,7 +246,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 		public override EraSaveFileType ReadFileType()
 		{
 			byte type = reader.ReadByte();
-			if (type >= 0 && type <= 3)
+			if (type is >= 0 and <= 3)
 			{
 				return (EraSaveFileType)type;
 			}

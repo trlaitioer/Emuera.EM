@@ -278,7 +278,7 @@ internal sealed partial class MainWindow : Form
 	{
 		//1823 INPUTMOUSEKEY Key入力全てを捕まえてERB側で処理する
 		//if (console != null && console.IsWaitingPrimitiveKey)
-		if (console != null && console.IsWaitingPrimitive)
+		if (console is { IsWaitingPrimitive: true })
 		{
 			return false;
 		}
@@ -311,7 +311,7 @@ internal sealed partial class MainWindow : Form
 			case Keys.Insert when (keyData & Keys.Modifiers & Keys.Control) == Keys.Control:
 			{
 				bool doit = console != null;
-				if (console != null && console.IsInProcess)
+				if (console is { IsInProcess: true })
 				{
 					MessageBox.Show(trmb.NotAvailableDuringScript.Text);
 					doit = false;
@@ -366,7 +366,7 @@ internal sealed partial class MainWindow : Form
 						doit = false;
 					}
 
-					if (console != null && console.IsInProcess)
+					if (console is { IsInProcess: true })
 					{
 						MessageBox.Show(trmb.NotAvailableDuringScript.Text);
 						doit = false;
@@ -472,7 +472,7 @@ internal sealed partial class MainWindow : Form
 					bool shiftPressed = (keyData & Keys.Modifiers) == Keys.Shift;
 					bool ctrlPressed = (keyData & Keys.Modifiers) == Keys.Control;
 					bool unPressed = (keyData & Keys.Modifiers) == 0;
-					if (keyCode >= (int)Keys.F1 && keyCode <= (int)Keys.F12)
+					if (keyCode is >= (int)Keys.F1 and <= (int)Keys.F12)
 					{
 						int macroNum = keyCode - (int)Keys.F1;
 						if (shiftPressed)
@@ -494,11 +494,11 @@ internal sealed partial class MainWindow : Form
 					else if (ctrlPressed)
 					{
 						int newGroupNum = -1;
-						if (keyCode >= (int)Keys.D0 && keyCode <= (int)Keys.D9)
+						if (keyCode is >= (int)Keys.D0 and <= (int)Keys.D9)
 						{
 							newGroupNum = keyCode - (int)Keys.D0;
 						}
-						else if (keyCode >= (int)Keys.NumPad0 && keyCode <= (int)Keys.NumPad9)
+						else if (keyCode is >= (int)Keys.NumPad0 and <= (int)Keys.NumPad9)
 						{
 							newGroupNum = keyCode - (int)Keys.NumPad0;
 						}
@@ -1521,7 +1521,7 @@ internal sealed partial class MainWindow : Form
 		if (console != null)
 		{
 			//ほっとしても勝手に閉じるが、その場合はDebugDialogのClosingイベントが発生しない
-			if (Program.DebugMode && console.DebugDialog != null && console.DebugDialog.Created)
+			if (Program.DebugMode && console.DebugDialog is { Created: true })
 			{
 				console.DebugDialog.Close();
 			}

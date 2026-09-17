@@ -212,16 +212,16 @@ internal sealed class EraBinaryDataWriter : IDisposable
 	private void m_WriteInt(long v)
 	{
 		//セーブデータ容量の爆発を避けるためにできるだけWrite(Int64)はしない
-		if (v >= 0 && v <= Ebdb.Byte) //0～207まではそのままbyteに詰め込む
+		if (v is >= 0 and <= Ebdb.Byte) //0～207まではそのままbyteに詰め込む
 		{
 			writer.Write((byte)v);
 		}
-		else if (v >= short.MinValue && v <= short.MaxValue) //整数の範囲に応じて適当に
+		else if (v is >= short.MinValue and <= short.MaxValue) //整数の範囲に応じて適当に
 		{
 			writer.Write(Ebdb.Int16);
 			writer.Write((short)v);
 		}
-		else if (v >= int.MinValue && v <= int.MaxValue)
+		else if (v is >= int.MinValue and <= int.MaxValue)
 		{
 			writer.Write(Ebdb.Int32);
 			writer.Write((int)v);

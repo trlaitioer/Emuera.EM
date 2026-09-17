@@ -357,7 +357,7 @@ internal sealed class VariableEvaluator : IDisposable
 
 	public static string GetJoinedStr(FixedVariableTerm p, string delimiter, long index1, long length)
 	{
-		if (p.IsString && p.Identifier.IsArray1D)
+		if (p is { IsString: true, Identifier.IsArray1D: true })
 		{
 			return string.Join(delimiter, (string[])p.Identifier.GetArray(), (int)index1, (int)length);
 		}

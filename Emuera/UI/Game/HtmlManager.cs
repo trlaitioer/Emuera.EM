@@ -838,7 +838,7 @@ internal static class HtmlManager
 
 		foreach (ConsoleButtonString button in buttonList)
 		{
-			if (button != null && button.PointXisLocked)
+			if (button is { PointXisLocked: true })
 			{
 				if (!state.FlagNobr)
 				{
@@ -858,7 +858,7 @@ internal static class HtmlManager
 
 		// ConsoleDisplayLine[] ret = PrintStringBuffer.ButtonsToDisplayLines(buttonList, sm, state.FlagNobr, false);
 		ConsoleDisplayLine[] ret;
-		if (state.StartingSubDivision && state.CurrentDivTag == null)
+		if (state is { StartingSubDivision: true, CurrentDivTag: null })
 		{
 			ret = PrintStringBuffer.ButtonsToDisplayLines(buttonList, sm, state.FlagNobr, false, true, state.SubDivisionWidth);
 		}
@@ -869,7 +869,7 @@ internal static class HtmlManager
 
 		foreach (ConsoleDisplayLine dl in ret)
 		{
-			if (state.StartingSubDivision && state.CurrentDivTag == null)
+			if (state is { StartingSubDivision: true, CurrentDivTag: null })
 			{
 				dl.SetAlignment(state.Alignment, state.SubDivisionWidth /*, state.SubDivisionXOffset*/);
 			}
@@ -1024,7 +1024,7 @@ internal static class HtmlManager
 		cssList.CopyTo(css);
 		cssList.Clear();
 		ConsoleButtonString ret;
-		if (state.LastButtonTag != null && state.LastButtonTag.IsButton)
+		if (state.LastButtonTag is { IsButton: true })
 		{
 			if (state.LastButtonTag.ButtonIsInteger)
 			{
@@ -1426,7 +1426,7 @@ internal static class HtmlManager
 				MixedNum? height = null;
 				MixedNum? width = null;
 				MixedNum? ypos = null;
-				while (wc != null && !wc.EOL)
+				while (wc is { EOL: false })
 				{
 					word = wc.Current as IdentifierWord;
 					wc.ShiftNext();
@@ -1513,7 +1513,7 @@ internal static class HtmlManager
 				int depth = 0;
 				int color = -1;
 				string attrValue;
-				while (wc != null && !wc.EOL)
+				while (wc is { EOL: false })
 				{
 					word = wc.Current as IdentifierWord;
 					wc.ShiftNext();
@@ -1777,7 +1777,7 @@ internal static class HtmlManager
 				string? value = null;
 				//if (wc == null)
 				//	throw new CodeEE("<" + tag + ">タグに属性が設定されていません");
-				while (wc != null && !wc.EOL)
+				while (wc is { EOL: false })
 				{
 					word = wc.Current as IdentifierWord;
 					wc.ShiftNext();

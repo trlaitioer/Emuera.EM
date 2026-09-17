@@ -76,7 +76,7 @@ internal abstract class ASpriteSingle : ASprite
 	{
 		get
 		{
-			if (BaseImage != null && BaseImage.IsCreated)
+			if (BaseImage is { IsCreated: true })
 			{
 				return BaseImage.Bitmap;
 			}
@@ -85,7 +85,7 @@ internal abstract class ASpriteSingle : ASprite
 		}
 	}
 
-	public override bool IsCreated => BaseImage != null && BaseImage.IsCreated;
+	public override bool IsCreated => BaseImage is { IsCreated: true };
 
 	public override Color SpriteGetColor(int x, int y)
 	{

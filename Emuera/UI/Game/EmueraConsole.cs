@@ -172,7 +172,7 @@ internal sealed partial class EmueraConsole : IDisposable
 		foreach (ClientBackGroundImage cimg in cbgList)
 		{
 			//使い捨て無名Imageを一応disposeしておく
-			if (cimg.Img != null && cimg.Img.Name.Length == 0)
+			if (cimg.Img is { Name.Length: 0 })
 			{
 				cimg.Img.Dispose();
 			}
@@ -199,7 +199,7 @@ internal sealed partial class EmueraConsole : IDisposable
 			}
 
 			//使い捨て無名Imageを一応disposeしておく
-			if (cimg.Img != null && cimg.Img.Name.Length == 0)
+			if (cimg.Img is { Name.Length: 0 })
 			{
 				cimg.Img.Dispose();
 			}
@@ -220,7 +220,7 @@ internal sealed partial class EmueraConsole : IDisposable
 			}
 
 			//使い捨て無名Imageを一応disposeしておく
-			if (cimg.Img != null && cimg.Img.Name.Length == 0)
+			if (cimg.Img is { Name.Length: 0 })
 			{
 				cimg.Img.Dispose();
 			}
@@ -1530,12 +1530,12 @@ internal sealed partial class EmueraConsole : IDisposable
 		Point clientPoint = point;
 		clientPoint.Y = point.Y - ClientHeight;
 		int buttonNum = -1;
-		if (cbgButtonMap != null && cbgButtonMap.IsCreated)
+		if (cbgButtonMap is { IsCreated: true })
 		{
 			//マップ画像の左上基準の座標に置き換え
 			Point mapPoint = clientPoint;
 			mapPoint.Y = clientPoint.Y + cbgButtonMap.Height;
-			if (mapPoint.X >= 0 && mapPoint.Y >= 0 && mapPoint.X < cbgButtonMap.Width && mapPoint.Y < cbgButtonMap.Height)
+			if (mapPoint is { X: >= 0, Y: >= 0 } && mapPoint.X < cbgButtonMap.Width && mapPoint.Y < cbgButtonMap.Height)
 			{
 				Color c = cbgButtonMap.Bitmap.GetPixel(mapPoint.X, mapPoint.Y);
 				if (c.A == 255)
@@ -1645,7 +1645,7 @@ internal sealed partial class EmueraConsole : IDisposable
 				return;
 			}
 
-			if (input == ErrorButtonsText && selectingButton != null && selectingButton.ErrPos != null)
+			if (input == ErrorButtonsText && selectingButton is { ErrPos: not null })
 			{
 				OpenErrorFile(selectingButton.ErrPos);
 				return;
@@ -2300,7 +2300,7 @@ internal sealed partial class EmueraConsole : IDisposable
 						img = cbgList[cidx].ImgB;
 					}
 
-					if (img != null && img.IsCreated)
+					if (img is { IsCreated: true })
 					{
 						img.GraphicsDraw(graph, new Point(cbgList[cidx].x, cbgList[cidx].y + canvasHeight - img.DestBaseSize.Height));
 					}
@@ -2446,7 +2446,7 @@ internal sealed partial class EmueraConsole : IDisposable
 				//}
 				//else
 				//{
-				if (window.ToolTip.OwnerDraw == false && window.ToolTip.InitialDelay == 0 && tooltip_duration == 0)
+				if (window.ToolTip is { OwnerDraw: false, InitialDelay: 0 } && tooltip_duration == 0)
 				{
 					window.ToolTip.SetToolTip(window.MainPicBox, title);
 				}
@@ -2993,7 +2993,7 @@ internal sealed partial class EmueraConsole : IDisposable
 
 		#endregion
 
-		if (cbgButtonMap != null && cbgButtonMap.IsCreated)
+		if (cbgButtonMap is { IsCreated: true })
 		{
 			//pointはクライアント左上基準の座標。
 			//clientPointをクライアント左下基準の座標に置き換え
@@ -3003,7 +3003,7 @@ internal sealed partial class EmueraConsole : IDisposable
 			//マップ画像の左上基準の座標に置き換え
 			Point mapPoint = clientPoint;
 			mapPoint.Y = mapPoint.Y + cbgButtonMap.Height;
-			if (mapPoint.X >= 0 && mapPoint.Y >= 0 && mapPoint.X < cbgButtonMap.Width && mapPoint.Y < cbgButtonMap.Height)
+			if (mapPoint is { X: >= 0, Y: >= 0 } && mapPoint.X < cbgButtonMap.Width && mapPoint.Y < cbgButtonMap.Height)
 			{
 				Color c = cbgButtonMap.Bitmap.GetPixel(mapPoint.X, mapPoint.Y);
 				if (c.A == 255)

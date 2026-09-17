@@ -229,7 +229,7 @@ internal abstract class FunctionMethod
 							{
 								case 0: error = typeNotMatch; break;
 								case -1:
-									error = (!varTerm.Identifier.IsArray1D && !varTerm.Identifier.IsArray2D && !varTerm.Identifier.IsArray3D) ||
+									error = varTerm.Identifier is { IsArray1D: false, IsArray2D: false, IsArray3D: false } ||
 									        typeNotMatch; break;
 								case 1: error = !varTerm.Identifier.IsArray1D || typeNotMatch; break;
 								case 2: error = !varTerm.Identifier.IsArray2D || typeNotMatch; break;
@@ -263,7 +263,7 @@ internal abstract class FunctionMethod
 					return null;
 				}
 			}
-			else if (list.OmitStart == -1 && list.ArgTypes.Count > 0 && !variadic)
+			else if (list is { OmitStart: -1, ArgTypes.Count: > 0 } && !variadic)
 			{
 				// 数固定の引数が必要
 				if (list.ArgTypes.Count > 0)

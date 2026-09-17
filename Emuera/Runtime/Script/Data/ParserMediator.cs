@@ -160,7 +160,7 @@ internal partial class ParserMediator
 			return;
 		}
 
-		if (console != null && !console.RunERBFromMemory)
+		if (console is { RunERBFromMemory: false })
 		{
 			lock (warningListLock)
 			{
@@ -203,7 +203,7 @@ internal partial class ParserMediator
 			return;
 		}
 
-		if (console != null && !console.RunERBFromMemory)
+		if (console is { RunERBFromMemory: false })
 		{
 			lock (warningListLock)
 			{
