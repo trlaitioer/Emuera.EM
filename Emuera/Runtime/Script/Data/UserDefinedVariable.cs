@@ -35,12 +35,11 @@ internal sealed class UserDefinedVariableData
 		string dimtype = dims ? "#DIM" : "#DIMS";
 		UserDefinedVariableData ret = new() { TypeIsStr = dims };
 
-		IdentifierWord? idw;
 		bool staticDefined = false;
 		ret.Const = false;
 		string keyword = dimtype;
 		//List<string> keywords;
-		while (!wc.EOL && (idw = wc.Current as IdentifierWord) != null)
+		while (!wc.EOL && (wc.Current as IdentifierWord) is { } idw)
 		{
 			wc.ShiftNext();
 			keyword = idw.Code;

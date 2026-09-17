@@ -136,8 +136,7 @@ internal sealed class GameBase
 
 		try
 		{
-			CharStream? st = null;
-			while ((st = eReader.ReadEnabledLine()) != null)
+			while (eReader.ReadEnabledLine() is { } st)
 			{
 				string[] tokens = st.Substring().Split(',');
 				if (tokens.Length < 2)

@@ -325,8 +325,7 @@ public partial class DebugDialog : Form
 		try
 		{
 			reader = new StreamReader(watchFilepath, Config.Encode);
-			string? line = null;
-			while ((line = reader.ReadLine()) != null)
+			while (reader.ReadLine() is { } line)
 			{
 				if (line.Length > 0)
 				{

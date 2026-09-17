@@ -102,8 +102,7 @@ internal static class KeyMacro
 
 		try
 		{
-			string? line = null;
-			while ((line = eReader.ReadLine()) != null)
+			while (eReader.ReadLine() is { } line)
 			{
 				if (line.Length == 0 || line[0] == ';')
 				{

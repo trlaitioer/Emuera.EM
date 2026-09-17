@@ -666,9 +666,8 @@ internal sealed partial class Process(EmueraConsole view)
 				console.PrintError(string.Format(trerror.ErrorInFunc.Text, current!.ParentLabelLine!.LabelName,
 					current.ParentLabelLine.Position!.Value.Filename, current.ParentLabelLine.Position.Value.LineNo.ToString()));
 				console.PrintError(trerror.FuncCallStack.Text);
-				LogicalLine? parent;
 				int depth = 0;
-				while ((parent = state.GetReturnAddressSequensial(depth++)) != null)
+				while (state.GetReturnAddressSequensial(depth++) is { } parent)
 				{
 					if (parent.Position != null)
 					{

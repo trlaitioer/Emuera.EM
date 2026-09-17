@@ -95,7 +95,6 @@ internal sealed class ErhLoader
 
 	private bool loadHeaderFile(string filepath, string filename)
 	{
-		CharStream? st;
 		ScriptPosition? position = null;
 		//EraStreamReader eReader = new EraStreamReader(false);
 		//1815修正 _rename.csvの適用
@@ -110,7 +109,7 @@ internal sealed class ErhLoader
 
 		try
 		{
-			while ((st = eReader.ReadEnabledLine()) != null)
+			while (eReader.ReadEnabledLine() is { } st)
 			{
 				if (!noError)
 				{

@@ -261,7 +261,6 @@ public class PluginManager
 	/// </summary>
 	public IEnumerable<string> GetStackTrace()
 	{
-		LogicalLine? parent;
 		List<string> stackTraceCollecter = [];
 		int depth = 0;
 
@@ -269,7 +268,7 @@ public class PluginManager
 		stackTraceCollecter.Add(processState.CurrentLine!.Position!.Value.Filename + ":" + processState.CurrentLine.Position.Value.LineNo +
 		                        "@" + processState.CurrentLine.ParentLabelLine!.LabelName);
 		// loop call stack
-		while ((parent = processState.GetReturnAddressSequensial(depth++)) != null)
+		while (processState.GetReturnAddressSequensial(depth++) is { } parent)
 		{
 			if (parent.Position != null)
 			{

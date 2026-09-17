@@ -977,9 +977,8 @@ internal sealed class ConfigData
 		ScriptPosition? pos = null;
 		try
 		{
-			string? line = null;
 			//bool defineIgnoreWarningFiles = false;
-			while ((line = eReader.ReadLine()) != null)
+			while (eReader.ReadLine() is { } line)
 			{
 				if (line.Length == 0 || line[0] == ';')
 				{
@@ -1085,8 +1084,7 @@ internal sealed class ConfigData
 		ScriptPosition? pos = null;
 		try
 		{
-			string? line = null;
-			while ((line = eReader.ReadLine()) != null)
+			while (eReader.ReadLine() is { } line)
 			{
 				line = line.Trim();
 				if (line.Length == 0)
@@ -1188,8 +1186,7 @@ internal sealed class ConfigData
 		ScriptPosition? pos = null;
 		try
 		{
-			string? line = null;
-			while ((line = eReader.ReadLine()) != null)
+			while (eReader.ReadLine() is { } line)
 			{
 				if (line.Length == 0 || line[0] == ';')
 				{

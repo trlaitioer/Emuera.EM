@@ -35,9 +35,8 @@ internal sealed class UserDefinedFunctionData
 	{
 		string dimtype = dims ? "#FUNCTION" : "#FUNCTIONS";
 		UserDefinedFunctionData ret = new() { TypeIsStr = dims };
-		IdentifierWord? idw;
 		string keyword = dimtype;
-		while (!wc.EOL && (idw = wc.Current as IdentifierWord) != null)
+		while (!wc.EOL && (wc.Current as IdentifierWord) is { } idw)
 		{
 			wc.ShiftNext();
 			keyword = idw.Code;

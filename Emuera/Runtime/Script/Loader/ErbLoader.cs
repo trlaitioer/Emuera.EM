@@ -411,7 +411,6 @@ internal sealed class ErbLoader
 		LogicalLine? nextLine = new NullLine();
 		LogicalLine? lastLine = new NullLine();
 		FunctionLabelLine? lastLabelLine = null;
-		CharStream? st = null;
 		ScriptPosition? position = null;
 		int funcCount = 0;
 		if (Program.AnalysisMode)
@@ -419,7 +418,7 @@ internal sealed class ErbLoader
 			output.PrintSystemLine(" ");
 		}
 
-		while ((st = eReader.ReadEnabledLine(ppstate.Disabled)) != null)
+		while (eReader.ReadEnabledLine(ppstate.Disabled) is { } st)
 		{
 			position = new ScriptPosition(eReader.Filename, eReader.LineNo);
 			//rename処理をEraStreamReaderに移管

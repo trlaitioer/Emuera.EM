@@ -289,8 +289,7 @@ internal sealed class ConstantData
 
 		try
 		{
-			CharStream? st = null;
-			while ((st = eReader.ReadEnabledLine()) != null)
+			while (eReader.ReadEnabledLine() is { } st)
 			{
 				position = new ScriptPosition(eReader.Filename, eReader.LineNo);
 				changeVariableSizeData(st.Substring(), position);
@@ -1625,8 +1624,7 @@ internal sealed class ConstantData
 
 			try
 			{
-				CharStream? st = null;
-				while ((st = eReader.ReadEnabledLine()) != null)
+				while (eReader.ReadEnabledLine() is { } st)
 				{
 					position = new ScriptPosition(eReader.Filename, eReader.LineNo);
 					string[] tokens = st.Substring().Split(',');
@@ -1775,8 +1773,7 @@ internal sealed class ConstantData
 		try
 		{
 			long index = -1;
-			CharStream? st = null;
-			while ((st = eReader.ReadEnabledLine()) != null)
+			while (eReader.ReadEnabledLine() is { } st)
 			{
 				position = new ScriptPosition(eReader.Filename, eReader.LineNo);
 				string[] tokens = st.Substring().Split(',');
@@ -2150,9 +2147,8 @@ internal sealed class ConstantData
 
 		try
 		{
-			CharStream? st = null;
 			Span<Range> dest = stackalloc Range[5];
-			while ((st = eReader.ReadEnabledLine()) != null)
+			while (eReader.ReadEnabledLine() is { } st)
 			{
 				position = new ScriptPosition(eReader.Filename, eReader.LineNo);
 				ReadOnlySpan<char> ros = st.SubstringROS();
@@ -2249,8 +2245,7 @@ internal sealed class ConstantData
 		ScriptPosition? position = null;
 		try
 		{
-			CharStream? st = null;
-			while ((st = eReader.ReadEnabledLine()) != null)
+			while (eReader.ReadEnabledLine() is { } st)
 			{
 				position = new ScriptPosition(eReader.Filename, eReader.LineNo);
 				string[] tokens = st.Substring().Split(',');
