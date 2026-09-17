@@ -2917,7 +2917,7 @@ internal sealed partial class VariableData
 
 		public override void SetValueAll(string value, int start, int end, int charaPos)
 		{
-			if (value == default)
+			if (value == null)
 			{
 				Array.Clear(array, start, end - start);
 			}

@@ -566,14 +566,14 @@ internal static class LogicalLineParser
 							}
 							else
 							{
-								line.Argument = new IntAsignArgument(varName, [.. lengths], new SingleLongTerm(default));
+								line.Argument = new IntAsignArgument(varName, [.. lengths], new SingleLongTerm(0));
 							}
 
 							return line;
 						}
 						else if (func.Code == FunctionCode.VARS)
 						{
-							string? value = default;
+							string? value = null;
 							if (leftSplit.Length > 1)
 							{
 								//配列である

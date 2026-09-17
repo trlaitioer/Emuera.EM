@@ -648,7 +648,7 @@ internal sealed partial class Process(EmueraConsole view)
 
 		if (exc is CodeEE)
 		{
-			if (position != default)
+			if (position != null)
 			{
 				if (current is InstructionLine { FunctionCode: FunctionCode.THROW })
 				{
