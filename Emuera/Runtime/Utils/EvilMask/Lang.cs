@@ -16,7 +16,7 @@ internal sealed partial class Lang
 	{
 		public TranslatableString(string text)
 		{
-			this.text = text;
+			this.Text = text;
 			tr = null;
 		}
 
@@ -30,10 +30,9 @@ internal sealed partial class Lang
 			this.tr = tr;
 		}
 
-		private readonly string text;
 		private string? tr;
 
-		public string Text => tr ?? text;
+		public string Text => tr ?? field;
 	}
 
 	[AttributeUsage(AttributeTargets.Property | AttributeTargets.Class)] private sealed class Managed : Attribute;

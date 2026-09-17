@@ -157,7 +157,6 @@ internal class ConsoleDivPart : AConsoleDisplayNode
 		}
 	}
 
-	private int pointX;
 	private int xOffset;
 
 	#region EE_div各要素の修正
@@ -171,11 +170,11 @@ internal class ConsoleDivPart : AConsoleDisplayNode
 
 	public override int PointX
 	{
-		get { return pointX; }
+		get;
 		set
 		{
-			int diff = value - pointX;
-			pointX = value;
+			int diff = value - field;
+			field = value;
 
 			#region EE_div各要素の修正
 

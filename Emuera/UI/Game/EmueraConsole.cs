@@ -338,11 +338,9 @@ internal sealed partial class EmueraConsole : IDisposable
 
 	#region EM_私家版_描画拡張
 
-	private ConsoleState _state = ConsoleState.Initializing;
-
 	private ConsoleState state
 	{
-		get => _state;
+		get;
 		set
 		{
 			switch (value)
@@ -353,9 +351,9 @@ internal sealed partial class EmueraConsole : IDisposable
 					break;
 			}
 
-			_state = value;
+			field = value;
 		}
-	}
+	} = ConsoleState.Initializing;
 
 	#endregion
 
