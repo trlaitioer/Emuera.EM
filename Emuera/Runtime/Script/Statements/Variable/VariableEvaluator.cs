@@ -1744,7 +1744,7 @@ internal sealed class VariableEvaluator : IDisposable
 		}
 
 		AddPseudoCharacter();
-		varData.CharacterList[(int)x].CopyTo(varData.CharacterList[varData.CharacterList.Count - 1], varData);
+		varData.CharacterList[(int)x].CopyTo(varData.CharacterList[^1], varData);
 	}
 
 	public void SwapChara(long x, long y)

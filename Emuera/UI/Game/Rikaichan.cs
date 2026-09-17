@@ -915,7 +915,7 @@ internal partial class Rikaichan
 		int i = strpos - 1;
 		if (i >= css.Ends.Length - 1)
 		{
-			x = css.PointX + css.Ends[css.Ends.Length - 1];
+			x = css.PointX + css.Ends[^1];
 		}
 		else if (i < 0)
 		{
@@ -931,7 +931,7 @@ internal partial class Rikaichan
 		i = strpos + actualLongestResult - 1;
 		if (i >= css.Ends.Length - 1)
 		{
-			xend = css.PointX + css.Ends[css.Ends.Length - 1];
+			xend = css.PointX + css.Ends[^1];
 		}
 		else if (i < 0)
 		{

@@ -1306,7 +1306,7 @@ internal sealed partial class Process
 		if (state != null)
 		{
 			state.ClearFunctionList();
-			state = prevStateList[prevStateList.Count - 1];
+			state = prevStateList[^1];
 			deletePrevState();
 		}
 	}
