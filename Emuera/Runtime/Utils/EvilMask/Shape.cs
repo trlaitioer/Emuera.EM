@@ -77,14 +77,12 @@ internal sealed class Shape
 				int bHalfHeigh = bHeigh / 2;
 				if ((flipX ? bWidth - bHalfWidth : bHalfWidth) > 0 && (flipY ? bHeigh - bHalfHeigh : bHalfHeigh) > 0)
 				{
-					using (SolidBrush brush = new(bgColor))
-					{
-						graph.FillRectangle(brush, new Rectangle(
-							rect.X + (border != null ? border[Direction.Left] : 0) + (flipX ? bHalfWidth : 0),
-							rect.Y + (border != null ? border[Direction.Top] : 0) + (flipY ? bHalfHeigh : 0),
-							flipX ? bWidth - bHalfWidth : bHalfWidth + 1,
-							flipY ? bHeigh - bHalfHeigh : bHalfHeigh + 1));
-					}
+					using SolidBrush brush = new(bgColor);
+					graph.FillRectangle(brush, new Rectangle(
+						rect.X + (border != null ? border[Direction.Left] : 0) + (flipX ? bHalfWidth : 0),
+						rect.Y + (border != null ? border[Direction.Top] : 0) + (flipY ? bHalfHeigh : 0),
+						flipX ? bWidth - bHalfWidth : bHalfWidth + 1,
+						flipY ? bHeigh - bHalfHeigh : bHalfHeigh + 1));
 				}
 			}
 
@@ -99,26 +97,22 @@ internal sealed class Shape
 				Color color = colors == null ? Config.Config.ForeColor : colors[flipX ? Direction.Right : Direction.Left];
 				if (color != Color.Transparent)
 				{
-					using (GraphicsPath path = new())
-					{
-						path.AddPolygon([
-							new Point(flipX ? rect.X + rect.Width : rect.X,
-								flipY ? rect.Y + rect.Height : rect.Y),
+					using GraphicsPath path = new();
+					path.AddPolygon([
+						new Point(flipX ? rect.X + rect.Width : rect.X,
+							flipY ? rect.Y + rect.Height : rect.Y),
 
-							new Point(flipX ? rect.X + rect.Width - border[Direction.Right] : rect.X + border[Direction.Left],
-								flipY ? rect.Y + rect.Height - border[Direction.Bottom] : rect.Y + border[Direction.Top]),
+						new Point(flipX ? rect.X + rect.Width - border[Direction.Right] : rect.X + border[Direction.Left],
+							flipY ? rect.Y + rect.Height - border[Direction.Bottom] : rect.Y + border[Direction.Top]),
 
-							new Point(flipX ? rect.X + rect.Width - border[Direction.Right] : rect.X + border[Direction.Left],
-								rect.Y + (rect.Height / 2)),
+						new Point(flipX ? rect.X + rect.Width - border[Direction.Right] : rect.X + border[Direction.Left],
+							rect.Y + (rect.Height / 2)),
 
-							new Point(flipX ? rect.X + rect.Width : rect.X,
-								rect.Y + (rect.Height / 2))
-						]);
-						using (SolidBrush brush = new(color))
-						{
-							graph.FillPath(brush, path);
-						}
-					}
+						new Point(flipX ? rect.X + rect.Width : rect.X,
+							rect.Y + (rect.Height / 2))
+					]);
+					using SolidBrush brush = new(color);
+					graph.FillPath(brush, path);
 				}
 			}
 
@@ -128,26 +122,22 @@ internal sealed class Shape
 				Color color = colors == null ? Config.Config.ForeColor : colors[flipY ? Direction.Bottom : Direction.Top];
 				if (color != Color.Transparent)
 				{
-					using (GraphicsPath path = new())
-					{
-						path.AddPolygon([
-							new Point(flipX ? rect.X + rect.Width : rect.X,
-								flipY ? rect.Y + rect.Height : rect.Y),
+					using GraphicsPath path = new();
+					path.AddPolygon([
+						new Point(flipX ? rect.X + rect.Width : rect.X,
+							flipY ? rect.Y + rect.Height : rect.Y),
 
-							new Point(flipX ? rect.X + rect.Width - border[Direction.Right] : rect.X + border[Direction.Left],
-								flipY ? rect.Y + rect.Height - border[Direction.Bottom] : rect.Y + border[Direction.Top]),
+						new Point(flipX ? rect.X + rect.Width - border[Direction.Right] : rect.X + border[Direction.Left],
+							flipY ? rect.Y + rect.Height - border[Direction.Bottom] : rect.Y + border[Direction.Top]),
 
-							new Point(rect.X + (rect.Width / 2),
-								flipY ? rect.Y + rect.Height - border[Direction.Bottom] : rect.Y + border[Direction.Top]),
+						new Point(rect.X + (rect.Width / 2),
+							flipY ? rect.Y + rect.Height - border[Direction.Bottom] : rect.Y + border[Direction.Top]),
 
-							new Point(rect.X + (rect.Width / 2),
-								flipY ? rect.Y + rect.Height : rect.Y)
-						]);
-						using (SolidBrush brush = new(color))
-						{
-							graph.FillPath(brush, path);
-						}
-					}
+						new Point(rect.X + (rect.Width / 2),
+							flipY ? rect.Y + rect.Height : rect.Y)
+					]);
+					using SolidBrush brush = new(color);
+					graph.FillPath(brush, path);
 				}
 			}
 
@@ -209,32 +199,28 @@ internal sealed class Shape
 					int bHalfHeigh = bHeigh / 2;
 					if ((flipX ? bWidth - bHalfWidth : bHalfWidth) > 0 && (flipY ? bHeigh - bHalfHeigh : bHalfHeigh) > 0)
 					{
-						using (SolidBrush brush = new(bgColor))
+						using SolidBrush brush = new(bgColor);
+						Rectangle bgRect = new(
+							flipX
+								? rect.X + (border != null ? border[Direction.Left] : 0) + bHalfWidth
+								: rect.X + (border != null ? border[Direction.Left] : 0),
+							flipY
+								? rect.Y + (border != null ? border[Direction.Top] : 0) + bHalfHeigh
+								: rect.Y + (border != null ? border[Direction.Top] : 0),
+							flipX ? bWidth - bHalfWidth : bHalfWidth + 1,
+							flipY ? bHeigh - bHalfHeigh : bHalfHeigh + 1);
+						if (hasInnerEllipse)
 						{
-							Rectangle bgRect = new(
-								flipX
-									? rect.X + (border != null ? border[Direction.Left] : 0) + bHalfWidth
-									: rect.X + (border != null ? border[Direction.Left] : 0),
-								flipY
-									? rect.Y + (border != null ? border[Direction.Top] : 0) + bHalfHeigh
-									: rect.Y + (border != null ? border[Direction.Top] : 0),
-								flipX ? bWidth - bHalfWidth : bHalfWidth + 1,
-								flipY ? bHeigh - bHalfHeigh : bHalfHeigh + 1);
-							if (hasInnerEllipse)
-							{
-								using (Region region = new(bgRect))
-								{
-									region.Exclude(innerEllipseRect);
-									graph.FillRegion(brush, region);
-									graph.SetClip(innerEllipseRect, CombineMode.Replace);
-									graph.FillPath(brush, innerEllipse!);
-									graph.SetClip(rect, CombineMode.Replace);
-								}
-							}
-							else
-							{
-								graph.FillRectangle(brush, bgRect);
-							}
+							using Region region = new(bgRect);
+							region.Exclude(innerEllipseRect);
+							graph.FillRegion(brush, region);
+							graph.SetClip(innerEllipseRect, CombineMode.Replace);
+							graph.FillPath(brush, innerEllipse!);
+							graph.SetClip(rect, CombineMode.Replace);
+						}
+						else
+						{
+							graph.FillRectangle(brush, bgRect);
 						}
 					}
 				}
@@ -252,30 +238,28 @@ internal sealed class Shape
 						Color color = colors == null ? Config.Config.ForeColor : colors[flipX ? Direction.Right : Direction.Left];
 						if (color != Color.Transparent)
 						{
-							using (GraphicsPath path = new())
-							using (SolidBrush brush = new(color))
-							{
-								path.AddPolygon([
-									new Point(flipX ? rect.X + rect.Width : rect.X,
-										flipY ? rect.Y + rect.Height : rect.Y),
+							using GraphicsPath path = new();
+							using SolidBrush brush = new(color);
+							path.AddPolygon([
+								new Point(flipX ? rect.X + rect.Width : rect.X,
+									flipY ? rect.Y + rect.Height : rect.Y),
 
-									new Point(flipX ? rect.X + rect.Width - cornerRect.Width : rect.X + cornerRect.Width,
-										flipY ? rect.Y + rect.Height - cornerRect.Height : rect.Y + cornerRect.Height),
+								new Point(flipX ? rect.X + rect.Width - cornerRect.Width : rect.X + cornerRect.Width,
+									flipY ? rect.Y + rect.Height - cornerRect.Height : rect.Y + cornerRect.Height),
 
-									new Point(flipX ? rect.X + rect.Width : rect.X,
-										flipY ? rect.Y + rect.Height - cornerRect.Height : rect.Y + cornerRect.Height)
-								]);
-								graph.SetClip(path, CombineMode.Intersect);
-								graph.FillPath(brush, cornerEllipse);
-								graph.SetClip(rect, CombineMode.Replace);
-								graph.SmoothingMode = backUp;
-								graph.FillRectangle(brush, new Rectangle(
-									flipX ? rect.X + rect.Width - border[Direction.Right] : rect.X,
-									flipY ? rect.Y + (rect.Height / 2) : rect.Y + radius![corner],
-									border[flipX ? Direction.Right : Direction.Left],
-									(rect.Height / 2) - radius![corner]));
-								graph.SmoothingMode = SmoothingMode.AntiAlias;
-							}
+								new Point(flipX ? rect.X + rect.Width : rect.X,
+									flipY ? rect.Y + rect.Height - cornerRect.Height : rect.Y + cornerRect.Height)
+							]);
+							graph.SetClip(path, CombineMode.Intersect);
+							graph.FillPath(brush, cornerEllipse);
+							graph.SetClip(rect, CombineMode.Replace);
+							graph.SmoothingMode = backUp;
+							graph.FillRectangle(brush, new Rectangle(
+								flipX ? rect.X + rect.Width - border[Direction.Right] : rect.X,
+								flipY ? rect.Y + (rect.Height / 2) : rect.Y + radius![corner],
+								border[flipX ? Direction.Right : Direction.Left],
+								(rect.Height / 2) - radius![corner]));
+							graph.SmoothingMode = SmoothingMode.AntiAlias;
 						}
 					}
 
@@ -285,31 +269,29 @@ internal sealed class Shape
 						Color color = colors == null ? Config.Config.ForeColor : colors[flipY ? Direction.Bottom : Direction.Top];
 						if (color != Color.Transparent)
 						{
-							using (GraphicsPath path = new())
-							using (SolidBrush brush = new(color))
-							{
-								path.AddPolygon([
-									new Point(flipX ? rect.X + rect.Width : rect.X,
-										flipY ? rect.Y + rect.Height : rect.Y),
-									new Point(flipX ? rect.X + rect.Width - cornerRect.Width : rect.X + cornerRect.Width,
-										flipY ? rect.Y + rect.Height - cornerRect.Height : rect.Y + cornerRect.Height),
+							using GraphicsPath path = new();
+							using SolidBrush brush = new(color);
+							path.AddPolygon([
+								new Point(flipX ? rect.X + rect.Width : rect.X,
+									flipY ? rect.Y + rect.Height : rect.Y),
+								new Point(flipX ? rect.X + rect.Width - cornerRect.Width : rect.X + cornerRect.Width,
+									flipY ? rect.Y + rect.Height - cornerRect.Height : rect.Y + cornerRect.Height),
 
 
-									new Point(flipX ? rect.X + rect.Width - cornerRect.Width : rect.X + cornerRect.Width,
-										flipY ? rect.Y + rect.Height : rect.Y)
-								]);
+								new Point(flipX ? rect.X + rect.Width - cornerRect.Width : rect.X + cornerRect.Width,
+									flipY ? rect.Y + rect.Height : rect.Y)
+							]);
 
-								graph.SetClip(path, CombineMode.Intersect);
-								graph.FillPath(brush, cornerEllipse);
-								graph.SetClip(rect, CombineMode.Replace);
-								graph.SmoothingMode = backUp;
-								graph.FillRectangle(brush, new Rectangle(
-									flipX ? rect.X + (rect.Width / 2) : rect.X + radius![corner],
-									flipY ? rect.Y + rect.Height - border[Direction.Bottom] : rect.Y,
-									(rect.Width / 2) - (flipX ? radius![corner] : 0),
-									border[flipY ? Direction.Bottom : Direction.Top]));
-								graph.SmoothingMode = SmoothingMode.AntiAlias;
-							}
+							graph.SetClip(path, CombineMode.Intersect);
+							graph.FillPath(brush, cornerEllipse);
+							graph.SetClip(rect, CombineMode.Replace);
+							graph.SmoothingMode = backUp;
+							graph.FillRectangle(brush, new Rectangle(
+								flipX ? rect.X + (rect.Width / 2) : rect.X + radius![corner],
+								flipY ? rect.Y + rect.Height - border[Direction.Bottom] : rect.Y,
+								(rect.Width / 2) - (flipX ? radius![corner] : 0),
+								border[flipY ? Direction.Bottom : Direction.Top]));
+							graph.SmoothingMode = SmoothingMode.AntiAlias;
 						}
 					}
 				}

@@ -2547,10 +2547,8 @@ internal sealed partial class EmueraConsole : IDisposable
 		{
 			if (ff.Name == tooltip_fontname)
 			{
-				using (Font f = new(ff, tooltip_fontsize))
-				{
-					TextRenderer.DrawText(e.Graphics, e.ToolTipText, f, e.Bounds, window.ToolTip.ForeColor, window.ToolTip.BackColor, tooltip_format);
-				}
+				using Font f = new(ff, tooltip_fontsize);
+				TextRenderer.DrawText(e.Graphics, e.ToolTipText, f, e.Bounds, window.ToolTip.ForeColor, window.ToolTip.BackColor, tooltip_format);
 
 				return;
 			}

@@ -542,10 +542,8 @@ internal sealed class GraphicsImage : AbstractImage
 		}
 		else
 		{
-			using (Pen p = new(Config.ForeColor))
-			{
-				g.DrawLine(p, fromX, fromY, forX, forY);
-			}
+			using Pen p = new(Config.ForeColor);
+			g.DrawLine(p, fromX, fromY, forX, forY);
 		}
 	}
 

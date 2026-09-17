@@ -368,10 +368,8 @@ public partial class RikaiDialog : Form
 
 		mEdictIndex = memory.ToArray();
 
-		using (FileStream fileStream = new(Program.ExeDir + Config.RikaiFilename + ".ind", FileMode.Create, FileAccess.Write))
-		{
-			memory.Position = 0;
-			memory.CopyTo(fileStream);
-		}
+		using FileStream fileStream = new(Program.ExeDir + Config.RikaiFilename + ".ind", FileMode.Create, FileAccess.Write);
+		memory.Position = 0;
+		memory.CopyTo(fileStream);
 	}
 }

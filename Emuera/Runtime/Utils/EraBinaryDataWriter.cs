@@ -194,14 +194,12 @@ internal sealed class EraBinaryDataWriter : IDisposable
 			writer.Write((byte)EraSaveDataType.DT);
 			writer.Write(key);
 			StringBuilder sb = new();
-			using (StringWriter ss = new(sb))
-			{
-				dt.WriteXmlSchema(ss);
-				writer.Write(sb.ToString());
-				sb.Clear();
-				dt.WriteXml(ss);
-				writer.Write(sb.ToString());
-			}
+			using StringWriter ss = new(sb);
+			dt.WriteXmlSchema(ss);
+			writer.Write(sb.ToString());
+			sb.Clear();
+			dt.WriteXml(ss);
+			writer.Write(sb.ToString());
 		}
 
 		#endregion

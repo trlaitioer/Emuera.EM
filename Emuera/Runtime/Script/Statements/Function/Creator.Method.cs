@@ -2618,14 +2618,12 @@ internal static partial class FunctionMethodCreator
 			int idx = arguments.Count > 1 ? 0 : 1;
 
 			StringBuilder sb = new();
-			using (StringWriter sw = new(sb))
-			{
-				dt.WriteXmlSchema(sw);
-				output[idx] = sb.ToString();
-				sb.Clear();
-				dt.WriteXml(sw);
-				return sb.ToString();
-			}
+			using StringWriter sw = new(sb);
+			dt.WriteXmlSchema(sw);
+			output[idx] = sb.ToString();
+			sb.Clear();
+			dt.WriteXml(sw);
+			return sb.ToString();
 		}
 	}
 
@@ -9654,10 +9652,8 @@ internal static partial class FunctionMethodCreator
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			using (System.Diagnostics.Process memory = System.Diagnostics.Process.GetCurrentProcess())
-			{
-				return memory.WorkingSet64;
-			}
+			using System.Diagnostics.Process memory = System.Diagnostics.Process.GetCurrentProcess();
+			return memory.WorkingSet64;
 		}
 	}
 
@@ -9676,15 +9672,11 @@ internal static partial class FunctionMethodCreator
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			using (System.Diagnostics.Process destmemory = System.Diagnostics.Process.GetCurrentProcess())
-			{
-				long destmemorysize = destmemory.WorkingSet64;
-				GC.Collect();
-				using (System.Diagnostics.Process memory = System.Diagnostics.Process.GetCurrentProcess())
-				{
-					return destmemorysize - memory.WorkingSet64;
-				}
-			}
+			using System.Diagnostics.Process destmemory = System.Diagnostics.Process.GetCurrentProcess();
+			long destmemorysize = destmemory.WorkingSet64;
+			GC.Collect();
+			using System.Diagnostics.Process memory = System.Diagnostics.Process.GetCurrentProcess();
+			return destmemorysize - memory.WorkingSet64;
 		}
 	}
 
