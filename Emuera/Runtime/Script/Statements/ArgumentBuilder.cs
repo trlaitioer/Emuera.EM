@@ -2991,7 +2991,7 @@ internal static partial class ArgumentParser
 					return null;
 				}
 
-				return new RefArgument(refVar!, srcVar!);
+				return new RefArgument(refVar!, srcVar);
 			}
 		}
 	}

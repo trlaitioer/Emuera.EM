@@ -447,7 +447,7 @@ internal sealed partial class Process
 			case FunctionCode.SAVEDATA:
 			{
 				SpSaveDataArgument spSavedataArg = (SpSaveDataArgument)func.BuiltArgument;
-				long target = spSavedataArg.Target!.GetIntValue(exm);
+				long target = spSavedataArg.Target.GetIntValue(exm);
 				if (target < 0)
 				{
 					throw new CodeEE(string.Format(trerror.SavedataArgIsNegative.Text, target.ToString()));
@@ -474,7 +474,7 @@ internal sealed partial class Process
 			case FunctionCode.POWER:
 			{
 				SpPowerArgument powerArg = (SpPowerArgument)func.BuiltArgument;
-				double x = powerArg.X!.GetIntValue(exm);
+				double x = powerArg.X.GetIntValue(exm);
 				double y = powerArg.Y.GetIntValue(exm);
 				double pow = Math.Pow(x, y);
 				if (double.IsNaN(pow))
@@ -498,7 +498,7 @@ internal sealed partial class Process
 				SpSwapVarArgument arg = (SpSwapVarArgument)func.BuiltArgument;
 				//1756beta2+v11
 				//値を読み出す前に添え字を確定させておかないと、RANDが添え字にある場合正しく処理できない
-				FixedVariableTerm vTerm1 = arg.var1!.GetFixedVariableTerm(exm);
+				FixedVariableTerm vTerm1 = arg.var1.GetFixedVariableTerm(exm);
 				FixedVariableTerm vTerm2 = arg.var2.GetFixedVariableTerm(exm);
 				if (vTerm1.GetOperandType() != vTerm2.GetOperandType())
 				{
@@ -594,7 +594,7 @@ internal sealed partial class Process
 				long colorR;
 				long colorG;
 				long colorB;
-				if (colorArg!.IsConst)
+				if (colorArg.IsConst)
 				{
 					long colorRGB = colorArg.ConstInt;
 					colorR = (colorRGB & 0xFF0000) >> 16;
@@ -961,7 +961,7 @@ internal sealed partial class Process
 			case FunctionCode.ARRAYCOPY:
 			{
 				SpCopyArrayArgument arrayArg = (SpCopyArrayArgument)func.BuiltArgument;
-				AExpression varName1 = arrayArg.VarName1!;
+				AExpression varName1 = arrayArg.VarName1;
 				AExpression varName2 = arrayArg.VarName2;
 				VariableToken?[] vars = [null, null];
 				if (!(varName1 is SingleTerm) || !(varName2 is SingleTerm))
@@ -1090,7 +1090,7 @@ internal sealed partial class Process
 					}
 
 					term = ((ExpressionArgument)selectedLine.BuiltArgument).Term!;
-					sb.Append(term!.GetStrValue(exm));
+					sb.Append(term.GetStrValue(exm));
 					if (++i < iList.Count)
 					{
 						sb.Append('\n');

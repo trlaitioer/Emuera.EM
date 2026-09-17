@@ -510,7 +510,7 @@ internal sealed class ErbLoader
 							ScriptPosition? pos = labelDic.GetLabelDollar(gotoLabel.LabelName, lastLabelLine)!.Position;
 							ParserMediator.Warn(
 								string.Format(trerror.LabelIsAlreadyDefined.Text, gotoLabel.LabelName, pos!.Value.Filename,
-									pos!.Value.LineNo.ToString()), position, 2);
+									pos.Value.LineNo.ToString()), position, 2);
 						}
 					}
 				}

@@ -1441,8 +1441,8 @@ internal static partial class FunctionMethodCreator
 					switch (method)
 					{
 						case 0: node.Attributes!.Append(newAttr); break;
-						case 1: attr!.OwnerElement!.Attributes!.InsertBefore(newAttr, attr); break;
-						case 2: attr!.OwnerElement!.Attributes!.InsertAfter(newAttr, attr); break;
+						case 1: attr!.OwnerElement!.Attributes.InsertBefore(newAttr, attr); break;
+						case 2: attr!.OwnerElement!.Attributes.InsertAfter(newAttr, attr); break;
 					}
 
 					return true;
@@ -1523,7 +1523,7 @@ internal static partial class FunctionMethodCreator
 					}
 
 					XmlElement newNode = childNode.DocumentElement!;
-					child = doc!.CreateNode(newNode.NodeType, newNode.Name, newNode.NamespaceURI);
+					child = doc.CreateNode(newNode.NodeType, newNode.Name, newNode.NamespaceURI);
 					for (int i = 0; i < newNode.Attributes.Count; i++)
 					{
 						XmlAttribute xattr = newNode.Attributes[i];
@@ -1606,7 +1606,7 @@ internal static partial class FunctionMethodCreator
 			{
 				if (node is XmlAttribute attr)
 				{
-					attr!.OwnerElement!.Attributes!.Remove(attr);
+					attr.OwnerElement!.Attributes.Remove(attr);
 					return true;
 				}
 			}
@@ -1803,7 +1803,7 @@ internal static partial class FunctionMethodCreator
 			if (nodes.Count > 0)
 			{
 				XmlElement newNode = newXml.DocumentElement!;
-				XmlNode child = doc!.CreateNode(newNode.NodeType, newNode.Name, newNode.NamespaceURI);
+				XmlNode child = doc.CreateNode(newNode.NodeType, newNode.Name, newNode.NamespaceURI);
 				for (int i = 0; i < newNode.Attributes.Count; i++)
 				{
 					XmlAttribute xattr = newNode.Attributes[i];
@@ -2007,7 +2007,7 @@ internal static partial class FunctionMethodCreator
 
 				for (int i = 0; i < dt.Columns.Count; i++)
 				{
-					output[i] = dt.Columns[i]!.ColumnName;
+					output[i] = dt.Columns[i].ColumnName;
 				}
 
 				return dt.Columns.Count;

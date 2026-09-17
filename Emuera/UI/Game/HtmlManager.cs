@@ -501,7 +501,7 @@ internal static class HtmlManager
 						ConsoleStyledString? css = parts[cssCounter] as ConsoleStyledString;
 						b.Append(getStringStyleStartingTag(css!.StringStyle));
 						// ConsoleStyledString always sets Text in its constructor
-						b.Append(Escape(css!.Text!));
+						b.Append(Escape(css.Text!));
 						b.Append(getClosingStyleStartingTag(css.StringStyle));
 					}
 					else if (parts[cssCounter] is ConsoleImagePart)

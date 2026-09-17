@@ -162,7 +162,7 @@ internal abstract class FunctionMethod
 				// 引数の数が有効
 				for (int i = 0; i < (variadic ? arguments.Count : Math.Min(arguments.Count, list.ArgTypes.Count)); i++)
 				{
-					_ArgType rule = variadic && i >= list.ArgTypes.Count ? vs![(i - list.ArgTypes.Count) % vs!.Length] : list.ArgTypes[i];
+					_ArgType rule = variadic && i >= list.ArgTypes.Count ? vs![(i - list.ArgTypes.Count) % vs.Length] : list.ArgTypes[i];
 					if (arguments[i] == null)
 					{
 						if (i < list.OmitStart || (list.OmitStart > -1 && i >= list.OmitStart && rule.DisallowVoid))

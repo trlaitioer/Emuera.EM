@@ -17,7 +17,7 @@ public static class AssemblyData
 		#endregion
 
 		ExeDir = Path.GetDirectoryName(ExePath) + "\\";
-		ExeName = Path.GetFileName(ExePath)!;
+		ExeName = Path.GetFileName(ExePath);
 		emueraVer = typeof(AssemblyData).Assembly.GetName().Version!;
 
 		EmueraVersionText = "Emuera.NET " + Application.ProductVersion;
