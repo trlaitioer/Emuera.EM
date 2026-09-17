@@ -300,7 +300,7 @@ internal sealed class GraphicsImage : AbstractImage
 			if (img is SpriteG imgG)
 			{
 				// The enclosing test guarantees the cast succeeded.
-				if (imgG!.useImgList)
+				if (imgG.useImgList)
 				{
 					foreach (Tuple<ASprite, Rectangle> img_element in imgG.drawImgList)
 					{

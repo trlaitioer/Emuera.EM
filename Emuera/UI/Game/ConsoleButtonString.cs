@@ -407,7 +407,7 @@ internal sealed class ConsoleButtonString
 					}
 
 					// the check above guarantees the cast succeeded
-					willDrawHere!.DrawToBitmap(g, isSelecting, isBackLog, mode, xOffset, willDrawHere.XsubPixel);
+					willDrawHere.DrawToBitmap(g, isSelecting, isBackLog, mode, xOffset, willDrawHere.XsubPixel);
 					xOffset += willDrawHere.Width;
 				}
 
