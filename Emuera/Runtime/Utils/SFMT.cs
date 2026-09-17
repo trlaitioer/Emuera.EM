@@ -94,7 +94,7 @@ public sealed class MTRandom
 	{
 		if (array is not { Length: N32 + 1 })
 		{
-			throw new ArgumentOutOfRangeException();
+			throw new ArgumentOutOfRangeException(nameof(array), $"should be an array with a length of {N32 + 1}");
 		}
 
 		for (int i = 0; i < N32; i++)
@@ -109,7 +109,7 @@ public sealed class MTRandom
 	{
 		if (array is not { Length: N32 + 1 })
 		{
-			throw new ArgumentOutOfRangeException();
+			throw new ArgumentOutOfRangeException(nameof(array), $"should be an array with a length of {N32 + 1}");
 		}
 
 		for (int i = 0; i < N32; i++)

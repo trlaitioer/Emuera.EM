@@ -93,7 +93,7 @@ internal static class AppContents
 	{
 		if (string.IsNullOrEmpty(imgName))
 		{
-			throw new ArgumentOutOfRangeException();
+			throw new ArgumentOutOfRangeException(nameof(imgName), "must not be null or empty");
 		}
 
 		imgName = imgName.ToUpper();
@@ -105,7 +105,7 @@ internal static class AppContents
 	{
 		if (string.IsNullOrEmpty(imgName))
 		{
-			throw new ArgumentOutOfRangeException();
+			throw new ArgumentOutOfRangeException(nameof(imgName), "must not be null or empty");
 		}
 
 		imgName = imgName.ToUpper();
