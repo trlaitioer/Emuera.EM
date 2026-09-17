@@ -125,7 +125,7 @@ internal sealed partial class DebugConfigDialog : Form
 
 	private void button6_Click(object sender, EventArgs e)
 	{
-		if (dd == null || !dd.Created)
+		if (dd is not { Created: true })
 		{
 			return;
 		}
@@ -143,7 +143,7 @@ internal sealed partial class DebugConfigDialog : Form
 
 	private void button5_Click(object sender, EventArgs e)
 	{
-		if (dd == null || !dd.Created)
+		if (dd is not { Created: true })
 		{
 			return;
 		}

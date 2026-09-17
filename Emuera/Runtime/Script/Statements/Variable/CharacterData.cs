@@ -655,7 +655,7 @@ internal sealed class CharacterData : IDisposable
 
 				if (userDefineData)
 				{
-					array = vToken == null || !vToken.IsSavedata || !vToken.IsCharacterData || !(vToken is UserDefinedCharaVariableToken token)
+					array = vToken is not { IsSavedata: true } || !vToken.IsCharacterData || !(vToken is UserDefinedCharaVariableToken token)
 						? null
 						: UserDefCVarDataList[token.ArrayIndex];
 					vToken = null;
@@ -680,7 +680,7 @@ internal sealed class CharacterData : IDisposable
 				case EraSaveDataType.EOC:
 					goto whilebreak;
 				case EraSaveDataType.Int:
-					if (vToken == null || !vToken.IsInteger || vToken.Dimension != 0)
+					if (vToken is not { IsInteger: true } || vToken.Dimension != 0)
 					{
 						reader.ReadInt();
 					}
@@ -691,7 +691,7 @@ internal sealed class CharacterData : IDisposable
 
 					break;
 				case EraSaveDataType.Str:
-					if (vToken == null || !vToken.IsString || vToken.Dimension != 0)
+					if (vToken is not { IsString: true } || vToken.Dimension != 0)
 					{
 						reader.ReadString();
 					}
@@ -706,7 +706,7 @@ internal sealed class CharacterData : IDisposable
 					{
 						reader.ReadIntArray(array as long[], true);
 					}
-					else if (vToken == null || !vToken.IsInteger || vToken.Dimension != 1)
+					else if (vToken is not { IsInteger: true } || vToken.Dimension != 1)
 					{
 						reader.ReadIntArray(null, true);
 					}
@@ -721,7 +721,7 @@ internal sealed class CharacterData : IDisposable
 					{
 						reader.ReadStrArray(array as string[], true);
 					}
-					else if (vToken == null || !vToken.IsString || vToken.Dimension != 1)
+					else if (vToken is not { IsString: true } || vToken.Dimension != 1)
 					{
 						reader.ReadStrArray(null, true);
 					}
@@ -736,7 +736,7 @@ internal sealed class CharacterData : IDisposable
 					{
 						reader.ReadIntArray2D(array as long[,], true);
 					}
-					else if (vToken == null || !vToken.IsInteger || vToken.Dimension != 2)
+					else if (vToken is not { IsInteger: true } || vToken.Dimension != 2)
 					{
 						reader.ReadIntArray2D(null, true);
 					}
@@ -751,7 +751,7 @@ internal sealed class CharacterData : IDisposable
 					{
 						reader.ReadStrArray2D(array as string[,], true);
 					}
-					else if (vToken == null || !vToken.IsString || vToken.Dimension != 2)
+					else if (vToken is not { IsString: true } || vToken.Dimension != 2)
 					{
 						reader.ReadStrArray2D(null, true);
 					}

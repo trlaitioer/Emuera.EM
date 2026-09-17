@@ -92,7 +92,7 @@ public sealed class MTRandom
 
 	public void SetRand(long[] array)
 	{
-		if (array == null || array.Length != N32 + 1)
+		if (array is not { Length: N32 + 1 })
 		{
 			throw new ArgumentOutOfRangeException();
 		}
@@ -107,7 +107,7 @@ public sealed class MTRandom
 
 	public void GetRand(long[] array)
 	{
-		if (array == null || array.Length != N32 + 1)
+		if (array is not { Length: N32 + 1 })
 		{
 			throw new ArgumentOutOfRangeException();
 		}

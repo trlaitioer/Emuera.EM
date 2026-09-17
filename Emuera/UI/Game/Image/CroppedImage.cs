@@ -337,7 +337,7 @@ internal sealed class SpriteAnime : ASprite
 	public override void GraphicsDraw(Graphics g, Point offset)
 	{
 		AnimeFrame? frame = GetCurrentFrame();
-		if (frame == null || frame.BaseImage == null || !frame.BaseImage.IsCreated || frame.BaseImage.Bitmap == null)
+		if (frame is not { BaseImage.IsCreated: true } || frame.BaseImage.Bitmap == null)
 		{
 			return;
 		}
@@ -351,7 +351,7 @@ internal sealed class SpriteAnime : ASprite
 	public override void GraphicsDraw(Graphics g, Rectangle destRect)
 	{
 		AnimeFrame? frame = GetCurrentFrame();
-		if (frame == null || frame.BaseImage == null || !frame.BaseImage.IsCreated || frame.BaseImage.Bitmap == null)
+		if (frame is not { BaseImage.IsCreated: true } || frame.BaseImage.Bitmap == null)
 		{
 			return;
 		}
@@ -366,7 +366,7 @@ internal sealed class SpriteAnime : ASprite
 	public override void GraphicsDraw(Graphics g, Rectangle destRect, ImageAttributes attr)
 	{
 		AnimeFrame? frame = GetCurrentFrame();
-		if (frame == null || frame.BaseImage == null || !frame.BaseImage.IsCreated || frame.BaseImage.Bitmap == null)
+		if (frame is not { BaseImage.IsCreated: true } || frame.BaseImage.Bitmap == null)
 		{
 			return;
 		}

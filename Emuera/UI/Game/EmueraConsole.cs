@@ -241,7 +241,7 @@ internal sealed partial class EmueraConsole : IDisposable
 
 	public bool CBG_SetGraphics(GraphicsImage gra, int x, int y, int zdepth)
 	{
-		if (gra == null || !gra.IsCreated)
+		if (gra is not { IsCreated: true })
 		{
 			return false;
 		}
@@ -251,7 +251,7 @@ internal sealed partial class EmueraConsole : IDisposable
 
 	public bool CBG_SetImage(ASprite image, int x, int y, int zdepth)
 	{
-		if (image == null || !image.IsCreated)
+		if (image is not { IsCreated: true })
 		{
 			return false;
 		}
@@ -266,7 +266,7 @@ internal sealed partial class EmueraConsole : IDisposable
 
 	public bool CBG_SetButtonMap(GraphicsImage gra)
 	{
-		if (gra == null || !gra.IsCreated)
+		if (gra is not { IsCreated: true })
 		{
 			return false;
 		}
@@ -436,7 +436,7 @@ internal sealed partial class EmueraConsole : IDisposable
 	/// <summary>
 	/// 現在、Emueraがアクティブかどうか
 	/// </summary>
-	internal bool IsActive => !(window == null || !window.Created || Form.ActiveForm == null);
+	internal bool IsActive => !(window is not { Created: true } || Form.ActiveForm == null);
 
 	/// <summary>
 	/// スクリプトが継続中かどうか
@@ -2944,7 +2944,7 @@ internal sealed partial class EmueraConsole : IDisposable
 
 	internal Point GetMousePosition()
 	{
-		if (window == null || !window.Created)
+		if (window is not { Created: true })
 		{
 			return new Point();
 		}

@@ -1732,7 +1732,7 @@ internal sealed partial class MainWindow : Form
 
 	private void richTextBox1_ModifierRecorder_KeyUp(object? sender, KeyEventArgs e)
 	{
-		if (console == null || !console.IsWaintingInputWithMouse)
+		if (console is not { IsWaintingInputWithMouse: true })
 		{
 			return;
 		}
@@ -1742,7 +1742,7 @@ internal sealed partial class MainWindow : Form
 
 	private void richTextBox1_ModifierRecorder_KeyDown(object? sender, KeyEventArgs e)
 	{
-		if (console == null || !console.IsWaintingInputWithMouse)
+		if (console is not { IsWaintingInputWithMouse: true })
 		{
 			return;
 		}

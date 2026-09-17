@@ -7719,7 +7719,7 @@ internal static partial class FunctionMethodCreator
 		{
 			string imgname = arguments.Required(0).GetStrValue(exm);
 			ASprite? img = AppContents.GetSprite(imgname);
-			if (img == null || !img.IsCreated)
+			if (img is not { IsCreated: true })
 			{
 				return 0;
 			}
@@ -7755,7 +7755,7 @@ internal static partial class FunctionMethodCreator
 		{
 			string imgname = arguments.Required(0).GetStrValue(exm);
 			ASprite? img = AppContents.GetSprite(imgname);
-			if (img == null || !img.IsCreated)
+			if (img is not { IsCreated: true })
 			{
 				return 0;
 			}
@@ -7789,7 +7789,7 @@ internal static partial class FunctionMethodCreator
 			string imgname = arguments.Required(0).GetStrValue(exm);
 			ASprite? img = AppContents.GetSprite(imgname);
 			//他と違って失敗は0ではなく負の値
-			if (img == null || !img.IsCreated)
+			if (img is not { IsCreated: true })
 			{
 				return -1;
 			}
@@ -8130,7 +8130,7 @@ internal static partial class FunctionMethodCreator
 		{
 			string imgname = arguments.Required(0).GetStrValue(exm);
 			ASprite? img = AppContents.GetSprite(imgname);
-			if (img == null || !img.IsCreated)
+			if (img is not { IsCreated: true })
 			{
 				return 0;
 			}
@@ -8535,7 +8535,7 @@ internal static partial class FunctionMethodCreator
 
 			string imgname = arguments.Required(1).GetStrValue(exm);
 			ASprite? img = AppContents.GetSprite(imgname);
-			if (img == null || !img.IsCreated)
+			if (img is not { IsCreated: true })
 			{
 				return 0;
 			}
@@ -8688,7 +8688,7 @@ internal static partial class FunctionMethodCreator
 				return 0;
 			}
 
-			if (AppContents.GetSprite(imgname) is not SpriteAnime img || !img.IsCreated)
+			if (AppContents.GetSprite(imgname) is not SpriteAnime { IsCreated: true } img)
 			{
 				return 0;
 			}
@@ -8898,7 +8898,7 @@ internal static partial class FunctionMethodCreator
 
 			string imgname = arguments.Required(0).GetStrValue(exm);
 			ASprite? img = AppContents.GetSprite(imgname);
-			if (img == null || !img.IsCreated)
+			if (img is not { IsCreated: true })
 			{
 				return 0;
 			}

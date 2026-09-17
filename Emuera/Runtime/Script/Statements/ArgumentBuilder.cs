@@ -2936,7 +2936,7 @@ internal static partial class ArgumentParser
 			if (refm == null)
 			{
 				VariableToken? token = GlobalStatic.IdentifierDictionary.GetVariableToken(id.Code, null, true);
-				if (token == null || !token.IsReference)
+				if (token is not { IsReference: true })
 				{
 					warn(string.Format(trerror.ArgIsNotRef.Text, "1"), line, 2, false);
 					return null;

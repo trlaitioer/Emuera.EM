@@ -1228,7 +1228,7 @@ internal static class HtmlManager
 					state.FonttagList.RemoveAt(state.FonttagList.Count - 1);
 					return null;
 				case "button":
-					if (state.CurrentButtonTag == null || !state.CurrentButtonTag.IsButtonTag)
+					if (state.CurrentButtonTag is not { IsButtonTag: true })
 					{
 						throw new CodeEE(string.Format(trerror.UnexpectedCloseTag.Text, "button"));
 					}
@@ -1377,7 +1377,7 @@ internal static class HtmlManager
 				wc.ShiftNext();
 				LiteralStringWord? attr = wc.Current as LiteralStringWord;
 				wc.ShiftNext();
-				if (!wc.EOL || word == null || op == null || op.Code != OperatorCode.Assignment || attr == null)
+				if (!wc.EOL || word == null || op is not { Code: OperatorCode.Assignment } || attr == null)
 				{
 					goto error;
 				}
@@ -1434,7 +1434,7 @@ internal static class HtmlManager
 					wc.ShiftNext();
 					LiteralStringWord? attr = wc.Current as LiteralStringWord;
 					wc.ShiftNext();
-					if (word == null || op == null || op.Code != OperatorCode.Assignment || attr == null)
+					if (word == null || op is not { Code: OperatorCode.Assignment } || attr == null)
 					{
 						goto error;
 					}
@@ -1521,7 +1521,7 @@ internal static class HtmlManager
 					wc.ShiftNext();
 					LiteralStringWord? attr = wc.Current as LiteralStringWord;
 					wc.ShiftNext();
-					if (word == null || op == null || op.Code != OperatorCode.Assignment || attr == null)
+					if (word == null || op is not { Code: OperatorCode.Assignment } || attr == null)
 					{
 						goto error;
 					}
@@ -1667,7 +1667,7 @@ internal static class HtmlManager
 					wc.ShiftNext();
 					LiteralStringWord? attr = wc.Current as LiteralStringWord;
 					wc.ShiftNext();
-					if (word == null || op == null || op.Code != OperatorCode.Assignment || attr == null)
+					if (word == null || op is not { Code: OperatorCode.Assignment } || attr == null)
 					{
 						goto error;
 					}
@@ -1785,7 +1785,7 @@ internal static class HtmlManager
 					wc.ShiftNext();
 					LiteralStringWord? attr = wc.Current as LiteralStringWord;
 					wc.ShiftNext();
-					if (word == null || op == null || op.Code != OperatorCode.Assignment || attr == null)
+					if (word == null || op is not { Code: OperatorCode.Assignment } || attr == null)
 					{
 						goto error;
 					}
@@ -1897,7 +1897,7 @@ internal static class HtmlManager
 						wc.ShiftNext();
 						LiteralStringWord? attr = wc.Current as LiteralStringWord;
 						wc.ShiftNext();
-						if (word == null || op == null || op.Code != OperatorCode.Assignment || attr == null)
+						if (word == null || op is not { Code: OperatorCode.Assignment } || attr == null)
 						{
 							goto error;
 						}
@@ -1943,7 +1943,7 @@ internal static class HtmlManager
 					wc.ShiftNext();
 					LiteralStringWord? attr = wc.Current as LiteralStringWord;
 					wc.ShiftNext();
-					if (word == null || op == null || op.Code != OperatorCode.Assignment || attr == null)
+					if (word == null || op is not { Code: OperatorCode.Assignment } || attr == null)
 					{
 						goto error;
 					}

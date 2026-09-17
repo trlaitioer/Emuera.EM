@@ -52,7 +52,7 @@ internal struct StringStyle
 
 	public override bool Equals([NotNullWhen(true)] object? obj)
 	{
-		if (obj == null || obj is not StringStyle ss)
+		if (obj is not StringStyle ss)
 		{
 			return false;
 		}

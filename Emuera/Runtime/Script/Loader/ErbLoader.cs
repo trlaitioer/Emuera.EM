@@ -447,7 +447,7 @@ internal sealed class ErbLoader
 
 			if (st.Current == '#')
 			{
-				if (lastLine == null || lastLine is not FunctionLabelLine funcLine)
+				if (lastLine is not FunctionLabelLine funcLine)
 				{
 					ParserMediator.Warn(trerror.InvalidSharp.Text, position, 1);
 					continue;
@@ -1509,7 +1509,7 @@ internal sealed class ErbLoader
 				{
 					//1.725 Stack<T>.Last.Value()はStackが空の時はnullを返す仕様だと思いこんでおりました。
 					InstructionLine? ifLine = nestStack.Count == 0 ? null : nestStack.Peek();
-					if (ifLine == null || ifLine.FunctionCode != FunctionCode.IF)
+					if (ifLine is not { FunctionCode: FunctionCode.IF })
 					{
 						ParserMediator.Warn(string.Format(trerror.InvalidElse.Text, func.Function.Name), func, 2, true, false);
 						break;
@@ -1526,7 +1526,7 @@ internal sealed class ErbLoader
 				case FunctionCode.ENDIF:
 				{
 					InstructionLine? ifLine = nestStack.Count == 0 ? null : nestStack.Peek();
-					if (ifLine == null || ifLine.FunctionCode != FunctionCode.IF)
+					if (ifLine is not { FunctionCode: FunctionCode.IF })
 					{
 						ParserMediator.Warn(trerror.UnexpectedEndif.Text, func, 2, true, false);
 						break;
@@ -1920,8 +1920,7 @@ internal sealed class ErbLoader
 					break;
 				case FunctionCode.ENDNOSKIP:
 					InstructionLine? pfunc = nestStack.Count == 0 ? null : nestStack.Peek();
-					if (pfunc == null ||
-					    pfunc.FunctionCode != FunctionCode.NOSKIP)
+					if (pfunc is not { FunctionCode: FunctionCode.NOSKIP })
 					{
 						ParserMediator.Warn(string.Format(trerror.MissingNoskip.Text, func.Function.Name), func, 2, true, false);
 						break;

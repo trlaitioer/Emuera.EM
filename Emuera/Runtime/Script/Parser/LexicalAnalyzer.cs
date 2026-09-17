@@ -1315,7 +1315,7 @@ internal static class LexicalAnalyzer
 		LinkedListNode<Word>? macroStart = wc.Pointer;
 		wc.ShiftNext();
 		SymbolWord? symbol = wc.Current as SymbolWord;
-		if (symbol == null || symbol.Type != '(')
+		if (symbol is not { Type: '(' })
 		{
 			throw new CodeEE(string.Format(trerror.MacroHasNotArg.Text, macro.Keyword));
 		}
@@ -1380,7 +1380,7 @@ internal static class LexicalAnalyzer
 		//引数部読み取りループ終端
 		exitfor:
 		symbol = wc.Current as SymbolWord;
-		if (symbol == null || symbol.Type != ')')
+		if (symbol is not { Type: ')' })
 		{
 			throw new CodeEE(string.Format(trerror.WrongMacroUsage.Text, macro.Keyword));
 		}

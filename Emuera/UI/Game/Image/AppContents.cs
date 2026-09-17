@@ -364,7 +364,7 @@ internal static class AppContents
 			img.Dispose();
 		}
 
-		if (value is not ConstImage parentImage || !parentImage.IsCreated)
+		if (value is not ConstImage { IsCreated: true } parentImage)
 		{
 			ParserMediator.Warn(string.Format(trerror.SpriteCreateFromFailedResource.Text, arg2), sp, 1);
 			return null;

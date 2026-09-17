@@ -1489,7 +1489,7 @@ internal sealed partial class VariableData : IDisposable
 			case EraSaveDataType.EOF:
 				return false;
 			case EraSaveDataType.Int:
-				if (vToken == null || !vToken.IsInteger || vToken.Dimension != 0)
+				if (vToken is not { IsInteger: true } || vToken.Dimension != 0)
 				{
 					reader.ReadInt(); //該当変数なし、or型不一致なら読み捨てる
 				}
@@ -1500,7 +1500,7 @@ internal sealed partial class VariableData : IDisposable
 
 				break;
 			case EraSaveDataType.Str:
-				if (vToken == null || !vToken.IsString || vToken.Dimension != 0)
+				if (vToken is not { IsString: true } || vToken.Dimension != 0)
 				{
 					reader.ReadString();
 				}
@@ -1511,7 +1511,7 @@ internal sealed partial class VariableData : IDisposable
 
 				break;
 			case EraSaveDataType.IntArray:
-				if (vToken == null || !vToken.IsInteger || vToken.Dimension != 1)
+				if (vToken is not { IsInteger: true } || vToken.Dimension != 1)
 				{
 					reader.ReadIntArray(null, true);
 				}
@@ -1522,7 +1522,7 @@ internal sealed partial class VariableData : IDisposable
 
 				break;
 			case EraSaveDataType.IntArray2D:
-				if (vToken == null || !vToken.IsInteger || vToken.Dimension != 2)
+				if (vToken is not { IsInteger: true } || vToken.Dimension != 2)
 				{
 					reader.ReadIntArray2D(null, true);
 				}
@@ -1533,7 +1533,7 @@ internal sealed partial class VariableData : IDisposable
 
 				break;
 			case EraSaveDataType.IntArray3D:
-				if (vToken == null || !vToken.IsInteger || vToken.Dimension != 3)
+				if (vToken is not { IsInteger: true } || vToken.Dimension != 3)
 				{
 					reader.ReadIntArray3D(null, true);
 				}
@@ -1544,7 +1544,7 @@ internal sealed partial class VariableData : IDisposable
 
 				break;
 			case EraSaveDataType.StrArray:
-				if (vToken == null || !vToken.IsString || vToken.Dimension != 1)
+				if (vToken is not { IsString: true } || vToken.Dimension != 1)
 				{
 					reader.ReadStrArray(null, true);
 				}
@@ -1555,7 +1555,7 @@ internal sealed partial class VariableData : IDisposable
 
 				break;
 			case EraSaveDataType.StrArray2D:
-				if (vToken == null || !vToken.IsString || vToken.Dimension != 2)
+				if (vToken is not { IsString: true } || vToken.Dimension != 2)
 				{
 					reader.ReadStrArray2D(null, true);
 				}
@@ -1566,7 +1566,7 @@ internal sealed partial class VariableData : IDisposable
 
 				break;
 			case EraSaveDataType.StrArray3D:
-				if (vToken == null || !vToken.IsString || vToken.Dimension != 3)
+				if (vToken is not { IsString: true } || vToken.Dimension != 3)
 				{
 					reader.ReadStrArray3D(null, true);
 				}
