@@ -118,7 +118,7 @@ internal sealed partial class EmueraConsole : IDisposable
 		{
 			Enabled = false //TODO:1824アニメ用再描画タイマー有効化関数の追加
 		};
-		redrawTimer.Tick += new EventHandler(tickRedrawTimer);
+		redrawTimer.Tick += tickRedrawTimer;
 		redrawTimer.Interval = 10;
 	}
 
@@ -2597,13 +2597,13 @@ internal sealed partial class EmueraConsole : IDisposable
 	{
 		if (!b)
 		{
-			window.ToolTip.Draw -= new DrawToolTipEventHandler(ToolTip_Draw);
-			window.ToolTip.Popup -= new PopupEventHandler(ToolTip_Popup);
+			window.ToolTip.Draw -= ToolTip_Draw;
+			window.ToolTip.Popup -= ToolTip_Popup;
 		}
 		else if (!window.ToolTip.OwnerDraw)
 		{
-			window.ToolTip.Draw += new DrawToolTipEventHandler(ToolTip_Draw);
-			window.ToolTip.Popup += new PopupEventHandler(ToolTip_Popup);
+			window.ToolTip.Draw += ToolTip_Draw;
+			window.ToolTip.Popup += ToolTip_Popup;
 		}
 
 		window.ToolTip.OwnerDraw = b;

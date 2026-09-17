@@ -36,9 +36,9 @@ public partial class RikaiDialog : Form
 
 		InitializeComponent();
 
-		backgroundWorker.DoWork += new DoWorkEventHandler(bwDoWork);
-		backgroundWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bwRunWorkerCompleted);
-		backgroundWorker.ProgressChanged += new ProgressChangedEventHandler(bwProgressChanged);
+		backgroundWorker.DoWork += bwDoWork;
+		backgroundWorker.RunWorkerCompleted += bwRunWorkerCompleted;
+		backgroundWorker.ProgressChanged += bwProgressChanged;
 
 		label.Text = "starting";
 

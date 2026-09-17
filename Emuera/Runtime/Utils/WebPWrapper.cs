@@ -1016,7 +1016,7 @@ public sealed class WebP : IDisposable
 			wpic.custom_ptr = initPtr;
 
 			//Set up a byte-writing method (write-to-memory, in this case)
-			UnsafeNativeMethods.OnCallback = new UnsafeNativeMethods.WebPMemoryWrite(MyWriter);
+			UnsafeNativeMethods.OnCallback = MyWriter;
 			wpic.writer = Marshal.GetFunctionPointerForDelegate(UnsafeNativeMethods.OnCallback);
 
 			//compress the input samples

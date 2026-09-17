@@ -74,20 +74,20 @@ internal sealed partial class MainWindow : Form
 		macroMenuItems[11] = マクロ12ToolStripMenuItem;
 		foreach (ToolStripMenuItem item in macroMenuItems)
 		{
-			item.Click += new EventHandler(マクロToolStripMenuItem_Click);
+			item.Click += マクロToolStripMenuItem_Click;
 		}
 
-		richTextBox1.MouseWheel += new MouseEventHandler(richTextBox1_MouseWheel);
-		mainPicBox.MouseWheel += new MouseEventHandler(richTextBox1_MouseWheel);
-		vScrollBar.MouseWheel += new MouseEventHandler(richTextBox1_MouseWheel);
+		richTextBox1.MouseWheel += richTextBox1_MouseWheel;
+		mainPicBox.MouseWheel += richTextBox1_MouseWheel;
+		vScrollBar.MouseWheel += richTextBox1_MouseWheel;
 
 
-		richTextBox1.KeyDown += new KeyEventHandler(richTextBox1_KeyDown);
+		richTextBox1.KeyDown += richTextBox1_KeyDown;
 
 		#region EM_私家版_INPUT系機能拡張
 
-		richTextBox1.KeyUp += new KeyEventHandler(richTextBox1_ModifierRecorder_KeyUp);
-		richTextBox1.KeyDown += new KeyEventHandler(richTextBox1_ModifierRecorder_KeyDown);
+		richTextBox1.KeyUp += richTextBox1_ModifierRecorder_KeyUp;
+		richTextBox1.KeyDown += richTextBox1_ModifierRecorder_KeyDown;
 
 		#endregion
 
@@ -104,7 +104,7 @@ internal sealed partial class MainWindow : Form
 		textBoxInfo.Top = richTextBox1.Top;
 		textBoxInfo.Size = richTextBox1.Size;
 		textBoxState = TextBoxState.Unchanged;
-		vScrollBar.ValueChanged += new EventHandler(textBoxHandleScrollValueChanged);
+		vScrollBar.ValueChanged += textBoxHandleScrollValueChanged;
 
 		#endregion
 	}
@@ -1666,11 +1666,11 @@ internal sealed partial class MainWindow : Form
 
 	public void update_lastinput()
 	{
-		richTextBox1.TextChanged -= new EventHandler(richTextBox1_TextChanged);
-		richTextBox1.KeyDown -= new KeyEventHandler(richTextBox1_KeyDown);
+		richTextBox1.TextChanged -= richTextBox1_TextChanged;
+		richTextBox1.KeyDown -= richTextBox1_KeyDown;
 		Application.DoEvents();
-		richTextBox1.TextChanged += new EventHandler(richTextBox1_TextChanged);
-		richTextBox1.KeyDown += new KeyEventHandler(richTextBox1_KeyDown);
+		richTextBox1.TextChanged += richTextBox1_TextChanged;
+		richTextBox1.KeyDown += richTextBox1_KeyDown;
 		last_inputed = richTextBox1.Text;
 	}
 

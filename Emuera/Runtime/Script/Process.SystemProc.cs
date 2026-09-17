@@ -22,61 +22,61 @@ internal sealed partial class Process
 	private void initSystemProcess()
 	{
 		comAble = new int[TrainName.Length];
-		systemProcessDictionary.Add(SystemStateCode.Title_Begin, new SystemProcess(beginTitle));
-		systemProcessDictionary.Add(SystemStateCode.Openning, new SystemProcess(endOpenning));
+		systemProcessDictionary.Add(SystemStateCode.Title_Begin, beginTitle);
+		systemProcessDictionary.Add(SystemStateCode.Openning, endOpenning);
 
-		systemProcessDictionary.Add(SystemStateCode.Train_Begin, new SystemProcess(beginTrain));
-		systemProcessDictionary.Add(SystemStateCode.Train_CallEventTrain, new SystemProcess(endCallEventTrain));
-		systemProcessDictionary.Add(SystemStateCode.Train_CallShowStatus, new SystemProcess(endCallShowStatus));
-		systemProcessDictionary.Add(SystemStateCode.Train_CallComAbleXX, new SystemProcess(endCallComAbleXX));
-		systemProcessDictionary.Add(SystemStateCode.Train_CallShowUserCom, new SystemProcess(endCallShowUserCom));
-		systemProcessDictionary.Add(SystemStateCode.Train_WaitInput, new SystemProcess(trainWaitInput));
-		systemProcessDictionary.Add(SystemStateCode.Train_CallEventCom, new SystemProcess(endEventCom));
-		systemProcessDictionary.Add(SystemStateCode.Train_CallComXX, new SystemProcess(endCallComXX));
-		systemProcessDictionary.Add(SystemStateCode.Train_CallSourceCheck, new SystemProcess(endCallSourceCheck));
-		systemProcessDictionary.Add(SystemStateCode.Train_CallEventComEnd, new SystemProcess(endCallEventComEnd));
-		systemProcessDictionary.Add(SystemStateCode.Train_DoTrain, new SystemProcess(doTrain));
+		systemProcessDictionary.Add(SystemStateCode.Train_Begin, beginTrain);
+		systemProcessDictionary.Add(SystemStateCode.Train_CallEventTrain, endCallEventTrain);
+		systemProcessDictionary.Add(SystemStateCode.Train_CallShowStatus, endCallShowStatus);
+		systemProcessDictionary.Add(SystemStateCode.Train_CallComAbleXX, endCallComAbleXX);
+		systemProcessDictionary.Add(SystemStateCode.Train_CallShowUserCom, endCallShowUserCom);
+		systemProcessDictionary.Add(SystemStateCode.Train_WaitInput, trainWaitInput);
+		systemProcessDictionary.Add(SystemStateCode.Train_CallEventCom, endEventCom);
+		systemProcessDictionary.Add(SystemStateCode.Train_CallComXX, endCallComXX);
+		systemProcessDictionary.Add(SystemStateCode.Train_CallSourceCheck, endCallSourceCheck);
+		systemProcessDictionary.Add(SystemStateCode.Train_CallEventComEnd, endCallEventComEnd);
+		systemProcessDictionary.Add(SystemStateCode.Train_DoTrain, doTrain);
 
-		systemProcessDictionary.Add(SystemStateCode.AfterTrain_Begin, new SystemProcess(beginAfterTrain));
+		systemProcessDictionary.Add(SystemStateCode.AfterTrain_Begin, beginAfterTrain);
 
-		systemProcessDictionary.Add(SystemStateCode.Ablup_Begin, new SystemProcess(beginAblup));
-		systemProcessDictionary.Add(SystemStateCode.Ablup_CallShowJuel, new SystemProcess(endCallShowJuel));
-		systemProcessDictionary.Add(SystemStateCode.Ablup_CallShowAblupSelect, new SystemProcess(endCallShowAblupSelect));
-		systemProcessDictionary.Add(SystemStateCode.Ablup_WaitInput, new SystemProcess(ablupWaitInput));
-		systemProcessDictionary.Add(SystemStateCode.Ablup_CallAblupXX, new SystemProcess(endCallAblupXX));
+		systemProcessDictionary.Add(SystemStateCode.Ablup_Begin, beginAblup);
+		systemProcessDictionary.Add(SystemStateCode.Ablup_CallShowJuel, endCallShowJuel);
+		systemProcessDictionary.Add(SystemStateCode.Ablup_CallShowAblupSelect, endCallShowAblupSelect);
+		systemProcessDictionary.Add(SystemStateCode.Ablup_WaitInput, ablupWaitInput);
+		systemProcessDictionary.Add(SystemStateCode.Ablup_CallAblupXX, endCallAblupXX);
 
-		systemProcessDictionary.Add(SystemStateCode.Turnend_Begin, new SystemProcess(beginTurnend));
+		systemProcessDictionary.Add(SystemStateCode.Turnend_Begin, beginTurnend);
 
-		systemProcessDictionary.Add(SystemStateCode.Shop_Begin, new SystemProcess(beginShop));
-		systemProcessDictionary.Add(SystemStateCode.Shop_CallEventShop, new SystemProcess(endCallEventShop));
-		systemProcessDictionary.Add(SystemStateCode.Shop_CallShowShop, new SystemProcess(endCallShowShop));
-		systemProcessDictionary.Add(SystemStateCode.Shop_WaitInput, new SystemProcess(shopWaitInput));
-		systemProcessDictionary.Add(SystemStateCode.Shop_CallEventBuy, new SystemProcess(endCallEventBuy));
+		systemProcessDictionary.Add(SystemStateCode.Shop_Begin, beginShop);
+		systemProcessDictionary.Add(SystemStateCode.Shop_CallEventShop, endCallEventShop);
+		systemProcessDictionary.Add(SystemStateCode.Shop_CallShowShop, endCallShowShop);
+		systemProcessDictionary.Add(SystemStateCode.Shop_WaitInput, shopWaitInput);
+		systemProcessDictionary.Add(SystemStateCode.Shop_CallEventBuy, endCallEventBuy);
 
-		systemProcessDictionary.Add(SystemStateCode.SaveGame_Begin, new SystemProcess(beginSaveGame));
-		systemProcessDictionary.Add(SystemStateCode.SaveGame_WaitInput, new SystemProcess(saveGameWaitInput));
-		systemProcessDictionary.Add(SystemStateCode.SaveGame_WaitInputOverwrite, new SystemProcess(saveGameWaitInputOverwrite));
-		systemProcessDictionary.Add(SystemStateCode.SaveGame_CallSaveInfo, new SystemProcess(endCallSaveInfo));
-		systemProcessDictionary.Add(SystemStateCode.LoadGame_Begin, new SystemProcess(beginLoadGame));
-		systemProcessDictionary.Add(SystemStateCode.LoadGame_WaitInput, new SystemProcess(loadGameWaitInput));
-		systemProcessDictionary.Add(SystemStateCode.LoadGameOpenning_Begin, new SystemProcess(beginLoadGameOpening));
-		systemProcessDictionary.Add(SystemStateCode.LoadGameOpenning_WaitInput, new SystemProcess(loadGameWaitInput));
+		systemProcessDictionary.Add(SystemStateCode.SaveGame_Begin, beginSaveGame);
+		systemProcessDictionary.Add(SystemStateCode.SaveGame_WaitInput, saveGameWaitInput);
+		systemProcessDictionary.Add(SystemStateCode.SaveGame_WaitInputOverwrite, saveGameWaitInputOverwrite);
+		systemProcessDictionary.Add(SystemStateCode.SaveGame_CallSaveInfo, endCallSaveInfo);
+		systemProcessDictionary.Add(SystemStateCode.LoadGame_Begin, beginLoadGame);
+		systemProcessDictionary.Add(SystemStateCode.LoadGame_WaitInput, loadGameWaitInput);
+		systemProcessDictionary.Add(SystemStateCode.LoadGameOpenning_Begin, beginLoadGameOpening);
+		systemProcessDictionary.Add(SystemStateCode.LoadGameOpenning_WaitInput, loadGameWaitInput);
 
 		//stateEndProcessDictionary.Add(ProgramState.AutoSave_Begin, new stateEndProcess(this.beginAutoSave));
-		systemProcessDictionary.Add(SystemStateCode.AutoSave_CallSaveInfo, new SystemProcess(endAutoSaveCallSaveInfo));
-		systemProcessDictionary.Add(SystemStateCode.AutoSave_CallUniqueAutosave, new SystemProcess(endAutoSave));
+		systemProcessDictionary.Add(SystemStateCode.AutoSave_CallSaveInfo, endAutoSaveCallSaveInfo);
+		systemProcessDictionary.Add(SystemStateCode.AutoSave_CallUniqueAutosave, endAutoSave);
 
-		systemProcessDictionary.Add(SystemStateCode.LoadData_DataLoaded, new SystemProcess(beginDataLoaded));
-		systemProcessDictionary.Add(SystemStateCode.LoadData_CallSystemLoad, new SystemProcess(endSystemLoad));
-		systemProcessDictionary.Add(SystemStateCode.LoadData_CallEventLoad, new SystemProcess(endEventLoad));
+		systemProcessDictionary.Add(SystemStateCode.LoadData_DataLoaded, beginDataLoaded);
+		systemProcessDictionary.Add(SystemStateCode.LoadData_CallSystemLoad, endSystemLoad);
+		systemProcessDictionary.Add(SystemStateCode.LoadData_CallEventLoad, endEventLoad);
 
-		systemProcessDictionary.Add(SystemStateCode.Openning_TitleLoadgame, new SystemProcess(endTitleLoadgame));
+		systemProcessDictionary.Add(SystemStateCode.Openning_TitleLoadgame, endTitleLoadgame);
 
-		systemProcessDictionary.Add(SystemStateCode.System_Reloaderb, new SystemProcess(endReloaderb));
-		systemProcessDictionary.Add(SystemStateCode.First_Begin, new SystemProcess(beginFirst));
+		systemProcessDictionary.Add(SystemStateCode.System_Reloaderb, endReloaderb);
+		systemProcessDictionary.Add(SystemStateCode.First_Begin, beginFirst);
 
 
-		systemProcessDictionary.Add(SystemStateCode.Normal, new SystemProcess(endNormal));
+		systemProcessDictionary.Add(SystemStateCode.Normal, endNormal);
 	}
 
 

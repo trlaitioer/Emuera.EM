@@ -20,7 +20,7 @@ public partial class DebugDialog : Form
 	public DebugDialog()
 	{
 		InitializeComponent();
-		listViewWatch.AfterLabelEdit += new LabelEditEventHandler(listViewWatch_AfterLabelEdit);
+		listViewWatch.AfterLabelEdit += listViewWatch_AfterLabelEdit;
 
 		TopMost = Config.DebugWindowTopMost;
 		int width = Math.Max(MinimumSize.Width, Config.DebugWindowWidth);
