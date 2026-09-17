@@ -95,10 +95,6 @@ public sealed class WebP : IDisposable
 
 			return bmp;
 		}
-		catch (Exception)
-		{
-			throw;
-		}
 		finally
 		{
 			//Unlock the pixels

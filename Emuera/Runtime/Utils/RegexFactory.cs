@@ -15,15 +15,8 @@ internal static class RegexFactory
 		}
 		else
 		{
-			try
-			{
-				ret = new Regex(regex, RegexOptions.Compiled);
-				_dictionary.Add(regex, ret);
-			}
-			catch (ArgumentException)
-			{
-				throw;
-			}
+			ret = new Regex(regex, RegexOptions.Compiled);
+			_dictionary.Add(regex, ret);
 		}
 
 		return ret;
