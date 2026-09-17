@@ -115,9 +115,9 @@ internal sealed class UserDefinedRefMethodTerm : SuperUserDefinedMethodTerm
 		for (int i = 0; i < srcArgs.Count; i++)
 		{
 			if ((reffunc.ArgTypeList[i] & UserDifinedFunctionDataArgType.__Ref) == UserDifinedFunctionDataArgType.__Ref)
-				srcArgs[i]!.Restructure(exm);
+				srcArgs.Required(i).Restructure(exm);
 			else
-				srcArgs[i] = srcArgs[i]!.Restructure(exm);
+				srcArgs[i] = srcArgs.Required(i).Restructure(exm);
 		}
 		return this;
 	}

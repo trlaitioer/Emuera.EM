@@ -237,7 +237,7 @@ sealed class ConsoleImagePart : AConsoleDisplayNode
 				// AltText is assigned unconditionally in the constructor
 				GraphicsTextRenderer.Draw(graph, AltText!, Config.DefaultFont, Config.ForeColor, PointX, XsubPixel, pointY);
 			else
-				System.Windows.Forms.TextRenderer.DrawText(graph, AltText!.AsSpan(), Config.DefaultFont, new Point(PointX, pointY), Config.ForeColor, System.Windows.Forms.TextFormatFlags.NoPrefix);
+				System.Windows.Forms.TextRenderer.DrawText(graph, AltText.AsSpan(), Config.DefaultFont, new Point(PointX, pointY), Config.ForeColor, System.Windows.Forms.TextFormatFlags.NoPrefix);
 		}
 	}
 }

@@ -41,8 +41,8 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			int len = HtmlManager.HtmlLength(arguments[0]!.GetStrValue(exm));
-			if (arguments.Count == 1 || arguments[1]!.GetIntValue(exm) == 0)
+			int len = HtmlManager.HtmlLength(arguments.Required(0).GetStrValue(exm));
+			if (arguments.Count == 1 || arguments.Required(1).GetIntValue(exm) == 0)
 			{
 				if (len >= 0)
 					return 2 * len / Config.FontSize + ((2 * len % Config.FontSize != 0) ? 1 : 0);
@@ -87,9 +87,9 @@ internal static partial class FunctionMethodCreator
 		{
 			XmlDocument? doc = null;
 			XmlNodeList nodes = null!;
-			if (arguments[0]!.GetOperandType() == typeof(long) || (byName && arguments[0]!.GetOperandType() == typeof(string)))
+			if (arguments.Required(0).GetOperandType() == typeof(long) || (byName && arguments.Required(0).GetOperandType() == typeof(string)))
 			{
-				var idx = arguments[0]!.GetOperandType() == typeof(string) ? arguments[0]!.GetStrValue(exm) : arguments[0]!.GetIntValue(exm).ToString();
+				var idx = arguments.Required(0).GetOperandType() == typeof(string) ? arguments.Required(0).GetStrValue(exm) : arguments.Required(0).GetIntValue(exm).ToString();
 				var dict = exm.VEvaluator.VariableData.DataXmlDocument;
 				if (dict.TryGetValue(idx, out XmlDocument? value)) doc = value;
 				else return -1;
@@ -97,7 +97,7 @@ internal static partial class FunctionMethodCreator
 			else
 			{
 				doc = new XmlDocument();
-				var xml = arguments[0]!.GetStrValue(exm);
+				var xml = arguments.Required(0).GetStrValue(exm);
 				try
 				{
 					doc.LoadXml(xml);
@@ -107,7 +107,7 @@ internal static partial class FunctionMethodCreator
 					throw new CodeEE(string.Format(trerror.XmlGetError.Text, xml, e.Message));
 				}
 			}
-			string path = arguments[1]!.GetStrValue(exm);
+			string path = arguments.Required(1).GetStrValue(exm);
 			try
 			{
 				nodes = doc.SelectNodes(path)!;
@@ -116,11 +116,11 @@ internal static partial class FunctionMethodCreator
 			{
 				throw new CodeEE(string.Format(trerror.XmlGetPathError.Text, path, e.Message));
 			}
-			long outputStyle = arguments.Count == 4 ? arguments[3]!.GetIntValue(exm) : 0;
+			long outputStyle = arguments.Count == 4 ? arguments.Required(3).GetIntValue(exm) : 0;
 
 			if (arguments.Count >= 3)
 			{
-				if (arguments[2]!.GetOperandType() == typeof(long) && arguments[2]!.GetIntValue(exm) != 0)
+				if (arguments.Required(2).GetOperandType() == typeof(long) && arguments.Required(2).GetIntValue(exm) != 0)
 				{
 					for (int i = 0; i < Math.Min(nodes.Count, exm.VEvaluator.RESULTS_ARRAY.Length); i++)
 						OutPutNode(nodes[i]!, exm.VEvaluator.RESULTS_ARRAY, i, outputStyle);
@@ -146,7 +146,7 @@ internal static partial class FunctionMethodCreator
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			return (GlobalStatic.IdentifierDictionary.GetMacro(arguments[0]!.GetStrValue(exm)) != null) ? 1 : 0;
+			return (GlobalStatic.IdentifierDictionary.GetMacro(arguments.Required(0).GetStrValue(exm)) != null) ? 1 : 0;
 		}
 	}
 	private sealed class EnumNameMethod : FunctionMethod
@@ -177,7 +177,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string arg = arguments[0]!.GetStrValue(exm).ToUpper();
+			string arg = arguments.Required(0).GetStrValue(exm).ToUpper();
 			string[]? array = null;
 			switch (type)
 			{
@@ -233,11 +233,11 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			var dir = Utils.GetValidPath(arguments[0]!.GetStrValue(exm));
+			var dir = Utils.GetValidPath(arguments.Required(0).GetStrValue(exm));
 			if (dir == null || !Directory.Exists(dir)) return -1;
-			var pattern = arguments.Count > 1 ? arguments[1]!.GetStrValue(exm) : "*";
+			var pattern = arguments.Count > 1 ? arguments.Required(1).GetStrValue(exm) : "*";
 			var option = arguments.Count > 2
-				? (arguments[2]!.GetIntValue(exm) == 0 ? SearchOption.TopDirectoryOnly : SearchOption.AllDirectories)
+				? (arguments.Required(2).GetIntValue(exm) == 0 ? SearchOption.TopDirectoryOnly : SearchOption.AllDirectories)
 				: SearchOption.TopDirectoryOnly;
 			string[] files;
 			try
@@ -274,8 +274,8 @@ internal static partial class FunctionMethodCreator
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string name = arguments[0]!.GetStrValue(exm);
-			WordCollection wc = LexicalAnalyzer.Analyse(new CharStream(arguments[0]!.GetStrValue(exm)), LexEndWith.EoL, LexAnalyzeFlag.None);
+			string name = arguments.Required(0).GetStrValue(exm);
+			WordCollection wc = LexicalAnalyzer.Analyse(new CharStream(arguments.Required(0).GetStrValue(exm)), LexEndWith.EoL, LexAnalyzeFlag.None);
 			AExpression? term = ExpressionParser.ReduceExpressionTerm(wc, TermEndWith.EoL);
 
 			if (term is VariableTerm)
@@ -302,8 +302,8 @@ internal static partial class FunctionMethodCreator
 		}
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string name = arguments[0]!.GetStrValue(exm);
-			WordCollection wc = LexicalAnalyzer.Analyse(new CharStream(arguments[0]!.GetStrValue(exm)), LexEndWith.EoL, LexAnalyzeFlag.None);
+			string name = arguments.Required(0).GetStrValue(exm);
+			WordCollection wc = LexicalAnalyzer.Analyse(new CharStream(arguments.Required(0).GetStrValue(exm)), LexEndWith.EoL, LexAnalyzeFlag.None);
 			AExpression? term = ExpressionParser.ReduceExpressionTerm(wc, TermEndWith.EoL);
 
 			if (term is VariableTerm)
@@ -331,7 +331,7 @@ internal static partial class FunctionMethodCreator
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			VariableToken? token = GlobalStatic.IdentifierDictionary.GetVariableToken(arguments[0]!.GetStrValue(exm), null, true);
+			VariableToken? token = GlobalStatic.IdentifierDictionary.GetVariableToken(arguments.Required(0).GetStrValue(exm), null, true);
 			if (token != null)
 			{
 				long res = 0;
@@ -381,10 +381,10 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			bool isAscending = arguments.Count < 3 || arguments[2] == null || arguments[2]!.GetIntValue(exm) != 0;
-			long fixedLength = arguments.Count < 4 ? -1 : arguments[3]!.GetIntValue(exm);
+			bool isAscending = arguments.Count < 3 || arguments[2] == null || arguments.Required(2).GetIntValue(exm) != 0;
+			long fixedLength = arguments.Count < 4 ? -1 : arguments.Required(3).GetIntValue(exm);
 			if (fixedLength == 0) return 0;
-			VariableTerm varTerm = (arguments[0] is VariableTerm ? arguments[0] as VariableTerm : GetConvertedTerm(exm, arguments[0]!.GetStrValue(exm)))!;
+			VariableTerm varTerm = (arguments[0] is VariableTerm ? arguments[0] as VariableTerm : GetConvertedTerm(exm, arguments.Required(0).GetStrValue(exm)))!;
 			int[] sortedArray;
 			if (varTerm.Identifier.IsInteger)
 			{
@@ -498,7 +498,7 @@ internal static partial class FunctionMethodCreator
 		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			for (int i = 0; i < arguments.Count; i++)
-				arguments[i] = arguments[i]!.Restructure(exm);
+				arguments[i] = arguments.Required(i).Restructure(exm);
 			return false;
 		}
 	}
@@ -514,8 +514,8 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string name = arguments[0]!.GetStrValue(exm);
-			WordCollection wc = LexicalAnalyzer.Analyse(new CharStream(arguments[0]!.GetStrValue(exm)), LexEndWith.EoL, LexAnalyzeFlag.None);
+			string name = arguments.Required(0).GetStrValue(exm);
+			WordCollection wc = LexicalAnalyzer.Analyse(new CharStream(arguments.Required(0).GetStrValue(exm)), LexEndWith.EoL, LexAnalyzeFlag.None);
 			AExpression? term = ExpressionParser.ReduceExpressionTerm(wc, TermEndWith.EoL);
 
 			if (term is VariableTerm var)
@@ -524,15 +524,15 @@ internal static partial class FunctionMethodCreator
 					throw new CodeEE(string.Format(trerror.IsNotVar.Text, name));
 				if (var.IsString)
 				{
-					if (arguments[1]!.GetOperandType() != typeof(string))
+					if (arguments.Required(1).GetOperandType() != typeof(string))
 						throw new CodeEE(string.Format(trerror.IsNotInt.Text, name));
-					var.SetValue(arguments[1]!.GetStrValue(exm), exm);
+					var.SetValue(arguments.Required(1).GetStrValue(exm), exm);
 				}
 				else
 				{
-					if (arguments[1]!.GetOperandType() != typeof(long))
+					if (arguments.Required(1).GetOperandType() != typeof(long))
 						throw new CodeEE(string.Format(trerror.IsNotStr.Text, name));
-					var.SetValue(arguments[1]!.GetIntValue(exm), exm);
+					var.SetValue(arguments.Required(1).GetIntValue(exm), exm);
 				}
 				return 1;
 			}
@@ -552,8 +552,8 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string name = arguments[0]!.GetStrValue(exm);
-			WordCollection wc = LexicalAnalyzer.Analyse(new CharStream(arguments[0]!.GetStrValue(exm)), LexEndWith.EoL, LexAnalyzeFlag.None);
+			string name = arguments.Required(0).GetStrValue(exm);
+			WordCollection wc = LexicalAnalyzer.Analyse(new CharStream(arguments.Required(0).GetStrValue(exm)), LexEndWith.EoL, LexAnalyzeFlag.None);
 			AExpression? term = ExpressionParser.ReduceExpressionTerm(wc, TermEndWith.EoL);
 
 			if (term is VariableTerm var)
@@ -561,19 +561,19 @@ internal static partial class FunctionMethodCreator
 				if (var.Identifier == null || var.Identifier.IsConst)
 					throw new CodeEE(string.Format(trerror.IsNotVar.Text, name));
 
-				int start = (int)(arguments.Count >= 4 ? arguments[3]!.GetIntValue(exm) : 0);
-				int end = (int)(arguments.Count == 5 ? arguments[4]!.GetIntValue(exm)
+				int start = (int)(arguments.Count >= 4 ? arguments.Required(3).GetIntValue(exm) : 0);
+				int end = (int)(arguments.Count == 5 ? arguments.Required(4).GetIntValue(exm)
 					: (var.Identifier.IsArray1D ? var.Identifier.GetLength()
 					: (var.Identifier.IsArray2D ? var.Identifier.GetLength(1)
 					: (var.Identifier.IsArray2D ? var.Identifier.GetLength(2) : 0))));
-				bool setAllDims = arguments.Count >= 3 ? arguments[2]!.GetIntValue(exm) != 0 : true;
+				bool setAllDims = arguments.Count >= 3 ? arguments.Required(2).GetIntValue(exm) != 0 : true;
 				if (var.IsString)
 				{
 					var val = string.Empty;
-					if (arguments.Count > 1 && arguments[1]!.GetOperandType() != typeof(string))
+					if (arguments.Count > 1 && arguments.Required(1).GetOperandType() != typeof(string))
 						throw new CodeEE(string.Format(trerror.SetStrToInt.Text, name));
 					if (arguments.Count > 1)
-						val = arguments[1]!.GetStrValue(exm);
+						val = arguments.Required(1).GetStrValue(exm);
 					if (var.Identifier.IsArray1D)
 						var.Identifier.SetValueAll(val, start, end, 0);
 					else if (var.Identifier.IsArray2D)
@@ -597,10 +597,10 @@ internal static partial class FunctionMethodCreator
 				else
 				{
 					long val = 0;
-					if (arguments.Count > 1 && arguments[1]!.GetOperandType() != typeof(long))
+					if (arguments.Count > 1 && arguments.Required(1).GetOperandType() != typeof(long))
 						throw new CodeEE(string.Format(trerror.SetIntToStr.Text, name));
 					if (arguments.Count > 1)
-						val = arguments[1]!.GetIntValue(exm);
+						val = arguments.Required(1).GetIntValue(exm);
 					if (var.Identifier.IsArray1D)
 						var.Identifier.SetValueAll(val, start, end, 0);
 					else if (var.Identifier.IsArray2D)
@@ -657,8 +657,8 @@ internal static partial class FunctionMethodCreator
 
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string str = arguments[0]!.GetStrValue(exm);
-			string[] strs = HtmlManager.HtmlSubString(str, (int)arguments[1]!.GetIntValue(exm));
+			string str = arguments.Required(0).GetStrValue(exm);
+			string[] strs = HtmlManager.HtmlSubString(str, (int)arguments.Required(1).GetIntValue(exm));
 			string?[] output = GlobalStatic.Process.VEvaluator.RESULTS_ARRAY;
 			int outputlength = Math.Min(output.Length, strs.Length);
 			Array.Copy(strs, output, outputlength);
@@ -676,12 +676,12 @@ internal static partial class FunctionMethodCreator
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string str = arguments[0]!.GetStrValue(exm);
+			string str = arguments.Required(0).GetStrValue(exm);
 			if (string.IsNullOrEmpty(str)) return 0;
 			var ret = 0;
 			do
 			{
-				string[] strs = HtmlManager.HtmlSubString(str, (int)arguments[1]!.GetIntValue(exm));
+				string[] strs = HtmlManager.HtmlSubString(str, (int)arguments.Required(1).GetIntValue(exm));
 				str = strs[1];
 				ret++;
 			} while (!string.IsNullOrEmpty(str));
@@ -713,11 +713,11 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string baseString = arguments[0]!.GetStrValue(exm);
+			string baseString = arguments.Required(0).GetStrValue(exm);
 			Regex reg;
 			try
 			{
-				reg = RegexFactory.GetRegex(arguments[1]!.GetStrValue(exm));
+				reg = RegexFactory.GetRegex(arguments.Required(1).GetStrValue(exm));
 			}
 			catch (ArgumentException e)
 			{
@@ -725,7 +725,7 @@ internal static partial class FunctionMethodCreator
 			}
 			var matches = reg.Matches(baseString);
 			var ret = matches.Count;
-			if (arguments.Count == 3 && arguments[2]!.GetIntValue(exm) != 0)
+			if (arguments.Count == 3 && arguments.Required(2).GetIntValue(exm) != 0)
 			{
 				exm.VEvaluator.RESULT_ARRAY[1] = reg.GetGroupNumbers().Length;
 				if (ret > 0) Output(matches, reg, exm.VEvaluator.RESULTS_ARRAY);
@@ -758,11 +758,11 @@ internal static partial class FunctionMethodCreator
 		private Operation op;
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string idx = arguments[0]!.GetOperandType() == typeof(string) ? arguments[0]!.GetStrValue(exm) : arguments[0]!.GetIntValue(exm).ToString();
+			string idx = arguments.Required(0).GetOperandType() == typeof(string) ? arguments.Required(0).GetStrValue(exm) : arguments.Required(0).GetIntValue(exm).ToString();
 			var xmlDict = exm.VEvaluator.VariableData.DataXmlDocument;
 			if (op == Operation.Create)
 			{
-				string xml = arguments[1]!.GetStrValue(exm);
+				string xml = arguments.Required(1).GetStrValue(exm);
 				if (xmlDict.ContainsKey(idx))
 				{
 					return 0;
@@ -822,17 +822,17 @@ internal static partial class FunctionMethodCreator
 		{
 			XmlDocument doc;
 			bool saveToArg0 = true;
-			if (arguments[0]!.GetOperandType() == typeof(long) || (byName && arguments[0]!.GetOperandType() == typeof(string)))
+			if (arguments.Required(0).GetOperandType() == typeof(long) || (byName && arguments.Required(0).GetOperandType() == typeof(string)))
 			{
 				saveToArg0 = false;
-				var idx = arguments[0]!.GetOperandType() == typeof(string) ? arguments[0]!.GetStrValue(exm) : arguments[0]!.GetIntValue(exm).ToString();
+				var idx = arguments.Required(0).GetOperandType() == typeof(string) ? arguments.Required(0).GetStrValue(exm) : arguments.Required(0).GetIntValue(exm).ToString();
 				var dict = exm.VEvaluator.VariableData.DataXmlDocument;
 				if (dict.TryGetValue(idx, out XmlDocument? value)) doc = value;
 				else return -1;
 			}
 			else
 			{
-				string xml = arguments[0]!.GetStrValue(exm);
+				string xml = arguments.Required(0).GetStrValue(exm);
 				doc = new XmlDocument();
 				try
 				{
@@ -844,7 +844,7 @@ internal static partial class FunctionMethodCreator
 				}
 			}
 
-			string path = arguments[1]!.GetStrValue(exm);
+			string path = arguments.Required(1).GetStrValue(exm);
 			XmlNodeList nodes = null!;
 			try
 			{
@@ -854,10 +854,10 @@ internal static partial class FunctionMethodCreator
 			{
 				throw new CodeEE(string.Format(trerror.XmlXPathParseError.Text, Name, path, e.Message));
 			}
-			bool setAllNodes = arguments.Count >= 4 ? arguments[3]!.GetIntValue(exm) != 0 : false;
-			var style = arguments.Count == 5 ? arguments[4]!.GetIntValue(exm) : 0;
+			bool setAllNodes = arguments.Count >= 4 ? arguments.Required(3).GetIntValue(exm) != 0 : false;
+			var style = arguments.Count == 5 ? arguments.Required(4).GetIntValue(exm) : 0;
 			if (style > 2 || style < 0) style = 0;
-			var val = arguments[2]!.GetStrValue(exm);
+			var val = arguments.Required(2).GetStrValue(exm);
 			if (nodes.Count > 0)
 			{
 				if (nodes.Count != 1)
@@ -886,7 +886,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string idx = arguments[0]!.GetOperandType() == typeof(string) ? arguments[0]!.GetStrValue(exm) : arguments[0]!.GetIntValue(exm).ToString();
+			string idx = arguments.Required(0).GetOperandType() == typeof(string) ? arguments.Required(0).GetStrValue(exm) : arguments.Required(0).GetIntValue(exm).ToString();
 			var xmlDict = exm.VEvaluator.VariableData.DataXmlDocument;
 			if (!xmlDict.TryGetValue(idx, out XmlDocument? value)) return string.Empty;
 			return value.OuterXml;
@@ -965,20 +965,20 @@ internal static partial class FunctionMethodCreator
 		{
 			XmlDocument doc;
 			int methodPos = op == Operation.Node ? 4 : 5;
-			int method = arguments.Count >= methodPos ? (int)arguments[methodPos - 1]!.GetIntValue(exm) : 0;
+			int method = arguments.Count >= methodPos ? (int)arguments.Required(methodPos - 1).GetIntValue(exm) : 0;
 			if (method > 2 || method < 0) method = 0;
 			bool saveToArg0 = true;
-			if (arguments[0]!.GetOperandType() == typeof(long) || (byName && arguments[0]!.GetOperandType() == typeof(string)))
+			if (arguments.Required(0).GetOperandType() == typeof(long) || (byName && arguments.Required(0).GetOperandType() == typeof(string)))
 			{
 				saveToArg0 = false;
-				var idx = arguments[0]!.GetOperandType() == typeof(string) ? arguments[0]!.GetStrValue(exm) : arguments[0]!.GetIntValue(exm).ToString();
+				var idx = arguments.Required(0).GetOperandType() == typeof(string) ? arguments.Required(0).GetStrValue(exm) : arguments.Required(0).GetIntValue(exm).ToString();
 				var dict = exm.VEvaluator.VariableData.DataXmlDocument;
 				if (dict.TryGetValue(idx, out XmlDocument? value)) doc = value;
 				else return -1;
 			}
 			else
 			{
-				string xml = arguments[0]!.GetStrValue(exm);
+				string xml = arguments.Required(0).GetStrValue(exm);
 				doc = new XmlDocument();
 				try
 				{
@@ -990,7 +990,7 @@ internal static partial class FunctionMethodCreator
 				}
 			}
 
-			string path = arguments[1]!.GetStrValue(exm);
+			string path = arguments.Required(1).GetStrValue(exm);
 			XmlNodeList nodes;
 			try
 			{
@@ -1003,12 +1003,12 @@ internal static partial class FunctionMethodCreator
 			if (nodes.Count > 0)
 			{
 				int setAllPos = op == Operation.Node ? 5 : 6;
-				bool setAllNodes = arguments.Count == setAllPos ? arguments[setAllPos - 1]!.GetIntValue(exm) != 0 : false;
+				bool setAllNodes = arguments.Count == setAllPos ? arguments.Required(setAllPos - 1).GetIntValue(exm) != 0 : false;
 				XmlNode child;
 				if (op == Operation.Node)
 				{
 					var childNode = new XmlDocument();
-					var xml = arguments[2]!.GetStrValue(exm);
+					var xml = arguments.Required(2).GetStrValue(exm);
 					try
 					{
 						childNode.LoadXml(xml);
@@ -1030,8 +1030,8 @@ internal static partial class FunctionMethodCreator
 				}
 				else
 				{
-					child = doc.CreateAttribute(arguments[2]!.GetStrValue(exm));
-					if (arguments.Count >= 4) child.Value = arguments[3]!.GetStrValue(exm);
+					child = doc.CreateAttribute(arguments.Required(2).GetStrValue(exm));
+					if (arguments.Count >= 4) child.Value = arguments.Required(3).GetStrValue(exm);
 				}
 				if (nodes.Count != 1)
 				{
@@ -1093,20 +1093,20 @@ internal static partial class FunctionMethodCreator
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			XmlDocument doc;
-			int method = arguments.Count >= 4 ? (int)arguments[3]!.GetIntValue(exm) : 0;
+			int method = arguments.Count >= 4 ? (int)arguments.Required(3).GetIntValue(exm) : 0;
 			if (method > 2 || method < 0) method = 0;
 			bool saveToArg0 = true;
-			if (arguments[0]!.GetOperandType() == typeof(long) || (byName && arguments[0]!.GetOperandType() == typeof(string)))
+			if (arguments.Required(0).GetOperandType() == typeof(long) || (byName && arguments.Required(0).GetOperandType() == typeof(string)))
 			{
 				saveToArg0 = false;
-				var idx = arguments[0]!.GetOperandType() == typeof(string) ? arguments[0]!.GetStrValue(exm) : arguments[0]!.GetIntValue(exm).ToString();
+				var idx = arguments.Required(0).GetOperandType() == typeof(string) ? arguments.Required(0).GetStrValue(exm) : arguments.Required(0).GetIntValue(exm).ToString();
 				var dict = exm.VEvaluator.VariableData.DataXmlDocument;
 				if (dict.TryGetValue(idx, out XmlDocument? value)) doc = value;
 				else return -1;
 			}
 			else
 			{
-				string xml = arguments[0]!.GetStrValue(exm);
+				string xml = arguments.Required(0).GetStrValue(exm);
 				doc = new XmlDocument();
 				try
 				{
@@ -1118,7 +1118,7 @@ internal static partial class FunctionMethodCreator
 				}
 			}
 
-			string path = arguments[1]!.GetStrValue(exm);
+			string path = arguments.Required(1).GetStrValue(exm);
 			XmlNodeList nodes;
 			try
 			{
@@ -1130,7 +1130,7 @@ internal static partial class FunctionMethodCreator
 			}
 			if (nodes.Count > 0)
 			{
-				bool setAllNodes = arguments.Count == 3 ? arguments[2]!.GetIntValue(exm) != 0 : false;
+				bool setAllNodes = arguments.Count == 3 ? arguments.Required(2).GetIntValue(exm) != 0 : false;
 				if (nodes.Count != 1)
 				{
 					if (setAllNodes)
@@ -1179,7 +1179,7 @@ internal static partial class FunctionMethodCreator
 		{
 			XmlDocument newXml = new();
 			{
-				string xml = arguments.Count > 2 ? arguments[2]!.GetStrValue(exm) : arguments[1]!.GetStrValue(exm);
+				string xml = arguments.Count > 2 ? arguments.Required(2).GetStrValue(exm) : arguments.Required(1).GetStrValue(exm);
 				try
 				{
 					newXml.LoadXml(xml);
@@ -1191,10 +1191,10 @@ internal static partial class FunctionMethodCreator
 			}
 			bool saveToArg0 = true;
 			XmlDocument? doc = null;
-			if (arguments[0]!.GetOperandType() == typeof(long) || (byName && arguments[0]!.GetOperandType() == typeof(string)) || (arguments[0]!.GetOperandType() == typeof(string) && arguments.Count == 2))
+			if (arguments.Required(0).GetOperandType() == typeof(long) || (byName && arguments.Required(0).GetOperandType() == typeof(string)) || (arguments.Required(0).GetOperandType() == typeof(string) && arguments.Count == 2))
 			{
 				saveToArg0 = false;
-				var idx = arguments[0]!.GetOperandType() == typeof(string) ? arguments[0]!.GetStrValue(exm) : arguments[0]!.GetIntValue(exm).ToString();
+				var idx = arguments.Required(0).GetOperandType() == typeof(string) ? arguments.Required(0).GetStrValue(exm) : arguments.Required(0).GetIntValue(exm).ToString();
 				var dict = exm.VEvaluator.VariableData.DataXmlDocument;
 				if (!dict.ContainsKey(idx)) return -1;
 				if (arguments.Count == 2)
@@ -1206,7 +1206,7 @@ internal static partial class FunctionMethodCreator
 			}
 			else
 			{
-				string xml = arguments[0]!.GetStrValue(exm);
+				string xml = arguments.Required(0).GetStrValue(exm);
 				doc = new XmlDocument();
 				try
 				{
@@ -1217,7 +1217,7 @@ internal static partial class FunctionMethodCreator
 					throw new CodeEE(string.Format(trerror.XmlParseError.Text, Name, xml, e.Message));
 				}
 			}
-			string path = arguments[1]!.GetStrValue(exm);
+			string path = arguments.Required(1).GetStrValue(exm);
 			XmlNodeList nodes;
 			try
 			{
@@ -1239,7 +1239,7 @@ internal static partial class FunctionMethodCreator
 					child.Attributes!.Append(attr);
 				}
 				child.InnerXml = newNode.InnerXml;
-				bool setAllNodes = arguments.Count >= 4 ? arguments[3]!.GetIntValue(exm) != 0 : false;
+				bool setAllNodes = arguments.Count >= 4 ? arguments.Required(3).GetIntValue(exm) != 0 : false;
 				if (nodes.Count != 1)
 				{
 					if (setAllNodes)
@@ -1264,7 +1264,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			var filepath = Utils.GetValidPath(arguments[0]!.GetStrValue(exm));
+			var filepath = Utils.GetValidPath(arguments.Required(0).GetStrValue(exm));
 			if (filepath != null && File.Exists(filepath)) return 1;
 			return 0;
 		}
@@ -1285,7 +1285,7 @@ internal static partial class FunctionMethodCreator
 		private Operation op;
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string key = arguments[0]!.GetStrValue(exm);
+			string key = arguments.Required(0).GetStrValue(exm);
 			var dict = exm.VEvaluator.VariableData.DataDataTables;
 			bool contains = dict.ContainsKey(key);
 			switch (op)
@@ -1303,7 +1303,7 @@ internal static partial class FunctionMethodCreator
 					{
 						if (contains)
 						{
-							dict[key].CaseSensitive = arguments[1]!.GetIntValue(exm) == 0;
+							dict[key].CaseSensitive = arguments.Required(1).GetIntValue(exm) == 0;
 							return 1;
 						}
 						return -1;
@@ -1346,7 +1346,7 @@ internal static partial class FunctionMethodCreator
 		private Operation op;
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string key = arguments[0]!.GetStrValue(exm);
+			string key = arguments.Required(0).GetStrValue(exm);
 			var dict = exm.VEvaluator.VariableData.DataDataTables;
 			if (!dict.TryGetValue(key, out DataTable? dt)) return -1;
 			if (op == Operation.Names)
@@ -1357,7 +1357,7 @@ internal static partial class FunctionMethodCreator
 				for (int i = 0; i < dt.Columns.Count; i++) output[i] = dt.Columns[i]!.ColumnName;
 				return dt.Columns.Count;
 			}
-			string cName = arguments[1]!.GetStrValue(exm);
+			string cName = arguments.Required(1).GetStrValue(exm);
 			bool contains = dt.Columns.Contains(cName);
 			switch (op)
 			{
@@ -1376,14 +1376,14 @@ internal static partial class FunctionMethodCreator
 			Type? t = null;
 			if (arguments.Count >= 3)
 			{
-				if (arguments[2]!.GetOperandType() == typeof(string)) t = Utils.DataTable.NameToType(arguments[2]!.GetStrValue(exm));
-				else t = Utils.DataTable.IntToType(arguments[2]!.GetIntValue(exm));
+				if (arguments.Required(2).GetOperandType() == typeof(string)) t = Utils.DataTable.NameToType(arguments.Required(2).GetStrValue(exm));
+				else t = Utils.DataTable.IntToType(arguments.Required(2).GetIntValue(exm));
 				if (t == null)
 				{
 					throw new CodeEE(string.Format(trerror.UnsupportedType.Text, Name));
 				}
 			}
-			bool nullable = arguments.Count == 4 ? arguments[3]!.GetIntValue(exm) != 0 : true;
+			bool nullable = arguments.Count == 4 ? arguments.Required(3).GetIntValue(exm) != 0 : true;
 			DataColumn dc;
 			if (t != null) dc = dt.Columns.Add(cName, t);
 			else dc = dt.Columns.Add(cName);
@@ -1452,14 +1452,14 @@ internal static partial class FunctionMethodCreator
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			var b = op == Operation.Add ? 0 : 1;
-			string key = arguments[0]!.GetStrValue(exm);
+			string key = arguments.Required(0).GetStrValue(exm);
 			var dict = exm.VEvaluator.VariableData.DataDataTables;
 			if (!dict.TryGetValue(key, out DataTable? dt)) return -1;
 			var cCount = 0L;
 			DataRow row;
 			if (op == Operation.Set)
 			{
-				var idx = arguments[1]!.GetIntValue(exm);
+				var idx = arguments.Required(1).GetIntValue(exm);
 				if (dt.Rows.Find(idx) is DataRow r)
 					row = r;
 				else return -2;
@@ -1472,8 +1472,8 @@ internal static partial class FunctionMethodCreator
 			if (arguments.Count == b + 4)
 			{
 				var names = ((arguments[b + 1] as VariableTerm)!.Identifier.GetArray() as string[])!;
-				var count = Math.Min(names.Length, arguments[b + 3]!.GetIntValue(exm));
-				if (arguments[b + 2]!.GetOperandType() == typeof(string))
+				var count = Math.Min(names.Length, arguments.Required(b + 3).GetIntValue(exm));
+				if (arguments.Required(b + 2).GetOperandType() == typeof(string))
 				{
 					var vals = ((arguments[b + 2] as VariableTerm)!.Identifier.GetArray() as string[])!;
 					count = Math.Min(vals.Length, count);
@@ -1495,8 +1495,8 @@ internal static partial class FunctionMethodCreator
 				var pos = b + 1;
 				while (pos < arguments.Count)
 				{
-					var name = arguments[pos]!.GetStrValue(exm);
-					SetValue(row, dt, name, key, exm, arguments[pos + 1]!);
+					var name = arguments.Required(pos).GetStrValue(exm);
+					SetValue(row, dt, name, key, exm, arguments.Required(pos + 1));
 					pos += 2;
 					cCount++;
 				}
@@ -1522,7 +1522,7 @@ internal static partial class FunctionMethodCreator
 		private Operation op;
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string key = arguments[0]!.GetStrValue(exm);
+			string key = arguments.Required(0).GetStrValue(exm);
 			var dict = exm.VEvaluator.VariableData.DataDataTables;
 			if (!dict.ContainsKey(key)) return -1;
 			return op == Operation.Row ? dict[key].Rows.Count : dict[key].Columns.Count;
@@ -1541,7 +1541,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string key = arguments[0]!.GetStrValue(exm);
+			string key = arguments.Required(0).GetStrValue(exm);
 			var dict = exm.VEvaluator.VariableData.DataDataTables;
 			if (!dict.TryGetValue(key, out DataTable? dt)) return -1;
 			DataRow[] rows;
@@ -1549,7 +1549,7 @@ internal static partial class FunctionMethodCreator
 			{
 				StringBuilder sb = new();
 				var array = ((arguments[1] as VariableTerm)!.Identifier.GetArray() as long[])!;
-				var count = Math.Min((int)arguments[2]!.GetIntValue(exm), array.Length);
+				var count = Math.Min((int)arguments.Required(2).GetIntValue(exm), array.Length);
 				if (count <= 0) return 0;
 				sb.Append('(');
 				for (int i = 0; i < count; i++)
@@ -1558,7 +1558,7 @@ internal static partial class FunctionMethodCreator
 				rows = dt.Select("id IN " + sb.ToString());
 				if (rows == null) return 0;
 			}
-			else if (dt.Rows.Find(arguments[1]!.GetIntValue(exm)) is DataRow row)
+			else if (dt.Rows.Find(arguments.Required(1).GetIntValue(exm)) is DataRow row)
 				rows = [row];
 			else return 0;
 			foreach (var row in rows) dt.Rows.Remove(row);
@@ -1580,12 +1580,12 @@ internal static partial class FunctionMethodCreator
 		private Operation op;
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			var key = arguments[0]!.GetStrValue(exm);
+			var key = arguments.Required(0).GetStrValue(exm);
 			var dict = exm.VEvaluator.VariableData.DataDataTables;
 			if (!dict.TryGetValue(key, out DataTable? dt)) return op == Operation.IsNull ? -1 : 0;
-			bool asId = arguments.Count == 4 ? arguments[3]!.GetIntValue(exm) != 0 : false;
-			var idx = arguments[1]!.GetIntValue(exm);
-			var name = arguments[2]!.GetStrValue(exm);
+			bool asId = arguments.Count == 4 ? arguments.Required(3).GetIntValue(exm) != 0 : false;
+			var idx = arguments.Required(1).GetIntValue(exm);
+			var name = arguments.Required(2).GetStrValue(exm);
 			if (asId)
 			{
 				if (dt.Rows.Find(idx) is DataRow row && dt.Columns.Contains(name))
@@ -1606,12 +1606,12 @@ internal static partial class FunctionMethodCreator
 		}
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			var key = arguments[0]!.GetStrValue(exm);
+			var key = arguments.Required(0).GetStrValue(exm);
 			var dict = exm.VEvaluator.VariableData.DataDataTables;
 			if (!dict.TryGetValue(key, out DataTable? dt)) return string.Empty;
-			bool asId = arguments.Count == 4 ? arguments[3]!.GetIntValue(exm) != 0 : false;
-			var idx = arguments[1]!.GetIntValue(exm);
-			var name = arguments[2]!.GetStrValue(exm);
+			bool asId = arguments.Count == 4 ? arguments.Required(3).GetIntValue(exm) != 0 : false;
+			var idx = arguments.Required(1).GetIntValue(exm);
+			var name = arguments.Required(2).GetStrValue(exm);
 			if (asId)
 			{
 				if (dt.Rows.Find(idx) is DataRow row && dt.Columns.Contains(name))
@@ -1643,12 +1643,12 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			var key = arguments[0]!.GetStrValue(exm);
+			var key = arguments.Required(0).GetStrValue(exm);
 			var dict = exm.VEvaluator.VariableData.DataDataTables;
 			if (!dict.TryGetValue(key, out DataTable? dt)) return -1;
-			bool asId = arguments.Count == 5 ? arguments[4]!.GetIntValue(exm) != 0 : false;
-			var idx = arguments[1]!.GetIntValue(exm);
-			var name = arguments[2]!.GetStrValue(exm);
+			bool asId = arguments.Count == 5 ? arguments.Required(4).GetIntValue(exm) != 0 : false;
+			var idx = arguments.Required(1).GetIntValue(exm);
+			var name = arguments.Required(2).GetStrValue(exm);
 			if (name.Equals("id", StringComparison.CurrentCultureIgnoreCase)) return 0;
 			var v = arguments.Count > 3 ? arguments[3] : null;
 			DataRow? row = null;
@@ -1684,7 +1684,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			var key = arguments[0]!.GetStrValue(exm);
+			var key = arguments.Required(0).GetStrValue(exm);
 			var dict = exm.VEvaluator.VariableData.DataDataTables;
 			if (!dict.TryGetValue(key, out DataTable? dt)) return -1;
 			string? filter = arguments.Count > 1 ? (arguments[1]?.GetStrValue(exm)) : null;
@@ -1719,7 +1719,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			var key = arguments[0]!.GetStrValue(exm);
+			var key = arguments.Required(0).GetStrValue(exm);
 			var dict = exm.VEvaluator.VariableData.DataDataTables;
 			if (!dict.TryGetValue(key, out DataTable? dt)) return string.Empty;
 			string?[] output = arguments.Count > 1 ? ((arguments[1] as VariableTerm)!.Identifier.GetArray() as string[])! : GlobalStatic.VEvaluator.RESULTS_ARRAY;
@@ -1746,17 +1746,17 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			var key = arguments[0]!.GetStrValue(exm);
+			var key = arguments.Required(0).GetStrValue(exm);
 			var dict = exm.VEvaluator.VariableData.DataDataTables;
 			DataTable dt;
 			try
 			{
 				dt = new DataTable(key);
-				using (var reader = new StringReader(arguments[1]!.GetStrValue(exm)))
+				using (var reader = new StringReader(arguments.Required(1).GetStrValue(exm)))
 				{
 					dt.ReadXmlSchema(reader);
 				}
-				using (var reader = new StringReader(arguments[2]!.GetStrValue(exm)))
+				using (var reader = new StringReader(arguments.Required(2).GetStrValue(exm)))
 				{
 					dt.ReadXml(reader);
 				}
@@ -1783,7 +1783,7 @@ internal static partial class FunctionMethodCreator
 		private Operation op;
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string key = arguments[0]!.GetStrValue(exm);
+			string key = arguments.Required(0).GetStrValue(exm);
 			var dict = exm.VEvaluator.VariableData.DataStringMaps;
 			bool contains = dict.ContainsKey(key);
 			switch (op)
@@ -1818,20 +1818,20 @@ internal static partial class FunctionMethodCreator
 		private Operation op;
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			var map = arguments[0]!.GetStrValue(exm);
+			var map = arguments.Required(0).GetStrValue(exm);
 			var dict = exm.VEvaluator.VariableData.DataStringMaps;
 			if (!dict.TryGetValue(map, out Dictionary<string, string>? sMap)) return -1;
 			if (op == Operation.Clear) sMap.Clear();
 			else if (op == Operation.Size) return sMap.Count;
 			else
 			{
-				var key = arguments[1]!.GetStrValue(exm);
+				var key = arguments.Required(1).GetStrValue(exm);
 				bool contains = sMap.ContainsKey(key);
 				if (op == Operation.Has) return contains ? 1 : 0;
 				if (op == Operation.Remove)
 					sMap.Remove(key);
 				else
-					sMap[key] = arguments[2]!.GetStrValue(exm);
+					sMap[key] = arguments.Required(2).GetStrValue(exm);
 			}
 			return 1;
 		}
@@ -1861,11 +1861,11 @@ internal static partial class FunctionMethodCreator
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			var dict = exm.VEvaluator.VariableData.DataStringMaps;
-			var map = arguments[0]!.GetStrValue(exm);
+			var map = arguments.Required(0).GetStrValue(exm);
 			if (!dict.TryGetValue(map, out Dictionary<string, string>? sMap)) return "";
 			if (op == Operation.Get)
 			{
-				var key = arguments[1]!.GetStrValue(exm);
+				var key = arguments.Required(1).GetStrValue(exm);
 				if (sMap.TryGetValue(key, out string? value)) return value;
 				return "";
 			}
@@ -1876,12 +1876,12 @@ internal static partial class FunctionMethodCreator
 				if (arguments.Count == 3) // to array
 				{
 					var Term = (arguments[1] as VariableTerm)!;
-					if (arguments[2]!.GetIntValue(exm) == 0) return "";
+					if (arguments.Required(2).GetIntValue(exm) == 0) return "";
 					array = (Term.Identifier.GetArray() as string[])!;
 				}
 				else if (arguments.Count == 2) // to RESULTS array
 				{
-					if (arguments[1]!.GetIntValue(exm) == 0) return "";
+					if (arguments.Required(1).GetIntValue(exm) == 0) return "";
 					array = exm.VEvaluator.RESULTS_ARRAY;
 				}
 				else return "";
@@ -1928,10 +1928,10 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			var map = arguments[0]!.GetStrValue(exm);
+			var map = arguments.Required(0).GetStrValue(exm);
 			var dict = exm.VEvaluator.VariableData.DataStringMaps;
 			if (!dict.TryGetValue(map, out Dictionary<string, string>? sMap)) return 0;
-			var xml = arguments[1]!.GetStrValue(exm);
+			var xml = arguments.Required(1).GetStrValue(exm);
 			XmlDocument doc = new();
 			XmlNodeList nodes;
 			try
@@ -1970,9 +1970,9 @@ internal static partial class FunctionMethodCreator
 		{
 			if (resume) exm.Console.Window.ResetTextBoxPos();
 			else exm.Console.Window.SetTextBoxPos(
-				(int)arguments[0]!.GetIntValue(exm),
-				(int)arguments[1]!.GetIntValue(exm),
-				(int)arguments[2]!.GetIntValue(exm));
+				(int)arguments.Required(0).GetIntValue(exm),
+				(int)arguments.Required(1).GetIntValue(exm),
+				(int)arguments.Required(2).GetIntValue(exm));
 			return 1;
 		}
 	}
@@ -2010,7 +2010,7 @@ internal static partial class FunctionMethodCreator
 		//}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long integer = arguments[0]!.GetIntValue(exm);
+			long integer = arguments.Required(0).GetIntValue(exm);
 			if (!Config.CompatiSPChara)
 			{
 				//if ((arguments.Count > 1) && (arguments[1] != null) && (arguments[1].GetIntValue(exm) != 0))
@@ -2018,7 +2018,7 @@ internal static partial class FunctionMethodCreator
 			}
 			//以下互換性用の旧処理
 			bool CheckSp = false;
-			if ((arguments.Count > 1) && (arguments[1] != null) && (arguments[1]!.GetIntValue(exm) != 0))
+			if ((arguments.Count > 1) && (arguments[1] != null) && (arguments.Required(1).GetIntValue(exm) != 0))
 				CheckSp = true;
 			if (CheckSp)
 			{
@@ -2046,7 +2046,7 @@ internal static partial class FunctionMethodCreator
 			if (!Config.CompatiSPChara)
 				// throw new CodeEE("SPキャラ関係の機能は標準では使用できません(互換性オプション「SPキャラを使用する」をONにしてください)");
 				throw new CodeEE(trerror.SPCharacterFeatureDisabled.Text);
-			long integer = arguments[0]!.GetIntValue(exm);
+			long integer = arguments.Required(0).GetIntValue(exm);
 			return exm.VEvaluator.GetChara_UseSp(integer, true);
 		}
 	}
@@ -2092,8 +2092,8 @@ internal static partial class FunctionMethodCreator
 		//}
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long x = arguments[0]!.GetIntValue(exm);
-			long y = (arguments.Count > 1 && arguments[1] != null) ? arguments[1]!.GetIntValue(exm) : 0;
+			long x = arguments.Required(0).GetIntValue(exm);
+			long y = (arguments.Count > 1 && arguments[1] != null) ? arguments.Required(1).GetIntValue(exm) : 0;
 			if (!Config.CompatiSPChara && y != 0)
 				// throw new CodeEE("SPキャラ関係の機能は標準では使用できません(互換性オプション「SPキャラを使用する」をONにしてください)");
 				throw new CodeEE(trerror.SPCharacterFeatureDisabled.Text);
@@ -2134,9 +2134,9 @@ internal static partial class FunctionMethodCreator
 		//}
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long x = arguments[0]!.GetIntValue(exm);
-			long y = arguments[1]!.GetIntValue(exm);
-			long z = (arguments.Count == 3 && arguments[2] != null) ? arguments[2]!.GetIntValue(exm) : 0;
+			long x = arguments.Required(0).GetIntValue(exm);
+			long y = arguments.Required(1).GetIntValue(exm);
+			long z = (arguments.Count == 3 && arguments[2] != null) ? arguments.Required(2).GetIntValue(exm) : 0;
 			if (!Config.CompatiSPChara && z != 0)
 				// throw new CodeEE("SPキャラ関係の機能は標準では使用できません(互換性オプション「SPキャラを使用する」をONにしてください)");
 				throw new CodeEE(trerror.SPCharacterFeatureDisabled.Text);
@@ -2189,9 +2189,9 @@ internal static partial class FunctionMethodCreator
 		//}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long x = arguments[0]!.GetIntValue(exm);
-			long y = arguments[1]!.GetIntValue(exm);
-			long z = (arguments.Count == 3 && arguments[2] != null) ? arguments[2]!.GetIntValue(exm) : 0;
+			long x = arguments.Required(0).GetIntValue(exm);
+			long y = arguments.Required(1).GetIntValue(exm);
+			long z = (arguments.Count == 3 && arguments[2] != null) ? arguments.Required(2).GetIntValue(exm) : 0;
 			if (!Config.CompatiSPChara && z != 0)
 				// throw new CodeEE("SPキャラ関係の機能は標準では使用できません(互換性オプション「SPキャラを使用する」をONにしてください)");
 				throw new CodeEE(trerror.SPCharacterFeatureDisabled.Text);
@@ -2241,7 +2241,7 @@ internal static partial class FunctionMethodCreator
 		//}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			VariableTerm vTerm = (VariableTerm)arguments[0]!;
+			VariableTerm vTerm = (VariableTerm)arguments.Required(0);
 			VariableToken varID = vTerm.Identifier;
 
 			long elem = 0;
@@ -2255,9 +2255,9 @@ internal static partial class FunctionMethodCreator
 			long startindex = 0;
 			long lastindex = exm.VEvaluator.CHARANUM;
 			if (arguments.Count >= 3 && arguments[2] != null)
-				startindex = arguments[2]!.GetIntValue(exm);
+				startindex = arguments.Required(2).GetIntValue(exm);
 			if (arguments.Count >= 4 && arguments[3] != null)
-				lastindex = arguments[3]!.GetIntValue(exm);
+				lastindex = arguments.Required(3).GetIntValue(exm);
 			if (startindex < 0 || startindex >= exm.VEvaluator.CHARANUM)
 				// throw new CodeEE((isLast ? "" : "") + "関数の第3引数(" + startindex.ToString() + ")はキャラクタ位置の範囲外です");
 				throw new CodeEE(string.Format(trerror.CharacterIndexOutOfRange.Text, Name, 3, startindex));
@@ -2267,12 +2267,12 @@ internal static partial class FunctionMethodCreator
 			long ret;
 			if (varID.IsString)
 			{
-				string word = arguments[1]!.GetStrValue(exm);
+				string word = arguments.Required(1).GetStrValue(exm);
 				ret = VariableEvaluator.FindChara(varID, elem, word, startindex, lastindex, isLast);
 			}
 			else
 			{
-				long word = arguments[1]!.GetIntValue(exm);
+				long word = arguments.Required(1).GetIntValue(exm);
 				ret = VariableEvaluator.FindChara(varID, elem, word, startindex, lastindex, isLast);
 			}
 			return ret;
@@ -2308,8 +2308,8 @@ internal static partial class FunctionMethodCreator
 		//}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long no = arguments[0]!.GetIntValue(exm);
-			bool isSp = (arguments.Count == 2 && arguments[1] != null) ? (arguments[1]!.GetIntValue(exm) != 0) : false;
+			long no = arguments.Required(0).GetIntValue(exm);
+			bool isSp = (arguments.Count == 2 && arguments[1] != null) ? (arguments.Required(1).GetIntValue(exm) != 0) : false;
 			if (!Config.CompatiSPChara && isSp)
 				// throw new CodeEE("SPキャラ関係の機能は標準では使用できません(互換性オプション「SPキャラを使用する」をONにしてください)");
 				throw new CodeEE(trerror.SPCharacterFeatureDisabled.Text);
@@ -2359,25 +2359,25 @@ internal static partial class FunctionMethodCreator
 		//}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			VariableToken? var = GlobalStatic.IdentifierDictionary.GetVariableToken(arguments[0]!.GetStrValue(exm), null, true);
+			VariableToken? var = GlobalStatic.IdentifierDictionary.GetVariableToken(arguments.Required(0).GetStrValue(exm), null, true);
 			if (var == null)
 				// throw new CodeEE("VARSIZEの1番目の引数(\"" + arguments[0].GetStrValue(exm) + "\")が変数名ではありません");
-				throw new CodeEE(string.Format(trerror.NotVariableName.Text, Name, 1, arguments[0]!.GetStrValue(exm)));
+				throw new CodeEE(string.Format(trerror.NotVariableName.Text, Name, 1, arguments.Required(0).GetStrValue(exm)));
 			int dim = 0;
 			if (arguments.Count == 2 && arguments[1] != null)
-				dim = (int)arguments[1]!.GetIntValue(exm);
+				dim = (int)arguments.Required(1).GetIntValue(exm);
 			if (Config.VarsizeDimConfig && dim > 0)
 				dim--;
 			return var.GetLength(dim);
 		}
 		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			arguments[0]!.Restructure(exm);
+			arguments.Required(0).Restructure(exm);
 			if (arguments.Count > 1)
-				arguments[1]!.Restructure(exm);
+				arguments.Required(1).Restructure(exm);
 			if (arguments[0] is SingleTerm && (arguments.Count == 1 || arguments[1] is SingleTerm))
 			{
-				VariableToken? var = GlobalStatic.IdentifierDictionary.GetVariableToken(arguments[0]!.GetStrValue(exm), null, true);
+				VariableToken? var = GlobalStatic.IdentifierDictionary.GetVariableToken(arguments.Required(0).GetStrValue(exm), null, true);
 				if (var == null || var.IsReference)//可変長の場合は定数化できない
 					return false;
 				return true;
@@ -2396,7 +2396,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string str = arguments[0]!.GetStrValue(exm);
+			string str = arguments.Required(0).GetStrValue(exm);
 			using System.Drawing.Text.InstalledFontCollection ifc = new();
 			long isInstalled = 0;
 			foreach (FontFamily ff in ifc.Families)
@@ -2435,7 +2435,7 @@ internal static partial class FunctionMethodCreator
 		readonly EraSaveFileType type;
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long target = arguments[0]!.GetIntValue(exm);
+			long target = arguments.Required(0).GetIntValue(exm);
 			if (target < 0)
 				// throw new CodeEE(Name + "の引数に負の値(" + target.ToString() + ")が指定されました");
 				throw new CodeEE(string.Format(trerror.ArgIsNegative.Text, Name, 1, target));
@@ -2465,7 +2465,7 @@ internal static partial class FunctionMethodCreator
 		readonly EraSaveFileType type;
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string datFilename = arguments[0]!.GetStrValue(exm);
+			string datFilename = arguments.Required(0).GetStrValue(exm);
 			EraDataResult result = exm.VEvaluator.CheckData(datFilename, type);
 			exm.VEvaluator.RESULTS = result.DataMes;
 			return (long)result.State;
@@ -2505,7 +2505,7 @@ internal static partial class FunctionMethodCreator
 		{
 			string pattern = "*";
 			if (arguments.Count > 0 && arguments[0] != null)
-				pattern = arguments[0]!.GetStrValue(exm);
+				pattern = arguments.Required(0).GetStrValue(exm);
 			List<string> filepathes = VariableEvaluator.GetDatFiles(type == EraSaveFileType.CharVar, pattern);
 			string?[] results = exm.VEvaluator.VariableData.DataStringArray[(int)(VariableCode.RESULTS & VariableCode.__LOWERCASE__)];
 			// Element-wise copy instead of List.CopyTo: the destination elements are string? (see VariableData.DataStringArray),
@@ -2659,9 +2659,9 @@ internal static partial class FunctionMethodCreator
 		}
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long var = arguments[0]!.GetIntValue(exm);
-			long max = arguments[1]!.GetIntValue(exm);
-			long length = arguments[2]!.GetIntValue(exm);
+			long var = arguments.Required(0).GetIntValue(exm);
+			long max = arguments.Required(1).GetIntValue(exm);
+			long length = arguments.Required(2).GetIntValue(exm);
 			return ExpressionMediator.CreateBar(var, max, length);
 		}
 	}
@@ -2709,7 +2709,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string colorName = arguments[0]!.GetStrValue(exm);
+			string colorName = arguments.Required(0).GetStrValue(exm);
 			Color color = Color.FromName(colorName);
 			int i;
 			if (color.A > 0)
@@ -2736,15 +2736,15 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long r = arguments[0]!.GetIntValue(exm);
+			long r = arguments.Required(0).GetIntValue(exm);
 			if (r < 0 || r > 255)
 				// throw new CodeEE("第１引数が0から255の範囲外です");
 				throw new CodeEE(string.Format(trerror.ArgIsOutOfRange.Text, Name, 1, r, 0, 255));
-			long g = arguments[1]!.GetIntValue(exm);
+			long g = arguments.Required(1).GetIntValue(exm);
 			if (g < 0 || g > 255)
 				// throw new CodeEE("第２引数が0から255の範囲外です");
 				throw new CodeEE(string.Format(trerror.ArgIsOutOfRange.Text, Name, 2, g, 0, 255));
-			long b = arguments[2]!.GetIntValue(exm);
+			long b = arguments.Required(2).GetIntValue(exm);
 			if (b < 0 || b > 255)
 				// throw new CodeEE("第３引数が0から255の範囲外です");
 				throw new CodeEE(string.Format(trerror.ArgIsOutOfRange.Text, Name, 3, b, 0, 255));
@@ -2811,10 +2811,10 @@ internal static partial class FunctionMethodCreator
 		//}
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long money = arguments[0]!.GetIntValue(exm);
+			long money = arguments.Required(0).GetIntValue(exm);
 			if ((arguments.Count < 2) || (arguments[1] == null))
 				return Config.MoneyFirst ? Config.MoneyLabel + money.ToString() : money.ToString() + Config.MoneyLabel;
-			string format = arguments[1]!.GetStrValue(exm);
+			string format = arguments.Required(1).GetStrValue(exm);
 			string ret;
 			try
 			{
@@ -2978,12 +2978,12 @@ internal static partial class FunctionMethodCreator
 			long min = 0;
 			long max;
 			if (arguments.Count == 1)
-				max = arguments[0]!.GetIntValue(exm);
+				max = arguments.Required(0).GetIntValue(exm);
 			else
 			{
 				if (arguments[0] != null)
-					min = arguments[0]!.GetIntValue(exm);
-				max = arguments[1]!.GetIntValue(exm);
+					min = arguments.Required(0).GetIntValue(exm);
+				max = arguments.Required(1).GetIntValue(exm);
 			}
 			if (max <= min)
 			{
@@ -3036,11 +3036,11 @@ internal static partial class FunctionMethodCreator
 		//}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long ret = arguments[0]!.GetIntValue(exm);
+			long ret = arguments.Required(0).GetIntValue(exm);
 
 			for (int i = 1; i < arguments.Count; i++)
 			{
-				long newRet = arguments[i]!.GetIntValue(exm);
+				long newRet = arguments.Required(i).GetIntValue(exm);
 				if (isMax)
 				{
 					if (ret < newRet)
@@ -3066,7 +3066,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long ret = arguments[0]!.GetIntValue(exm);
+			long ret = arguments.Required(0).GetIntValue(exm);
 			//普通は使わない値なので例外として投げてしまう方向性で
 			if (ret == long.MinValue)
 				throw new CodeEE(string.Format(trerror.MinInt64CanNotApplyABS.Text, Name, long.MinValue));
@@ -3084,8 +3084,8 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long x = arguments[0]!.GetIntValue(exm);
-			long y = arguments[1]!.GetIntValue(exm);
+			long x = arguments.Required(0).GetIntValue(exm);
+			long y = arguments.Required(1).GetIntValue(exm);
 			double pow = Math.Pow(x, y);
 			if (double.IsNaN(pow))
 				// throw new CodeEE("累乗結果が非数値です");
@@ -3110,7 +3110,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long ret = arguments[0]!.GetIntValue(exm);
+			long ret = arguments.Required(0).GetIntValue(exm);
 			if (ret < 0)
 				// throw new CodeEE("SQRT関数の引数に負の値が指定されました");
 				throw new CodeEE(string.Format(trerror.ArgIsNegative.Text, Name, 1, ret));
@@ -3128,7 +3128,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long ret = arguments[0]!.GetIntValue(exm);
+			long ret = arguments.Required(0).GetIntValue(exm);
 			if (ret < 0)
 				// throw new CodeEE("CBRT関数の引数に負の値が指定されました");
 				throw new CodeEE(string.Format(trerror.ArgIsNegative.Text, Name, 1, ret));
@@ -3155,7 +3155,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long ret = arguments[0]!.GetIntValue(exm);
+			long ret = arguments.Required(0).GetIntValue(exm);
 			if (ret <= 0)
 				// throw new CodeEE("対数関数の引数に0以下の値が指定されました");
 				throw new CodeEE(string.Format(trerror.ArgIsNotMoreThan0.Text, Name, 1, ret));
@@ -3190,7 +3190,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long ret = arguments[0]!.GetIntValue(exm);
+			long ret = arguments.Required(0).GetIntValue(exm);
 			double dret = Math.Exp(ret);
 			if (double.IsNaN(dret))
 				// throw new CodeEE("計算値が非数値です");
@@ -3217,7 +3217,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long ret = arguments[0]!.GetIntValue(exm);
+			long ret = arguments.Required(0).GetIntValue(exm);
 			return Math.Sign(ret);
 		}
 	}
@@ -3232,9 +3232,9 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long value = arguments[0]!.GetIntValue(exm);
-			long min = arguments[1]!.GetIntValue(exm);
-			long max = arguments[2]!.GetIntValue(exm);
+			long value = arguments.Required(0).GetIntValue(exm);
+			long min = arguments.Required(1).GetIntValue(exm);
+			long max = arguments.Required(2).GetIntValue(exm);
 			long ret;
 			if (value < min)
 				ret = min;
@@ -3300,9 +3300,9 @@ internal static partial class FunctionMethodCreator
 		//}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			VariableTerm varTerm = (VariableTerm)arguments[0]!;
-			long index1 = (arguments.Count >= 2 && arguments[1] != null) ? arguments[1]!.GetIntValue(exm) : 0;
-			long index2 = (arguments.Count == 3 && arguments[2] != null) ? arguments[2]!.GetIntValue(exm) : (isCharaRange ? exm.VEvaluator.CHARANUM : varTerm.GetLastLength());
+			VariableTerm varTerm = (VariableTerm)arguments.Required(0);
+			long index1 = (arguments.Count >= 2 && arguments[1] != null) ? arguments.Required(1).GetIntValue(exm) : 0;
+			long index2 = (arguments.Count == 3 && arguments[2] != null) ? arguments.Required(2).GetIntValue(exm) : (isCharaRange ? exm.VEvaluator.CHARANUM : varTerm.GetLastLength());
 
 			FixedVariableTerm p = varTerm.GetFixedVariableTerm(exm);
 			if (!isCharaRange)
@@ -3378,21 +3378,21 @@ internal static partial class FunctionMethodCreator
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			VariableTerm varTerm = (arguments[0] as VariableTerm)!;
-			long start = (arguments.Count > 2 && arguments[2] != null) ? arguments[2]!.GetIntValue(exm) : 0;
-			long end = (arguments.Count > 3 && arguments[3] != null) ? arguments[3]!.GetIntValue(exm) : (isCharaRange ? exm.VEvaluator.CHARANUM : varTerm.GetLength());
+			long start = (arguments.Count > 2 && arguments[2] != null) ? arguments.Required(2).GetIntValue(exm) : 0;
+			long end = (arguments.Count > 3 && arguments[3] != null) ? arguments.Required(3).GetIntValue(exm) : (isCharaRange ? exm.VEvaluator.CHARANUM : varTerm.GetLength());
 
 			FixedVariableTerm p = varTerm.GetFixedVariableTerm(exm);
 			if (!isCharaRange)
 			{
 				p.IsArrayRangeValid(start, end, "MATCH", 3L, 4L);
-				if (arguments[0]!.GetOperandType() == typeof(long))
+				if (arguments.Required(0).GetOperandType() == typeof(long))
 				{
-					long targetValue = arguments[1]!.GetIntValue(exm);
+					long targetValue = arguments.Required(1).GetIntValue(exm);
 					return VariableEvaluator.GetMatch(p, targetValue, start, end);
 				}
 				else
 				{
-					string targetStr = arguments[1]!.GetStrValue(exm);
+					string targetStr = arguments.Required(1).GetStrValue(exm);
 					return VariableEvaluator.GetMatch(p, targetStr, start, end);
 				}
 			}
@@ -3402,14 +3402,14 @@ internal static partial class FunctionMethodCreator
 				if (start >= charaNum || start < 0 || end > charaNum || end < 0)
 					// throw new CodeEE("CMATCH関数の範囲指定がキャラクタ配列の範囲を超えています(" + start.ToString() + "～" + end.ToString() + ")");
 					throw new CodeEE(string.Format(trerror.CharacterRangeInvalid.Text, Name, start, end));
-				if (arguments[0]!.GetOperandType() == typeof(long))
+				if (arguments.Required(0).GetOperandType() == typeof(long))
 				{
-					long targetValue = arguments[1]!.GetIntValue(exm);
+					long targetValue = arguments.Required(1).GetIntValue(exm);
 					return VariableEvaluator.GetMatchChara(p, targetValue, start, end);
 				}
 				else
 				{
-					string targetStr = arguments[1]!.GetStrValue(exm);
+					string targetStr = arguments.Required(1).GetStrValue(exm);
 					return VariableEvaluator.GetMatchChara(p, targetStr, start, end);
 				}
 			}
@@ -3417,12 +3417,12 @@ internal static partial class FunctionMethodCreator
 
 		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			arguments[0]!.Restructure(exm);
+			arguments.Required(0).Restructure(exm);
 			for (int i = 1; i < arguments.Count; i++)
 			{
 				if (arguments[i] == null)
 					continue;
-				arguments[i] = arguments[i]!.Restructure(exm);
+				arguments[i] = arguments.Required(i).Restructure(exm);
 			}
 			return false;
 		}
@@ -3458,21 +3458,21 @@ internal static partial class FunctionMethodCreator
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long ret = 0;
-			if (arguments[0]!.GetOperandType() == typeof(long))
+			if (arguments.Required(0).GetOperandType() == typeof(long))
 			{
-				long baseValue = arguments[0]!.GetIntValue(exm);
+				long baseValue = arguments.Required(0).GetIntValue(exm);
 				for (int i = 1; i < arguments.Count; i++)
 				{
-					if (baseValue == arguments[i]!.GetIntValue(exm))
+					if (baseValue == arguments.Required(i).GetIntValue(exm))
 						ret += 1;
 				}
 			}
 			else
 			{
-				string baseString = arguments[0]!.GetStrValue(exm);
+				string baseString = arguments.Required(0).GetStrValue(exm);
 				for (int i = 1; i < arguments.Count; i++)
 				{
-					if (baseString == arguments[i]!.GetStrValue(exm))
+					if (baseString == arguments.Required(i).GetStrValue(exm))
 						ret += 1;
 				}
 			}
@@ -3509,12 +3509,12 @@ internal static partial class FunctionMethodCreator
 		//}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			if (arguments[0]!.GetOperandType() == typeof(long))
+			if (arguments.Required(0).GetOperandType() == typeof(long))
 			{
 				long[] valueArray = new long[arguments.Count];
 				for (int i = 0; i < arguments.Count; i++)
 				{
-					valueArray[i] = arguments[i]!.GetIntValue(exm);
+					valueArray[i] = arguments.Required(i).GetIntValue(exm);
 				}
 				var resultArray = valueArray.Distinct();
 				if (resultArray.Count() != arguments.Count)
@@ -3525,7 +3525,7 @@ internal static partial class FunctionMethodCreator
 				string[] stringArray = new string[arguments.Count];
 				for (int i = 0; i < arguments.Count; i++)
 				{
-					stringArray[i] = arguments[i]!.GetStrValue(exm);
+					stringArray[i] = arguments.Required(i).GetStrValue(exm);
 				}
 				var resultArray = stringArray.Distinct();
 				if (resultArray.Count() != arguments.Count)
@@ -3564,21 +3564,21 @@ internal static partial class FunctionMethodCreator
 		//}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			if (arguments[0]!.GetOperandType() == typeof(long))
+			if (arguments.Required(0).GetOperandType() == typeof(long))
 			{
-				long baseValue = arguments[0]!.GetIntValue(exm);
+				long baseValue = arguments.Required(0).GetIntValue(exm);
 				for (int i = 1; i < arguments.Count; i++)
 				{
-					if (baseValue != arguments[i]!.GetIntValue(exm))
+					if (baseValue != arguments.Required(i).GetIntValue(exm))
 						return 0L;
 				}
 			}
 			else
 			{
-				string baseValue = arguments[0]!.GetStrValue(exm);
+				string baseValue = arguments.Required(0).GetStrValue(exm);
 				for (int i = 1; i < arguments.Count; i++)
 				{
-					if (baseValue != arguments[i]!.GetStrValue(exm))
+					if (baseValue != arguments.Required(i).GetStrValue(exm))
 						return 0L;
 				}
 			}
@@ -3661,9 +3661,9 @@ internal static partial class FunctionMethodCreator
 		//}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			VariableTerm vTerm = (VariableTerm)arguments[0]!;
-			long start = (arguments.Count > 1 && arguments[1] != null) ? arguments[1]!.GetIntValue(exm) : 0;
-			long end = (arguments.Count > 2 && arguments[2] != null) ? arguments[2]!.GetIntValue(exm) : (isCharaRange ? exm.VEvaluator.CHARANUM : vTerm.GetLength());
+			VariableTerm vTerm = (VariableTerm)arguments.Required(0);
+			long start = (arguments.Count > 1 && arguments[1] != null) ? arguments.Required(1).GetIntValue(exm) : 0;
+			long end = (arguments.Count > 2 && arguments[2] != null) ? arguments.Required(2).GetIntValue(exm) : (isCharaRange ? exm.VEvaluator.CHARANUM : vTerm.GetLength());
 			FixedVariableTerm p = vTerm.GetFixedVariableTerm(exm);
 			if (!isCharaRange)
 			{
@@ -3703,8 +3703,8 @@ internal static partial class FunctionMethodCreator
 		//}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long n = arguments[0]!.GetIntValue(exm);
-			long m = arguments[1]!.GetIntValue(exm);
+			long n = arguments.Required(0).GetIntValue(exm);
+			long m = arguments.Required(1).GetIntValue(exm);
 			if ((m < 0) || (m > 63))
 				// throw new CodeEE("GETBIT関数の第２引数(" + m.ToString() + ")が範囲(０～６３)を超えています");
 				throw new CodeEE(string.Format(trerror.ArgIsOutOfRange.Text, Name, 2, m, 0, 63));
@@ -3741,16 +3741,16 @@ internal static partial class FunctionMethodCreator
 		//}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			VariableTerm vToken = (VariableTerm)arguments[0]!;
+			VariableTerm vToken = (VariableTerm)arguments.Required(0);
 			VariableCode varCode = vToken.Identifier.Code;
 			string varname = "";
 			#region EE_ERD
 			if (arguments.Count > 2)
-				varname = vToken.Identifier.Name + "@" + arguments[2]!.GetIntValue(exm);
+				varname = vToken.Identifier.Name + "@" + arguments.Required(2).GetIntValue(exm);
 			else
 				varname = vToken.Identifier.Name;
 			#endregion
-			string key = arguments[1]!.GetStrValue(exm);
+			string key = arguments.Required(1).GetStrValue(exm);
 			#region EE_ERD
 			// if (exm.VEvaluator.Constant.TryKeywordToInteger(out int ret, varCode, key, -1))
 			if (exm.VEvaluator.Constant.TryKeywordToInteger(out int ret, varCode, key, -1, varname))
@@ -3761,7 +3761,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			arguments[1] = arguments[1]!.Restructure(exm);
+			arguments[1] = arguments.Required(1).Restructure(exm);
 			return arguments[1] is SingleTerm;
 		}
 	}
@@ -3784,7 +3784,7 @@ internal static partial class FunctionMethodCreator
 				return name + "関数の1番目の引数は省略できません";
 			if (arguments[0] is SingleTerm)
 			{
-				string varName = ((SingleTerm)arguments[0]!).Text;
+				string varName = ((SingleTerm)arguments.Required(0)).Text;
 				if (GlobalStatic.IdentifierDictionary.GetVariableToken(varName, null, true) == null)
 					return name + "関数の1番目の引数が変数名ではありません";
 			}
@@ -3793,14 +3793,14 @@ internal static partial class FunctionMethodCreator
 		*/
 		public override Int64 GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			VariableToken? var = GlobalStatic.IdentifierDictionary.GetVariableToken(arguments[0]!.GetStrValue(exm), null, true);
+			VariableToken? var = GlobalStatic.IdentifierDictionary.GetVariableToken(arguments.Required(0).GetStrValue(exm), null, true);
 			if (var == null)
-				throw new CodeEE(string.Format(trerror.NotVariableName.Text, Name, 1, arguments[0]!.GetStrValue(exm)));
-			string key = arguments[1]!.GetStrValue(exm);
+				throw new CodeEE(string.Format(trerror.NotVariableName.Text, Name, 1, arguments.Required(0).GetStrValue(exm)));
+			string key = arguments.Required(1).GetStrValue(exm);
 			#region EE_ERD
 			//GETNUMBは使ってないのでテストしていない
 			// if (exm.VEvaluator.Constant.TryKeywordToInteger(out int ret, var.Code, key, -1))
-			if (exm.VEvaluator.Constant.TryKeywordToInteger(out int ret, var.Code, key, -1, arguments[0]!.GetStrValue(exm)))
+			if (exm.VEvaluator.Constant.TryKeywordToInteger(out int ret, var.Code, key, -1, arguments.Required(0).GetStrValue(exm)))
 			#endregion
 				return ret;
 			else
@@ -3827,8 +3827,8 @@ internal static partial class FunctionMethodCreator
 		//}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long value = arguments[0]!.GetIntValue(exm);
-			long maxLv = arguments[1]!.GetIntValue(exm);
+			long value = arguments.Required(0).GetIntValue(exm);
+			long maxLv = arguments.Required(1).GetIntValue(exm);
 
 			return exm.VEvaluator.getPalamLv(value, maxLv);
 		}
@@ -3853,8 +3853,8 @@ internal static partial class FunctionMethodCreator
 		//}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long value = arguments[0]!.GetIntValue(exm);
-			long maxLv = arguments[1]!.GetIntValue(exm);
+			long value = arguments.Required(0).GetIntValue(exm);
+			long maxLv = arguments.Required(1).GetIntValue(exm);
 
 			return exm.VEvaluator.getExpLv(value, maxLv);
 		}
@@ -3908,19 +3908,19 @@ internal static partial class FunctionMethodCreator
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			bool isExact = false;
-			VariableTerm varTerm = (VariableTerm)arguments[0]!;
+			VariableTerm varTerm = (VariableTerm)arguments.Required(0);
 
-			long start = (arguments.Count > 2 && arguments[2] != null) ? arguments[2]!.GetIntValue(exm) : 0;
-			long end = (arguments.Count > 3 && arguments[3] != null) ? arguments[3]!.GetIntValue(exm) : varTerm.GetLength();
+			long start = (arguments.Count > 2 && arguments[2] != null) ? arguments.Required(2).GetIntValue(exm) : 0;
+			long end = (arguments.Count > 3 && arguments[3] != null) ? arguments.Required(3).GetIntValue(exm) : varTerm.GetLength();
 			if (arguments.Count > 4 && arguments[4] != null)
-				isExact = arguments[4]!.GetIntValue(exm) != 0;
+				isExact = arguments.Required(4).GetIntValue(exm) != 0;
 
 			FixedVariableTerm p = varTerm.GetFixedVariableTerm(exm);
 			p.IsArrayRangeValid(start, end, funcName, 3L, 4L);
 
-			if (arguments[0]!.GetOperandType() == typeof(long))
+			if (arguments.Required(0).GetOperandType() == typeof(long))
 			{
-				long targetValue = arguments[1]!.GetIntValue(exm);
+				long targetValue = arguments.Required(1).GetIntValue(exm);
 				return VariableEvaluator.FindElement(p, targetValue, start, end, isExact, isLast);
 			}
 			else
@@ -3928,7 +3928,7 @@ internal static partial class FunctionMethodCreator
 				Regex targetString;
 				try
 				{
-					targetString = RegexFactory.GetRegex(arguments[1]!.GetStrValue(exm));
+					targetString = RegexFactory.GetRegex(arguments.Required(1).GetStrValue(exm));
 				}
 				catch (ArgumentException e)
 				{
@@ -3942,14 +3942,14 @@ internal static partial class FunctionMethodCreator
 
 		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			arguments[0]!.Restructure(exm);
+			arguments.Required(0).Restructure(exm);
 			VariableTerm varToken = (arguments[0] as VariableTerm)!;
 			bool isConst = varToken.Identifier.IsConst;
 			for (int i = 1; i < arguments.Count; i++)
 			{
 				if (arguments[i] == null)
 					continue;
-				arguments[i] = arguments[i]!.Restructure(exm);
+				arguments[i] = arguments.Required(i).Restructure(exm);
 				if (isConst && !(arguments[i] is SingleTerm))
 					isConst = false;
 			}
@@ -3967,9 +3967,9 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long value = arguments[0]!.GetIntValue(exm);
-			long min = arguments[1]!.GetIntValue(exm);
-			long max = arguments[2]!.GetIntValue(exm);
+			long value = arguments.Required(0).GetIntValue(exm);
+			long min = arguments.Required(1).GetIntValue(exm);
+			long max = arguments.Required(2).GetIntValue(exm);
 			return ((value >= min) && (value <= max)) ? 1L : 0L;
 		}
 	}
@@ -4031,12 +4031,12 @@ internal static partial class FunctionMethodCreator
 		//}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long min = arguments[1]!.GetIntValue(exm);
-			long max = arguments[2]!.GetIntValue(exm);
+			long min = arguments.Required(1).GetIntValue(exm);
+			long max = arguments.Required(2).GetIntValue(exm);
 
 			VariableTerm varTerm = (arguments[0] as VariableTerm)!;
-			long start = (arguments.Count > 3 && arguments[3] != null) ? arguments[3]!.GetIntValue(exm) : 0;
-			long end = (arguments.Count > 4 && arguments[4] != null) ? arguments[4]!.GetIntValue(exm) : (isCharaRange ? exm.VEvaluator.CHARANUM : varTerm.GetLength());
+			long start = (arguments.Count > 3 && arguments[3] != null) ? arguments.Required(3).GetIntValue(exm) : 0;
+			long end = (arguments.Count > 4 && arguments[4] != null) ? arguments.Required(4).GetIntValue(exm) : (isCharaRange ? exm.VEvaluator.CHARANUM : varTerm.GetLength());
 
 			FixedVariableTerm p = varTerm.GetFixedVariableTerm(exm);
 
@@ -4209,7 +4209,7 @@ internal static partial class FunctionMethodCreator
 		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			for (int i = 0; i < arguments.Count; i++)
-				arguments[i] = arguments[i]!.Restructure(exm);
+				arguments[i] = arguments.Required(i).Restructure(exm);
 			return false;
 		}
 	}
@@ -4226,7 +4226,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string str = arguments[0]!.GetStrValue(exm);
+			string str = arguments.Required(0).GetStrValue(exm);
 			return LangManager.GetStrlenLang(str);
 		}
 	}
@@ -4241,7 +4241,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string str = arguments[0]!.GetStrValue(exm);
+			string str = arguments.Required(0).GetStrValue(exm);
 			return str.Length;
 		}
 	}
@@ -4279,13 +4279,13 @@ internal static partial class FunctionMethodCreator
 		//}
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string str = arguments[0]!.GetStrValue(exm);
+			string str = arguments.Required(0).GetStrValue(exm);
 			int start = 0;
 			int length = -1;
 			if ((arguments.Count >= 2) && (arguments[1] != null))
-				start = (int)arguments[1]!.GetIntValue(exm);
+				start = (int)arguments.Required(1).GetIntValue(exm);
 			if ((arguments.Count >= 3) && (arguments[2] != null))
-				length = (int)arguments[2]!.GetIntValue(exm);
+				length = (int)arguments.Required(2).GetIntValue(exm);
 
 			return LangManager.GetSubStringLang(str, start, length);
 		}
@@ -4324,13 +4324,13 @@ internal static partial class FunctionMethodCreator
 		//}
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string str = arguments[0]!.GetStrValue(exm);
+			string str = arguments.Required(0).GetStrValue(exm);
 			int start = 0;
 			int length = -1;
 			if ((arguments.Count >= 2) && (arguments[1] != null))
-				start = (int)arguments[1]!.GetIntValue(exm);
+				start = (int)arguments.Required(1).GetIntValue(exm);
 			if ((arguments.Count >= 3) && (arguments[2] != null))
-				length = (int)arguments[2]!.GetIntValue(exm);
+				length = (int)arguments.Required(2).GetIntValue(exm);
 			if ((start >= str.Length) || (length == 0))
 				return "";
 			if ((length < 0) || (length > str.Length))
@@ -4387,18 +4387,18 @@ internal static partial class FunctionMethodCreator
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 
-			string target = arguments[0]!.GetStrValue(exm);
-			string word = arguments[1]!.GetStrValue(exm);
+			string target = arguments.Required(0).GetStrValue(exm);
+			string word = arguments.Required(1).GetStrValue(exm);
 			int UFTstart = 0;
 			if ((arguments.Count >= 3) && (arguments[2] != null))
 			{
 				if (unicode)
 				{
-					UFTstart = (int)arguments[2]!.GetIntValue(exm);
+					UFTstart = (int)arguments.Required(2).GetIntValue(exm);
 				}
 				else
 				{
-					UFTstart = LangManager.GetUFTIndex(target, (int)arguments[2]!.GetIntValue(exm));
+					UFTstart = LangManager.GetUFTIndex(target, (int)arguments.Required(2).GetIntValue(exm));
 				}
 			}
 			if (UFTstart < 0 || UFTstart >= target.Length)
@@ -4426,14 +4426,14 @@ internal static partial class FunctionMethodCreator
 			Regex reg;
 			try
 			{
-				reg = RegexFactory.GetRegex(arguments[1]!.GetStrValue(exm));
+				reg = RegexFactory.GetRegex(arguments.Required(1).GetStrValue(exm));
 			}
 			catch (ArgumentException e)
 			{
 				// throw new CodeEE("第2引数が正規表現として不正です：" + e.Message);
 				throw new CodeEE(string.Format(trerror.InvalidRegexArg.Text, Name, 2, e.Message));
 			}
-			return reg.Count(arguments[0]!.GetStrValue(exm));
+			return reg.Count(arguments.Required(0).GetStrValue(exm));
 		}
 	}
 
@@ -4466,10 +4466,10 @@ internal static partial class FunctionMethodCreator
 		//}
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long i = arguments[0]!.GetIntValue(exm);
+			long i = arguments.Required(0).GetIntValue(exm);
 			if ((arguments.Count < 2) || (arguments[1] == null))
 				return i.ToString();
-			string format = arguments[1]!.GetStrValue(exm);
+			string format = arguments.Required(1).GetStrValue(exm);
 			string ret;
 			try
 			{
@@ -4495,7 +4495,7 @@ internal static partial class FunctionMethodCreator
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string str = arguments[0]!.GetStrValue(exm);
+			string str = arguments.Required(0).GetStrValue(exm);
 			if (str == null || string.IsNullOrEmpty(str))
 				return 0;
 			//全角文字が入ってるなら無条件で0を返す
@@ -4554,7 +4554,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string str = arguments[0]!.GetStrValue(exm);
+			string str = arguments.Required(0).GetStrValue(exm);
 			if (str == null || string.IsNullOrEmpty(str))
 				return "";
 			// TODO: Strings.StrConv may return null for an unsupported conversion; consider handling that instead of asserting a non-null result.
@@ -4604,7 +4604,7 @@ internal static partial class FunctionMethodCreator
 
 		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			return arguments.Count < 4 || arguments[3]!.GetIntValue(exm) != 1;
+			return arguments.Count < 4 || arguments.Required(3).GetIntValue(exm) != 1;
 		}
 		//public override string CheckArgumentType(string name, IOperandTerm[] arguments)
 		//{
@@ -4622,14 +4622,14 @@ internal static partial class FunctionMethodCreator
 		//}
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string baseString = arguments[0]!.GetStrValue(exm);
+			string baseString = arguments.Required(0).GetStrValue(exm);
 			Regex? reg = null;
-			int type = arguments.Count == 4 ? (int)arguments[3]!.GetIntValue(exm) : 0;
+			int type = arguments.Count == 4 ? (int)arguments.Required(3).GetIntValue(exm) : 0;
 			if (type != 2)
 			{
 				try
 				{
-					reg = RegexFactory.GetRegex(arguments[1]!.GetStrValue(exm));
+					reg = RegexFactory.GetRegex(arguments.Required(1).GetStrValue(exm));
 				}
 				catch (ArgumentException e)
 				{
@@ -4659,12 +4659,12 @@ internal static partial class FunctionMethodCreator
 					case 2:
 						{
 							// 正規表現を使わず
-							return baseString.Replace(arguments[1]!.GetStrValue(exm), arguments[2]!.GetStrValue(exm));
+							return baseString.Replace(arguments.Required(1).GetStrValue(exm), arguments.Required(2).GetStrValue(exm));
 						}
 				}
 			}
 			// type == 0 or > 2 or omitted.
-			return reg!.Replace(baseString, arguments[2]!.GetStrValue(exm));
+			return reg!.Replace(baseString, arguments.Required(2).GetStrValue(exm));
 		}
 	}
 	#endregion
@@ -4679,7 +4679,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long i = arguments[0]!.GetIntValue(exm);
+			long i = arguments.Required(0).GetIntValue(exm);
 			if ((i < 0) || (i > 0xFFFF))
 				// throw new CodeEE("UNICODE関数に範囲外の値(" + i.ToString() + ")が渡されました");
 				throw new CodeEE(string.Format(trerror.ArgIsOutOfRange.Text, Name, 1, i, 0, 0xFFFF));
@@ -4716,7 +4716,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string target = arguments[0]!.GetStrValue(exm);
+			string target = arguments.Required(0).GetStrValue(exm);
 			int length = Encoding.UTF32.GetEncoder().GetByteCount(target.ToCharArray(), 0, target.Length, false);
 			byte[] bytes = new byte[length];
 			Encoding.UTF32.GetEncoder().GetBytes(target.ToCharArray(), 0, target.Length, bytes, 0, false);
@@ -4736,11 +4736,11 @@ internal static partial class FunctionMethodCreator
 		}
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long toBase = arguments[1]!.GetIntValue(exm);
+			long toBase = arguments.Required(1).GetIntValue(exm);
 			if ((toBase != 2) && (toBase != 8) && (toBase != 10) && (toBase != 16))
 				// new CodeEE("CONVERT関数の第２引数は2, 8, 10, 16のいずれかでなければなりません");
 				throw new CodeEE(string.Format(trerror.ArgShouldBeSpecificValue.Text, Name, 2, "2, 8, 10, 16"));
-			return Convert.ToString(arguments[0]!.GetIntValue(exm), (int)toBase);
+			return Convert.ToString(arguments.Required(0).GetIntValue(exm), (int)toBase);
 		}
 	}
 
@@ -4754,7 +4754,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string baseStr = arguments[0]!.GetStrValue(exm);
+			string baseStr = arguments.Required(0).GetStrValue(exm);
 
 			//全角文字があるなら数値ではない
 			if (baseStr.Length < LangManager.GetStrlenLang(baseStr))
@@ -4795,7 +4795,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			return Regex.Escape(arguments[0]!.GetStrValue(exm));
+			return Regex.Escape(arguments.Required(0).GetStrValue(exm));
 		}
 	}
 
@@ -4827,10 +4827,10 @@ internal static partial class FunctionMethodCreator
 		//}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string baseStr = arguments[0]!.GetStrValue(exm);
+			string baseStr = arguments.Required(0).GetStrValue(exm);
 			if (baseStr.Length == 0)
 				return -1;
-			long position = (arguments.Count > 1 && arguments[1] != null) ? arguments[1]!.GetIntValue(exm) : 0;
+			long position = (arguments.Count > 1 && arguments[1] != null) ? arguments.Required(1).GetIntValue(exm) : 0;
 			if (position < 0)
 				// throw new CodeEE("ENCOIDETOUNI関数の第２引数(" + position.ToString() + ")が負の値です");
 				throw new CodeEE(string.Format(trerror.ArgIsNegative.Text, Name, 2, position));
@@ -4851,8 +4851,8 @@ internal static partial class FunctionMethodCreator
 		}
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string str = arguments[0]!.GetStrValue(exm);
-			long pos = arguments[1]!.GetIntValue(exm);
+			string str = arguments.Required(0).GetStrValue(exm);
+			long pos = arguments.Required(1).GetIntValue(exm);
 			if (pos < 0 || pos >= str.Length)
 				return "";
 			return str[(int)pos].ToString();
@@ -4873,7 +4873,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string str = arguments[0]!.GetStrValue(exm);
+			string str = arguments.Required(0).GetStrValue(exm);
 			if (string.IsNullOrEmpty(str))
 				// throw new CodeEE("GETLINESTR関数の引数が空文字列です");
 				throw new CodeEE(string.Format(trerror.ArgIsEmptyString.Text, Name, 1));
@@ -4892,7 +4892,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string str = arguments[0]!.GetStrValue(exm);
+			string str = arguments.Required(0).GetStrValue(exm);
 			string destStr;
 			try
 			{
@@ -4914,14 +4914,14 @@ internal static partial class FunctionMethodCreator
 		}
 		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			arguments[0]!.Restructure(exm);
+			arguments.Required(0).Restructure(exm);
 			//引数が文字列式等ならお手上げなので諦める
 			if (!(arguments[0] is SingleTerm) && !(arguments[0] is VariableTerm))
 				return false;
 			//引数が確定値でない文字列変数なら無条件で不可（結果が可変なため）
-			if ((arguments[0] is VariableTerm) && !((VariableTerm)arguments[0]!).Identifier.IsConst)
+			if ((arguments[0] is VariableTerm) && !((VariableTerm)arguments.Required(0)).Identifier.IsConst)
 				return false;
-			string str = arguments[0]!.GetStrValue(exm);
+			string str = arguments.Required(0).GetStrValue(exm);
 			try
 			{
 				StrFormWord wt = LexicalAnalyzer.AnalyseFormattedString(new CharStream(str), FormStrEndWith.EoL, false);
@@ -4979,10 +4979,10 @@ internal static partial class FunctionMethodCreator
 		//}
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			VariableTerm varTerm = (VariableTerm)arguments[0]!;
-			string delimiter = (arguments.Count >= 2 && arguments[1] != null) ? arguments[1]!.GetStrValue(exm) : ",";
-			long index1 = (arguments.Count >= 3 && arguments[2] != null) ? arguments[2]!.GetIntValue(exm) : 0;
-			long index2 = (arguments.Count == 4 && arguments[3] != null) ? arguments[3]!.GetIntValue(exm) : varTerm.GetLastLength() - index1;
+			VariableTerm varTerm = (VariableTerm)arguments.Required(0);
+			string delimiter = (arguments.Count >= 2 && arguments[1] != null) ? arguments.Required(1).GetStrValue(exm) : ",";
+			long index1 = (arguments.Count >= 3 && arguments[2] != null) ? arguments.Required(2).GetIntValue(exm) : 0;
+			long index2 = (arguments.Count == 4 && arguments[3] != null) ? arguments.Required(3).GetIntValue(exm) : varTerm.GetLastLength() - index1;
 
 			FixedVariableTerm p = varTerm.GetFixedVariableTerm(exm);
 
@@ -4996,13 +4996,13 @@ internal static partial class FunctionMethodCreator
 		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			//第1変数は変数名なので、定数文字列変数だと事故が起こるので独自対応
-			VariableTerm varTerm = (VariableTerm)arguments[0]!;
+			VariableTerm varTerm = (VariableTerm)arguments.Required(0);
 			bool canRerstructure = varTerm.Identifier.IsConst;
 			for (int i = 1; i < arguments.Count; i++)
 			{
 				if (arguments[i] == null)
 					continue;
-				arguments[i] = arguments[i]!.Restructure(exm);
+				arguments[i] = arguments.Required(i).Restructure(exm);
 				canRerstructure &= arguments[i] is SingleTerm;
 			}
 			return canRerstructure;
@@ -5029,7 +5029,7 @@ internal static partial class FunctionMethodCreator
 		private readonly string funcname;
 		private SingleTerm GetSingleTerm(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string str = arguments[0]!.GetStrValue(exm);
+			string str = arguments.Required(0).GetStrValue(exm);
 			if (str == null || str.Length == 0)
 				// throw new CodeEE(funcname + "関数に空文字列が渡されました");
 				throw new CodeEE(string.Format(trerror.ArgIsEmptyString.Text, Name, 1));
@@ -5093,7 +5093,7 @@ internal static partial class FunctionMethodCreator
 		{
 			long lineNo = 0;
 			if (arguments.Count > 0)
-				lineNo = arguments[0]!.GetIntValue(exm);
+				lineNo = arguments.Required(0).GetIntValue(exm);
 			if (lineNo < 0)
 				// throw new CodeEE("引数を0未満にできません");
 				throw new CodeEE(string.Format(trerror.ArgIsNegative.Text, Name, 1, lineNo));
@@ -5132,7 +5132,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			return HtmlManager.Html2PlainText(arguments[0]!.GetStrValue(exm));
+			return HtmlManager.Html2PlainText(arguments.Required(0).GetStrValue(exm));
 		}
 	}
 	private sealed class HtmlEscapeMethod : FunctionMethod
@@ -5145,7 +5145,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			return HtmlManager.Escape(arguments[0]!.GetStrValue(exm));
+			return HtmlManager.Escape(arguments.Required(0).GetStrValue(exm));
 		}
 	}
 	#endregion
@@ -5156,7 +5156,7 @@ internal static partial class FunctionMethodCreator
 	/// </summary>
 	private static GraphicsImage ReadGraphics(string Name, ExpressionMediator exm, List<AExpression?> arguments, int argNo)
 	{
-		long target = arguments[argNo]!.GetIntValue(exm);
+		long target = arguments.Required(argNo).GetIntValue(exm);
 		if (target < 0)//funcname + "関数:GraphicsIDに負の値(" + target.ToString() + ")が指定されました"
 					   // throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGraphicsID0, Name, target));
 			throw new CodeEE(string.Format(trerror.GIdIsNegative.Text, Name, target));
@@ -5184,7 +5184,7 @@ internal static partial class FunctionMethodCreator
 	/// </summary>
 	private static Color ReadColor(string Name, ExpressionMediator exm, List<AExpression?> arguments, int argNo)
 	{
-		long c64 = arguments[argNo]!.GetIntValue(exm);
+		long c64 = arguments.Required(argNo).GetIntValue(exm);
 		if (c64 < 0 || c64 > 0xFFFFFFFF)
 			// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodColorARGB0, Name, c64));
 			throw new CodeEE(string.Format(trerror.InvalidColorARGB.Text, Name, c64));
@@ -5196,11 +5196,11 @@ internal static partial class FunctionMethodCreator
 	/// </summary>
 	private static Point ReadPoint(string Name, ExpressionMediator exm, List<AExpression?> arguments, int argNo)
 	{
-		long x64 = arguments[argNo]!.GetIntValue(exm);
+		long x64 = arguments.Required(argNo).GetIntValue(exm);
 		if (x64 < int.MinValue || x64 > int.MaxValue)
 			// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodDefaultArgumentOutOfRange0, Name,x64, argNo+1));
 			throw new CodeEE(string.Format(trerror.ArgIsOutOfRange.Text, Name, argNo + 1, x64, int.MinValue, int.MaxValue));
-		long y64 = arguments[argNo + 1]!.GetIntValue(exm);
+		long y64 = arguments.Required(argNo + 1).GetIntValue(exm);
 		if (y64 < int.MinValue || y64 > int.MaxValue)
 			// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodDefaultArgumentOutOfRange0, Name,y64, argNo+1+1));
 			throw new CodeEE(string.Format(trerror.ArgIsOutOfRange.Text, Name, argNo + 2, y64, int.MinValue, int.MaxValue));
@@ -5212,20 +5212,20 @@ internal static partial class FunctionMethodCreator
 	/// </summary>
 	private static Rectangle ReadRectangle(string Name, ExpressionMediator exm, List<AExpression?> arguments, int argNo)
 	{
-		long x64 = arguments[argNo]!.GetIntValue(exm);
+		long x64 = arguments.Required(argNo).GetIntValue(exm);
 		if (x64 < int.MinValue || x64 > int.MaxValue)
 			// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodDefaultArgumentOutOfRange0, Name, x64, argNo + 1));
 			throw new CodeEE(string.Format(trerror.ArgIsOutOfRange.Text, Name, argNo + 1, x64, int.MinValue, int.MaxValue));
-		long y64 = arguments[argNo + 1]!.GetIntValue(exm);
+		long y64 = arguments.Required(argNo + 1).GetIntValue(exm);
 		if (y64 < int.MinValue || y64 > int.MaxValue)
 			// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodDefaultArgumentOutOfRange0, Name, y64, argNo + 1 + 1));
 			throw new CodeEE(string.Format(trerror.ArgIsOutOfRange.Text, Name, argNo + 2, y64, int.MinValue, int.MaxValue));
 
-		long w64 = arguments[argNo + 2]!.GetIntValue(exm);
+		long w64 = arguments.Required(argNo + 2).GetIntValue(exm);
 		if (w64 < int.MinValue || w64 > int.MaxValue || w64 == 0)
 			// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodDefaultArgumentOutOfRange0, Name, w64, argNo + 2 + 1));
 			throw new CodeEE(string.Format(trerror.ArgIsOutOfRangeExcept.Text, Name, argNo + 3, w64, int.MinValue, int.MaxValue, 0));
-		long h64 = arguments[argNo + 3]!.GetIntValue(exm);
+		long h64 = arguments.Required(argNo + 3).GetIntValue(exm);
 		if (h64 < int.MinValue || h64 > int.MaxValue || h64 == 0)
 			// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodDefaultArgumentOutOfRange0, Name, h64, argNo + 3 + 1));
 			throw new CodeEE(string.Format(trerror.ArgIsOutOfRangeExcept.Text, Name, argNo + 4, h64, int.MinValue, int.MaxValue, 0));
@@ -5238,7 +5238,7 @@ internal static partial class FunctionMethodCreator
 	private static float[][] ReadColormatrix(string Name, ExpressionMediator exm, List<AExpression?> arguments, int argNo)
 	{
 		//数値型二次元以上配列変数のはず
-		FixedVariableTerm p = ((VariableTerm)arguments[argNo]!).GetFixedVariableTerm(exm);
+		FixedVariableTerm p = ((VariableTerm)arguments.Required(argNo)).GetFixedVariableTerm(exm);
 		long e1, e2;
 		float[][] cm = new float[5][];
 		if (p.Identifier.IsArray2D)
@@ -5468,12 +5468,12 @@ internal static partial class FunctionMethodCreator
 			GraphicsImage g = ReadGraphics(Name, exm, arguments, 0);
 			if (!g.IsCreated)
 				return 0;
-			string fontname = arguments[1]!.GetStrValue(exm);
-			long fontsize = arguments[2]!.GetIntValue(exm);
+			string fontname = arguments.Required(1).GetStrValue(exm);
+			long fontsize = arguments.Required(2).GetIntValue(exm);
 			FontStyle fs = FontStyle.Regular;
 			if (arguments.Count > 3)
 			{
-				long style = arguments[3]!.GetIntValue(exm);
+				long style = arguments.Required(3).GetIntValue(exm);
 
 				if ((style & 1) != 0)
 					fs |= FontStyle.Bold;
@@ -5532,7 +5532,7 @@ internal static partial class FunctionMethodCreator
 			if (!g.IsCreated)
 				return 0;
 			Color c = ReadColor(Name, exm, arguments, 1);
-			long width = arguments[2]!.GetIntValue(exm);
+			long width = arguments.Required(2).GetIntValue(exm);
 			g.GSetPen(new Pen(c, width));
 			return 1;
 		}
@@ -5556,7 +5556,7 @@ internal static partial class FunctionMethodCreator
 			if (!g.IsCreated)
 				return 0;
 
-			g.GDashStyle(arguments[1]!.GetIntValue(exm), arguments[2]!.GetIntValue(exm));
+			g.GDashStyle(arguments.Required(1).GetIntValue(exm), arguments.Required(2).GetIntValue(exm));
 			return 1;
 		}
 	}
@@ -5605,7 +5605,7 @@ internal static partial class FunctionMethodCreator
 			GraphicsImage g = ReadGraphics(Name, exm, arguments, 0);
 			if (!g.IsCreated)
 				return 0;
-			string text = arguments[1]!.GetStrValue(exm);
+			string text = arguments.Required(1).GetStrValue(exm);
 			if (arguments.Count == 2)
 			{
 				g.GDrawString(text, 0, 0);
@@ -5658,14 +5658,14 @@ internal static partial class FunctionMethodCreator
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
 				throw new CodeEE(string.Format(trerror.GDIPlusOnly.Text, Name));
-			string text = arguments[0]!.GetStrValue(exm);
+			string text = arguments.Required(0).GetStrValue(exm);
 			//生成する画像のサイズを取得
-			string fontname = arguments[1]!.GetStrValue(exm);
-			long fontsize = arguments[2]!.GetIntValue(exm);
+			string fontname = arguments.Required(1).GetStrValue(exm);
+			long fontsize = arguments.Required(2).GetIntValue(exm);
 			FontStyle fs = FontStyle.Regular;
 			if (arguments.Count > 3)
 			{
-				long style = arguments[3]!.GetIntValue(exm);
+				long style = arguments.Required(3).GetIntValue(exm);
 				if ((style & 1) != 0)
 					fs |= FontStyle.Bold;
 				if ((style & 2) != 0)
@@ -5765,7 +5765,7 @@ internal static partial class FunctionMethodCreator
 			GraphicsImage src = ReadGraphics(Name, exm, arguments, 1);
 			if (!src.IsCreated)
 				return 0;
-			long angle = arguments[2]!.GetIntValue(exm);
+			long angle = arguments.Required(2).GetIntValue(exm);
 
 			//座標省略してたらx/2,y/2で渡す
 			if (arguments.Count == 3)
@@ -5835,7 +5835,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string imgname = arguments[0]!.GetStrValue(exm);
+			string imgname = arguments.Required(0).GetStrValue(exm);
 			ASprite? img = AppContents.GetSprite(imgname);
 			if (img == null || !img.IsCreated)
 				return 0;
@@ -5866,7 +5866,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string imgname = arguments[0]!.GetStrValue(exm);
+			string imgname = arguments.Required(0).GetStrValue(exm);
 			ASprite? img = AppContents.GetSprite(imgname);
 			if (img == null || !img.IsCreated)
 				return 0;
@@ -5894,7 +5894,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string imgname = arguments[0]!.GetStrValue(exm);
+			string imgname = arguments.Required(0).GetStrValue(exm);
 			ASprite? img = AppContents.GetSprite(imgname);
 			//他と違って失敗は0ではなく負の値
 			if (img == null || !img.IsCreated)
@@ -5989,10 +5989,10 @@ internal static partial class FunctionMethodCreator
 			if (g.IsCreated)
 				return 0;
 
-			string filename = arguments[1]!.GetStrValue(exm);
+			string filename = arguments.Required(1).GetStrValue(exm);
 			bool isRelative = false;
 			if (arguments.Count > 2)
-				isRelative = arguments[2]!.GetIntValue(exm) != 0;
+				isRelative = arguments.Required(2).GetIntValue(exm) != 0;
 
 			Bitmap? bmp = null;
 			try
@@ -6101,7 +6101,7 @@ internal static partial class FunctionMethodCreator
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
 				throw new CodeEE(string.Format(trerror.GDIPlusOnly.Text, Name));
-			string imgname = arguments[0]!.GetStrValue(exm);
+			string imgname = arguments.Required(0).GetStrValue(exm);
 			if (string.IsNullOrEmpty(imgname))
 				return 0;
 			ASprite? img = AppContents.GetSprite(imgname);
@@ -6139,7 +6139,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string imgname = arguments[0]!.GetStrValue(exm);
+			string imgname = arguments.Required(0).GetStrValue(exm);
 			ASprite? img = AppContents.GetSprite(imgname);
 			if (img == null || !img.IsCreated)
 				return 0;
@@ -6158,7 +6158,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			return AppContents.SpriteDisposeAll(arguments[0]!.GetIntValue(exm) != 0);
+			return AppContents.SpriteDisposeAll(arguments.Required(0).GetIntValue(exm) != 0);
 		}
 	}
 
@@ -6206,7 +6206,7 @@ internal static partial class FunctionMethodCreator
 			if (arguments.Count == 2)
 				g.GClear(c);
 			else
-				g.GClear(c, (int)arguments[2]!.GetIntValue(exm), (int)arguments[3]!.GetIntValue(exm), (int)arguments[4]!.GetIntValue(exm), (int)arguments[5]!.GetIntValue(exm));
+				g.GClear(c, (int)arguments.Required(2).GetIntValue(exm), (int)arguments.Required(3).GetIntValue(exm), (int)arguments.Required(4).GetIntValue(exm), (int)arguments.Required(5).GetIntValue(exm));
 			return 1;
 		}
 		#endregion
@@ -6309,9 +6309,9 @@ internal static partial class FunctionMethodCreator
 					continue;
 				//11番目の引数はColorMatrixの配列を指しているので定数にしてはいけない
 				if (i == 10)
-					arguments[i]!.Restructure(exm);
+					arguments.Required(i).Restructure(exm);
 				else
-					arguments[i] = arguments[i]!.Restructure(exm);
+					arguments[i] = arguments.Required(i).Restructure(exm);
 			}
 			return false;
 		}
@@ -6410,7 +6410,7 @@ internal static partial class FunctionMethodCreator
 			if (!dest.IsCreated)
 				return 0;
 
-			string imgname = arguments[1]!.GetStrValue(exm);
+			string imgname = arguments.Required(1).GetStrValue(exm);
 			ASprite? img = AppContents.GetSprite(imgname);
 			if (img == null || !img.IsCreated)
 				return 0;
@@ -6450,9 +6450,9 @@ internal static partial class FunctionMethodCreator
 					continue;
 				//7番目の引数はColorMatrixの配列を指しているので定数にしてはいけない
 				if (i == 6)
-					arguments[i]!.Restructure(exm);
+					arguments.Required(i).Restructure(exm);
 				else
-					arguments[i] = arguments[i]!.Restructure(exm);
+					arguments[i] = arguments.Required(i).Restructure(exm);
 			}
 			return false;
 		}
@@ -6474,7 +6474,7 @@ internal static partial class FunctionMethodCreator
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
 				throw new CodeEE(string.Format(trerror.GDIPlusOnly.Text, Name));
-			string imgname = arguments[0]!.GetStrValue(exm);
+			string imgname = arguments.Required(0).GetStrValue(exm);
 			if (string.IsNullOrEmpty(imgname))
 				return 0;
 			//リソースチェック・既に存在しているならば失敗
@@ -6517,7 +6517,7 @@ internal static partial class FunctionMethodCreator
 			if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
 				throw new CodeEE(string.Format(trerror.GDIPlusOnly.Text, Name));
-			string imgname = arguments[0]!.GetStrValue(exm);
+			string imgname = arguments.Required(0).GetStrValue(exm);
 			if (string.IsNullOrEmpty(imgname))
 				return 0;
 			if (AppContents.GetSprite(imgname) == null)
@@ -6535,7 +6535,7 @@ internal static partial class FunctionMethodCreator
 				return 0;
 			//throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodCIMGCreateOutOfRange0, Name));
 			Point offset = ReadPoint(Name, exm, arguments, 6);
-			long delay = arguments[8]!.GetIntValue(exm);
+			long delay = arguments.Required(8).GetIntValue(exm);
 			if (delay <= 0 || delay > int.MaxValue)
 				return 0;
 			img.AddFrame(g, rect, offset, (int)delay);
@@ -6578,8 +6578,8 @@ internal static partial class FunctionMethodCreator
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 
-			long x64 = arguments[0]!.GetIntValue(exm);
-			long y64 = arguments[1]!.GetIntValue(exm);
+			long x64 = arguments.Required(0).GetIntValue(exm);
+			long y64 = arguments.Required(1).GetIntValue(exm);
 			unchecked
 			{
 				exm.Console.CBG_ClearRange((int)x64, (int)y64);
@@ -6646,7 +6646,7 @@ internal static partial class FunctionMethodCreator
 			if (!g.IsCreated || g.Bitmap == null)
 				return 0;
 			Point p = ReadPoint(Name, exm, arguments, 1);
-			long z64 = arguments[3]!.GetIntValue(exm);
+			long z64 = arguments.Required(3).GetIntValue(exm);
 			if (z64 < int.MinValue || z64 > int.MaxValue || z64 == 0)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodDefaultArgumentOutOfRange0, Name, z64, 3 + 1));
 				throw new CodeEE(string.Format(trerror.ArgIsOutOfRangeExcept.Text, Name, 4, z64, int.MinValue, int.MaxValue, 0));
@@ -6698,12 +6698,12 @@ internal static partial class FunctionMethodCreator
 			//if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
 			//	throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
 
-			string imgname = arguments[0]!.GetStrValue(exm);
+			string imgname = arguments.Required(0).GetStrValue(exm);
 			ASprite? img = AppContents.GetSprite(imgname);
 			if (img == null || !img.IsCreated)
 				return 0;
 			Point p = ReadPoint(Name, exm, arguments, 1);
-			long z64 = arguments[3]!.GetIntValue(exm);
+			long z64 = arguments.Required(3).GetIntValue(exm);
 			if (z64 < int.MinValue || z64 > int.MaxValue || z64 == 0)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodDefaultArgumentOutOfRange0, Name, z64, 3 + 1));
 				throw new CodeEE(string.Format(trerror.ArgIsOutOfRangeExcept.Text, Name, 4, z64, int.MinValue, int.MaxValue, 0));
@@ -6754,22 +6754,22 @@ internal static partial class FunctionMethodCreator
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodGDIPLUSOnly, Name));
 				throw new CodeEE(string.Format(trerror.GDIPlusOnly.Text, Name));
 
-			long b64 = arguments[0]!.GetIntValue(exm);
+			long b64 = arguments.Required(0).GetIntValue(exm);
 			if (b64 < 0 || b64 > 0xFFFFFF)
 				return 0;
-			string imgnameN = arguments[1]!.GetStrValue(exm);
+			string imgnameN = arguments.Required(1).GetStrValue(exm);
 			ASprite? imgN = AppContents.GetSprite(imgnameN);
-			string imgnameB = arguments[2]!.GetStrValue(exm);
+			string imgnameB = arguments.Required(2).GetStrValue(exm);
 			ASprite? imgB = AppContents.GetSprite(imgnameB);
 
 			Point p = ReadPoint(Name, exm, arguments, 3);
-			long z64 = arguments[5]!.GetIntValue(exm);
+			long z64 = arguments.Required(5).GetIntValue(exm);
 			if (z64 < int.MinValue || z64 > int.MaxValue || z64 == 0)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodDefaultArgumentOutOfRange0, Name, z64, 5 + 1));
 				throw new CodeEE(string.Format(trerror.ArgIsOutOfRangeExcept.Text, Name, 6, z64, int.MinValue, int.MaxValue, 0));
 			string? tooltip = null;
 			if (arguments.Count > 6)
-				tooltip = arguments[6]!.GetStrValue(exm);
+				tooltip = arguments.Required(6).GetStrValue(exm);
 			// The two images are stored as given; CBG_SetButtonImage has never rejected null.
 			if (!exm.Console.CBG_SetButtonImage((int)b64, imgN!, imgB!, p.X, p.Y, (int)z64, tooltip))
 				return 0;
@@ -6791,7 +6791,7 @@ internal static partial class FunctionMethodCreator
 		{
 			if (!exm.Console.IsActive)//アクティブでないならスルー
 				return 0;
-			long keycode = arguments[0]!.GetIntValue(exm);
+			long keycode = arguments.Required(0).GetIntValue(exm);
 			if (keycode < 0 || keycode > 255)
 				return 0;
 			short s = WinInput.GetKeyState((int)keycode);
@@ -6881,7 +6881,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long i64 = arguments[0]!.GetIntValue(exm);
+			long i64 = arguments.Required(0).GetIntValue(exm);
 			if (i64 < int.MinValue || i64 > short.MaxValue)
 				// throw new CodeEE(string.Format(Properties.Resources.RuntimeErrMesMethodDefaultArgumentOutOfRange0, Name, i64, 1));
 				throw new CodeEE(string.Format(trerror.ArgIsOutOfRange.Text, Name, 1, i64, int.MinValue, int.MaxValue));
@@ -6948,15 +6948,15 @@ internal static partial class FunctionMethodCreator
 			//	System.IO.File.WriteAllText(filepath, savText, encoding);
 			//}
 			//catch { return 0; }
-			string savText = arguments[0]!.GetStrValue(exm), filepath;
+			string savText = arguments.Required(0).GetStrValue(exm), filepath;
 			long i64 = -1;
-			bool forceSavdir = arguments.Count > 2 && (arguments[2]!.GetIntValue(exm) != 0);
-			bool forceUTF8 = arguments.Count > 3 && (arguments[3]!.GetIntValue(exm) != 0);
+			bool forceSavdir = arguments.Count > 2 && (arguments.Required(2).GetIntValue(exm) != 0);
+			bool forceUTF8 = arguments.Count > 3 && (arguments.Required(3).GetIntValue(exm) != 0);
 
 
-			if (arguments[1]!.GetOperandType() == typeof(long))
+			if (arguments.Required(1).GetOperandType() == typeof(long))
 			{
-				i64 = arguments[1]!.GetIntValue(exm);
+				i64 = arguments.Required(1).GetIntValue(exm);
 				if (i64 < 0 || i64 > int.MaxValue)
 					return 0;
 				int fileIndex = (int)i64;
@@ -6966,7 +6966,7 @@ internal static partial class FunctionMethodCreator
 			}
 			else
 			{
-				filepath = Utils.GetValidPath(arguments[1]!.GetStrValue(exm))!;
+				filepath = Utils.GetValidPath(arguments.Required(1).GetStrValue(exm))!;
 				if (filepath == null) return 0;
 				string tmp = Path.HasExtension(filepath) ? Path.GetExtension(filepath).ToLower().Substring(1) : "";
 				if (!Config.ValidExtension.Contains(tmp))
@@ -7058,11 +7058,11 @@ internal static partial class FunctionMethodCreator
 			//return ret;
 			string ret = "", filepath;
 			long i64 = -1;
-			bool forceSavdir = arguments.Count > 1 && (arguments[1]!.GetIntValue(exm) != 0);
-			bool forceUTF8 = arguments.Count > 2 && (arguments[2]!.GetIntValue(exm) != 0);
-			if (arguments[0]!.GetOperandType() == typeof(long))
+			bool forceSavdir = arguments.Count > 1 && (arguments.Required(1).GetIntValue(exm) != 0);
+			bool forceUTF8 = arguments.Count > 2 && (arguments.Required(2).GetIntValue(exm) != 0);
+			if (arguments.Required(0).GetOperandType() == typeof(long))
 			{
-				i64 = arguments[0]!.GetIntValue(exm);
+				i64 = arguments.Required(0).GetIntValue(exm);
 				if (i64 < 0 || i64 > int.MaxValue)
 					return "";
 				int fileIndex = (int)i64;
@@ -7072,7 +7072,7 @@ internal static partial class FunctionMethodCreator
 			}
 			else
 			{
-				filepath = Utils.GetValidPath(arguments[0]!.GetStrValue(exm))!;
+				filepath = Utils.GetValidPath(arguments.Required(0).GetStrValue(exm))!;
 				if (filepath == null) return string.Empty;
 				string tmp = Path.HasExtension(filepath) ? Path.GetExtension(filepath).ToLower().Substring(1) : "";
 				if (!Config.ValidExtension.Contains(tmp))
@@ -7117,7 +7117,7 @@ internal static partial class FunctionMethodCreator
 			if (!g.IsCreated)
 				return 0;
 
-			long i64 = arguments[1]!.GetIntValue(exm);
+			long i64 = arguments.Required(1).GetIntValue(exm);
 			if (i64 < 0 || i64 > int.MaxValue)
 				return 0;
 
@@ -7154,7 +7154,7 @@ internal static partial class FunctionMethodCreator
 			if (g.IsCreated)
 				return 0;
 
-			long i64 = arguments[1]!.GetIntValue(exm);
+			long i64 = arguments.Required(1).GetIntValue(exm);
 			if (i64 < 0 || i64 > int.MaxValue)
 				return 0;
 
@@ -7201,7 +7201,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string str = arguments[0]!.GetStrValue(exm);
+			string str = arguments.Required(0).GetStrValue(exm);
 			string filepath = Path.GetFullPath(".\\sound\\" + str);
 			if (File.Exists(filepath))
 				return 1;
@@ -7225,8 +7225,8 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string functionname = arguments[0]!.GetStrValue(exm);
-			if (arguments.Count == 1 || arguments[1]!.GetIntValue(exm) == 0)
+			string functionname = arguments.Required(0).GetStrValue(exm);
+			if (arguments.Count == 1 || arguments.Required(1).GetIntValue(exm) == 0)
 			{
 				FunctionLabelLine? func;
 				if (Config.StringComparison == StringComparison.OrdinalIgnoreCase)
@@ -7335,7 +7335,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			exm.Console.Window.ChangeTextBox(arguments[0]!.GetStrValue(exm));
+			exm.Console.Window.ChangeTextBox(arguments.Required(0).GetStrValue(exm));
 			return 1;
 		}
 	}
@@ -7355,13 +7355,13 @@ internal static partial class FunctionMethodCreator
 		}
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			VariableTerm vToken = (VariableTerm)arguments[0]!;
+			VariableTerm vToken = (VariableTerm)arguments.Required(0);
 			string varname = "";
 			if (arguments.Count > 2)
-				varname = vToken.Identifier.Name + "@" + arguments[2]!.GetIntValue(exm);
+				varname = vToken.Identifier.Name + "@" + arguments.Required(2).GetIntValue(exm);
 			else
 				varname = vToken.Identifier.Name;
-			long value = arguments[1]!.GetIntValue(exm);
+			long value = arguments.Required(1).GetIntValue(exm);
 			if (exm.VEvaluator.Constant.TryIntegerToKeyword(out string ret, value, varname))
 				return ret;
 			else
@@ -7369,7 +7369,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			arguments[1] = arguments[1]!.Restructure(exm);
+			arguments[1] = arguments.Required(1).Restructure(exm);
 			return arguments[1] is SingleTerm;
 		}
 	}
@@ -7390,7 +7390,7 @@ internal static partial class FunctionMethodCreator
 		{
 			//修正に失敗したので差し戻す
 			//long num = arguments[0].GetIntValue(exm)-exm.Console.DeletedLines;
-			long num = arguments[0]!.GetIntValue(exm);
+			long num = arguments.Required(0).GetIntValue(exm);
 			if (num < 0 || num >= exm.Console.DisplayLineList.Count)
 				return "";
 			else
@@ -7430,13 +7430,13 @@ internal static partial class FunctionMethodCreator
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 
-			exm.Process.flowinputDef = arguments[0]!.GetIntValue(exm);
+			exm.Process.flowinputDef = arguments.Required(0).GetIntValue(exm);
 			if (arguments.Count > 1)
-				exm.Process.flowinput = arguments[1]!.GetIntValue(exm) != 0 ? true : false;
+				exm.Process.flowinput = arguments.Required(1).GetIntValue(exm) != 0 ? true : false;
 			if (arguments.Count > 2)
-				exm.Process.flowinputCanSkip = arguments[2]!.GetIntValue(exm) != 0 ? true : false;
+				exm.Process.flowinputCanSkip = arguments.Required(2).GetIntValue(exm) != 0 ? true : false;
 			if (arguments.Count > 3)
-				exm.Process.flowinputForceSkip = arguments[3]!.GetIntValue(exm) != 0 ? true : false;
+				exm.Process.flowinputForceSkip = arguments.Required(3).GetIntValue(exm) != 0 ? true : false;
 			return 0;
 		}
 	}
@@ -7453,9 +7453,9 @@ internal static partial class FunctionMethodCreator
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 
-			exm.Process.flowinputString = arguments[0]!.GetIntValue(exm) != 0 ? true : false;
+			exm.Process.flowinputString = arguments.Required(0).GetIntValue(exm) != 0 ? true : false;
 			if (arguments.Count > 1)
-				exm.Process.flowinputDefString = arguments[1]!.GetStrValue(exm);
+				exm.Process.flowinputDefString = arguments.Required(1).GetStrValue(exm);
 			return 0;
 		}
 	}
@@ -7476,7 +7476,7 @@ internal static partial class FunctionMethodCreator
 
 		public override Int64 GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string name = arguments[0]!.GetStrValue(exm);
+			string name = arguments.Required(0).GetStrValue(exm);
 			List<AExpression?> methArgs = new List<AExpression?>(arguments.Skip(2).ToArray());
 			var term = GlobalStatic.IdentifierDictionary.GetFunctionMethod(GlobalStatic.LabelDictionary, name, methArgs, true);
 
@@ -7485,7 +7485,7 @@ internal static partial class FunctionMethodCreator
 				if (arguments.Count < 2 || arguments[1] == null)
 					throw new CodeEE(string.Format(trerror.NotDefinedUserFunc.Text, name));
 				else
-					return arguments[1]!.GetIntValue(exm);
+					return arguments.Required(1).GetIntValue(exm);
 			}
 			else if (!term.IsInteger)
 				throw new CodeEE(string.Format(trerror.IsNotInt.Text, name));
@@ -7506,7 +7506,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string name = arguments[0]!.GetStrValue(exm);
+			string name = arguments.Required(0).GetStrValue(exm);
 			List<AExpression?> methArgs = new List<AExpression?>(arguments.Skip(2).ToArray());
 			var term = GlobalStatic.IdentifierDictionary.GetFunctionMethod(GlobalStatic.LabelDictionary, name, methArgs, true);
 
@@ -7515,7 +7515,7 @@ internal static partial class FunctionMethodCreator
 				if (arguments.Count < 2 || arguments[1] == null)
 					throw new CodeEE(string.Format(trerror.NotDefinedUserFunc.Text, name));
 				else
-					return arguments[1]!.GetStrValue(exm);
+					return arguments.Required(1).GetStrValue(exm);
 			}
 			else if (!term.IsString)
 				throw new CodeEE(string.Format(trerror.IsNotStr.Text, name));
@@ -7534,7 +7534,7 @@ internal static partial class FunctionMethodCreator
 
 		public override Int64 GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string name = arguments[0]!.GetStrValue(exm);
+			string name = arguments.Required(0).GetStrValue(exm);
 			AExpression? term;
 			try
 			{
@@ -7575,7 +7575,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			long argument0 = arguments[0]!.GetIntValue(exm);
+			long argument0 = arguments.Required(0).GetIntValue(exm);
 			GlobalStatic.Console.bitmapCacheEnabledForNextLine = argument0 != 0;
 			return 0;
 		}
@@ -7596,8 +7596,8 @@ internal static partial class FunctionMethodCreator
 		}
 		public override Int64 GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			Int64 argument0 = arguments[0]!.GetIntValue(exm);
-			Int64 argument1 = arguments[1]!.GetIntValue(exm);
+			Int64 argument0 = arguments.Required(0).GetIntValue(exm);
+			Int64 argument1 = arguments.Required(1).GetIntValue(exm);
 			GlobalStatic.Console.Window.hotkeyState.HotkeyStateSet((nint)argument0, (nint)argument1);
 			return 0;
 		}
@@ -7616,7 +7616,7 @@ internal static partial class FunctionMethodCreator
 		}
 		public override Int64 GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			Int64 argument0 = arguments[0]!.GetIntValue(exm);
+			Int64 argument0 = arguments.Required(0).GetIntValue(exm);
 			GlobalStatic.Console.Window.hotkeyState.HotkeyStateInit((nint)argument0);
 			return 0;
 		}
@@ -7637,10 +7637,10 @@ internal static partial class FunctionMethodCreator
 		{
 			string filename = "";
 			if (arguments.Count > 0)
-				filename = arguments[0]!.GetStrValue(exm);
+				filename = arguments.Required(0).GetStrValue(exm);
 			bool hideInfo = false;
 			if (arguments.Count > 1)
-				hideInfo = arguments[1]!.GetIntValue(exm) == 1;
+				hideInfo = arguments.Required(1).GetIntValue(exm) == 1;
 
 
 			exm.Console.OutputLog(filename, hideInfo);

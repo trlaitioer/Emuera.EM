@@ -42,7 +42,7 @@ internal sealed class FunctionMethodTerm : AExpression
 		{
 			if (Arguments[i] == null)
 				continue;
-			Arguments[i] = Arguments[i]!.Restructure(exm);
+			Arguments[i] = Arguments.Required(i).Restructure(exm);
 			argIsConst &= Arguments[i] is SingleTerm;
 		}
 		if (Method.CanRestructure && argIsConst)

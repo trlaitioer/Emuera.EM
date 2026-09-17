@@ -159,8 +159,8 @@ internal abstract class FunctionMethod
 						else continue;
 					}
 					bool typeNotMatch = rule.SameAsFirst
-						? arguments[0]!.GetOperandType() != arguments[i]!.GetOperandType()
-						: !rule.Any && rule.Type != arguments[i]!.GetOperandType();
+						? arguments.Required(0).GetOperandType() != arguments.Required(i).GetOperandType()
+						: !rule.Any && rule.Type != arguments.Required(i).GetOperandType();
 					if (rule.Ref)
 					{
 						if (rule.CharacterData && (!(arguments[i] is VariableTerm cvarTerm) || !cvarTerm.Identifier.IsCharacterData))
@@ -222,7 +222,7 @@ internal abstract class FunctionMethod
 					}
 					else if (typeNotMatch)
 					{
-						var type = rule.SameAsFirst ? arguments[0]!.GetOperandType() : rule.Type;
+						var type = rule.SameAsFirst ? arguments.Required(0).GetOperandType() : rule.Type;
 						// 引数の型が違う
 						errMsg[idx] = type == typeof(string) ? string.Format(trerror.ArgIsNotStr.Text, name, i + 1)
 							: string.Format(trerror.ArgIsNotInt.Text, name, i + 1);
@@ -285,7 +285,7 @@ internal abstract class FunctionMethod
 				if (arguments[i] == null)
 					// return string.Format(Properties.Resources.SyntaxErrMesMethodDefaultArgumentNotNullable0, name, i + 1);
 					return string.Format(trerror.ArgCanNotBeNull.Text, name, i + 1);
-				if (argumentTypeArray[i] != arguments[i]!.GetOperandType())
+				if (argumentTypeArray[i] != arguments.Required(i).GetOperandType())
 					// return string.Format(Properties.Resources.SyntaxErrMesMethodDefaultArgumentType0, name, i + 1);
 					return argumentTypeArray[i] == typeof(string) ? string.Format(trerror.ArgIsNotStr.Text, name, i + 1)
 							: string.Format(trerror.ArgIsNotInt.Text, name, i + 1);

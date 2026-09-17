@@ -58,6 +58,6 @@ internal struct StringStyle
 	}
 	public static bool operator !=(StringStyle x, StringStyle y)
 	{
-		return !(x == y);
+		return (x == y);
 	}
 }

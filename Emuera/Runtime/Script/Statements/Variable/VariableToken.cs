@@ -478,7 +478,7 @@ internal abstract class ReferenceToken : UserDefinedVariableToken
 		// CheckElement threw if the reference is unset
 		if ((index1 < 0) || (index1 > array!.GetLength(Dimension - 1)))
 			throw new CodeEE(string.Format(trerror.OoRInstructionArg.Text, funcName, i1.ToString(), index1.ToString(), varName));
-		if ((index2 < 0) || (index2 > array!.GetLength(Dimension - 1)))
+		if ((index2 < 0) || (index2 > array.GetLength(Dimension - 1)))
 			throw new CodeEE(string.Format(trerror.OoRInstructionArg.Text, funcName, i2.ToString(), index2.ToString(), varName));
 	}
 

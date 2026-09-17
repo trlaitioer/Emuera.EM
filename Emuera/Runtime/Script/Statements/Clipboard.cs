@@ -151,7 +151,7 @@ internal partial class ClipboardProcessor
 		{
 			while (count > 0)
 			{
-				lineBuffer!.Dequeue();
+				lineBuffer.Dequeue();
 				count--;
 			}
 		}
@@ -225,7 +225,7 @@ internal partial class ClipboardProcessor
 		var builder = new DefaultInterpolatedStringHandler(length * 2, 0);
 		for (int count = 0; count < length; count++)
 		{
-			builder.AppendLiteral(lineBuffer![lineBuffer.Count - length - ScrollPos + count]);
+			builder.AppendLiteral(lineBuffer[lineBuffer.Count - length - ScrollPos + count]);
 			builder.AppendLiteral("\n");
 		}
 		var newText = builder.ToString();

@@ -148,7 +148,7 @@ internal sealed class WordCollection
 	public void Remove()
 	{
 		var next = Pointer!.Next;
-		Collection.Remove(Pointer!);
+		Collection.Remove(Pointer);
 		Pointer = next;
 	}
 

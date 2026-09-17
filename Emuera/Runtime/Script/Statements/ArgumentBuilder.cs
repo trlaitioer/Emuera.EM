@@ -10,6 +10,7 @@ using MinorShift.Emuera.Runtime.Script.Statements.Variable;
 using MinorShift.Emuera.Runtime.Utils;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 
@@ -88,7 +89,7 @@ internal abstract class ArgumentBuilder
 				warn(string.Format(trerror.CanNotRecognizeArg.Text, (i + 1).ToString()), line, 2, false);
 				return false;
 			}
-			if ((allowType != typeof(void)) && (allowType != arguments[i]!.GetOperandType()))
+			if ((allowType != typeof(void)) && (allowType != arguments.Required(i).GetOperandType()))
 			{
 				warn(string.Format(trerror.IncorrectArg.Text, (i + 1).ToString()), line, 2, false);
 				return false;
@@ -99,7 +100,7 @@ internal abstract class ArgumentBuilder
 		{
 			if (arguments[i] == null)
 				continue;
-			arguments[i] = arguments[i]!.Restructure(exm);
+			arguments[i] = arguments.Required(i).Restructure(exm);
 		}
 		return true;
 	}
@@ -301,7 +302,7 @@ internal static partial class ArgumentParser
 					}
 				}
 				else
-					param.Add(new MixedIntegerExprTerm { num = arg!, isPx = wc.Current.Type != '\0' && wc.Current.Type != ',' });
+					param.Add(new MixedIntegerExprTerm { num = arg, isPx = wc.Current.Type != '\0' && wc.Current.Type != ',' });
 				if (wc.Current.Type != '\0' && wc.Current.Type != ',') wc.ShiftNext();
 				wc.ShiftNext();
 				argCount++;
@@ -380,20 +381,20 @@ internal static partial class ArgumentParser
 				if (i == 0 && args[i] == null)
 				{ warn(string.Format(trerror.CanNotOmitArg.Text, i + 1), line, 2, false); return null; }
 
-				if (i == 0 && args[i]!.GetOperandType() != typeof(string))
+				if (i == 0 && args.Required(i).GetOperandType() != typeof(string))
 				{ warn(string.Format(trerror.IncorrectArg.Text, i + 1), line, 2, false); return null; }
-				if (i == 1 && args[i]!.GetOperandType() != typeof(long))
+				if (i == 1 && args.Required(i).GetOperandType() != typeof(long))
 				{ warn(string.Format(trerror.IncorrectArg.Text, i + 1), line, 2, false); return null; }
 
-				args[i] = args[i]!.Restructure(exm);
+				args[i] = args.Required(i).Restructure(exm);
 				if (i == 0 && args[i] is SingleTerm) constStr = true;
 				if (i == 1 && !(args[i] is SingleTerm)) constInt = false;
 			}
-			var ret = new SpHtmlPrint(args[0]!, args.Count > 1 ? args[1]! : null);
+			var ret = new SpHtmlPrint(args.Required(0), args.Count > 1 ? args.Required(1) : null);
 			if (constStr && constInt)
 			{
-				ret.ConstInt = args.Count > 1 ? args[1]!.GetIntValue(exm) : 0;
-				ret.ConstStr = args[0]!.GetStrValue(exm);
+				ret.ConstInt = args.Count > 1 ? args.Required(1).GetIntValue(exm) : 0;
+				ret.ConstStr = args.Required(0).GetStrValue(exm);
 			}
 			return ret;
 		}
@@ -512,7 +513,7 @@ internal static partial class ArgumentParser
 					return null;
 				}
 				else
-					args[i] = args[i]!.Restructure(exm);
+					args[i] = args.Required(i).Restructure(exm);
 			}
 			return new SpPrintVArgument(args);
 		}
@@ -897,10 +898,10 @@ internal static partial class ArgumentParser
 			if (args == null)
 				args = [];
 			for (int i = 0; i < subNames!.Count; i++)
-				subNames?[i] = subNames[i]!.Restructure(exm);
+				subNames?[i] = subNames.Required(i).Restructure(exm);
 			for (int i = 0; i < args.Count; i++)
 				if (args[i] != null)
-					args[i] = args[i]!.Restructure(exm);
+					args[i] = args.Required(i).Restructure(exm);
 			Argument ret;
 			if (callf)
 				ret = new SpCallFArgment(funcname, subNames, args);
@@ -962,10 +963,10 @@ internal static partial class ArgumentParser
 			if (args == null)
 				args = [];
 			for (int i = 0; i < subNames!.Count; i++)
-				subNames?[i] = subNames[i]!.Restructure(exm);
+				subNames?[i] = subNames.Required(i).Restructure(exm);
 			for (int i = 0; i < args.Count; i++)
 				if (args[i] != null)
-					args[i] = args[i]!.Restructure(exm);
+					args[i] = args.Required(i).Restructure(exm);
 			Argument ret;
 			ret = new SpCallSharpArgment(funcname, subNames, args);
 			if (funcname is SingleTerm)
@@ -990,7 +991,7 @@ internal static partial class ArgumentParser
 			if ((!wc.EOL) || (args.Length == 0))
 			{ warn(trerror.WrongFormat.Text, line, 2, false); return null; }
 			for (int i = 0; i < args.Length; i++)
-				args[i]!.Reduce(exm);
+				args[i].Reduce(exm);
 			return new CaseArgument(args);
 		}
 	}
@@ -1083,14 +1084,14 @@ internal static partial class ArgumentParser
 							assignwarn(trerror.CanNotOmitRight.Text, line, 2, false);
 							return null;
 						}
-						if (!srcTerms[i]!.IsInteger)
+						if (!srcTerms.Required(i).IsInteger)
 						{
 							assignwarn(trerror.CanNotAssignStrToInt.Text, line, 2, false);
 							return null;
 						}
-						srcTerms[i] = srcTerms[i]!.Restructure(exm);
+						srcTerms[i] = srcTerms.Required(i).Restructure(exm);
 						if (allConst && (srcTerms[i] is SingleTerm))
-							constValues[i] = srcTerms[i]!.GetIntValue(null!);
+							constValues[i] = srcTerms.Required(i).GetIntValue(null!);
 						else
 							allConst = false;
 					}
@@ -1100,12 +1101,12 @@ internal static partial class ArgumentParser
 					};
 					return arrayarg;
 				}
-				if (!srcTerms[0]!.IsInteger)
+				if (!srcTerms.Required(0).IsInteger)
 				{
 					assignwarn(trerror.CanNotAssignStrToInt.Text, line, 2, false);
 					return null;
 				}
-				src = srcTerms[0]!.Restructure(exm);
+				src = srcTerms.Required(0).Restructure(exm);
 				if (op == OperatorCode.Assignment)
 				{
 					ret = new SpSetArgument(varTerm, src);
@@ -1171,12 +1172,12 @@ internal static partial class ArgumentParser
 					{
 						if (srcTerms.Count == 1)
 						{
-							if (srcTerms[0]!.IsInteger)
+							if (srcTerms.Required(0).IsInteger)
 							{
 								assignwarn(trerror.CanNotAssignIntToStr.Text, line, 2, false);
 								return null;
 							}
-							src = srcTerms[0]!.Restructure(exm);
+							src = srcTerms.Required(0).Restructure(exm);
 							ret = new SpSetArgument(varTerm, src);
 							if (src is SingleTerm)
 							{
@@ -1195,14 +1196,14 @@ internal static partial class ArgumentParser
 								assignwarn(trerror.CanNotOmitRight.Text, line, 2, false);
 								return null;
 							}
-							if (srcTerms[i]!.IsInteger)
+							if (srcTerms.Required(i).IsInteger)
 							{
 								assignwarn(trerror.CanNotAssignIntToStr.Text, line, 2, false);
 								return null;
 							}
-							srcTerms[i] = srcTerms[i]!.Restructure(exm);
+							srcTerms[i] = srcTerms.Required(i).Restructure(exm);
 							if (allConst && (srcTerms[i] is SingleTerm))
-								constValues[i] = srcTerms[i]!.GetStrValue(null!);
+								constValues[i] = srcTerms.Required(i).GetStrValue(null!);
 							else
 								allConst = false;
 						}
@@ -1218,7 +1219,7 @@ internal static partial class ArgumentParser
 						return null;
 					}
 
-					src = srcTerms[0]!.Restructure(exm);
+					src = srcTerms.Required(0).Restructure(exm);
 					src = OperatorMethodManager.ReduceBinaryTerm(op, varTerm, src);
 					return new SpSetArgument(varTerm, src);
 				}
@@ -1236,7 +1237,7 @@ internal static partial class ArgumentParser
 			string? errmes = line.Function.Method!.CheckArgumentType(line.Function.Name, args);
 			if (errmes != null)
 				throw new CodeEE(errmes);
-			var mTerm = new FunctionMethodTerm(line.Function.Method!, args);
+			var mTerm = new FunctionMethodTerm(line.Function.Method, args);
 			return new MethodArgument(mTerm.Restructure(exm));
 		}
 	}
@@ -1309,13 +1310,13 @@ internal static partial class ArgumentParser
 			}
 			if (terms.Count > 0)
 			{
-				if (terms[0] == null || !terms[0]!.IsInteger)
+				if (terms[0] == null || !terms.Required(0).IsInteger)
 				{
 					warn(trerror.IgnoreArgBecauseNotInt.Text, line, 1, false);
 					ret = new SpInputsArgument(term, null, null);
 				}
-				else if (terms.Count == 1) ret = new SpInputsArgument(term, terms[0]!, null);
-				else ret = new SpInputsArgument(term, terms[0]!, terms[1]!);
+				else if (terms.Count == 1) ret = new SpInputsArgument(term, terms[0], null);
+				else ret = new SpInputsArgument(term, terms[0], terms[1]);
 			}
 			#endregion
 			return ret;
@@ -1355,7 +1356,7 @@ internal static partial class ArgumentParser
 			}
 			else
 			{
-				term = terms[0]!;
+				term = terms.Required(0);
 			}
 
 			if (line.FunctionCode == FunctionCode.REPEAT)
@@ -1470,7 +1471,7 @@ internal static partial class ArgumentParser
 				};
 				return ret;
 			}
-			return new ExpressionArgument(terms[0]!);
+			return new ExpressionArgument(terms[0]);
 		}
 	}
 
@@ -1497,7 +1498,7 @@ internal static partial class ArgumentParser
 				};
 				return ret;
 			}
-			return new ExpressionArgument(terms[0]!);
+			return new ExpressionArgument(terms[0]);
 		}
 	}
 
@@ -1513,7 +1514,7 @@ internal static partial class ArgumentParser
 			var terms = popTerms(line);
 			if (!checkArgumentType(line, exm, terms))
 				return null;
-			return new SpBarArgument(terms[0]!, terms[1]!, terms[2]!);
+			return new SpBarArgument(terms.Required(0), terms.Required(1), terms.Required(2));
 		}
 	}
 
@@ -1533,8 +1534,8 @@ internal static partial class ArgumentParser
 				return null;
 			//上の判定で省略不可時はここに来ないので即さばける
 			if (terms.Count == 1)
-				terms = [terms[0]!, null];
-			return new SpSwapCharaArgument(terms[0]!, terms[1]!);
+				terms = [terms[0], null];
+			return new SpSwapCharaArgument(terms.Required(0), terms.Required(1));
 		}
 	}
 
@@ -1550,7 +1551,7 @@ internal static partial class ArgumentParser
 			var terms = popTerms(line);
 			if (!checkArgumentType(line, exm, terms))
 				return null;
-			return new SpSaveDataArgument(terms[0]!, terms[1]!);
+			return new SpSaveDataArgument(terms.Required(0), terms.Required(1));
 		}
 	}
 
@@ -1569,15 +1570,15 @@ internal static partial class ArgumentParser
 			if (!checkArgumentType(line, exm, terms))
 				return null;
 			if (terms.Count > 2)
-				term3 = terms[2]!;
+				term3 = terms[2];
 			if (terms.Count > 3)
-				term4 = terms[3]!;
+				term4 = terms[3];
 			if (terms.Count > 4)
-				term5 = terms[4]!;
+				term5 = terms[4];
 			if (terms.Count > 5)
-				term6 = terms[5]!;
+				term6 = terms[5];
 
-			return new SpTInputsArgument(terms[0]!, terms[1]!, term3, term4, term5, term6);
+			return new SpTInputsArgument(terms[0], terms[1], term3, term4, term5, term6);
 		}
 	}
 
@@ -1595,14 +1596,14 @@ internal static partial class ArgumentParser
 			if (!checkArgumentType(line, exm, terms))
 				return null;
 			if (terms.Count > 2)
-				term3 = terms[2]!;
+				term3 = terms[2];
 			if (terms.Count > 3)
-				term4 = terms[3]!;
+				term4 = terms[3];
 			if (terms.Count > 4)
-				term5 = terms[4]!;
+				term5 = terms[4];
 			if (terms.Count > 5)
-				term6 = terms[5]!;
-			return new SpTInputsArgument(terms[0]!, terms[1]!, term3, term4, term5, term6);
+				term6 = terms[5];
+			return new SpTInputsArgument(terms[0], terms[1], term3, term4, term5, term6);
 		}
 	}
 	//private sealed class SP_TINPUT_ArgumentBuilder : ArgumentBuilder
@@ -1668,12 +1669,12 @@ internal static partial class ArgumentParser
 			{ warn(string.Format(trerror.CharaVarCanNotSpecifiedArg.Text, "1"), line, 2, false); return null; }
 
 			AExpression? start = terms[1];
-			AExpression end = terms[2]!;
+			AExpression end = terms.Required(2);
 			AExpression step;
 			if (start == null)
 				start = new SingleLongTerm(0);
 			if ((terms.Count > 3) && (terms[3] != null))
-				step = terms[3]!;
+				step = terms.Required(3);
 			else
 				step = new SingleLongTerm(1);
 			if (!start.IsInteger)
@@ -1698,7 +1699,7 @@ internal static partial class ArgumentParser
 			if (varTerm == null)
 				return null;
 
-			return new SpPowerArgument(varTerm, terms[1]!, terms[2]!);
+			return new SpPowerArgument(varTerm, terms.Required(1), terms.Required(2));
 		}
 	}
 
@@ -1834,7 +1835,7 @@ internal static partial class ArgumentParser
 
 			AExpression? term, term3 = null, term4 = null;
 			if (terms.Count > 1)
-				term = terms[1]!;
+				term = terms.Required(1);
 			else
 			{
 				if (varTerm.IsString)
@@ -1852,9 +1853,9 @@ internal static partial class ArgumentParser
 				return new SpVarSetArgument(new FixedVariableTerm(varTerm.Identifier), term, null, null);
 			}
 			if (terms.Count > 2)
-				term3 = terms[2]!;
+				term3 = terms[2];
 			if (terms.Count > 3)
-				term4 = terms[3]!;
+				term4 = terms.Required(3);
 			if (terms.Count >= 3 && !varTerm.Identifier.IsArray1D)
 				warn(trerror.IgnoreThirdLaterArg.Text, line, 1, false);
 			if (term.GetOperandType() != varTerm.GetOperandType())
@@ -1889,11 +1890,11 @@ internal static partial class ArgumentParser
 			{ warn(trerror.ArgIs2DVar.Text, line, 2, false); return null; }
 			AExpression? index, term, term4 = null, term5 = null;
 			if (terms.Count > 1)
-				index = terms[1]!;
+				index = terms.Required(1);
 			else
 				index = new SingleLongTerm(0);
 			if (terms.Count > 2)
-				term = terms[2]!;
+				term = terms.Required(2);
 			else
 			{
 				if (varTerm.IsString)
@@ -1902,9 +1903,9 @@ internal static partial class ArgumentParser
 					term = new SingleLongTerm(0);
 			}
 			if (terms.Count > 3)
-				term4 = terms[3]!;
+				term4 = terms.Required(3);
 			if (terms.Count > 4)
-				term5 = terms[4]!;
+				term5 = terms.Required(4);
 			if (index is SingleStrTerm term1 && index.GetOperandType() == typeof(string) && varTerm.Identifier.IsArray1D)
 			{
 				if (!GlobalStatic.ConstantData.isDefined(varTerm.Identifier.Code, term1.Str))
@@ -1932,7 +1933,7 @@ internal static partial class ArgumentParser
 			var terms = popTerms(line);
 			if (!checkArgumentType(line, exm, terms))
 				return null;
-			return new SpButtonArgument(terms[0]!, terms[1]!);
+			return new SpButtonArgument(terms.Required(0), terms.Required(1));
 		}
 	}
 
@@ -1954,19 +1955,19 @@ internal static partial class ArgumentParser
 			SpColorArgument arg;
 			if (terms.Count == 1)
 			{
-				arg = new SpColorArgument(terms[0]!);
+				arg = new SpColorArgument(terms.Required(0));
 				if (terms[0] is SingleTerm)
 				{
-					arg.ConstInt = terms[0]!.GetIntValue(exm);
+					arg.ConstInt = terms.Required(0).GetIntValue(exm);
 					arg.IsConst = true;
 				}
 			}
 			else
 			{
-				arg = new SpColorArgument(terms[0]!, terms[1]!, terms[2]!);
+				arg = new SpColorArgument(terms.Required(0), terms.Required(1), terms.Required(2));
 				if ((terms[0] is SingleTerm) && (terms[1] is SingleTerm) && (terms[2] is SingleTerm))
 				{
-					arg.ConstInt = (terms[0]!.GetIntValue(exm) << 16) + (terms[1]!.GetIntValue(exm) << 8) + terms[2]!.GetIntValue(exm);
+					arg.ConstInt = (terms.Required(0).GetIntValue(exm) << 16) + (terms.Required(1).GetIntValue(exm) << 8) + terms.Required(2).GetIntValue(exm);
 					arg.IsConst = true;
 				}
 			}
@@ -1992,7 +1993,7 @@ internal static partial class ArgumentParser
 			if (!x.Identifier.IsArray1D && !x.Identifier.IsArray2D && !x.Identifier.IsArray3D)
 			{ warn(string.Format(trerror.ArgIsNotArrayVar.Text, "3"), line, 2, false); return null; }
 			VariableTerm? term = (terms.Count >= 4) ? getChangeableVariable(terms, 4, line) : new VariableTerm(GlobalStatic.VariableData.GetSystemVariableToken("RESULT"), [new SingleLongTerm(0)]);
-			return new SpSplitArgument(terms[0]!, terms[1]!, x.Identifier, term!);
+			return new SpSplitArgument(terms.Required(0), terms.Required(1), x.Identifier, term!);
 		}
 	}
 
@@ -2026,7 +2027,7 @@ internal static partial class ArgumentParser
 				VariableToken varToken = GlobalStatic.VariableData.GetSystemVariableToken("RESULT");
 				term = new VariableTerm(varToken, [new SingleLongTerm(0)]);
 			}
-			return new SpHtmlSplitArgument(terms[0]!, destVar, term);
+			return new SpHtmlSplitArgument(terms.Required(0), destVar, term);
 		}
 	}
 
@@ -2068,7 +2069,7 @@ internal static partial class ArgumentParser
 			VariableTerm? x = getChangeableVariable(terms, 1, line);
 			if (x == null)
 				return null;
-			return new SpArrayControlArgument(x, terms[1]!, terms[2]!);
+			return new SpArrayControlArgument(x, terms.Required(1), terms.Required(2));
 		}
 	}
 
@@ -2093,12 +2094,12 @@ internal static partial class ArgumentParser
 
 			if (line.FunctionCode == FunctionCode.ARRAYSHIFT)
 			{
-				if (terms[0]!.GetOperandType() != terms[2]!.GetOperandType())
+				if (terms.Required(0).GetOperandType() != terms.Required(2).GetOperandType())
 				{ warn(trerror.NotMatchFirstAndThirdVar.Text, line, 2, false); return null; }
 			}
-			AExpression term4 = terms.Count >= 4 ? terms[3]! : new SingleLongTerm(0);
-			AExpression? term5 = terms.Count >= 5 ? terms[4]! : null;
-			return new SpArrayShiftArgument(x, terms[1]!, terms[2]!, term4, term5);
+			AExpression term4 = terms.Count >= 4 ? terms.Required(3) : new SingleLongTerm(0);
+			AExpression? term5 = terms.Count >= 5 ? terms[4] : null;
+			return new SpArrayShiftArgument(x, terms.Required(1), terms.Required(2), term4, term5);
 		}
 	}
 
@@ -2149,7 +2150,7 @@ internal static partial class ArgumentParser
 			}
 			VariableToken[] arg3 = new VariableToken[varTokens.Count];
 			varTokens.CopyTo(arg3);
-			return new SpSaveVarArgument(terms[0]!, terms[1]!, arg3);
+			return new SpSaveVarArgument(terms.Required(0), terms.Required(1), arg3);
 		}
 	}
 
@@ -2174,7 +2175,7 @@ internal static partial class ArgumentParser
 			{
 				if (!(termList[i] is SingleTerm))
 					continue;
-				long iValue = termList[i]!.GetIntValue(null!);
+				long iValue = termList.Required(i).GetIntValue(null!);
 				if (iValue < 0)
 				{ warn(trerror.NotPositiveCharaNo.Text, line, 2, false); return null; }
 				if (iValue > int.MaxValue)
@@ -2183,7 +2184,7 @@ internal static partial class ArgumentParser
 				{
 					if (!(termList[j] is SingleTerm))
 						continue;
-					if (iValue == termList[j]!.GetIntValue(null!))
+					if (iValue == termList.Required(j).GetIntValue(null!))
 					{
 						warn(string.Format(trerror.DuplicateVarSave.Text, iValue.ToString()), line, 1, false);
 						return null;
@@ -2322,7 +2323,7 @@ internal static partial class ArgumentParser
 			var terms = popTerms(line);
 			for (int i = 0; i < terms.Count; i++)
 			{
-				if (terms[i] != null && terms[i]!.GetOperandType() != typeof(long))
+				if (terms[i] != null && terms.Required(i).GetOperandType() != typeof(long))
 				{
 					warn(string.Format(trerror.DifferentArgType.Text, i + 1), line, 2, false);
 					return null;
@@ -2336,15 +2337,15 @@ internal static partial class ArgumentParser
 			}
 			else if (terms.Count == 1)
 			{
-				ret = new SpInputsArgument(terms[0]!, null, null);
+				ret = new SpInputsArgument(terms[0], null, null);
 			}
 			else if (terms.Count == 2)
 			{
-				ret = new SpInputsArgument(terms[0]!, terms[1]!, null);
+				ret = new SpInputsArgument(terms[0], terms[1], null);
 			}
 			else
 			{
-				ret = new SpInputsArgument(terms[0]!, terms[1]!, terms[2]!);
+				ret = new SpInputsArgument(terms[0], terms[1], terms[2]);
 			}
 			#endregion
 			return ret;
@@ -2418,7 +2419,7 @@ internal static partial class ArgumentParser
 					return null;
 				}
 			}
-			return new SpCopyArrayArgument(terms[0]!, terms[1]!);
+			return new SpCopyArrayArgument(terms.Required(0), terms.Required(1));
 		}
 	}
 	#endregion

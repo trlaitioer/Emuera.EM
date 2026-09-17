@@ -226,7 +226,7 @@ internal partial class ParserMediator
 				string[] stacks = warning.StackTrace.Split('\n');
 				for (int j = 0; j < stacks.Length; j++)
 				{
-					console!.PrintSystemLine(stacks[j]);
+					console.PrintSystemLine(stacks[j]);
 				}
 			}
 		}

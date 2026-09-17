@@ -122,6 +122,11 @@ internal sealed class InstructionLine : LogicalLine
 		get { return func; }
 	}
 	public Argument? Argument { get; set; }
+	// Argument stays null until ArgumentParser builds it; every read through BuiltArgument happens
+	// after that point (ErbLoader.setArgument before SetJumpTo, Process.ScriptProc before
+	// DoInstruction), so the parser-facing null tests keep the nullable property and readers assert
+	// in this one place.
+	public Argument BuiltArgument => Argument!;
 	public CharStream? PopArgumentPrimitive()
 	{
 		CharStream? ret = argprimitive;

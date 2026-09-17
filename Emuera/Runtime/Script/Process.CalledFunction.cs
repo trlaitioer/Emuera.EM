@@ -41,7 +41,7 @@ internal sealed class UserDefinedFunctionArgument
 				continue;
 			if (isRef[i])
 			{
-				VariableTerm vTerm = (VariableTerm)Arguments[i]!;
+				VariableTerm vTerm = (VariableTerm)Arguments.Required(i);
 				if (vTerm.Identifier.IsCharacterData)
 				{
 					long charaNo = vTerm.GetElementInt(0, exm);
@@ -53,10 +53,10 @@ internal sealed class UserDefinedFunctionArgument
 					TransporterRef[i] = (Array)vTerm.Identifier.GetArray();
 
 			}
-			else if (Arguments[i]!.GetOperandType() == typeof(long))
-				TransporterInt[i] = Arguments[i]!.GetIntValue(exm);
+			else if (Arguments.Required(i).GetOperandType() == typeof(long))
+				TransporterInt[i] = Arguments.Required(i).GetIntValue(exm);
 			else
-				TransporterStr[i] = Arguments[i]!.GetStrValue(exm);
+				TransporterStr[i] = Arguments.Required(i).GetStrValue(exm);
 		}
 	}
 	public UserDefinedFunctionArgument Restructure(ExpressionMediator exm)
@@ -66,9 +66,9 @@ internal sealed class UserDefinedFunctionArgument
 			if (Arguments[i] == null)
 				continue;
 			if (isRef[i])
-				Arguments[i]!.Restructure(exm);
+				Arguments.Required(i).Restructure(exm);
 			else
-				Arguments[i] = Arguments[i]!.Restructure(exm);
+				Arguments[i] = Arguments.Required(i).Restructure(exm);
 		}
 		return this;
 	}

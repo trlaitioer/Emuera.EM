@@ -367,7 +367,7 @@ internal sealed partial class EmueraConsole : IDisposable
 	/// 現在、Emueraがアクティブかどうか
 	/// </summary>
 	internal bool IsActive
-	{ get { return !(window == null || !window.Created || Form.ActiveForm == null); } }
+	{ get { return (window == null || !window.Created || Form.ActiveForm == null); } }
 
 	/// <summary>
 	/// スクリプトが継続中かどうか

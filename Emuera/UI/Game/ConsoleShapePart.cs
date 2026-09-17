@@ -233,7 +233,7 @@ internal sealed class ConsoleErrorShapePart : ConsoleShapePart
 			// the constructor of this shape assigns Text and AltText
 			GraphicsTextRenderer.Draw(graph, Text!, Config.DefaultFont, Config.ForeColor, PointX, XsubPixel, pointY);
 		else
-			System.Windows.Forms.TextRenderer.DrawText(graph, Text!.AsSpan(), Config.DefaultFont, new Point(PointX, pointY), Config.ForeColor, System.Windows.Forms.TextFormatFlags.NoPrefix);
+			System.Windows.Forms.TextRenderer.DrawText(graph, Text.AsSpan(), Config.DefaultFont, new Point(PointX, pointY), Config.ForeColor, System.Windows.Forms.TextFormatFlags.NoPrefix);
 	}
 	public override void ResetLayout(StringMeasure sm)
 	{

@@ -585,7 +585,7 @@ internal sealed class ErbLoader
 				{
 					if (subNamesRow[i] == null)
 					{ errMes = trerror.CanNotOmitFuncDefineArg.Text; goto err; }
-					AExpression term = subNamesRow[i]!.Restructure(exm);
+					AExpression term = subNamesRow.Required(i).Restructure(exm);
 					subNames[i] = term as SingleTerm;
 					if (subNames[i] == null)
 					{ errMes = trerror.FuncDefineArgOnlyConst.Text; goto err; }

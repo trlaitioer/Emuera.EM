@@ -259,7 +259,7 @@ internal sealed class StrForm
 	{
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string ret = arguments[0]!.GetIntValue(exm).ToString();
+			string ret = arguments.Required(0).GetIntValue(exm).ToString();
 			if (arguments[1] is not AExpression widthArg)
 				return ret;
 			if (arguments[2] != null)
@@ -274,7 +274,7 @@ internal sealed class StrForm
 	{
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string ret = arguments[0]!.GetStrValue(exm);
+			string ret = arguments.Required(0).GetStrValue(exm);
 			if (arguments[1] is not AExpression widthArg)
 				return ret;
 			int totalLength = (int)widthArg.GetIntValue(exm);
@@ -294,7 +294,7 @@ internal sealed class StrForm
 	{//Operator のTernaryIntStrStrとやってることは同じ
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			return arguments[0]!.GetIntValue(exm) != 0 ? arguments[1]!.GetStrValue(exm) : arguments[2]!.GetStrValue(exm);
+			return arguments.Required(0).GetIntValue(exm) != 0 ? arguments.Required(1).GetStrValue(exm) : arguments.Required(2).GetStrValue(exm);
 		}
 	}
 

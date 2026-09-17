@@ -58,8 +58,8 @@ internal sealed class ConsoleStyledString : AConsoleColoredPart
 	{
 		if (index <= 0 || index > Text!.Length || Error)
 			return null;
-		string str = Text![index..];
-		Text = Text![..index];
+		string str = Text[index..];
+		Text = Text[..index];
 		ConsoleStyledString ret = new()
 		{
 			Font = Font,
@@ -108,7 +108,7 @@ internal sealed class ConsoleStyledString : AConsoleColoredPart
 			Ends = new int[len];
 			for (int i = 0; i < len; i++)
 			{
-				string temp = Text!.Substring(0, i + 1);
+				string temp = Text.Substring(0, i + 1);
 				Ends[i] = sm.GetDisplayLength(temp, Font!);
 			}
 
@@ -161,7 +161,7 @@ internal sealed class ConsoleStyledString : AConsoleColoredPart
 			TextFormatFlags flags = TextFormatFlags.NoPrefix;
 			if (!JSONConfig.Data.UseButtonFocusBackgroundColor)
 				flags |= TextFormatFlags.PreserveGraphicsClipping;
-			TextRenderer.DrawText(graph, Text!.AsSpan(), Font!, new Point(PointX, pointY), color, flags);
+			TextRenderer.DrawText(graph, Text.AsSpan(), Font, new Point(PointX, pointY), color, flags);
 		}
 
 		#endregion
@@ -183,7 +183,7 @@ internal sealed class ConsoleStyledString : AConsoleColoredPart
 			GraphicsTextRenderer.Draw(graph, Text!, Font!, color, xOffset, subPixel, 0);
 		else
 			// TextRenderer.DrawText(graph, Text, Font, new Point(PointX, pointY), color, TextFormatFlags.NoPrefix);
-			TextRenderer.DrawText(graph, Text!.AsSpan(), Font!, new Point(xOffset, 0), color, TextFormatFlags.NoPrefix | TextFormatFlags.PreserveGraphicsClipping);
+			TextRenderer.DrawText(graph, Text.AsSpan(), Font, new Point(xOffset, 0), color, TextFormatFlags.NoPrefix | TextFormatFlags.PreserveGraphicsClipping);
 		#endregion
 	}
 }
