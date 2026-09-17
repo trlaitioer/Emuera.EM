@@ -1337,7 +1337,7 @@ internal sealed partial class EmueraConsole : IDisposable
 						{
 							if (part is ConsoleDivPart div)
 							{
-								foreach (ConsoleDisplayLine line in Enumerable.Reverse(div.Children).ToList())
+								foreach (ConsoleDisplayLine line in div.Children.Reverse().ToList())
 								{
 									foreach (ConsoleButtonString button in line.Buttons)
 									{
@@ -1420,7 +1420,7 @@ internal sealed partial class EmueraConsole : IDisposable
 						{
 							if (part is ConsoleDivPart div)
 							{
-								foreach (ConsoleDisplayLine line in Enumerable.Reverse(div.Children).ToList())
+								foreach (ConsoleDisplayLine line in div.Children.Reverse().ToList())
 								{
 									foreach (ConsoleButtonString button in line.Buttons)
 									{

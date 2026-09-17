@@ -20,7 +20,7 @@ internal abstract class VariableToken
 		Code = varCode;
 		VariableType = (varCode & VariableCode.__INTEGER__) == VariableCode.__INTEGER__ ? typeof(long) : typeof(string);
 		VarCodeInt = (int)(varCode & VariableCode.__LOWERCASE__);
-		varName = Enums.AsString(varCode);
+		varName = varCode.AsString();
 		this.varData = varData;
 		IsForbid = false;
 		IsPrivate = false;
