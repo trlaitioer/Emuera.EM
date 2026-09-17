@@ -663,7 +663,7 @@ internal sealed partial class EmueraConsole : IDisposable
 
 	public void ForceQuit()
 	{
-		if (GlobalStatic.ForceQuitAndRestart == true)
+		if (GlobalStatic.ForceQuitAndRestart)
 		{
 			DialogResult result = MessageBox.Show(trmb.ForceQuitAndRestart.Text,
 				"FORCE_QUIT_AND_RESTART",
@@ -3048,7 +3048,7 @@ internal sealed partial class EmueraConsole : IDisposable
 
 		#region EE_MOUSEB
 
-		if (IsInProcess && AlwaysRefresh == false)
+		if (IsInProcess && !AlwaysRefresh)
 
 			#endregion
 
@@ -3360,7 +3360,7 @@ internal sealed partial class EmueraConsole : IDisposable
 			goto rikaichan_end;
 
 			rikaichan_not_found:
-			if (rikaichan.hidden == false)
+			if (!rikaichan.hidden)
 			{
 				rikaichan.hidden = true;
 				needRefresh = true;

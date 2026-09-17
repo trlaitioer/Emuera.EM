@@ -420,7 +420,7 @@ internal static class Config
 		}
 
 		bool result = Dialog.ShowPrompt(trmb.SavFolderCreated.Text, trmb.DataTransfer.Text);
-		if (result == false)
+		if (!result)
 		{
 			return;
 		}

@@ -3383,13 +3383,13 @@ internal sealed partial class FunctionIdentifier
 
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
-			if (Config.ForbidUpdateCheck == true)
+			if (Config.ForbidUpdateCheck)
 			{
 				exm.VEvaluator.RESULT = 4;
 				return;
 			}
 
-			if (System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable() == false)
+			if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
 			{
 				exm.VEvaluator.RESULT = 5;
 				return;

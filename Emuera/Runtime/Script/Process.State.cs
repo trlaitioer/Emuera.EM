@@ -216,7 +216,7 @@ internal sealed class ProcessState
 			case BeginType.ABLUP:
 			case BeginType.TURNEND:
 			case BeginType.FIRST:
-				if (force == true)
+				if (force)
 				{
 					break;
 				}

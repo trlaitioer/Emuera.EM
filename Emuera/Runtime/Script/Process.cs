@@ -219,7 +219,7 @@ internal sealed partial class Process(EmueraConsole view)
 
 			PluginManager.GetInstance().SetParent(this, state, exm);
 			PluginManager.GetInstance().LoadPlugins();
-			if (GlobalStatic.ExistPlugin == true && Config.PluginAvailableWarn == true)
+			if (GlobalStatic.ExistPlugin && Config.PluginAvailableWarn)
 			{
 				console.PrintSingleLine(trsl.PluginAvailable.Text);
 			}
