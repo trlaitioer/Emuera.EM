@@ -296,7 +296,7 @@ internal class RepeatStream : WaveStream
 
 internal static class SoundMixer
 {
-	private static bool initialized = false;
+	private static bool initialized;
 	public static bool Initialized => initialized;
 	public const int SampleRate = 44100;
 	private static AudioDeviceTracker deviceTracker = null!;
@@ -376,7 +376,7 @@ internal class Sound : ISampleProvider
 	// Both are (re)assigned by play and cleared by stop/close
 	private WaveStream stream = null!;
 	private VolumeSampleProvider volumeProvider = null!;
-	public volatile bool Playing = false;
+	public volatile bool Playing;
 	public WaveFormat WaveFormat => volumeProvider.WaveFormat;
 
 	public int Read(float[] buffer, int offset, int count)

@@ -16,7 +16,7 @@ internal sealed class WordCollection
 
 	public readonly LinkedList<Word> Collection;
 	public LinkedListNode<Word>? Pointer;
-	private int index = 0;
+	private int index;
 	private readonly static Word nullToken = new NullWord();
 
 	public void PointerReset()

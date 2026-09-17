@@ -34,10 +34,10 @@ namespace MinorShift.Emuera.UI.Game;
 
 internal class HotkeyState
 {
-	private bool enabled = false;
-	private bool availableStateArray = false;
+	private bool enabled;
+	private bool availableStateArray;
 
-	private bool availableHotkeyFile = false;
+	private bool availableHotkeyFile;
 
 	// Allocated by HotkeyStateInit before any state slot is read
 	private nint[] state = null!;
