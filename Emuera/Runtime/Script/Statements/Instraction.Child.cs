@@ -2078,9 +2078,7 @@ internal sealed partial class FunctionIdentifier
 
 			if (start > end)
 			{
-				int temp = start;
-				start = end;
-				end = temp;
+				(start, end) = (end, start);
 			}
 
 			if (!p.Identifier.IsCharacterData)
