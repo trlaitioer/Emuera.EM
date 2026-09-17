@@ -92,8 +92,6 @@ internal static partial class Preload
 			}
 		}
 
-		;
-
 		Debug.WriteLine($"Load: {path} : End in {(DateTime.Now - startTime).TotalMilliseconds}ms");
 	}
 

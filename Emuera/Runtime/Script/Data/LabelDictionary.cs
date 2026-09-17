@@ -271,7 +271,6 @@ internal sealed class LabelDictionary
 			return label.TryAdd(point.ParentLabelLine!, point);
 		}
 
-		;
 		labelDollarList.TryAdd(id, new Dictionary<FunctionLabelLine, GotoLabelLine> { { point.ParentLabelLine!, point } });
 		return true;
 	}

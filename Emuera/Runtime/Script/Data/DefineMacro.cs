@@ -10,7 +10,6 @@ internal sealed class DefineMacro
 		Statement = wc;
 		ArgCount = argcount;
 		Statement.PointerReset();
-		;
 		HasArguments = argcount != 0;
 		if (Statement.Collection.Count == 1)
 		{

@@ -191,7 +191,6 @@ internal static class ButtonStringCreator
 			//}
 		}
 
-		;
 		reduce();
 		return ret;
 		nonButton:

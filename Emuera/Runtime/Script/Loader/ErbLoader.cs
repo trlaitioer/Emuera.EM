@@ -88,11 +88,7 @@ internal sealed class ErbLoader
 #endif
 					await Task.Run(() => loadErb(file, filename, isOnlyEvent));
 				}
-
-				;
 			}
-
-			;
 
 			#endregion
 
@@ -116,7 +112,6 @@ internal sealed class ErbLoader
 				await Task.Run(() => loadErb(file, filename, isOnlyEvent));
 			}
 
-			;
 			ParserMediator.FlushWarningList();
 #if DEBUG
 			output.PrintSystemLine(string.Format(trsl.ElapsedTime.Text, (DateTime.Now - starttime).TotalMilliseconds));
@@ -198,8 +193,6 @@ internal sealed class ErbLoader
 
 				loadErb(fpath, fname, isOnlyEvent);
 			}
-
-			;
 		});
 		if (Program.AnalysisMode)
 		{

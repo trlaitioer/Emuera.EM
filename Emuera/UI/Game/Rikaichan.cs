@@ -1088,8 +1088,6 @@ internal partial class Rikaichan
 				}
 			}
 
-			;
-
 			currentBoxLine++;
 			if (currentBoxIndex < linesPerBox.Count && currentBoxLine > linesPerBox[currentBoxIndex])
 			{

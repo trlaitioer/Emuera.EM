@@ -300,7 +300,6 @@ internal sealed class ErhLoader
 			}
 
 			destWc.PointerReset();
-			;
 		}
 
 		if (hasArg) //1808a3 関数型マクロの封印
@@ -411,7 +410,6 @@ internal sealed class ErhLoader
 					if (tryAgain)
 					{
 						dimline.WC.PointerReset();
-						;
 						dimlines.Enqueue(dimline);
 					}
 					else

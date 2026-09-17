@@ -524,7 +524,6 @@ internal static partial class LexicalAnalyzer
 	{
 		ReadOnlySpan<char> span = ReadSingleIdentifierROS(st);
 		return span.ToString();
-		;
 	}
 
 	private readonly static SearchValues<char> _searchValues = SearchValues.Create(""" 　.+-*/%=!<>|&^~?#)}],:({[$\'"@;""" + "\t");
@@ -1243,7 +1242,6 @@ internal static partial class LexicalAnalyzer
 			}
 		}
 
-		;
 		local();
 		if (nestBracketS != 0 || nestBracketL != 0)
 		{
@@ -1278,7 +1276,6 @@ internal static partial class LexicalAnalyzer
 	{
 		//マクロ展開
 		wc.PointerReset();
-		;
 		int count = 0;
 		while (!wc.EOL)
 		{
@@ -1315,7 +1312,6 @@ internal static partial class LexicalAnalyzer
 		}
 
 		wc.PointerReset();
-		;
 		return wc;
 	}
 

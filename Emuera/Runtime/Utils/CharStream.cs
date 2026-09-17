@@ -113,7 +113,6 @@ internal sealed class CharStream
 		}
 
 		return source.AsSpan()[pointer..];
-		;
 	}
 
 	public ReadOnlySpan<char> SubstringROS(int start, int length)

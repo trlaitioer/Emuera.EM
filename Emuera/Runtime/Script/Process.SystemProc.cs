@@ -35,7 +35,6 @@ internal sealed partial class Process
 		systemProcessDictionary.Add(SystemStateCode.Train_CallComXX, new SystemProcess(endCallComXX));
 		systemProcessDictionary.Add(SystemStateCode.Train_CallSourceCheck, new SystemProcess(endCallSourceCheck));
 		systemProcessDictionary.Add(SystemStateCode.Train_CallEventComEnd, new SystemProcess(endCallEventComEnd));
-		;
 		systemProcessDictionary.Add(SystemStateCode.Train_DoTrain, new SystemProcess(doTrain));
 
 		systemProcessDictionary.Add(SystemStateCode.AfterTrain_Begin, new SystemProcess(beginAfterTrain));
