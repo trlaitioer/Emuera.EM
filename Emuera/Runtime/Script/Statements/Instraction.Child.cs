@@ -326,10 +326,10 @@ internal sealed partial class FunctionIdentifier
 			// string str;
 			if (arg.IsConst) exm.Console.PrintHtml(arg.ConstStr, arg.ConstInt != 0);
 			else exm.Console.PrintHtml(arg.Str.GetStrValue(exm), arg.Opt == null ? false : arg.Opt.GetIntValue(exm) != 0);
-			//if (func.Argument!.IsConst)
-			//	str = func.Argument!.ConstStr;
+			//if (func.Argument.IsConst)
+			//	str = func.Argument.ConstStr;
 			//else
-			//	str = ((ExpressionArgument)func.Argument!).Term!.GetStrValue(exm);
+			//	str = ((ExpressionArgument)func.Argument).Term.GetStrValue(exm);
 			#endregion
 		}
 	}
@@ -414,10 +414,10 @@ internal sealed partial class FunctionIdentifier
 				return;
 			#region EM_私家版_HTMLパラメータ拡張
 			//string str;
-			//if (func.Argument!.IsConst)
-			//	str = func.Argument!.ConstStr;
+			//if (func.Argument.IsConst)
+			//	str = func.Argument.ConstStr;
 			//else
-			//	str = ((ExpressionArgument)func.Argument!).Term!.GetStrValue(exm);
+			//	str = ((ExpressionArgument)func.Argument).Term.GetStrValue(exm);
 			//exm.Console.PrintImg(str);
 			var arg = (SpPrintImgArgument)func.BuiltArgument;
 			if (arg == null)
@@ -452,7 +452,7 @@ internal sealed partial class FunctionIdentifier
 			if (GlobalStatic.Process.SkipPrint)
 				return;
 			#region EM_私家版_HTMLパラメータ拡張
-			//ExpressionArrayArgument intExpArg = (ExpressionArrayArgument)func.Argument!;
+			//ExpressionArrayArgument intExpArg = (ExpressionArrayArgument)func.Argument;
 			//int[] param = new int[intExpArg.TermList.Length];
 			//for (int i = 0; i < intExpArg.TermList.Length; i++)
 			//	param[i] = FunctionIdentifier.toUInt32inArg(intExpArg.TermList[i].GetIntValue(exm), "PRINT_RECT", i + 1);
@@ -486,10 +486,10 @@ internal sealed partial class FunctionIdentifier
 				return;
 			#region EM_私家版_HTMLパラメータ拡張
 			//Int64 param;
-			//if (func.Argument!.IsConst)
-			//	param = func.Argument!.ConstInt;
+			//if (func.Argument.IsConst)
+			//	param = func.Argument.ConstInt;
 			//else
-			//	param = ((ExpressionArgument)func.Argument!).Term!.GetIntValue(exm);
+			//	param = ((ExpressionArgument)func.Argument).Term.GetIntValue(exm);
 			//int param32 = FunctionIdentifier.toUInt32inArg(param, "PRINT_SPACE", 1);
 			// exm.Console.PrintShape("space", new int[] { param32 });
 			var arg = (SpPrintShapeArgument)func.BuiltArgument;
@@ -589,7 +589,7 @@ internal sealed partial class FunctionIdentifier
 			//Type type = term.GetOperandType();
 			if (term.GetOperandType() == typeof(long))
 				exm.VEvaluator.RESULT = term.GetIntValue(exm);
-			else// if (func.Argument!.MethodTerm.GetOperandType() == typeof(string))
+			else// if (func.Argument.MethodTerm.GetOperandType() == typeof(string))
 				exm.VEvaluator.RESULTS = term.GetStrValue(exm);
 			//これら以外の型は現状ない
 			//else
@@ -814,7 +814,7 @@ internal sealed partial class FunctionIdentifier
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
 			#region EM_私家版_INPUT系機能拡張
-			//ExpressionArgument arg = (ExpressionArgument)func.Argument!;
+			//ExpressionArgument arg = (ExpressionArgument)func.Argument;
 			//InputRequest req = new InputRequest();
 			//req.InputType = InputType.IntValue;
 			//if (arg.Term != null)
@@ -823,7 +823,7 @@ internal sealed partial class FunctionIdentifier
 			//	if (arg.IsConst)
 			//		def = arg.ConstInt;
 			//	else
-			//		def = arg.Term!.GetIntValue(exm);
+			//		def = arg.Term.GetIntValue(exm);
 			//	req.HasDefValue = true;
 			//	req.DefIntValue = def;
 			//}
@@ -870,7 +870,7 @@ internal sealed partial class FunctionIdentifier
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
 			#region EM_私家版_INPUT系機能拡張
-			//ExpressionArgument arg = (ExpressionArgument)func.Argument!;
+			//ExpressionArgument arg = (ExpressionArgument)func.Argument;
 			//InputRequest req = new InputRequest();
 			//req.InputType = InputType.StrValue;
 			//if (arg.Term != null)
@@ -879,7 +879,7 @@ internal sealed partial class FunctionIdentifier
 			//	if (arg.IsConst)
 			//		def = arg.ConstStr;
 			//	else
-			//		def = arg.Term!.GetStrValue(exm);
+			//		def = arg.Term.GetStrValue(exm);
 			//	req.HasDefValue = true;
 			//	req.DefStrValue = def;
 			//}
@@ -926,7 +926,7 @@ internal sealed partial class FunctionIdentifier
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
 			#region EM_私家版_INPUT系機能拡張＆ONEINPUT系制限解除
-			//ExpressionArgument arg = (ExpressionArgument)func.Argument!;
+			//ExpressionArgument arg = (ExpressionArgument)func.Argument;
 			//InputRequest req = new InputRequest();
 			//req.InputType = InputType.IntValue;
 			//req.OneInput = true;
@@ -938,7 +938,7 @@ internal sealed partial class FunctionIdentifier
 			//	if (arg.IsConst)
 			//		def = arg.ConstInt;
 			//	else
-			//		def = arg.Term!.GetIntValue(exm);
+			//		def = arg.Term.GetIntValue(exm);
 			//	if (def > 9)
 			//		def = Int64.Parse(def.ToString().Remove(1));
 			//	if (def >= 0)
@@ -991,7 +991,7 @@ internal sealed partial class FunctionIdentifier
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
 			#region EM_私家版_INPUT系機能拡張＆ONEINPUT系制限解除
-			//ExpressionArgument arg = (ExpressionArgument)func.Argument!;
+			//ExpressionArgument arg = (ExpressionArgument)func.Argument;
 			//InputRequest req = new InputRequest();
 			//req.InputType = InputType.StrValue;
 			//req.OneInput = true;
@@ -1001,7 +1001,7 @@ internal sealed partial class FunctionIdentifier
 			//	if (arg.IsConst)
 			//		def = arg.ConstStr;
 			//	else
-			//		def = arg.Term!.GetStrValue(exm);
+			//		def = arg.Term.GetStrValue(exm);
 			//	if (def.Length > 1)
 			//		def = def.Remove(1);
 			//	if (def.Length > 0)
@@ -1966,9 +1966,9 @@ internal sealed partial class FunctionIdentifier
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
 			throw new NotImplCodeEE();
-			//SpSaveVarArgument arg = (SpSaveVarArgument)func.Argument!;
+			//SpSaveVarArgument arg = (SpSaveVarArgument)func.Argument;
 			//VariableToken[] vars = arg.VarTokens;
-			//string datFilename = arg.Term!.GetStrValue(exm);
+			//string datFilename = arg.Term.GetStrValue(exm);
 			//string savMes = arg.SavMes.GetStrValue(exm);
 			//exm.VEvaluator.SaveVariable(datFilename, savMes, vars);
 		}
@@ -1984,12 +1984,12 @@ internal sealed partial class FunctionIdentifier
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
 			throw new NotImplCodeEE();
-			//ExpressionArgument arg = (ExpressionArgument)func.Argument!;
-			//string? datFilename = null;
+			//ExpressionArgument arg = (ExpressionArgument)func.Argument;
+			//string datFilename = null;
 			//if (arg.IsConst)
 			//    datFilename = arg.ConstStr;
 			//else
-			//    datFilename = arg.Term!.GetStrValue(exm);
+			//    datFilename = arg.Term.GetStrValue(exm);
 			//exm.VEvaluator.LoadVariable(datFilename);
 
 		}
@@ -2327,7 +2327,7 @@ internal sealed partial class FunctionIdentifier
 
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
-			//ExpressionArgument arg = (ExpressionArgument)func.Argument!;
+			//ExpressionArgument arg = (ExpressionArgument)func.Argument;
 			//InputRequest req = new InputRequest();
 			//req.InputType = InputType.StrValue;
 			//if (arg.Term != null)
@@ -2336,7 +2336,7 @@ internal sealed partial class FunctionIdentifier
 			//	if (arg.IsConst)
 			//		def = arg.ConstStr;
 			//	else
-			//		def = arg.Term!.GetStrValue(exm);
+			//		def = arg.Term.GetStrValue(exm);
 			//	req.HasDefValue = true;
 			//	req.DefStrValue = def;
 			//}
@@ -2523,7 +2523,7 @@ internal sealed partial class FunctionIdentifier
 
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
-			//ExpressionArgument arg = (ExpressionArgument)func.Argument!;
+			//ExpressionArgument arg = (ExpressionArgument)func.Argument;
 			//InputRequest req = new InputRequest();
 			//req.InputType = InputType.StrValue;
 			//if (arg.Term != null)
@@ -2532,7 +2532,7 @@ internal sealed partial class FunctionIdentifier
 			//	if (arg.IsConst)
 			//		def = arg.ConstStr;
 			//	else
-			//		def = arg.Term!.GetStrValue(exm);
+			//		def = arg.Term.GetStrValue(exm);
 			//	req.HasDefValue = true;
 			//	req.DefStrValue = def;
 			//}
@@ -3350,7 +3350,7 @@ internal sealed partial class FunctionIdentifier
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
 			//int termnum = 0;
-			//foreach (IOperandTerm term in ((ExpressionArrayArgument)func.Argument!).TermList)
+			//foreach (IOperandTerm term in ((ExpressionArrayArgument)func.Argument).TermList)
 			//{
 			//    string arg = term.GetStrValue(exm);
 			//    StringStream aSt = new StringStream(arg);

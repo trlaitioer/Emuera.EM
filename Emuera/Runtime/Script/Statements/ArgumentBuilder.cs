@@ -1620,11 +1620,11 @@ internal static partial class ArgumentParser
 	//		if (!checkArgumentType(line, exm, terms))
 	//			return null;
 	//		if (terms.Count > 2)
-	//			term3 = terms[2]!;
+	//			term3 = terms[2];
 	//		if (terms.Count > 3)
-	//			term4 = terms[3]!;
+	//			term4 = terms[3];
 
-	//		return new SpTInputsArgument(terms[0]!, terms[1]!, term3, term4);
+	//		return new SpTInputsArgument(terms[0], terms[1], term3, term4);
 	//	}
 	//}
 
@@ -1642,10 +1642,10 @@ internal static partial class ArgumentParser
 	//		if (!checkArgumentType(line, exm, terms))
 	//			return null;
 	//		if (terms.Count > 2)
-	//			term3 = terms[2]!;
+	//			term3 = terms[2];
 	//		if (terms.Count > 3)
-	//			term4 = terms[3]!;
-	//		return new SpTInputsArgument(terms[0]!, terms[1]!, term3, term4);
+	//			term4 = terms[3];
+	//		return new SpTInputsArgument(terms[0], terms[1], term3, term4);
 	//	}
 	//}
 	#endregion
@@ -2296,7 +2296,7 @@ internal static partial class ArgumentParser
 			//}
 			//else
 			//{
-			//	term = terms[0]!;
+			//	term = terms[0];
 			//	ret = new ExpressionArgument(term);
 			//}
 

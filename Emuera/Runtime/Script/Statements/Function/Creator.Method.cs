@@ -2225,7 +2225,7 @@ internal static partial class FunctionMethodCreator
 		//		return name + "関数の1番目の引数は省略できません";
 		//	if (!(arguments[0] is VariableTerm))
 		//		return name + "関数の1番目の引数の型が正しくありません";
-		//	if (!(((VariableTerm)arguments[0]!).Identifier.IsCharacterData))
+		//	if (!(((VariableTerm)arguments[0]).Identifier.IsCharacterData))
 		//		return name + "関数の1番目の引数の変数がキャラクタ変数ではありません";
 		//	if (arguments[1] == null)
 		//		return name + "関数の2番目の引数は省略できません";
@@ -2345,7 +2345,7 @@ internal static partial class FunctionMethodCreator
 		//		return name + "関数の1番目の引数が文字列ではありません";
 		//	if (arguments[0] is SingleTerm)
 		//	{
-		//		string varName = ((SingleTerm)arguments[0]!).Text;
+		//		string varName = ((SingleTerm)arguments[0]).Text;
 		//		if (GlobalStatic.IdentifierDictionary.GetVariableToken(varName, null, true) == null)
 		//			return name + "関数の1番目の引数が変数名ではありません";
 		//	}
@@ -2777,7 +2777,7 @@ internal static partial class FunctionMethodCreator
 	//	}
 	//	public override string GetStrValue(ExpressionMediator exm, IOperandTerm[] arguments)
 	//	{
-	//		return ((UserDefinedRefMethodNoArgTerm)arguments[0]!).GetRefName();
+	//		return ((UserDefinedRefMethodNoArgTerm)arguments[0]).GetRefName();
 	//	}
 	//}
 	#endregion
@@ -3281,7 +3281,7 @@ internal static partial class FunctionMethodCreator
 		//		return name + "関数の1番目の引数は省略できません";
 		//	if (!(arguments[0] is VariableTerm))
 		//		return name + "関数の1番目の引数が変数ではありません";
-		//	VariableTerm varToken = (VariableTerm)arguments[0]!;
+		//	VariableTerm varToken = (VariableTerm)arguments[0];
 		//	if (varToken.IsString)
 		//		return name + "関数の1番目の引数が数値変数ではありません";
 		//	if (isCharaRange && !varToken.Identifier.IsCharacterData)
@@ -3357,7 +3357,7 @@ internal static partial class FunctionMethodCreator
 		//		return name + "関数の1番目の引数は省略できません";
 		//	if (!(arguments[0] is VariableTerm))
 		//		return name + "関数の1番目の引数が変数ではありません";
-		//	VariableTerm varToken = (VariableTerm)arguments[0]!;
+		//	VariableTerm varToken = (VariableTerm)arguments[0];
 		//	if (isCharaRange && !varToken.Identifier.IsCharacterData)
 		//		return name + "関数の1番目の引数がキャラクタ変数ではありません";
 		//	if (!isCharaRange && (varToken.Identifier.IsArray2D || varToken.Identifier.IsArray3D))
@@ -3644,7 +3644,7 @@ internal static partial class FunctionMethodCreator
 		//		return name + "関数の1番目の引数は省略できません";
 		//	if (!(arguments[0] is VariableTerm))
 		//		return name + "関数の1番目の引数が変数ではありません";
-		//	VariableTerm varToken = (VariableTerm)arguments[0]!;
+		//	VariableTerm varToken = (VariableTerm)arguments[0];
 		//	if (isCharaRange && !varToken.Identifier.IsCharacterData)
 		//		return name + "関数の1番目の引数がキャラクタ変数ではありません";
 		//	if (!varToken.IsInteger)
@@ -3695,7 +3695,7 @@ internal static partial class FunctionMethodCreator
 		//		return ret;
 		//	if (arguments[1] is SingleTerm)
 		//	{
-		//		Int64 m = ((SingleTerm)arguments[1]!).Int;
+		//		Int64 m = ((SingleTerm)arguments[1]).Int;
 		//		if (m < 0 || m > 63)
 		//			return "GETBIT関数の第２引数(" + m.ToString() + ")が範囲(０～６３)を超えています";
 		//	}
@@ -4006,7 +4006,7 @@ internal static partial class FunctionMethodCreator
 		//		return name + "関数の1番目の引数は省略できません";
 		//	if (!(arguments[0] is VariableTerm))
 		//		return name + "関数の1番目の引数が変数ではありません";
-		//	VariableTerm varToken = (VariableTerm)arguments[0]!;
+		//	VariableTerm varToken = (VariableTerm)arguments[0];
 		//	if (isCharaRange && !varToken.Identifier.IsCharacterData)
 		//		return name + "関数の1番目の引数がキャラクタ変数ではありません";
 		//	if (!isCharaRange && (varToken.Identifier.IsArray2D || varToken.Identifier.IsArray3D))
@@ -4690,7 +4690,7 @@ internal static partial class FunctionMethodCreator
 				//コード実行中の場合
 				if (GlobalStatic.Process.getCurrentLine != null)
 					// TODO: getCurrentLine.Position is not checked here, only asserted non-null; consider guarding it as well.
-					// GlobalStatic.Console.PrintSystemLine("注意:" + GlobalStatic.Process.getCurrentLine.Position!.Value.Filename + "の" + GlobalStatic.Process.getCurrentLine.Position.Value.LineNo.ToString() + "行目でUNICODE関数に制御文字に対応する値(0x" + String.Format("{0:X}", i) + ")が渡されました");
+					// GlobalStatic.Console.PrintSystemLine("注意:" + GlobalStatic.Process.getCurrentLine.Position.Value.Filename + "の" + GlobalStatic.Process.getCurrentLine.Position.Value.LineNo.ToString() + "行目でUNICODE関数に制御文字に対応する値(0x" + String.Format("{0:X}", i) + ")が渡されました");
 					GlobalStatic.Console.PrintSystemLine(string.Format(trerror.WarnPrefix.Text,
 						GlobalStatic.Process.getCurrentLine.Position!.Value.Filename,
 						GlobalStatic.Process.getCurrentLine.Position.Value.LineNo,
@@ -4960,7 +4960,7 @@ internal static partial class FunctionMethodCreator
 		//		return name + "関数の1番目の引数は省略できません";
 		//	if (!(arguments[0] is VariableTerm))
 		//		return name + "関数の1番目の引数が変数ではありません";
-		//	VariableTerm varToken = (VariableTerm)arguments[0]!;
+		//	VariableTerm varToken = (VariableTerm)arguments[0];
 		//	if (!varToken.Identifier.IsArray1D && !varToken.Identifier.IsArray2D && !varToken.Identifier.IsArray3D)
 		//		return name + "関数の1番目の引数が配列変数ではありません";
 		//	if (arguments.Count == 1)
