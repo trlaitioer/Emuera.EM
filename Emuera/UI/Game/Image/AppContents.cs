@@ -52,12 +52,7 @@ internal static class AppContents
 		}
 
 		name = name.ToUpper();
-		if (!imageDictionary.TryGetValue(name, out ASprite? value))
-		{
-			return null;
-		}
-
-		return value;
+		return imageDictionary.GetValueOrDefault(name);
 	}
 
 	public static void SpriteDispose(string name)

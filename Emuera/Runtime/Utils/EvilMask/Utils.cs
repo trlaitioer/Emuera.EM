@@ -462,22 +462,12 @@ internal sealed class Utils
 
 		public static Type? NameToType(string n)
 		{
-			if (builtInDictDTTypeNames_R.TryGetValue(n, out Type? value))
-			{
-				return value;
-			}
-
-			return null;
+			return builtInDictDTTypeNames_R.GetValueOrDefault(n);
 		}
 
 		public static string? TypeToName(Type t)
 		{
-			if (builtInDictDTTypeNames.TryGetValue(t, out string? value))
-			{
-				return value;
-			}
-
-			return null;
+			return builtInDictDTTypeNames.GetValueOrDefault(t);
 		}
 
 		public static object ConvertInt(long v, Type t)

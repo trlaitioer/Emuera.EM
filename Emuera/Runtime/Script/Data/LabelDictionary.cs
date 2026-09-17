@@ -280,26 +280,12 @@ internal sealed class LabelDictionary
 
 	public List<FunctionLabelLine>[]? GetEventLabels(string key)
 	{
-		if (eventLabelDic.TryGetValue(key, out List<FunctionLabelLine>[]? ret))
-		{
-			return ret;
-		}
-		else
-		{
-			return null;
-		}
+		return eventLabelDic.GetValueOrDefault(key);
 	}
 
 	public FunctionLabelLine? GetNonEventLabel(string key)
 	{
-		if (noneventLabelDic.TryGetValue(key, out FunctionLabelLine? ret))
-		{
-			return ret;
-		}
-		else
-		{
-			return null;
-		}
+		return noneventLabelDic.GetValueOrDefault(key);
 	}
 
 	public List<FunctionLabelLine> GetAllLabels(bool getInvalidList)

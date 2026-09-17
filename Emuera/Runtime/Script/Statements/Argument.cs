@@ -424,12 +424,12 @@ internal sealed class CallformCache
 		{
 			longKey = longTerm.GetIntValue(exm);
 			strKey = null;
-			return longDic.TryGetValue(longKey, out CallformEntry? entry) ? entry : null;
+			return longDic.GetValueOrDefault(longKey);
 		}
 
 		longKey = 0;
 		strKey = nameTerm.GetStrValue(exm);
-		return strDic.TryGetValue(strKey, out CallformEntry? entry2) ? entry2 : null;
+		return strDic.GetValueOrDefault(strKey);
 	}
 
 	public void Store(long longKey, string? strKey, CallformEntry entry)

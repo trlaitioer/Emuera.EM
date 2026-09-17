@@ -2838,12 +2838,7 @@ internal static partial class FunctionMethodCreator
 			if (op == Operation.Get)
 			{
 				string key = arguments.Required(1).GetStrValue(exm);
-				if (sMap.TryGetValue(key, out string? value))
-				{
-					return value;
-				}
-
-				return "";
+				return sMap.GetValueOrDefault(key, "");
 			}
 			else if (op == Operation.GetKeys && arguments.Count > 1)
 			{

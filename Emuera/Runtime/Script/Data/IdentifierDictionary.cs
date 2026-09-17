@@ -494,12 +494,7 @@ internal partial class IdentifierDictionary
 
 	public DefineMacro? GetMacro(string key)
 	{
-		if (macroDic.TryGetValue(key, out DefineMacro? value))
-		{
-			return value;
-		}
-
-		return null;
+		return macroDic.GetValueOrDefault(key);
 	}
 
 	public VariableToken? GetVariableToken(string key, string? subKey, bool allowPrivate)
@@ -598,14 +593,7 @@ internal partial class IdentifierDictionary
 			key = key.ToUpper();
 		}
 
-		if (instructionDic.TryGetValue(key, out FunctionIdentifier? ret))
-		{
-			return ret;
-		}
-		else
-		{
-			return null;
-		}
+		return instructionDic.GetValueOrDefault(key);
 	}
 
 	public List<string> GetOverloadedList(LabelDictionary labelDic)
@@ -632,12 +620,7 @@ internal partial class IdentifierDictionary
 
 	public UserDefinedRefMethod? GetRefMethod(string codeStr)
 	{
-		if (refmethodDic.TryGetValue(codeStr, out UserDefinedRefMethod? value))
-		{
-			return value;
-		}
-
-		return null;
+		return refmethodDic.GetValueOrDefault(codeStr);
 	}
 
 	public AExpression? GetFunctionMethod(LabelDictionary? labelDic, string codeStr, List<AExpression?>? arguments, bool userDefinedOnly)

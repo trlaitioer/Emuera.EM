@@ -2050,14 +2050,7 @@ internal sealed class VariableEvaluator : IDisposable
 						throw new CodeEE(trerror.OoRCstr.Text);
 					}
 
-					if (tmpl.CStr.TryGetValue(arg2, out string? ret))
-					{
-						return ret;
-					}
-					else
-					{
-						return "";
-					}
+					return tmpl.CStr.GetValueOrDefault(arg2, "");
 				}
 				else
 				{
@@ -2108,12 +2101,7 @@ internal sealed class VariableEvaluator : IDisposable
 				throw new CodeEE(trerror.RefDoesNotExistData.Text);
 		}
 
-		if (intDic.TryGetValue(arg2, out long ret))
-		{
-			return ret;
-		}
-
-		return 0L;
+		return intDic.GetValueOrDefault(arg2, 0L);
 	}
 
 	public void UpdateInBeginTrain()

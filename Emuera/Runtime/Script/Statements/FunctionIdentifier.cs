@@ -529,28 +529,14 @@ internal sealed partial class FunctionIdentifier
 
 	internal static string? getMatchFunction(FunctionCode func)
 	{
-		if (funcMatch.TryGetValue(func, out string? ret))
-		{
-			return ret;
-		}
-		else
-		{
-			return null;
-		}
+		return funcMatch.GetValueOrDefault(func);
 	}
 
 
 	internal static FunctionCode getParentFunc(FunctionCode func)
 	{
 		//1755 どうもenum.ToString()が遅いようなので先に逆引き辞書を作ることに
-		if (funcParent.TryGetValue(func, out FunctionCode ret))
-		{
-			return ret;
-		}
-		else
-		{
-			return FunctionCode.__NULL__;
-		}
+		return funcParent.GetValueOrDefault(func, FunctionCode.__NULL__);
 		//if (funcMatch.ContainsValue(func.ToString()))
 		//{
 		//    foreach (FunctionCode pFunc in funcMatch.Keys)
