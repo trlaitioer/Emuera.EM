@@ -273,7 +273,7 @@ internal sealed class ConfigItem<T> : AConfigItem
 		}
 		else if (this is ConfigItem<TextDrawingMode>)
 		{
-			if (Enum.TryParse<TextDrawingMode>(str, true, out TextDrawingMode result))
+			if (Enum.TryParse(str, true, out TextDrawingMode result))
 			{
 				((ConfigItem<TextDrawingMode>)(AConfigItem)this).Value = result;
 			}
@@ -284,7 +284,7 @@ internal sealed class ConfigItem<T> : AConfigItem
 		}
 		else if (this is ConfigItem<ReduceArgumentOnLoadFlag>)
 		{
-			if (Enum.TryParse<ReduceArgumentOnLoadFlag>(str, true, out ReduceArgumentOnLoadFlag result))
+			if (Enum.TryParse(str, true, out ReduceArgumentOnLoadFlag result))
 			{
 				((ConfigItem<ReduceArgumentOnLoadFlag>)(AConfigItem)this).Value = result;
 			}
@@ -295,7 +295,7 @@ internal sealed class ConfigItem<T> : AConfigItem
 		}
 		else if (this is ConfigItem<DisplayWarningFlag>)
 		{
-			if (Enum.TryParse<DisplayWarningFlag>(str, true, out DisplayWarningFlag result))
+			if (Enum.TryParse(str, true, out DisplayWarningFlag result))
 			{
 				((ConfigItem<DisplayWarningFlag>)(AConfigItem)this).Value = result;
 			}
@@ -306,7 +306,7 @@ internal sealed class ConfigItem<T> : AConfigItem
 		}
 		else if (this is ConfigItem<UseLanguage>)
 		{
-			if (Enum.TryParse<UseLanguage>(str, true, out UseLanguage result))
+			if (Enum.TryParse(str, true, out UseLanguage result))
 			{
 				((ConfigItem<UseLanguage>)(AConfigItem)this).Value = result;
 			}
@@ -317,7 +317,7 @@ internal sealed class ConfigItem<T> : AConfigItem
 		}
 		else if (this is ConfigItem<TextEditorType>)
 		{
-			if (Enum.TryParse<TextEditorType>(str, true, out TextEditorType result))
+			if (Enum.TryParse(str, true, out TextEditorType result))
 			{
 				((ConfigItem<TextEditorType>)(AConfigItem)this).Value = result;
 			}
