@@ -1,14 +1,11 @@
 ﻿using MinorShift.Emuera.GameProc;
 using MinorShift.Emuera.GameProc.Function;
-using MinorShift.Emuera.GameView;
 using MinorShift.Emuera.Runtime.Script;
 using MinorShift.Emuera.Runtime.Script.Parser;
 using MinorShift.Emuera.Runtime.Script.Statements;
 using MinorShift.Emuera.Runtime.Script.Statements.Variable;
 using System;
 using System.Collections.Generic;
-using System.CommandLine;
-using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;

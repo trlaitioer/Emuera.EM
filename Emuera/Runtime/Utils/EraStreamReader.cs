@@ -3,7 +3,6 @@ using MinorShift.Emuera.Runtime.Script.Parser;
 using MinorShift.Emuera.Runtime.Utils;
 using System;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;

@@ -1,13 +1,8 @@
-﻿using MinorShift.Emuera.Runtime.Config;
-using MinorShift.Emuera.Runtime.Utils;
+﻿using MinorShift.Emuera.Runtime.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using static System.Windows.Forms.LinkLabel;
 
 namespace MinorShift.Emuera.UI.Game;
 

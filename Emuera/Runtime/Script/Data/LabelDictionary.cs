@@ -1,7 +1,5 @@
 ﻿using MinorShift.Emuera.Runtime.Script.Statements;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace MinorShift.Emuera.Runtime.Script.Data;
 

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Drawing;
-using System.Drawing.Text;
 using System.Windows.Forms;
 
 namespace MinorShift.Emuera.UI.Game;

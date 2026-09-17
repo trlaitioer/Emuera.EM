@@ -7,7 +7,6 @@ using MinorShift.Emuera.Runtime.Script.Statements.Variable;
 using MinorShift.Emuera.Runtime.Utils;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Text;
 using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 
 namespace MinorShift.Emuera.Runtime.Script.Data;

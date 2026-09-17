@@ -1,9 +1,4 @@
-﻿using System.Drawing;
-using System.Text;
-using MinorShift.Emuera.Runtime.Config;
-using MinorShift.Emuera.UI.Game;
-
-namespace MinorShift.Emuera.GameView;
+﻿namespace MinorShift.Emuera.GameView;
 
 /// <summary>
 /// 描画の最小単位

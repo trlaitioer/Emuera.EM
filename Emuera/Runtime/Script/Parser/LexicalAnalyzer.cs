@@ -6,7 +6,6 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
