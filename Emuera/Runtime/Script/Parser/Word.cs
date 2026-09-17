@@ -15,9 +15,6 @@ internal abstract class Word
 
 internal sealed class NullWord : Word
 {
-	public NullWord()
-	{ }
-
 	public override char Type => '\0';
 
 	public override string ToString()

@@ -135,11 +135,7 @@ internal sealed class ExpressionsArgument : Argument
 	public readonly List<AExpression?> ArgumentArray;
 }
 
-internal sealed class VoidArgument : Argument
-{
-	public VoidArgument()
-	{ }
-}
+internal sealed class VoidArgument : Argument;
 
 internal sealed class ExpressionArgument : Argument
 {

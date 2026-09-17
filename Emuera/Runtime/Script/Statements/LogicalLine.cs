@@ -173,8 +173,7 @@ internal sealed class InstructionLine : LogicalLine
 /// <summary>
 /// ファイルの始端と終端
 /// </summary>
-internal sealed class NullLine : LogicalLine
-{ }
+internal sealed class NullLine : LogicalLine;
 
 /// <summary>
 /// ラベルがエラーになっている関数行専用のクラス

@@ -10,9 +10,6 @@ public abstract class PluginManifestAbstract
 	public abstract string PluginVersion { get; }
 	public abstract string PluginAuthor { get; }
 
-	public PluginManifestAbstract()
-	{ }
-
 	public List<IPluginMethod> GetPluginMethods()
 	{
 		return methods;

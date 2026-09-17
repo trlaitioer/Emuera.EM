@@ -36,8 +36,7 @@ internal sealed partial class Lang
 		public string Text => tr == null ? text : tr;
 	}
 
-	[AttributeUsage(AttributeTargets.Property | AttributeTargets.Class)] private sealed class Managed : Attribute
-	{ }
+	[AttributeUsage(AttributeTargets.Property | AttributeTargets.Class)] private sealed class Managed : Attribute;
 
 	[AttributeUsage(AttributeTargets.Class)]
 	private sealed class Translate : Attribute

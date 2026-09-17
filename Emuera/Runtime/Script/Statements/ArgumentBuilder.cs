@@ -1196,9 +1196,6 @@ internal static partial class ArgumentParser
 
 	private sealed class SP_CALLSHARP_ArgumentBuilder : ArgumentBuilder
 	{
-		public SP_CALLSHARP_ArgumentBuilder()
-		{ }
-
 		public override Argument? CreateArgument(InstructionLine line, ExpressionMediator exm)
 		{
 			CharStream st = line.PopArgumentPrimitive()!;
