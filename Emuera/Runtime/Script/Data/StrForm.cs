@@ -306,7 +306,7 @@ internal sealed class StrForm
 			ReturnType = typeof(string);
 		}
 
-		public override string? CheckArgumentType(string name, List<AExpression?> arguments)
+		public override string CheckArgumentType(string name, List<AExpression?> arguments)
 		{
 			throw new ExeEE(trerror.TypeCheckIsCallersResponsibility.Text);
 		}

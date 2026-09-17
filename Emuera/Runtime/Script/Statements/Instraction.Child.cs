@@ -638,7 +638,7 @@ internal sealed partial class FunctionIdentifier
 			flag = METHOD_SAFE | EXTENDED;
 		}
 
-		public override Argument? CreateArgument(InstructionLine line, ExpressionMediator exm)
+		public override Argument CreateArgument(InstructionLine line, ExpressionMediator exm)
 		{
 			CharStream st = line.PopArgumentPrimitive()!;
 			string rowStr;
@@ -1495,7 +1495,7 @@ internal sealed partial class FunctionIdentifier
 			flag = EXTENDED | METHOD_SAFE | FORCE_SETARG;
 		}
 
-		public override Argument? CreateArgument(InstructionLine line, ExpressionMediator exm)
+		public override Argument CreateArgument(InstructionLine line, ExpressionMediator exm)
 		{
 			//Unreachable: the constructor assigns ArgBuilder, so ArgumentParser.SetArgumentTo routes
 			//through SP_CALLSHARP_ArgumentBuilder. Kept in sync with CUSTOMDRAWLINE by not measuring

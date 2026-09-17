@@ -761,7 +761,7 @@ internal static partial class ArgumentParser
 
 	private sealed class VOID_ArgumentBuilder : ArgumentBuilder
 	{
-		public override Argument? CreateArgument(InstructionLine line, ExpressionMediator exm)
+		public override Argument CreateArgument(InstructionLine line, ExpressionMediator exm)
 		{
 			CharStream st = line.PopArgumentPrimitive()!;
 			LexicalAnalyzer.SkipWhiteSpace(st);
@@ -1562,7 +1562,7 @@ internal static partial class ArgumentParser
 
 	private sealed class METHOD_ArgumentBuilder : ArgumentBuilder
 	{
-		public override Argument? CreateArgument(InstructionLine line, ExpressionMediator exm)
+		public override Argument CreateArgument(InstructionLine line, ExpressionMediator exm)
 		{
 			List<AExpression?> args = popTerms(line);
 			string? errmes = line.Function.Method!.CheckArgumentType(line.Function.Name, args);
