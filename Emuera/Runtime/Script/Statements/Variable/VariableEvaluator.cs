@@ -99,30 +99,29 @@ internal sealed class VariableEvaluator : IDisposable
 		//if (p.Identifier.Readonly)
 		//    throw new CodeEE("読み取り専用の変数" + p.Identifier.Name + "に代入しようとしました");
 		if (p.Identifier.IsCalc)
-		{ }
+		{
+			return;
+		}
 		//一応チェック済み
 		//throw new ExeEE("READONLYでないCALC変数の代入処理が設定されていない");
 
-		else
+		if (p.Identifier.IsArray1D)
 		{
-			if (p.Identifier.IsArray1D)
+			if (start != 0 || end != p.Identifier.GetLength())
 			{
-				if (start != 0 || end != p.Identifier.GetLength())
-				{
-					p.IsArrayRangeValid(start, end, "VARSET", 3L, 4L);
-				}
-				else if (p.Identifier.IsCharacterData)
-				{
-					p.Identifier.CheckElement([p.Index1, p.Index2]);
-				}
+				p.IsArrayRangeValid(start, end, "VARSET", 3L, 4L);
 			}
 			else if (p.Identifier.IsCharacterData)
 			{
-				p.Identifier.CheckElement([p.Index1, p.Index2, p.Index3]);
+				p.Identifier.CheckElement([p.Index1, p.Index2]);
 			}
-
-			p.Identifier.SetValueAll(srcValue, start, end, (int)p.Index1);
 		}
+		else if (p.Identifier.IsCharacterData)
+		{
+			p.Identifier.CheckElement([p.Index1, p.Index2, p.Index3]);
+		}
+
+		p.Identifier.SetValueAll(srcValue, start, end, (int)p.Index1);
 	}
 
 	public static void SetValueAll(FixedVariableTerm p, string srcValue, int start, int end)

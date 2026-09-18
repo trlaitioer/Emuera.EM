@@ -54,8 +54,6 @@ internal sealed class WordCollection
 			{
 				Pointer = Collection.First;
 			}
-			else
-			{ }
 		}
 		else
 		{

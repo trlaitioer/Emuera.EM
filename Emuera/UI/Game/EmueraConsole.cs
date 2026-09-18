@@ -2254,9 +2254,7 @@ internal sealed partial class EmueraConsole : IDisposable
 		}
 
 		pointY -= (bottomLineNo - topLineNo) * Config.LineHeight;
-		if (Config.TextDrawingMode == TextDrawingMode.WINAPI)
-		{ }
-		else
+		if (Config.TextDrawingMode != TextDrawingMode.WINAPI)
 		{
 			//the baked background is kept at the committed size while previewing and stretched below,
 			//so that dragging does not rebuild it on every size change

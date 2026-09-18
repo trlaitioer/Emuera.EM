@@ -45,8 +45,6 @@ internal sealed partial class FunctionIdentifier
 			{
 				privateVar.SetValue(arg.Exp!.GetIntValue(exm), [0]);
 			}
-			else
-			{ }
 		}
 
 		public override Argument? CreateArgument(InstructionLine line, ExpressionMediator exm)
@@ -68,8 +66,6 @@ internal sealed partial class FunctionIdentifier
 			{
 				privateVar.SetValue(arg.Value!, [0]);
 			}
-			else
-			{ }
 		}
 
 		public override Argument? CreateArgument(InstructionLine line, ExpressionMediator exm)
@@ -1596,11 +1592,6 @@ internal sealed partial class FunctionIdentifier
 					GlobalStatic.IdentifierDictionary.GetFunctionMethod(GlobalStatic.LabelDictionary, callfArg.ConstStr, callfArg.RowArgs, true);
 			}
 			catch
-			{
-				return;
-			}
-
-			if (callfArg.FuncTerm == null)
 			{ }
 		}
 
@@ -3992,8 +3983,6 @@ internal sealed partial class FunctionIdentifier
 
 			exm.VEvaluator.SetResultX(termList);
 			state.Return(exm.VEvaluator.RESULT);
-			if (state.ScriptEnd)
-			{ }
 		}
 	}
 
@@ -4510,8 +4499,6 @@ internal sealed partial class FunctionIdentifier
 					{
 						ParserMediator.Warn(string.Format(trerror.NotDefinedLabelName.Text, labelName), func, 2, true, false);
 					}
-					else
-					{ }
 				}
 				else if (jumpto.IsError)
 				{

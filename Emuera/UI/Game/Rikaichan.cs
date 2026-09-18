@@ -1046,9 +1046,7 @@ internal partial class Rikaichan
 					split = s.LastIndexOf(' ');
 					s = s.Substring(0, split);
 					len = stringMeasure.GetDisplayLength(s, Config.DefaultFont);
-					if (len > screenWidth - 32)
-					{ }
-					else
+					if (len <= screenWidth - 32)
 					{
 						outputList2.Add(s);
 						lengths.Add(len);

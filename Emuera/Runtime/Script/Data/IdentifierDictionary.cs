@@ -465,9 +465,6 @@ internal partial class IdentifierDictionary
 	internal void AddUseDefinedVariable(VariableToken var)
 	{
 		varTokenDic.Add(var.Name, var);
-		if (var.IsCharacterData)
-		{ }
-
 		nameDic.Add(var.Name, DefinedNameType.UserGlobalVariable);
 	}
 

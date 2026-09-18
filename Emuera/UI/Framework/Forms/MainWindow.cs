@@ -1998,11 +1998,12 @@ internal sealed partial class MainWindow : Form
 
 	private void コピー_Click(object sender, EventArgs e)
 	{
-		if (console == null || console.IsInProcess || !コピー.Enabled)
-		{ }
-		else if (richTextBox1.SelectedText.Length > 0)
+		if (console != null && !console.IsInProcess && コピー.Enabled)
 		{
-			richTextBox1.Copy();
+			if (richTextBox1.SelectedText.Length > 0)
+			{
+				richTextBox1.Copy();
+			}
 		}
 	}
 
