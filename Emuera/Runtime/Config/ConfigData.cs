@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Text;
 using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 
@@ -474,173 +475,55 @@ internal sealed class ConfigData
 
 	public AConfigItem? GetItem(ConfigCode code)
 	{
-		AConfigItem? item = GetConfigItem(code);
-		if (item == null)
-		{
-			item = GetReplaceItem(code);
-			if (item == null)
-			{
-				item = GetDebugItem(code);
-			}
-		}
-
-		return item;
+		return GetConfigItem(code) ?? GetReplaceItem(code) ?? GetDebugItem(code);
 	}
 
 	public AConfigItem? GetItem(string key)
 	{
-		AConfigItem? item = GetConfigItem(key);
-		if (item == null)
-		{
-			item = GetReplaceItem(key);
-			if (item == null)
-			{
-				item = GetDebugItem(key);
-			}
-		}
-
-		return item;
+		return GetConfigItem(key) ?? GetReplaceItem(key) ?? GetDebugItem(key);
 	}
 
 	public AConfigItem? GetConfigItem(ConfigCode code)
 	{
-		foreach (AConfigItem item in configArray)
-		{
-			if (item == null)
-			{
-				continue;
-			}
-
-			if (item.Code == code)
-			{
-				return item;
-			}
-		}
-
-		return null;
+		return FindByCode(configArray, code);
 	}
 
 	public AConfigItem? GetConfigItem(string key)
 	{
-		#region EM_私家版_Emuera多言語化改造
-
-		key = key.ToUpper();
-		foreach (AConfigItem item in configArray)
-		{
-			if (item == null)
-			{
-				continue;
-			}
-
-			if (item.Name == key)
-			{
-				return item;
-			}
-
-			if (item.Text == key)
-			{
-				return item;
-			}
-
-			if (item.EngText == key)
-			{
-				return item;
-			}
-		}
-
-		return null;
-
-		#endregion
+		return FindByName(configArray, key);
 	}
 
 	public AConfigItem? GetReplaceItem(ConfigCode code)
 	{
-		foreach (AConfigItem item in replaceArray)
-		{
-			if (item == null)
-			{
-				continue;
-			}
-
-			if (item.Code == code)
-			{
-				return item;
-			}
-		}
-
-		return null;
+		return FindByCode(replaceArray, code);
 	}
 
 	public AConfigItem? GetReplaceItem(string key)
 	{
-		#region EM_私家版_Emuera多言語化改造
-
-		key = key.ToUpper();
-		foreach (AConfigItem item in replaceArray)
-		{
-			if (item == null)
-			{
-				continue;
-			}
-
-			if (item.Name == key)
-			{
-				return item;
-			}
-
-			if (item.Text == key)
-			{
-				return item;
-			}
-		}
-
-		return null;
-
-		#endregion
+		return FindByName(replaceArray, key, false);
 	}
 
 	public AConfigItem? GetDebugItem(ConfigCode code)
 	{
-		foreach (AConfigItem item in debugArray)
-		{
-			if (item == null)
-			{
-				continue;
-			}
-
-			if (item.Code == code)
-			{
-				return item;
-			}
-		}
-
-		return null;
+		return FindByCode(debugArray, code);
 	}
 
 	public AConfigItem? GetDebugItem(string key)
 	{
+		return FindByName(debugArray, key, false);
+	}
+
+	private static AConfigItem? FindByCode(IEnumerable<AConfigItem> items, ConfigCode code)
+	{
+		return items.FirstOrDefault(item => item != null && item.Code == code);
+	}
+
+	private static AConfigItem? FindByName(IEnumerable<AConfigItem> items, string key, bool matchEnglishName = true)
+	{
 		#region EM_私家版_Emuera多言語化改造
 
 		key = key.ToUpper();
-		foreach (AConfigItem item in debugArray)
-		{
-			if (item == null)
-			{
-				continue;
-			}
-
-			if (item.Name == key)
-			{
-				return item;
-			}
-
-			if (item.Text == key)
-			{
-				return item;
-			}
-		}
-
-		return null;
+		return items.FirstOrDefault(item => item != null && (item.Name == key || item.Text == key || (matchEnglishName && item.EngText == key)));
 
 		#endregion
 	}
@@ -688,15 +571,7 @@ internal sealed class ConfigData
 			//<bool>
 			case ConfigCode.AutoSave: //"オートセーブを行なう"
 			case ConfigCode.MoneyFirst: //"単位の位置"
-				if (item.GetValue<bool>())
-				{
-					term = new SingleLongTerm(1);
-				}
-				else
-				{
-					term = new SingleLongTerm(0);
-				}
-
+				term = item.GetValue<bool>() ? new SingleLongTerm(1) : new SingleLongTerm(0);
 				break;
 			//<int>
 			case ConfigCode.WindowX: // "ウィンドウ幅"
@@ -716,7 +591,7 @@ internal sealed class ConfigData
 			case ConfigCode.LogColor: //"履歴文字色"
 			{
 				Color color = item.GetValue<Color>();
-				term = new SingleLongTerm((((color.R * 256) + color.G) * 256) + color.B);
+				term = new SingleLongTerm((color.R << 16) | (color.G << 8) | color.B);
 			}
 				break;
 
@@ -748,34 +623,32 @@ internal sealed class ConfigData
 				break;
 			default:
 			{
-				if (Enum.IsDefined(item.Code))
-				{
-					switch (item.ValueToString())
-					{
-						case "YES":
-							term = new SingleLongTerm(1);
-							break;
-						case "NO":
-							term = new SingleLongTerm(0);
-							break;
-						default:
-							string val = item.ValueToString();
-							if (long.TryParse(val, out long i))
-							{
-								term = new SingleLongTerm(i);
-							}
-							else
-							{
-								term = new SingleStrTerm(val);
-							}
-
-							break;
-					}
-				}
-				else
+				if (!Enum.IsDefined(item.Code))
 				{
 					errMes = string.Format(trerror.NotAllowGetConfigValue.Text, text);
 					return null;
+				}
+
+				string val = item.ValueToString();
+				switch (val)
+				{
+					case "YES":
+						term = new SingleLongTerm(1);
+						break;
+					case "NO":
+						term = new SingleLongTerm(0);
+						break;
+					default:
+						if (long.TryParse(val, out long i))
+						{
+							term = new SingleLongTerm(i);
+						}
+						else
+						{
+							term = new SingleStrTerm(val);
+						}
+
+						break;
 				}
 
 				break;
@@ -816,86 +689,70 @@ internal sealed class ConfigData
 
 	public bool SaveConfig()
 	{
-		StreamWriter? writer = null;
-
 		try
 		{
 			#region EM_私家版_Emuera多言語化改造
 
-			// writer = new StreamWriter(configPath, false, Config.Encode);
-			writer = new StreamWriter(configPath, false, Config.Encode);
-
-			// for (int i = 0; i < configArray.Length; i++)
-			for (int i = 0; i < configArray.Count; i++)
+			using StreamWriter writer = new(configPath, false, Config.Encode);
+			foreach (var item in configArray)
 
 				#endregion
 
 			{
-				AConfigItem item = configArray[i];
 				if (item == null)
 				{
 					continue;
 				}
 
-				//1806beta001 CompatiDRAWLINEの廃止、CompatiLinefeedAs1739へ移行
-				if (item.Code == ConfigCode.CompatiDRAWLINE)
+				switch (item.Code)
 				{
-					continue;
-				}
+					//1806beta001 CompatiDRAWLINEの廃止、CompatiLinefeedAs1739へ移行
+					case ConfigCode.CompatiDRAWLINE:
+					case ConfigCode.ChangeMasterNameIfDebug when item.GetValue<bool>():
+					case ConfigCode.LastKey when item.GetValue<long>() == 0:
+						continue;
 
-				if (item.Code == ConfigCode.ChangeMasterNameIfDebug && item.GetValue<bool>())
-				{
-					continue;
-				}
+					#region EM_私家版_LoadText＆SaveText機能拡張
 
-				if (item.Code == ConfigCode.LastKey && item.GetValue<long>() == 0)
-				{
-					continue;
-				}
+					case ConfigCode.ValidExtension:
+					{
+						ConfigItem<List<string>> ex = (ConfigItem<List<string>>)item;
+						StringBuilder sb = new();
 
-				#region EM_私家版_LoadText＆SaveText機能拡張
+						#region EM_私家版_Emuera多言語化改造
 
-				if (item.Code == ConfigCode.ValidExtension)
-				{
-					ConfigItem<List<string>> ex = (ConfigItem<List<string>>)item;
-					StringBuilder sb = new();
+						// sb.Append(ex.Text).Append(":");
+						sb.Append(Config.EnglishConfigOutput ? ex.EngText : ex.Text).Append(':');
 
-					#region EM_私家版_Emuera多言語化改造
+						#endregion
 
-					// sb.Append(ex.Text).Append(":");
-					sb.Append(Config.EnglishConfigOutput ? ex.EngText : ex.Text).Append(':');
+						foreach (string str in ex.Value)
+						{
+							sb.Append(str).Append(',');
+						}
+
+						sb.Remove(sb.Length - 1, 1);
+						writer.WriteLine(sb.ToString());
+						continue;
+					}
 
 					#endregion
 
-					foreach (string str in ex.Value)
-					{
-						sb.Append(str).Append(',');
-					}
-
-					sb.Remove(sb.Length - 1, 1);
-					writer.WriteLine(sb.ToString());
-					continue;
+					//if (item.Code == ConfigCode.IgnoreWarningFiles)
+					//{
+					//    List<string> files = item.GetValue<List<string>>();
+					//    foreach (string filename in files)
+					//        writer.WriteLine(item.Text + ":" + filename.ToString());
+					//    continue;
+					//}
 				}
 
-				#endregion
-
-				//if (item.Code == ConfigCode.IgnoreWarningFiles)
-				//{
-				//    List<string> files = item.GetValue<List<string>>();
-				//    foreach (string filename in files)
-				//        writer.WriteLine(item.Text + ":" + filename.ToString());
-				//    continue;
-				//}
 				writer.WriteLine(item.ToString());
 			}
 		}
 		catch (Exception)
 		{
 			return false;
-		}
-		finally
-		{
-			writer?.Close();
 		}
 
 		return true;
@@ -904,17 +761,9 @@ internal sealed class ConfigData
 	public bool ReLoadConfig()
 	{
 		//_fixed.configの中身が変わった場合、非固定になったものが保持されてしまうので、ここで一旦すべて解除
-		foreach (AConfigItem item in configArray)
+		foreach (AConfigItem item in configArray.Where(item => item is { Fixed: true }))
 		{
-			if (item == null)
-			{
-				continue;
-			}
-
-			if (item.Fixed)
-			{
-				item.Fixed = false;
-			}
+			item.Fixed = false;
 		}
 
 		LoadConfig();
@@ -940,11 +789,7 @@ internal sealed class ConfigData
 		loadConfig(fixedConfigPath, true);
 
 		Config.SetConfig(this);
-		bool needSave = false;
-		if (!File.Exists(configPath))
-		{
-			needSave = true;
-		}
+		bool needSave = !File.Exists(configPath);
 
 		if (Config.CheckUpdate())
 		{
@@ -997,13 +842,17 @@ internal sealed class ConfigData
 
 				#endregion
 
-				if (item != null)
+				if (item == null)
+				{
+					continue;
+				}
+
+				switch (item.Code)
 				{
 					//1806beta001 CompatiDRAWLINEの廃止、CompatiLinefeedAs1739へ移行
-					if (item.Code == ConfigCode.CompatiDRAWLINE)
-					{
+					case ConfigCode.CompatiDRAWLINE:
 						item = GetRequiredConfigItem(ConfigCode.CompatiLinefeedAs1739);
-					}
+						break;
 					//if ((item.Code == ConfigCode.IgnoreWarningFiles))
 					//{ 
 					//    if (!defineIgnoreWarningFiles)
@@ -1012,8 +861,7 @@ internal sealed class ConfigData
 					//    if ((item.Fixed) && (fix))
 					//        item.Fixed = false;
 					//}
-
-					if (item.Code == ConfigCode.TextEditor)
+					case ConfigCode.TextEditor:
 					{
 						//パスの関係上tokens[2]は使わないといけない
 						if (tokens.Length > 2)
@@ -1031,25 +879,22 @@ internal sealed class ConfigData
 								}
 							}
 						}
-					}
 
-					if (item.Code == ConfigCode.EditorArgument)
-					{
+						break;
+					}
+					case ConfigCode.EditorArgument:
 						//半角スペースを要求する引数が必要なエディタがあるので別処理で
 						((ConfigItem<string>)item).Value = tokens[1];
 						continue;
-					}
-
-					if (item.Code == ConfigCode.MaxLog && Program.AnalysisMode)
-					{
+					case ConfigCode.MaxLog when Program.AnalysisMode:
 						//解析モード時はここを上書きして十分な長さを確保する
 						tokens[1] = "10000";
-					}
+						break;
+				}
 
-					if (item.TryParse(tokens[1]) && fix)
-					{
-						item.Fixed = true;
-					}
+				if (item.TryParse(tokens[1]) && fix)
+				{
+					item.Fixed = true;
 				}
 			}
 		}
@@ -1060,10 +905,6 @@ internal sealed class ConfigData
 		catch (Exception exc)
 		{
 			ParserMediator.ConfigWarn(exc.GetType() + ":" + exc.Message, pos, 1, exc.StackTrace);
-		}
-		finally
-		{
-			eReader.Dispose();
 		}
 
 		return true;
@@ -1122,10 +963,6 @@ internal sealed class ConfigData
 		{
 			ParserMediator.Warn(exc.GetType() + ":" + exc.Message, pos, 1, exc.StackTrace);
 		}
-		finally
-		{
-			eReader.Dispose();
-		}
 	}
 
 	#endregion
@@ -1134,21 +971,19 @@ internal sealed class ConfigData
 
 	public bool SaveDebugConfig()
 	{
-		StreamWriter? writer = null;
 		try
 		{
 			#region EM_私家版_Emuera多言語化改造
 
 			// writer = new StreamWriter(configdebugPath, false, Config.Encode);
-			writer = new StreamWriter(configdebugPath, false, Config.Encode);
+			using StreamWriter writer = new(configdebugPath, false, Config.Encode);
 
 			// for (int i = 0; i < debugArray.Length; i++)
-			for (int i = 0; i < debugArray.Count; i++)
+			foreach (var item in debugArray)
 
 				#endregion
 
 			{
-				AConfigItem item = debugArray[i];
 				if (item == null)
 				{
 					continue;
@@ -1160,10 +995,6 @@ internal sealed class ConfigData
 		catch (Exception)
 		{
 			return false;
-		}
-		finally
-		{
-			writer?.Close();
 		}
 
 		return true;
@@ -1216,10 +1047,6 @@ internal sealed class ConfigData
 		{
 			ParserMediator.ConfigWarn(exc.GetType() + ":" + exc.Message, pos, 1, exc.StackTrace);
 			goto err;
-		}
-		finally
-		{
-			eReader.Dispose();
 		}
 
 		Config.SetDebugConfig(this);

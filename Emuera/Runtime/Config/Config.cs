@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using trmb = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.MessageBox;
@@ -76,14 +77,7 @@ internal static class Config
 		SortWithFilename = instance.GetConfigValue<bool>(ConfigCode.SortWithFilename);
 
 		AllowFunctionOverloading = instance.GetConfigValue<bool>(ConfigCode.AllowFunctionOverloading);
-		if (!AllowFunctionOverloading)
-		{
-			WarnFunctionOverloading = true;
-		}
-		else
-		{
-			WarnFunctionOverloading = instance.GetConfigValue<bool>(ConfigCode.WarnFunctionOverloading);
-		}
+		WarnFunctionOverloading = !AllowFunctionOverloading || instance.GetConfigValue<bool>(ConfigCode.WarnFunctionOverloading);
 
 		DisplayWarningLevel = instance.GetConfigValue<int>(ConfigCode.DisplayWarningLevel);
 		DisplayReport = instance.GetConfigValue<bool>(ConfigCode.DisplayReport);
@@ -274,7 +268,7 @@ internal static class Config
 			TextDrawingMode = TextDrawingMode.TEXTRENDERER;
 		}
 
-		recomputeGeometry();
+		RecomputeGeometry();
 
 		#region eee_カレントディレクトリー
 
@@ -302,7 +296,7 @@ internal static class Config
 	/// <summary>
 	/// Recomputes the geometry derived from FontSize/WindowX (DrawableWidth and the shape position shift).
 	/// </summary>
-	private static void recomputeGeometry()
+	private static void RecomputeGeometry()
 	{
 		DrawingParam_ShapePositionShift = 0;
 		// The shift compensates the horizontal difference between the GDI text origin and the GDI+ shape
@@ -314,7 +308,7 @@ internal static class Config
 		}
 
 		DrawableWidth = WindowX - DrawingParam_ShapePositionShift;
-		recomputeRenderFontSize();
+		RecomputeRenderFontSize();
 	}
 
 	/// <summary>
@@ -322,7 +316,7 @@ internal static class Config
 	/// full width advance is not FontSize have to be brought back onto the baseline font's cell by the font
 	/// size alone (see .scratch/ui-modernization/issues/03).
 	/// </summary>
-	private static void recomputeRenderFontSize()
+	private static void RecomputeRenderFontSize()
 	{
 		renderFontSizePx = FontMetrics.FindRenderSizePx(FontName, FontSize);
 	}
@@ -337,7 +331,7 @@ internal static class Config
 		WindowY = Math.Max(1, windowY);
 		FontSize = Math.Max(8, fontSize);
 		LineHeight = Math.Max(FontSize, lineHeight);
-		recomputeGeometry();
+		RecomputeGeometry();
 	}
 
 	/// <summary>
@@ -512,11 +506,11 @@ internal static class Config
 		}
 
 		long key = 0;
-		for (int i = 0; i < writetimes.Length; i++)
+		foreach (long writetime in writetimes)
 		{
 			unchecked
 			{
-				key ^= (writetimes[i] * 1103515245) + 12345;
+				key ^= (writetime * 1103515245) + 12345;
 			}
 		}
 
@@ -546,14 +540,7 @@ internal static class Config
 		}
 		else
 		{
-			if (!dir.StartsWith(rootdir, StringComparison.OrdinalIgnoreCase))
-			{
-				RelativePath = dir;
-			}
-			else
-			{
-				RelativePath = dir[rootdir.Length..]; //前方が検索ルートパスと一致するならその部分を切り取る
-			}
+			RelativePath = !dir.StartsWith(rootdir, StringComparison.OrdinalIgnoreCase) ? dir : dir[rootdir.Length..]; //前方が検索ルートパスと一致するならその部分を切り取る
 
 			if (!RelativePath.EndsWith('\\') && !RelativePath.EndsWith('/'))
 			{
@@ -568,30 +555,29 @@ internal static class Config
 			Array.Sort(filepaths);
 		}
 
-		for (int i = 0; i < filepaths.Length; i++)
+		retList.AddRange(filepaths.Where(filepath => Path.GetExtension(filepath).Length <= 4)
+			.Select(filepath => new KeyValuePair<string, string>(Path.Combine(RelativePath, Path.GetFileName(filepath)), filepath)));
+
+		if (toponly)
 		{
-			if (Path.GetExtension(filepaths[i]).Length <= 4) //".erb"や".csv"であること。放置すると".erb*"等を拾う。
-			{
-				retList.Add(new KeyValuePair<string, string>(Path.Combine(RelativePath, Path.GetFileName(filepaths[i])), filepaths[i]));
-			}
+			return retList;
 		}
 
-		if (!toponly)
+		//サブフォルダ内の検索
+		string[] dirList = Directory.GetDirectories(dir, "*", SearchOption.TopDirectoryOnly);
+		if (dirList.Length <= 0)
 		{
-			//サブフォルダ内の検索
-			string[] dirList = Directory.GetDirectories(dir, "*", SearchOption.TopDirectoryOnly);
-			if (dirList.Length > 0)
-			{
-				if (sort)
-				{
-					Array.Sort(dirList);
-				}
+			return retList;
+		}
 
-				for (int i = 0; i < dirList.Length; i++)
-				{
-					retList.AddRange(getFiles(dirList[i], rootdir, pattern, toponly, sort));
-				}
-			}
+		if (sort)
+		{
+			Array.Sort(dirList);
+		}
+
+		foreach (string subdir in dirList)
+		{
+			retList.AddRange(getFiles(subdir, rootdir, pattern, toponly, sort));
 		}
 
 		return retList;

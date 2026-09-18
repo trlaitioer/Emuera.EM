@@ -3,27 +3,13 @@ using MinorShift.Emuera.Runtime.Utils.EvilMask;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Text;
 
 namespace MinorShift.Emuera.Runtime.Config;
 
-internal abstract class AConfigItem
+internal abstract class AConfigItem(ConfigCode code, string text, string etext)
 {
-	#region EM_私家版_Emuera多言語化改造
-
-	// public AConfigItem(ConfigCode code, string text)
-	public AConfigItem(ConfigCode code, string text, string etext)
-	{
-		Code = code;
-		Name = EnumsNET.Enums.AsString(code);
-		// this.Text = text;
-		Text = text.ToUpper();
-		// this.EngText = etext;
-		EngText = etext.ToUpper();
-	}
-
-	#endregion
-
 	#region EM_私家版_Emuera多言語化改造
 
 	public static ConfigItem<T>? Copy<T>(ConfigItem<T>? other)
@@ -33,7 +19,6 @@ internal abstract class AConfigItem
 			return null;
 		}
 
-		//ConfigItem<T> ret = new ConfigItem<T>(other.Code, other.Text, other.Value);
 		ConfigItem<T> ret = new(other.Code, other.Text, other.EngText, other.Value) { Fixed = other.Fixed };
 		return ret;
 	}
@@ -45,13 +30,13 @@ internal abstract class AConfigItem
 	public abstract void SetValue<U>(U p);
 	public abstract U GetValue<U>();
 	public abstract string ValueToString();
-	public readonly ConfigCode Code;
-	public readonly string Name;
-	public readonly string Text;
+	public readonly ConfigCode Code = code;
+	public readonly string Name = EnumsNET.Enums.AsString(code);
 
 	#region EM_私家版_Emuera多言語化改造
 
-	public readonly string EngText;
+	public readonly string Text = text.ToUpper();
+	public readonly string EngText = etext.ToUpper();
 
 	#endregion
 
@@ -115,46 +100,31 @@ internal sealed class ConfigItem<T> : AConfigItem
 
 	public override string ValueToString()
 	{
-		if (this is ConfigItem<bool>)
+		switch (this)
 		{
-			//ConfigItem<T>をConfigItem<bool>に直接キャストすることはできない
-			bool b = ((ConfigItem<bool>)(AConfigItem)this).Value;
-			if (b)
+			case ConfigItem<bool> boolConfigItem:
 			{
-				return "YES";
+				//ConfigItem<T>をConfigItem<bool>に直接キャストすることはできない
+				return boolConfigItem.Value ? "YES" : "NO";
+			}
+			case ConfigItem<Color> colorConfigItem:
+			{
+				Color c = colorConfigItem.Value;
+				return $"{c.R},{c.G},{c.B}";
 			}
 
-			return "NO";
-		}
+			#region EM_私家版_LoadText＆SaveText機能拡張
 
-		if (this is ConfigItem<Color>)
-		{
-			Color c = ((ConfigItem<Color>)(AConfigItem)this).Value;
-			return $"{c.R},{c.G},{c.B}";
-		}
-
-		#region EM_私家版_LoadText＆SaveText機能拡張
-
-		if (this is ConfigItem<List<string>>)
-		{
-			StringBuilder sb = new();
-			List<string> v = ((ConfigItem<List<string>>)(AConfigItem)this).Value;
-			foreach (string str in v)
+			case ConfigItem<List<string>> stringListConfigItem:
 			{
-				if (sb.Length > 0)
-				{
-					sb.Append(',');
-				}
-
-				sb.Append(str);
+				return string.Join(',', stringListConfigItem.Value.SkipWhile(str => str.Length == 0));
 			}
 
-			return sb.ToString();
+			#endregion
+
+			default:
+				return val!.ToString()!;
 		}
-
-		#endregion
-
-		return val!.ToString()!;
 	}
 
 
@@ -171,8 +141,7 @@ internal sealed class ConfigItem<T> : AConfigItem
 	/// ジェネリック化大失敗。なんかうまい方法ないかな～
 	public override bool TryParse(string? param)
 	{
-		bool ret = false;
-		if (param == null || param.Length == 0)
+		if (string.IsNullOrEmpty(param))
 		{
 			return false;
 		}
@@ -182,149 +151,118 @@ internal sealed class ConfigItem<T> : AConfigItem
 			return false;
 		}
 
+		bool ret = false;
 		string str = param.Trim();
-		if (this is ConfigItem<bool>)
+		switch (this)
 		{
-			bool b = false;
-			ret = tryStringToBool(str, ref b);
-			if (ret) //ConfigItem<T>をConfigItem<bool>に直接キャストすることはできない
+			case ConfigItem<bool> boolConfigItem:
 			{
-				((ConfigItem<bool>)(AConfigItem)this).Value = b;
+				bool b = false;
+				ret = tryStringToBool(str, ref b);
+				if (ret) //ConfigItem<T>をConfigItem<bool>に直接キャストすることはできない
+				{
+					boolConfigItem.Value = b;
+				}
+
+				break;
 			}
-		}
-		else if (this is ConfigItem<Color>)
-		{
-			ret = tryStringsToColor(str, out Color c);
-			if (ret)
+			case ConfigItem<Color> colorConfigItem:
 			{
-				((ConfigItem<Color>)(AConfigItem)this).Value = c;
+				ret = tryStringsToColor(str, out Color c);
+				if (!ret)
+				{
+					throw new CodeEE(Lang.Error.NotExistColorSpecifier.Text);
+				}
+
+				colorConfigItem.Value = c;
+				break;
 			}
-			else
+			case ConfigItem<char> charConfigItem:
 			{
-				throw new CodeEE(Lang.Error.NotExistColorSpecifier.Text);
-			}
-		}
-		else if (this is ConfigItem<char>)
-		{
-			ret = char.TryParse(str, out char c);
-			if (ret)
-			{
-				((ConfigItem<char>)(AConfigItem)this).Value = c;
-			}
-		}
-		else if (this is ConfigItem<int>)
-		{
-			ret = int.TryParse(str, out int i);
-			if (ret)
-			{
-				((ConfigItem<int>)(AConfigItem)this).Value = i;
-			}
-			else
-			{
-				throw new CodeEE(Lang.Error.ContainsNonNumericCharacters.Text);
-			}
-		}
-		else if (this is ConfigItem<long>)
-		{
-			ret = long.TryParse(str, out long i);
-			if (ret)
-			{
-				((ConfigItem<long>)(AConfigItem)this).Value = i;
-			}
-			else
-			{
-				throw new CodeEE(Lang.Error.ContainsNonNumericCharacters.Text);
-			}
-		}
-		else if (this is ConfigItem<List<long>>)
-		{
-			((ConfigItem<List<long>>)(AConfigItem)this).Value.Clear();
-			string[] strs = str.Split('/');
-			foreach (string st in strs)
-			{
-				ret = long.TryParse(st.Trim(), out long i);
+				ret = char.TryParse(str, out char c);
 				if (ret)
 				{
-					((ConfigItem<List<long>>)(AConfigItem)this).Value.Add(i);
+					charConfigItem.Value = c;
 				}
-				else
+
+				break;
+			}
+			case ConfigItem<int> intConfigItem:
+			{
+				ret = int.TryParse(str, out int i);
+				if (!ret)
 				{
 					throw new CodeEE(Lang.Error.ContainsNonNumericCharacters.Text);
 				}
-			}
-		}
-		else if (this is ConfigItem<string>)
-		{
-			ret = true;
-			((ConfigItem<string>)(AConfigItem)this).Value = str;
-		}
-		else if (this is ConfigItem<List<string>>)
-		{
-			#region EM_私家版_LoadText＆SaveText機能拡張
 
-			// ret = true;
-			// ((ConfigItem<List<string>>)(AConfigItem)this).Value.Add(str);
-			ret = true;
-			List<string> list = ((ConfigItem<List<string>>)(AConfigItem)this).Value;
-			tryStringToStringList(str, ref list);
-			((ConfigItem<List<string>>)(AConfigItem)this).Value = list;
+				intConfigItem.Value = i;
+				break;
+			}
+			case ConfigItem<long> longConfigItem:
+			{
+				ret = long.TryParse(str, out long i);
+				if (!ret)
+				{
+					throw new CodeEE(Lang.Error.ContainsNonNumericCharacters.Text);
+				}
 
-			#endregion
-		}
-		else if (this is ConfigItem<TextDrawingMode>)
-		{
-			if (Enum.TryParse(str, true, out TextDrawingMode result))
-			{
-				((ConfigItem<TextDrawingMode>)(AConfigItem)this).Value = result;
+				longConfigItem.Value = i;
+				break;
 			}
-			else
+			case ConfigItem<List<long>> longListConfigItem:
 			{
+				longListConfigItem.Value.Clear();
+				foreach (string st in str.Split('/'))
+				{
+					ret = long.TryParse(st.Trim(), out long i);
+					if (!ret)
+					{
+						throw new CodeEE(Lang.Error.ContainsNonNumericCharacters.Text);
+					}
+
+					longListConfigItem.Value.Add(i);
+				}
+
+				break;
+			}
+			case ConfigItem<string> stringConfigItem:
+				ret = true;
+				stringConfigItem.Value = str;
+				break;
+			case ConfigItem<List<string>> stringListConfigItem:
+			{
+				#region EM_私家版_LoadText＆SaveText機能拡張
+
+				ret = true;
+				List<string> list = stringListConfigItem.Value;
+				tryStringToStringList(str, ref list);
+				stringListConfigItem.Value = list;
+
+				#endregion
+
+				break;
+			}
+			case ConfigItem<TextDrawingMode> textDrawingModeConfigItem when Enum.TryParse(str, true, out TextDrawingMode result):
+				textDrawingModeConfigItem.Value = result;
+				break;
+			case ConfigItem<ReduceArgumentOnLoadFlag> reduceArgumentOnLoadFlagConfigItem when Enum.TryParse(str, true, out ReduceArgumentOnLoadFlag result):
+				reduceArgumentOnLoadFlagConfigItem.Value = result;
+				break;
+			case ConfigItem<DisplayWarningFlag> displayWarningFlagConfigItem when Enum.TryParse(str, true, out DisplayWarningFlag result):
+				displayWarningFlagConfigItem.Value = result;
+				break;
+			case ConfigItem<UseLanguage> useLanguageConfigItem when Enum.TryParse(str, true, out UseLanguage result):
+				useLanguageConfigItem.Value = result;
+				break;
+			case ConfigItem<TextEditorType> textEditorTypeConfigItem when Enum.TryParse(str, true, out TextEditorType result):
+				textEditorTypeConfigItem.Value = result;
+				break;
+			case ConfigItem<TextDrawingMode>:
+			case ConfigItem<ReduceArgumentOnLoadFlag>:
+			case ConfigItem<DisplayWarningFlag>:
+			case ConfigItem<UseLanguage>:
+			case ConfigItem<TextEditorType>:
 				throw new CodeEE(Lang.Error.InvalidSpecification.Text);
-			}
-		}
-		else if (this is ConfigItem<ReduceArgumentOnLoadFlag>)
-		{
-			if (Enum.TryParse(str, true, out ReduceArgumentOnLoadFlag result))
-			{
-				((ConfigItem<ReduceArgumentOnLoadFlag>)(AConfigItem)this).Value = result;
-			}
-			else
-			{
-				throw new CodeEE(Lang.Error.InvalidSpecification.Text);
-			}
-		}
-		else if (this is ConfigItem<DisplayWarningFlag>)
-		{
-			if (Enum.TryParse(str, true, out DisplayWarningFlag result))
-			{
-				((ConfigItem<DisplayWarningFlag>)(AConfigItem)this).Value = result;
-			}
-			else
-			{
-				throw new CodeEE(Lang.Error.InvalidSpecification.Text);
-			}
-		}
-		else if (this is ConfigItem<UseLanguage>)
-		{
-			if (Enum.TryParse(str, true, out UseLanguage result))
-			{
-				((ConfigItem<UseLanguage>)(AConfigItem)this).Value = result;
-			}
-			else
-			{
-				throw new CodeEE(Lang.Error.InvalidSpecification.Text);
-			}
-		}
-		else if (this is ConfigItem<TextEditorType>)
-		{
-			if (Enum.TryParse(str, true, out TextEditorType result))
-			{
-				((ConfigItem<TextEditorType>)(AConfigItem)this).Value = result;
-			}
-			else
-			{
-				throw new CodeEE(Lang.Error.InvalidSpecification.Text);
-			}
 		}
 
 		//else
@@ -337,13 +275,7 @@ internal sealed class ConfigItem<T> : AConfigItem
 
 	private static bool tryStringToStringList(string arg, ref List<string> vs)
 	{
-		string[] tokens = arg.Split(',');
-		vs.Clear();
-		foreach (string token in tokens)
-		{
-			vs.Add(token.Trim());
-		}
-
+		vs = [.. arg.Split(',').Select(token => token.Trim())];
 		return true;
 	}
 
