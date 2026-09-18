@@ -15,5 +15,5 @@ public abstract class PluginManifestAbstract
 		return methods;
 	}
 
-	protected readonly List<IPluginMethod> methods = [];
+	protected List<IPluginMethod> methods = [];
 }
