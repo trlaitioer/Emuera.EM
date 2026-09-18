@@ -13,14 +13,14 @@ namespace MinorShift.Emuera.UI.Game.Image;
 
 internal static class AppContents
 {
-	private readonly static ConcurrentDictionary<string, AbstractImage> resourceDic = new(Config.StrComper);
+	private static readonly ConcurrentDictionary<string, AbstractImage> resourceDic = new(Config.StrComper);
 	private static ConcurrentDictionary<string, ASprite> imageDictionary = new(Config.StrComper);
-	private readonly static ConcurrentDictionary<int, GraphicsImage> gList = [];
-	private readonly static ConcurrentDictionary<string, ASprite> resourceImageDictionary = new(Config.StrComper);
+	private static readonly ConcurrentDictionary<int, GraphicsImage> gList = [];
+	private static readonly ConcurrentDictionary<string, ASprite> resourceImageDictionary = new(Config.StrComper);
 
 	// the ConstImages that has been loaded into memory. will free them in every SetBegin(BeginType.SHOP)
-	public readonly static HashSet<ConstImage> tempLoadedConstImages = [];
-	public readonly static HashSet<GraphicsImage> tempLoadedGraphicsImages = [];
+	public static readonly HashSet<ConstImage> tempLoadedConstImages = [];
+	public static readonly HashSet<GraphicsImage> tempLoadedGraphicsImages = [];
 
 
 	//static public T GetContent<T>(string name)where T :AContentItem

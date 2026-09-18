@@ -19,7 +19,7 @@ namespace MinorShift.Emuera.UI.Game;
 internal static class GraphicsTextRenderer
 {
 	/// <summary>Origin at the line top without padding, matching TextFormatFlags.NoPadding of the GDI path.</summary>
-	private readonly static StringFormat drawFormat = StringFormat.GenericTypographic;
+	private static readonly StringFormat drawFormat = StringFormat.GenericTypographic;
 
 	/// <summary>
 	/// Pen advances of the whole text, which is what the layout is built on.

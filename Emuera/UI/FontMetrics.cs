@@ -36,9 +36,9 @@ internal static class FontMetrics
 	/// Full width advances by (font name, size). The font name only changes when the process restarts, so the
 	/// entries are never invalidated and stay bounded by the sizes the lookup enumerates.
 	/// </summary>
-	private readonly static Dictionary<(string FontName, int Size), int> advances = [];
+	private static readonly Dictionary<(string FontName, int Size), int> advances = [];
 
-	private readonly static object advancesLock = new();
+	private static readonly object advancesLock = new();
 
 	//Created together on the first measurement, before any read
 	private static Bitmap probeBitmap = null!;

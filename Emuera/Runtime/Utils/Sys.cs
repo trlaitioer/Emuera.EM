@@ -26,30 +26,30 @@ public static class AssemblyData
 	/// <summary>
 	/// 実行ファイルのパス
 	/// </summary>
-	public readonly static string ExePath;
+	public static readonly string ExePath;
 
-	public readonly static Version emueraVer;
+	public static readonly Version emueraVer;
 
-	public readonly static string EmueraVersionText;
+	public static readonly string EmueraVersionText;
 
 	/// <summary>
 	/// 実行ファイルのディレクトリ。最後に\を付けたstring
 	/// </summary>
-	public readonly static string ExeDir;
+	public static readonly string ExeDir;
 
 	#region eee_カレントディレクトリー
 
 	/// <summary>
 	/// 実行ファイルのディレクトリ。最後に\を付けたstring
 	/// </summary>
-	public readonly static string WorkingDir;
+	public static readonly string WorkingDir;
 
 	#endregion
 
 	/// <summary>
 	/// 実行ファイルの名前。ディレクトリなし
 	/// </summary>
-	public readonly static string ExeName;
+	public static readonly string ExeName;
 
 	/// <summary>
 	/// 2重起動防止。既に同名exeが実行されているならばtrueを返す

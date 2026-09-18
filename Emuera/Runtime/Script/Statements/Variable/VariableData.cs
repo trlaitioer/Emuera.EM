@@ -92,7 +92,7 @@ internal sealed partial class VariableData : IDisposable
 
 	public VariableData(GameBase gamebase, ConstantData constant)
 	{
-		this.GameBase = gamebase;
+		GameBase = gamebase;
 		this.constant = constant;
 		characterList = [];
 		//localVars = new VariableLocal<Int64, Int64Calculator>(constant.VariableIntArrayLength[(int)(VariableCode.__LOWERCASE__ & VariableCode.LOCAL)]);

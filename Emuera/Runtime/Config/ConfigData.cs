@@ -19,11 +19,11 @@ internal sealed class ConfigData
 {
 	#region eee_カレントディレクトリー
 
-	private readonly static string configPath = Program.ExeDir + "emuera.config";
+	private static readonly string configPath = Program.ExeDir + "emuera.config";
 
 	#endregion
 
-	private readonly static string configdebugPath = Program.DebugDir + "debug.config";
+	private static readonly string configdebugPath = Program.DebugDir + "debug.config";
 
 	static ConfigData()
 	{ }

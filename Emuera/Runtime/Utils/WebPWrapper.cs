@@ -1018,7 +1018,7 @@ public sealed class WebP : IDisposable
 			//compress the input samples
 			if (UnsafeNativeMethods.WebPEncode(ref config, ref wpic) != 1)
 			{
-				throw new Exception("Encoding error: " + ((WebPEncodingError)wpic.error_code));
+				throw new Exception("Encoding error: " + (WebPEncodingError)wpic.error_code);
 			}
 
 			//Remove OnCallback
@@ -1131,7 +1131,7 @@ internal sealed class UnsafeNativeMethods
 	[DllImport("kernel32.dll", EntryPoint = "CopyMemory", SetLastError = false)]
 	internal static extern void CopyMemory(nint dest, nint src, uint count);
 
-	private readonly static int WEBP_DECODER_ABI_VERSION = 0x0208;
+	private static readonly int WEBP_DECODER_ABI_VERSION = 0x0208;
 
 	/// <summary>This function will initialize the configuration according to a predefined set of parameters (referred to by 'preset') and a given quality factor</summary>
 	/// <param name="config">The WebPConfig structure</param>

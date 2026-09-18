@@ -10,7 +10,7 @@ internal static class KeyMacro
 	#region eee_カレントディレクトリー
 
 	//readonly static string macroPath = Program.ExeDir + "macro.txt";
-	private readonly static string macroPath = Program.ExeDir + "macro.txt";
+	private static readonly string macroPath = Program.ExeDir + "macro.txt";
 
 	#endregion
 
@@ -22,14 +22,14 @@ internal static class KeyMacro
 	/// <summary>
 	/// マクロの内容
 	/// </summary>
-	private readonly static string[] macro = new string[MaxMacro];
+	private static readonly string[] macro = new string[MaxMacro];
 
 	/// <summary>
 	/// マクロキー
 	/// </summary>
-	private readonly static string[] macroName = new string[MaxMacro];
+	private static readonly string[] macroName = new string[MaxMacro];
 
-	private readonly static string[] groupName = new string[MaxGroup];
+	private static readonly string[] groupName = new string[MaxGroup];
 	private static bool isMacroChanged;
 
 	static KeyMacro()

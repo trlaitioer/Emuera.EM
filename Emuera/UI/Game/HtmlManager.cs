@@ -313,8 +313,8 @@ internal static class HtmlManager
 		repDic.Add('\'', "&apos;");
 	}
 
-	private readonly static char[] rep = ['&', '>', '<', '\"', '\''];
-	private readonly static Dictionary<char, string> repDic = [];
+	private static readonly char[] rep = ['&', '>', '<', '\"', '\''];
+	private static readonly Dictionary<char, string> repDic = [];
 
 	private sealed class HtmlAnalzeStateFontTag
 	{

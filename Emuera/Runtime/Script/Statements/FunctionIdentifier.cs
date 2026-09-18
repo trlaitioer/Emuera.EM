@@ -42,12 +42,12 @@ internal sealed partial class FunctionIdentifier
 	#region static
 
 	//元BuiltInFunctionManager部分
-	private readonly static Dictionary<string, FunctionIdentifier> funcDic = Config.IgnoreCase
+	private static readonly Dictionary<string, FunctionIdentifier> funcDic = Config.IgnoreCase
 		? new Dictionary<string, FunctionIdentifier>(StringComparer.OrdinalIgnoreCase)
 		: new Dictionary<string, FunctionIdentifier>();
 
-	private readonly static Dictionary<FunctionCode, string> funcMatch = [];
-	private readonly static Dictionary<FunctionCode, FunctionCode> funcParent = [];
+	private static readonly Dictionary<FunctionCode, string> funcMatch = [];
+	private static readonly Dictionary<FunctionCode, FunctionCode> funcParent = [];
 
 	private static void addFunction(FunctionCode code, AInstruction inst)
 	{
@@ -555,7 +555,7 @@ internal sealed partial class FunctionIdentifier
 
 	private FunctionIdentifier(string name, FunctionCode code, AInstruction instruction, int additionalFlag)
 	{
-		this.Code = code;
+		Code = code;
 		ArgBuilder = instruction.ArgBuilder;
 		flag = instruction.Flag | additionalFlag;
 		method = null;
@@ -565,8 +565,8 @@ internal sealed partial class FunctionIdentifier
 
 	private FunctionIdentifier(string name, FunctionCode code, ArgumentBuilder arg, int flag)
 	{
-		this.Code = code;
-		this.ArgBuilder = arg;
+		Code = code;
+		ArgBuilder = arg;
 		this.flag = flag;
 		method = null;
 		Name = name;

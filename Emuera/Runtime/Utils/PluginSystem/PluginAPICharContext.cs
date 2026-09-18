@@ -85,7 +85,7 @@ public class PluginAPICharContext
 	//Cached int[][] variables
 	private static VariableToken _CDFLAG = null!;
 
-	private readonly static Dictionary<string, VariableToken> _UserDefinedVars = [];
+	private static readonly Dictionary<string, VariableToken> _UserDefinedVars = [];
 
 	private static ExpressionMediator exm = null!;
 

@@ -1,4 +1,5 @@
 ﻿//新設したコンフィグ設定のロード、セーブ、公開を担当する。
+
 using System.IO;
 using System.Text.Json;
 
@@ -10,7 +11,7 @@ internal static class JSONConfig
 	public static JSONConfigData Data = null!;
 
 	private const string _configFileName = "setting.json";
-	private readonly static string _configFilePath = Program.ExeDir + _configFileName;
+	private static readonly string _configFilePath = Program.ExeDir + _configFileName;
 
 	public static void Load()
 	{

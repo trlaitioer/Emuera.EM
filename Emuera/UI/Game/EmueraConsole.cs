@@ -1,4 +1,5 @@
 ﻿//using System.Drawing.Imaging;
+
 using MinorShift.Emuera.Forms;
 //using MinorShift.Emuera.GameData;
 using MinorShift.Emuera.GameProc.Function;

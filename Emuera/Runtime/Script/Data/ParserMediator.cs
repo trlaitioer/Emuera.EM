@@ -146,7 +146,7 @@ internal partial class ParserMediator
 
 	#endregion
 
-	private readonly static object warningListLock = new();
+	private static readonly object warningListLock = new();
 
 	public static void Warn(string str, ScriptPosition? pos, int level)
 	{
@@ -213,7 +213,7 @@ internal partial class ParserMediator
 		//				console.PrintWarning(str, line.Position, level);
 	}
 
-	private readonly static List<ParserWarning> warningList = [];
+	private static readonly List<ParserWarning> warningList = [];
 
 	public static bool HasWarning
 	{

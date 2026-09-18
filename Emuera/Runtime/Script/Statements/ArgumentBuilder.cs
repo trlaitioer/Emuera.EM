@@ -163,7 +163,7 @@ internal abstract class ArgumentBuilder
 
 internal static partial class ArgumentParser
 {
-	private readonly static Dictionary<FunctionArgType, ArgumentBuilder> argb = [];
+	private static readonly Dictionary<FunctionArgType, ArgumentBuilder> argb = [];
 
 	public static Dictionary<FunctionArgType, ArgumentBuilder> GetArgumentBuilderDictionary()
 	{
@@ -175,7 +175,7 @@ internal static partial class ArgumentParser
 		return argb[key];
 	}
 
-	private readonly static Dictionary<string, ArgumentBuilder> nargb = [];
+	private static readonly Dictionary<string, ArgumentBuilder> nargb = [];
 
 	/// <summary>
 	/// 一般的な引数作成器の呼び出し。数式と文字列式のいずれかのみを引数とし、特殊なチェックが必要ないもの

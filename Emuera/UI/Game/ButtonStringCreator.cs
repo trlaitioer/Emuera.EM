@@ -199,7 +199,7 @@ internal static class ButtonStringCreator
 		return ret;
 	}
 
-	private readonly static Regex numReg = new(@"\[\s*([0][xXbB])?[+-]?[0-9]+([eEpP][0-9]+)?\s*\]");
+	private static readonly Regex numReg = new(@"\[\s*([0][xXbB])?[+-]?[0-9]+([eEpP][0-9]+)?\s*\]");
 
 	/// <summary>
 	/// []付き文字列が数値的であるかどうかを調べる

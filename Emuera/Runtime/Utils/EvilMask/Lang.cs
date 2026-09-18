@@ -16,7 +16,7 @@ internal sealed partial class Lang
 	{
 		public TranslatableString(string text)
 		{
-			this.Text = text;
+			Text = text;
 			tr = null;
 		}
 
@@ -1607,14 +1607,14 @@ internal sealed partial class Lang
 		writer.Flush();
 	}
 
-	private readonly static string langDir = Path.Combine(Program.ExeDir, "lang") + Path.DirectorySeparatorChar;
+	private static readonly string langDir = Path.Combine(Program.ExeDir, "lang") + Path.DirectorySeparatorChar;
 
-	private readonly static Dictionary<string, string> langList = [];
-	private readonly static Dictionary<string, string> localeList = [];
+	private static readonly Dictionary<string, string> langList = [];
+	private static readonly Dictionary<string, string> localeList = [];
 	public static string MFont { get; private set; } = null!;
 	private static string[] langNames = null!;
-	private readonly static Dictionary<string, TranslatableString> trItems = [];
-	private readonly static Dictionary<Type, TranslatableString> trClass = [];
+	private static readonly Dictionary<string, TranslatableString> trItems = [];
+	private static readonly Dictionary<Type, TranslatableString> trClass = [];
 
 	static Lang()
 	{

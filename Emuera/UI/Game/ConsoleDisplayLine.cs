@@ -330,7 +330,7 @@ internal sealed class ConsoleDisplayLine
 		}
 	}
 
-	private readonly static StringBuilder builder = new();
+	private static readonly StringBuilder builder = new();
 
 	public override string ToString()
 	{

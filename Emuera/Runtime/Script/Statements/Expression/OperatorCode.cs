@@ -54,7 +54,7 @@ internal enum OperatorCode
 
 internal static class OperatorManager
 {
-	private readonly static Dictionary<string, OperatorCode> opDictionary = new()
+	private static readonly Dictionary<string, OperatorCode> opDictionary = new()
 	{
 		{ "+", OperatorCode.Plus },
 		{ "-", OperatorCode.Minus },

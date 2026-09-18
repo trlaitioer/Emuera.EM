@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 //Regexをキャッシュする
 internal static class RegexFactory
 {
-	private readonly static Dictionary<string, Regex> _dictionary = [];
+	private static readonly Dictionary<string, Regex> _dictionary = [];
 
 	public static Regex GetRegex(string regex)
 	{

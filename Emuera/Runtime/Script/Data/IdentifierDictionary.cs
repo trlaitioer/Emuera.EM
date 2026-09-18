@@ -21,7 +21,7 @@ namespace MinorShift.Emuera;
 //また、使用されている名前を記憶し衝突を検出する。
 internal partial class IdentifierDictionary
 {
-	private readonly static System.Buffers.SearchValues<char> badSymbolAsIdentifier = System.Buffers.SearchValues.Create(
+	private static readonly System.Buffers.SearchValues<char> badSymbolAsIdentifier = System.Buffers.SearchValues.Create(
 	[
 		'+', '-', '*', '/', '%', '=', '!', '<', '>', '|', '&', '^', '~',
 		' ', ' ', '\t',
@@ -52,9 +52,9 @@ internal partial class IdentifierDictionary
 		NameSpace
 	}
 
-	private readonly static Regex regexCom = preCompiledComRegex();
-	private readonly static Regex regexComAble = preCompiledComAbleRegex();
-	private readonly static Regex regexAblup = preCompiledAblupRegex();
+	private static readonly Regex regexCom = preCompiledComRegex();
+	private static readonly Regex regexComAble = preCompiledComAbleRegex();
+	private static readonly Regex regexAblup = preCompiledAblupRegex();
 
 	#region static
 

@@ -1338,7 +1338,9 @@ internal sealed class ErbLoader
 					InstructionLine? currentBaseFunc = nestStack.Count == 0 ? null : nestStack.Peek();
 					if (currentBaseFunc != null)
 					{
-						if (currentBaseFunc.FunctionCode is FunctionCode.PRINTDATA or FunctionCode.PRINTDATAL or FunctionCode.PRINTDATAW or FunctionCode.PRINTDATAD or FunctionCode.PRINTDATADL or FunctionCode.PRINTDATADW or FunctionCode.PRINTDATAK or FunctionCode.PRINTDATAKL or FunctionCode.PRINTDATAKW or FunctionCode.STRDATA or FunctionCode.DATALIST or FunctionCode.TRYCALLLIST or FunctionCode.TRYJUMPLIST or FunctionCode.TRYGOTOLIST)
+						if (currentBaseFunc.FunctionCode is FunctionCode.PRINTDATA or FunctionCode.PRINTDATAL or FunctionCode.PRINTDATAW or FunctionCode.PRINTDATAD
+						    or FunctionCode.PRINTDATADL or FunctionCode.PRINTDATADW or FunctionCode.PRINTDATAK or FunctionCode.PRINTDATAKL or FunctionCode.PRINTDATAKW
+						    or FunctionCode.STRDATA or FunctionCode.DATALIST or FunctionCode.TRYCALLLIST or FunctionCode.TRYJUMPLIST or FunctionCode.TRYGOTOLIST)
 							//|| (currentBaseFunc.FunctionCode == FunctionCode.SELECTCASE))
 						{
 							ParserMediator.Warn(string.Format(trerror.CanNotLabelDefineInSyntax.Text, currentBaseFunc.Function.Name), nextLine, 2,

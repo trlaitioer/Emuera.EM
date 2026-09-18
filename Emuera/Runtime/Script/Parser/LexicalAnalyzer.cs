@@ -75,7 +75,7 @@ internal static class LexicalAnalyzer
 	//readonly static IList<char> stringFormToken = new char[] { '@', };
 	//readonly static IList<char> etcSymbol = new char[] { '[', '{', '$', '\\', };
 	//readonly static IList<char> decimalDigits = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', };
-	private readonly static char[] hexadecimalDigits = ['a', 'b', 'c', 'd', 'e', 'f', 'A', 'B', 'C', 'D', 'E', 'F'];
+	private static readonly char[] hexadecimalDigits = ['a', 'b', 'c', 'd', 'e', 'f', 'A', 'B', 'C', 'D', 'E', 'F'];
 
 	//1819 正規表現使うとやや遅い。いずれdoubleにも対応させたい。そのうち考える
 	//readonly static Regex DigitsReg = new Regex("" +
@@ -521,7 +521,7 @@ internal static class LexicalAnalyzer
 		return span.ToString();
 	}
 
-	private readonly static SearchValues<char> _searchValues = SearchValues.Create(""" 　.+-*/%=!<>|&^~?#)}],:({[$\'"@;""" + "\t");
+	private static readonly SearchValues<char> _searchValues = SearchValues.Create(""" 　.+-*/%=!<>|&^~?#)}],:({[$\'"@;""" + "\t");
 
 	public static ReadOnlySpan<char> ReadSingleIdentifierROS(CharStream st)
 	{

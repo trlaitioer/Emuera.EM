@@ -14,8 +14,8 @@ internal static class Config
 {
 	#region config
 
-	public readonly static Encoding Encode = EncodingHandler.UTF8BOMEncoding;
-	public readonly static Encoding SaveEncode = EncodingHandler.UTF8BOMEncoding;
+	public static readonly Encoding Encode = EncodingHandler.UTF8BOMEncoding;
+	public static readonly Encoding SaveEncode = EncodingHandler.UTF8BOMEncoding;
 	private static Dictionary<ConfigCode, string> nameDic = null!;
 
 	public static string GetConfigName(ConfigCode code)

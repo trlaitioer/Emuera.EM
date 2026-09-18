@@ -457,7 +457,7 @@ internal sealed class ConsoleButtonString
 
 	#endregion
 
-	private readonly static StringBuilder builder = new();
+	private static readonly StringBuilder builder = new();
 
 	public override string ToString()
 	{

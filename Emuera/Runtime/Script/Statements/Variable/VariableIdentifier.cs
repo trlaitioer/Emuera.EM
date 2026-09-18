@@ -20,7 +20,7 @@ internal sealed class VariableIdentifier
 	private VariableIdentifier(VariableCode code, string scope)
 	{
 		this.code = code;
-		this.Scope = scope;
+		Scope = scope;
 	}
 
 	private readonly VariableCode code;
@@ -75,9 +75,9 @@ internal sealed class VariableIdentifier
 	//}
 	public bool CanForbid => (code & VariableCode.__CAN_FORBID__) == VariableCode.__CAN_FORBID__;
 
-	private readonly static Dictionary<string, VariableCode> nameDic = [];
-	private readonly static Dictionary<string, VariableCode> localvarNameDic = [];
-	private readonly static Dictionary<VariableCode, List<VariableCode>> extSaveListDic = [];
+	private static readonly Dictionary<string, VariableCode> nameDic = [];
+	private static readonly Dictionary<string, VariableCode> localvarNameDic = [];
+	private static readonly Dictionary<VariableCode, List<VariableCode>> extSaveListDic = [];
 
 	static VariableIdentifier()
 	{

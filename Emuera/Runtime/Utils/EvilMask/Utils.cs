@@ -71,8 +71,8 @@ internal sealed class Utils
 		public int[]? color;
 	}
 
-	private readonly static Stopwatch stopwatch = new();
-	private readonly static long stopwatch_base = DateTime.Now.Ticks;
+	private static readonly Stopwatch stopwatch = new();
+	private static readonly long stopwatch_base = DateTime.Now.Ticks;
 
 	public static void ParseParam4MixedNum(ref MixedNum[] nums, string tag, string word, string attrValue)
 	{
@@ -400,9 +400,9 @@ internal sealed class Utils
 
 	public sealed class DataTable
 	{
-		private readonly static Type[] builtInDTTypes = [typeof(sbyte), typeof(short), typeof(int), typeof(long), typeof(string)];
+		private static readonly Type[] builtInDTTypes = [typeof(sbyte), typeof(short), typeof(int), typeof(long), typeof(string)];
 
-		private readonly static Dictionary<Type, string> builtInDictDTTypeNames = new()
+		private static readonly Dictionary<Type, string> builtInDictDTTypeNames = new()
 		{
 			{ typeof(sbyte), "int8" },
 			{ typeof(short), "int16" },
@@ -411,7 +411,7 @@ internal sealed class Utils
 			{ typeof(string), "string" }
 		};
 
-		private readonly static Dictionary<string, Type> builtInDictDTTypeNames_R = new()
+		private static readonly Dictionary<string, Type> builtInDictDTTypeNames_R = new()
 		{
 			{ "int8", typeof(sbyte) },
 			{ "int16", typeof(short) },

@@ -27,13 +27,13 @@ internal abstract class OperatorMethod : FunctionMethod
 
 internal static class OperatorMethodManager
 {
-	private readonly static Dictionary<OperatorCode, OperatorMethod> unaryDic = [];
-	private readonly static Dictionary<OperatorCode, OperatorMethod> unaryAfterDic = [];
-	private readonly static Dictionary<OperatorCode, OperatorMethod> binaryIntIntDic = [];
-	private readonly static Dictionary<OperatorCode, OperatorMethod> binaryStrStrDic = [];
-	private readonly static OperatorMethod binaryMultIntStr;
-	private readonly static OperatorMethod ternaryIntIntInt;
-	private readonly static OperatorMethod ternaryIntStrStr;
+	private static readonly Dictionary<OperatorCode, OperatorMethod> unaryDic = [];
+	private static readonly Dictionary<OperatorCode, OperatorMethod> unaryAfterDic = [];
+	private static readonly Dictionary<OperatorCode, OperatorMethod> binaryIntIntDic = [];
+	private static readonly Dictionary<OperatorCode, OperatorMethod> binaryStrStrDic = [];
+	private static readonly OperatorMethod binaryMultIntStr;
+	private static readonly OperatorMethod ternaryIntIntInt;
+	private static readonly OperatorMethod ternaryIntStrStr;
 
 	static OperatorMethodManager()
 	{

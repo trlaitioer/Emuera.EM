@@ -462,14 +462,8 @@ internal static partial class FunctionMethodCreator
 			ReturnType = typeof(long);
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList
-				{
-					ArgTypes = { ArgType.String, ArgType.RefString1D, ArgType.Int, ArgType.Int | ArgType.DisallowVoid }, OmitStart = 2
-				},
-				new ArgTypeList
-				{
-					ArgTypes = { ArgType.RefInt1D, ArgType.RefString1D, ArgType.Int, ArgType.Int | ArgType.DisallowVoid }, OmitStart = 2
-				}
+				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.RefString1D, ArgType.Int, ArgType.Int | ArgType.DisallowVoid }, OmitStart = 2 },
+				new ArgTypeList { ArgTypes = { ArgType.RefInt1D, ArgType.RefString1D, ArgType.Int, ArgType.Int | ArgType.DisallowVoid }, OmitStart = 2 }
 			];
 			CanRestructure = false;
 		}
@@ -2083,10 +2077,7 @@ internal static partial class FunctionMethodCreator
 			{
 				argumentTypeArrayEx =
 				[
-					new ArgTypeList
-					{
-						ArgTypes = { ArgType.String, ArgType.VariadicString, ArgType.VariadicAny }, MatchVariadicGroup = true, OmitStart = 1
-					},
+					new ArgTypeList { ArgTypes = { ArgType.String, ArgType.VariadicString, ArgType.VariadicAny }, MatchVariadicGroup = true, OmitStart = 1 },
 					new ArgTypeList { ArgTypes = { ArgType.String, ArgType.RefString1D, ArgType.RefAny1D, ArgType.Int } }
 				];
 			}
@@ -2094,10 +2085,7 @@ internal static partial class FunctionMethodCreator
 			{
 				argumentTypeArrayEx =
 				[
-					new ArgTypeList
-					{
-						ArgTypes = { ArgType.String, ArgType.Int, ArgType.VariadicString, ArgType.VariadicAny }, MatchVariadicGroup = true
-					},
+					new ArgTypeList { ArgTypes = { ArgType.String, ArgType.Int, ArgType.VariadicString, ArgType.VariadicAny }, MatchVariadicGroup = true },
 					new ArgTypeList
 					{
 						ArgTypes =
@@ -4523,10 +4511,7 @@ internal static partial class FunctionMethodCreator
 			// argumentTypeArray = null;
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList
-				{
-					ArgTypes = { ArgType.CharacterData | ArgType.RefIntArray | ArgType.AllowConstRef, ArgType.Int, ArgType.Int }, OmitStart = 1
-				}
+				new ArgTypeList { ArgTypes = { ArgType.CharacterData | ArgType.RefIntArray | ArgType.AllowConstRef, ArgType.Int, ArgType.Int }, OmitStart = 1 }
 			];
 			isCharaRange = isChara;
 			CanRestructure = false;
@@ -4596,10 +4581,7 @@ internal static partial class FunctionMethodCreator
 			// argumentTypeArray = null;
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList
-				{
-					ArgTypes = { ArgType.RefAny1D | ArgType.AllowConstRef, ArgType.SameAsFirst, ArgType.Int, ArgType.Int }, OmitStart = 2
-				}
+				new ArgTypeList { ArgTypes = { ArgType.RefAny1D | ArgType.AllowConstRef, ArgType.SameAsFirst, ArgType.Int, ArgType.Int }, OmitStart = 2 }
 			];
 			isCharaRange = false;
 			CanRestructure = false;
@@ -4915,10 +4897,7 @@ internal static partial class FunctionMethodCreator
 			// argumentTypeArray = null;
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList
-				{
-					ArgTypes = { ArgType.CharacterData | ArgType.RefInt1D | ArgType.AllowConstRef, ArgType.Int, ArgType.Int }, OmitStart = 1
-				}
+				new ArgTypeList { ArgTypes = { ArgType.CharacterData | ArgType.RefInt1D | ArgType.AllowConstRef, ArgType.Int, ArgType.Int }, OmitStart = 1 }
 			];
 			isCharaRange = isChara;
 			isMax = true;
@@ -4941,10 +4920,7 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArrayEx = isChara
 				?
 				[
-					new ArgTypeList
-					{
-						ArgTypes = { ArgType.CharacterData | ArgType.RefInt1D | ArgType.AllowConstRef, ArgType.Int, ArgType.Int }, OmitStart = 1
-					}
+					new ArgTypeList { ArgTypes = { ArgType.CharacterData | ArgType.RefInt1D | ArgType.AllowConstRef, ArgType.Int, ArgType.Int }, OmitStart = 1 }
 				]
 				:
 				[
@@ -6566,10 +6542,7 @@ internal static partial class FunctionMethodCreator
 			// argumentTypeArray = null;
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList
-				{
-					ArgTypes = { ArgType.RefAnyArray | ArgType.AllowConstRef, ArgType.String, ArgType.Int, ArgType.Int }, OmitStart = 1
-				}
+				new ArgTypeList { ArgTypes = { ArgType.RefAnyArray | ArgType.AllowConstRef, ArgType.String, ArgType.Int, ArgType.Int }, OmitStart = 1 }
 			];
 			HasUniqueRestructure = true;
 			CanRestructure = true;
@@ -9011,7 +8984,7 @@ internal static partial class FunctionMethodCreator
 		}
 	}
 
-	private readonly static short[] keytoggle = new short[256];
+	private static readonly short[] keytoggle = new short[256];
 
 	private sealed class GetKeyStateMethod : FunctionMethod
 	{

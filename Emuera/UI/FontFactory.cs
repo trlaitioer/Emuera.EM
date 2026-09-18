@@ -7,7 +7,7 @@ namespace MinorShift.Emuera.UI;
 
 internal class FontFactory
 {
-	private readonly static Dictionary<(string fontname, int fontSize, FontStyle fontStyle), Font> fontDic = [];
+	private static readonly Dictionary<(string fontname, int fontSize, FontStyle fontStyle), Font> fontDic = [];
 
 	public static Font? GetFont(string requestFontName, FontStyle style)
 	{

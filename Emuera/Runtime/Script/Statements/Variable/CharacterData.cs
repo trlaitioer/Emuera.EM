@@ -778,8 +778,7 @@ internal sealed class CharacterData : IDisposable
 			}
 		}
 
-		whilebreak:
-		;
+		whilebreak: ;
 	}
 
 
