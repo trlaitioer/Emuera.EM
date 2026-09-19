@@ -3,6 +3,7 @@ using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.Runtime.Config.JSON;
 using MinorShift.Emuera.Runtime.Utils;
 using MinorShift.Emuera.Runtime.Utils.EvilMask;
+using MinorShift.Emuera.Runtime.Utils.PathUtils;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
@@ -357,13 +358,18 @@ internal static class Program
 		*/
 	}
 
+	[MemberNotNull(nameof(GameRoot))]
+	[MemberNotNull(nameof(ContentRoot))]
+	[MemberNotNull(nameof(SoundRoot))]
+	[MemberNotNull(nameof(DatRoot))]
+	[MemberNotNull(nameof(DefaultLogFile))]
 	[MemberNotNull(nameof(ExeDir))]
 	[MemberNotNull(nameof(CsvDir))]
 	[MemberNotNull(nameof(ErbDir))]
 	[MemberNotNull(nameof(DebugDir))]
 	[MemberNotNull(nameof(DatDir))]
 	[MemberNotNull(nameof(ContentDir))]
-	private static void SetDirPaths(string exeDir)
+	internal static void SetDirPaths(string exeDir)
 	{
 		ExeDir = Path.GetFullPath(new DirectoryInfo(exeDir).FullName + Path.DirectorySeparatorChar);
 
@@ -385,6 +391,14 @@ internal static class Program
 
 		#endregion
 
+		// Pure path views of the directories above. The string forms keep their trailing separator
+		// contract until every consumer has moved over to PurePath.
+		GameRoot = PurePath.From(ExeDir);
+		ContentRoot = RootChild(GameRoot, "resources");
+		SoundRoot = RootChild(GameRoot, "sound");
+		DatRoot = RootChild(GameRoot, "dat");
+		DefaultLogFile = RootChild(GameRoot, "emuera.log");
+
 		/*
 		CsvDir = WorkingDir + "csv\\";
 		ErbDir = WorkingDir + "erb\\";
@@ -395,6 +409,20 @@ internal static class Program
 		FontDir = WorkingDir + "font\\";
 		#endregion
 		*/
+	}
+
+	/// <summary>
+	/// A fixed entry of the game directory. The name is a literal, so a rejection here means the caller
+	/// passed something that is not a plain single name.
+	/// </summary>
+	private static GamePath RootChild(PurePath gameRoot, string name)
+	{
+		if (!GamePath.FromRoot(gameRoot).TryResolveChildName(name, out GamePath? child, out PathReject reason))
+		{
+			throw new InvalidOperationException($"Cannot resolve the '{name}' entry inside '{gameRoot}' ({reason}).");
+		}
+
+		return child;
 	}
 
 	#region eee_カレントディレクトリー
@@ -424,6 +452,20 @@ internal static class Program
 	public static string? FontDir { get; private set; }
 
 	#endregion
+
+	public static PurePath GameRoot { get; private set; }
+	public static GamePath ContentRoot { get; private set; }
+	public static GamePath SoundRoot { get; private set; }
+	public static GamePath DatRoot { get; private set; }
+
+	/// <summary>Log file written when OUTPUTLOG is called without a name.</summary>
+	public static GamePath DefaultLogFile { get; private set; }
+
+	/// <summary>Resolves a script supplied sound name inside the sound directory.</summary>
+	public static bool TryResolveSoundFile(string? name, [NotNullWhen(true)] out GamePath? file)
+	{
+		return SoundRoot.TryResolveChild(name, out file, out _);
+	}
 
 
 	public static bool rebootFlag;

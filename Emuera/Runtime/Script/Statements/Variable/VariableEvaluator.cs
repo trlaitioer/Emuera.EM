@@ -4,8 +4,10 @@ using MinorShift.Emuera.Runtime.Config.JSON;
 using MinorShift.Emuera.Runtime.Script.Data;
 using MinorShift.Emuera.Runtime.Script.Statements.Expression;
 using MinorShift.Emuera.Runtime.Utils;
+using MinorShift.Emuera.Runtime.Utils.PathUtils;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -2543,11 +2545,6 @@ internal sealed class VariableEvaluator : IDisposable
 		return string.Create(CultureInfo.InvariantCulture, $"{Config.Config.SavDir}save{index:00}.sav");
 	}
 
-	private static string getSaveDataPath(string s)
-	{
-		return $"{Config.Config.SavDir}save{s:00}.sav";
-	}
-
 	private static string getSaveDataPathV(int index)
 	{
 		return Program.DatDir + $"var_{index:00}.dat";
@@ -2556,16 +2553,6 @@ internal sealed class VariableEvaluator : IDisposable
 	private static string getSaveDataPathC(int index)
 	{
 		return Program.DatDir + $"chara_{index:00}.dat";
-	}
-
-	private static string getSaveDataPathV(string s)
-	{
-		return Program.DatDir + "var_" + s + ".dat";
-	}
-
-	private static string getSaveDataPathC(string s)
-	{
-		return Program.DatDir + "chara_" + s + ".dat";
 	}
 
 	/// <summary>
@@ -2593,35 +2580,30 @@ internal sealed class VariableEvaluator : IDisposable
 	public static List<string> GetDatFiles(bool charadat, string pattern)
 	{
 		List<string> files = [];
-		if (!Directory.Exists(Program.DatDir))
+		// A pattern is not a path: separators would let it enumerate outside the data folder.
+		if (!Directory.Exists(Program.DatDir) || !NamePattern.IsSingleDirectory(pattern))
 		{
 			return files;
 		}
 
-		string searchPattern = "var_" + pattern + ".dat";
-		if (charadat)
-		{
-			searchPattern = "chara_" + pattern + ".dat";
-		}
+		string prefix = charadat ? "chara_" : "var_";
+		string searchPattern = prefix + pattern + ".dat";
 
 		string[] pathes = Directory.GetFiles(Program.DatDir, searchPattern, SearchOption.TopDirectoryOnly);
 		foreach (string path in pathes)
 		{
-			if (!Path.GetExtension(path).Equals(".dat", StringComparison.OrdinalIgnoreCase))
+			PurePath entry = PurePath.From(path);
+			if (!entry.Extension.Equals(".dat", StringComparison.OrdinalIgnoreCase))
 			{
 				continue;
 			}
 
-			string filename = Path.GetFileNameWithoutExtension(path);
-			if (charadat)
+			if (!entry.NameWithoutExtension.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
 			{
-				filename = filename.Substring(6);
-			}
-			else
-			{
-				filename = filename.Substring(4);
+				continue;
 			}
 
+			string filename = entry.NameWithoutExtension[prefix.Length..];
 			if (string.IsNullOrEmpty(filename))
 			{
 				continue;
@@ -2634,23 +2616,29 @@ internal sealed class VariableEvaluator : IDisposable
 	}
 
 	/// <summary>
-	/// 文字列がファイル名の一部として適切かどうか調べる
+	/// Resolves "&lt;prefix&gt;&lt;savename&gt;.dat" inside the data directory. The name is a single
+	/// segment, so a name carrying separators is rejected instead of walking out of the folder.
 	/// </summary>
-	/// <param name="datfilename"></param>
-	/// <returns>適切ならnull、不適切ならエラーメッセージ</returns>
-	public static string? CheckDatFilename(string datfilename)
+	private static bool TryResolveSaveDataPath(string prefix, string? savename, [NotNullWhen(true)] out GamePath? path)
 	{
-		if (string.IsNullOrEmpty(datfilename))
+		return Program.DatRoot.TryResolveChildName($"{prefix}{savename}.dat", out path, out _);
+	}
+
+	/// <summary>
+	/// Resolves "save&lt;savename&gt;.sav" inside the save directory, which is either the game
+	/// directory itself or its "sav" subdirectory.
+	/// </summary>
+	private static bool TryResolveSaveFilePath(string? savename, [NotNullWhen(true)] out string? filepath)
+	{
+		if (!GamePath.TryResolveAbsolute(Program.GameRoot, $"{Config.Config.SavDir}save{savename}.sav",
+			    out GamePath? saveFile, out _))
 		{
-			return trerror.NothingFileName.Text;
+			filepath = null;
+			return false;
 		}
 
-		if (datfilename.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
-		{
-			return trerror.InvalidFileName.Text;
-		}
-
-		return null;
+		filepath = saveFile.FullName;
+		return true;
 	}
 
 	public EraDataResult CheckData(string savename, EraSaveFileType type)
@@ -2659,13 +2647,28 @@ internal sealed class VariableEvaluator : IDisposable
 		switch (type)
 		{
 			case EraSaveFileType.Normal:
-				filename = getSaveDataPath(savename); break;
+				if (TryResolveSaveFilePath(savename, out string? savePath))
+				{
+					filename = savePath;
+				}
+
+				break;
 			case EraSaveFileType.Global:
 				filename = getSaveDataPathG(); break;
 			case EraSaveFileType.Var:
-				filename = getSaveDataPathV(savename); break;
+				if (TryResolveSaveDataPath("var_", savename, out GamePath? varFile))
+				{
+					filename = varFile.FullName;
+				}
+
+				break;
 			case EraSaveFileType.CharVar:
-				filename = getSaveDataPathC(savename); break;
+				if (TryResolveSaveDataPath("chara_", savename, out GamePath? charaFile))
+				{
+					filename = charaFile.FullName;
+				}
+
+				break;
 		}
 
 		return CheckDataByFilename(filename, type);
@@ -2847,8 +2850,12 @@ internal sealed class VariableEvaluator : IDisposable
 	public void SaveChara(string savename, string savMes, int[] charas)
 	{
 		CreateDatFolder();
-		CheckDatFilename(savename);
-		string filepath = getSaveDataPathC(savename);
+		if (!TryResolveSaveDataPath("chara_", savename, out GamePath? dataFile))
+		{
+			return;
+		}
+
+		string filepath = dataFile.FullName;
 		EraBinaryDataWriter? bWriter = null;
 		FileStream? fs = null;
 		try
@@ -2889,8 +2896,13 @@ internal sealed class VariableEvaluator : IDisposable
 
 	public void LoadChara(string savename)
 	{
-		string filepath = getSaveDataPathC(savename);
 		RESULT = 0;
+		if (!TryResolveSaveDataPath("chara_", savename, out GamePath? dataFile))
+		{
+			return;
+		}
+
+		string filepath = dataFile.FullName;
 		if (!File.Exists(filepath))
 		{
 			return;
@@ -2956,8 +2968,12 @@ internal sealed class VariableEvaluator : IDisposable
 	public void SaveVariable(string savename, string savMes, VariableToken[] vars)
 	{
 		CreateDatFolder();
-		CheckDatFilename(savename);
-		string filepath = getSaveDataPathV(savename);
+		if (!TryResolveSaveDataPath("var_", savename, out GamePath? dataFile))
+		{
+			return;
+		}
+
+		string filepath = dataFile.FullName;
 		EraBinaryDataWriter? bWriter = null;
 		FileStream? fs = null;
 		try
@@ -2998,8 +3014,13 @@ internal sealed class VariableEvaluator : IDisposable
 
 	public void LoadVariable(string savename)
 	{
-		string filepath = getSaveDataPathV(savename);
 		RESULT = 0;
+		if (!TryResolveSaveDataPath("var_", savename, out GamePath? dataFile))
+		{
+			return;
+		}
+
+		string filepath = dataFile.FullName;
 		if (!File.Exists(filepath))
 		{
 			return;

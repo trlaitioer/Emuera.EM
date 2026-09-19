@@ -8,6 +8,7 @@ using MinorShift.Emuera.Runtime.Script.Statements.Function;
 using MinorShift.Emuera.Runtime.Script.Statements.Variable;
 using MinorShift.Emuera.Runtime.Utils;
 using MinorShift.Emuera.Runtime.Utils.EvilMask;
+using MinorShift.Emuera.Runtime.Utils.PathUtils;
 using MinorShift.Emuera.UI.Game;
 using MinorShift.Emuera.UI.Game.Image;
 using System;
@@ -296,23 +297,28 @@ internal static partial class FunctionMethodCreator
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string? dir = Utils.GetValidPath(arguments.Required(0).GetStrValue(exm));
-			if (dir == null || !Directory.Exists(dir))
+			if (!GamePath.TryResolve(Program.GameRoot, arguments.Required(0).GetStrValue(exm), out GamePath? dir, out _) ||
+			    !Directory.Exists(dir.FullName))
 			{
 				return -1;
 			}
 
 			string pattern = arguments.Count > 1 ? arguments.Required(1).GetStrValue(exm) : "*";
+			if (!NamePattern.IsSingleDirectory(pattern))
+			{
+				return -1;
+			}
+
 			SearchOption option = arguments.Count > 2
 				? arguments.Required(2).GetIntValue(exm) == 0 ? SearchOption.TopDirectoryOnly : SearchOption.AllDirectories
 				: SearchOption.TopDirectoryOnly;
 			string[] files;
 			try
 			{
-				files = [.. Directory.EnumerateFiles(dir, pattern, option)];
+				files = [.. Directory.EnumerateFiles(dir.FullName, pattern, option)];
 				for (int i = 0; i < files.Length; i++)
 				{
-					files[i] = Path.GetRelativePath(Program.ExeDir, files[i]);
+					files[i] = PurePath.From(files[i]).RelativeTo(Program.GameRoot).ToString();
 				}
 			}
 			catch
@@ -1840,13 +1846,12 @@ internal static partial class FunctionMethodCreator
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string? filepath = Utils.GetValidPath(arguments.Required(0).GetStrValue(exm));
-			if (filepath != null && File.Exists(filepath))
+			if (!GamePath.TryResolve(Program.GameRoot, arguments.Required(0).GetStrValue(exm), out GamePath? filepath, out _))
 			{
-				return 1;
+				return 0;
 			}
 
-			return 0;
+			return File.Exists(filepath.FullName) ? 1 : 0;
 		}
 	}
 
@@ -7893,19 +7898,23 @@ internal static partial class FunctionMethodCreator
 			Bitmap? bmp = null;
 			try
 			{
-				string filepath = filename;
-				if (!Path.IsPathRooted(filepath))
+				// Both branches resolve inside the game directory.
+				GamePath? contentFile = null;
+				if (isRelative)
 				{
-					if (isRelative)
-					{
-						filepath = filename;
-					}
-					else
-					{
-						filepath = Program.ContentDir + filename;
-					}
+					GamePath.TryResolve(Program.GameRoot, filename, out contentFile, out _);
+				}
+				else
+				{
+					Program.ContentRoot.TryResolveChild(filename, out contentFile, out _);
 				}
 
+				if (contentFile == null)
+				{
+					return 0;
+				}
+
+				string filepath = contentFile.FullName;
 				if (!File.Exists(filepath))
 				{
 					return 0;
@@ -9182,7 +9191,9 @@ internal static partial class FunctionMethodCreator
 			//	System.IO.File.WriteAllText(filepath, savText, encoding);
 			//}
 			//catch { return 0; }
-			string savText = arguments.Required(0).GetStrValue(exm), filepath;
+			string savText = arguments.Required(0).GetStrValue(exm);
+			string filepath;
+			PurePath? fileDirectory = null;
 			long i64 = -1;
 			bool forceSavdir = arguments.Count > 2 && arguments.Required(2).GetIntValue(exm) != 0;
 			bool forceUTF8 = arguments.Count > 3 && arguments.Required(3).GetIntValue(exm) != 0;
@@ -9201,18 +9212,19 @@ internal static partial class FunctionMethodCreator
 			}
 			else
 			{
-				filepath = Utils.GetValidPath(arguments.Required(1).GetStrValue(exm))!;
-				if (filepath == null)
+				if (!GamePath.TryResolve(Program.GameRoot, arguments.Required(1).GetStrValue(exm), out GamePath? textFile, out _))
 				{
 					return 0;
 				}
 
-				string tmp = Path.HasExtension(filepath) ? Path.GetExtension(filepath).ToLower().Substring(1) : "";
+				string tmp = textFile.Extension.Length > 1 ? textFile.Extension[1..].ToLower() : "";
 				if (!Config.ValidExtension.Contains(tmp))
 				{
-					filepath = Path.ChangeExtension(filepath, "txt");
+					textFile = textFile.ChangeExtension(".txt");
 				}
 
+				filepath = textFile.FullName;
+				fileDirectory = textFile.Directory;
 				forceUTF8 = true;
 			}
 
@@ -9232,12 +9244,9 @@ internal static partial class FunctionMethodCreator
 						Config.CreateSavDir();
 					}
 				}
-				else
+				else if (fileDirectory != null)
 				{
-					if (filepath.LastIndexOf('\\') >= 0)
-					{
-						Directory.CreateDirectory(filepath.Substring(0, filepath.LastIndexOf('\\')));
-					}
+					Directory.CreateDirectory(fileDirectory.ToString());
 				}
 
 				File.WriteAllText(filepath, savText, Config.SaveEncode);
@@ -9312,7 +9321,8 @@ internal static partial class FunctionMethodCreator
 			//}
 			//catch { return ""; }
 			//return ret;
-			string ret = "", filepath;
+			string ret = "";
+			string filepath;
 			long i64 = -1;
 			bool forceSavdir = arguments.Count > 1 && arguments.Required(1).GetIntValue(exm) != 0;
 			bool forceUTF8 = arguments.Count > 2 && arguments.Required(2).GetIntValue(exm) != 0;
@@ -9329,17 +9339,18 @@ internal static partial class FunctionMethodCreator
 			}
 			else
 			{
-				filepath = Utils.GetValidPath(arguments.Required(0).GetStrValue(exm))!;
-				if (filepath == null)
+				if (!GamePath.TryResolve(Program.GameRoot, arguments.Required(0).GetStrValue(exm), out GamePath? textFile, out _))
 				{
 					return string.Empty;
 				}
 
-				string tmp = Path.HasExtension(filepath) ? Path.GetExtension(filepath).ToLower().Substring(1) : "";
+				string tmp = textFile.Extension.Length > 1 ? textFile.Extension[1..].ToLower() : "";
 				if (!Config.ValidExtension.Contains(tmp))
 				{
 					return "";
 				}
+
+				filepath = textFile.FullName;
 			}
 
 			if (!File.Exists(filepath))
@@ -9516,14 +9527,12 @@ internal static partial class FunctionMethodCreator
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string str = arguments.Required(0).GetStrValue(exm);
-			string filepath = Path.GetFullPath(".\\sound\\" + str);
-			if (File.Exists(filepath))
+			if (!Program.TryResolveSoundFile(arguments.Required(0).GetStrValue(exm), out GamePath? soundPath))
 			{
-				return 1;
+				return 0;
 			}
 
-			return 0;
+			return File.Exists(soundPath.FullName) ? 1 : 0;
 		}
 	}
 

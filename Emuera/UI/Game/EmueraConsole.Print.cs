@@ -2,6 +2,7 @@
 using MinorShift.Emuera.Runtime.Script.Statements;
 using MinorShift.Emuera.Runtime.Utils;
 using MinorShift.Emuera.Runtime.Utils.EvilMask;
+using MinorShift.Emuera.Runtime.Utils.PathUtils;
 using MinorShift.Emuera.UI.Game;
 using System;
 using System.Collections.Generic;
@@ -1079,33 +1080,27 @@ internal sealed partial class EmueraConsole : IDisposable
 
 	public bool OutputLog(string? filename, bool hideInfo)
 	{
-		// if (filename == null)
+		GamePath path;
 		if (filename is "" or null)
 		{
-			filename = Program.ExeDir + "emuera.log";
+			path = Program.DefaultLogFile;
+		}
+		else if (!GamePath.TryResolve(Program.GameRoot, filename, out GamePath? resolved, out PathReject reason))
+		{
+			Dialog.Show(trmb.FailedOutputLog.Text,
+				reason == PathReject.OutsideRoot ? trmb.CanNotOutputToParentDirectory.Text : trmb.CanOnlyOutputToSubDirectory.Text);
+			return false;
 		}
 		else
 		{
-			filename = Program.ExeDir + filename;
+			path = resolved;
 		}
 
-		if (filename.Contains("../"))
-		{
-			Dialog.Show(trmb.FailedOutputLog.Text, trmb.CanNotOutputToParentDirectory.Text);
-			return false;
-		}
-
-		if (!filename.StartsWith(Program.ExeDir, StringComparison.OrdinalIgnoreCase))
-		{
-			Dialog.Show(trmb.FailedOutputLog.Text, trmb.CanOnlyOutputToSubDirectory.Text);
-			return false;
-		}
-
-		if (outputLog(filename, hideInfo))
+		if (outputLog(path.FullName, hideInfo))
 		{
 			if (window.Created)
 			{
-				PrintSystemLine(string.Format(trsl.LogFileHasBeenCreated.Text, filename.Replace(Program.ExeDir, "")));
+				PrintSystemLine(string.Format(trsl.LogFileHasBeenCreated.Text, path.RelativeTo(Program.GameRoot).ToString()));
 				RefreshStrings(true);
 			}
 
@@ -1119,22 +1114,27 @@ internal sealed partial class EmueraConsole : IDisposable
 
 	public bool OutputSystemLog(string filename)
 	{
+		GamePath path;
 		if (filename is "" or null)
 		{
-			filename = Program.ExeDir + "emuera.log";
+			path = Program.DefaultLogFile;
 		}
-
-		if (!filename.StartsWith(Program.ExeDir, StringComparison.OrdinalIgnoreCase))
+		// Callers hand over a path the file system produced, so it is already absolute.
+		else if (!GamePath.TryResolveAbsolute(Program.GameRoot, filename, out GamePath? resolved, out _))
 		{
 			Dialog.Show(trmb.FailedOutputLog.Text, trmb.CanOnlyOutputToSubDirectory.Text);
 			return false;
 		}
+		else
+		{
+			path = resolved;
+		}
 
-		if (outputLog(filename, false))
+		if (outputLog(path.FullName, false))
 		{
 			if (window.Created)
 			{
-				PrintSystemLine(string.Format(trsl.LogFileHasBeenCreated.Text, filename.Replace(Program.ExeDir, "")));
+				PrintSystemLine(string.Format(trsl.LogFileHasBeenCreated.Text, path.RelativeTo(Program.GameRoot).ToString()));
 				RefreshStrings(true);
 			}
 

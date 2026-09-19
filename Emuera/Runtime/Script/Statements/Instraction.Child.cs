@@ -11,6 +11,7 @@ using MinorShift.Emuera.Runtime.Script.Statements.Function;
 using MinorShift.Emuera.Runtime.Script.Statements.Variable;
 using MinorShift.Emuera.Runtime.Utils;
 using MinorShift.Emuera.Runtime.Utils.EvilMask;
+using MinorShift.Emuera.Runtime.Utils.PathUtils;
 using MinorShift.Emuera.Runtime.Utils.PluginSystem;
 using MinorShift.Emuera.UI.Game;
 using System;
@@ -3206,7 +3207,12 @@ internal sealed partial class FunctionIdentifier
 			}
 
 			int repeat = soundArg.Opt != null ? (int)Math.Max(soundArg.Opt.GetIntValue(exm), 1) : 1;
-			string filepath = Path.GetFullPath(Program.SoundDir + datFilename);
+			if (!Program.TryResolveSoundFile(datFilename, out GamePath? soundPath))
+			{
+				return;
+			}
+
+			string filepath = soundPath.FullName;
 			try
 			{
 				if (File.Exists(filepath))
@@ -3288,7 +3294,12 @@ internal sealed partial class FunctionIdentifier
 				datFilename = arg.Term!.GetStrValue(exm);
 			}
 
-			string filepath = Path.GetFullPath(Program.SoundDir + datFilename);
+			if (!Program.TryResolveSoundFile(datFilename, out GamePath? soundPath))
+			{
+				return;
+			}
+
+			string filepath = soundPath.FullName;
 
 			try
 			{

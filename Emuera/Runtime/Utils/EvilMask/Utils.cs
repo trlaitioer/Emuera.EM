@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.UI.Game;
+﻿using MinorShift.Emuera.Runtime.Utils.PathUtils;
+using MinorShift.Emuera.UI.Game;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -322,20 +323,10 @@ internal sealed class Utils
 	/// </summary>
 	public static string? GetValidPath(string path)
 	{
-		path = path.Replace('/', '\\').Replace("..\\", "");
-		try
-		{
-			if (Path.GetPathRoot(path) != string.Empty)
-			{
-				return null;
-			}
-		}
-		catch
-		{
-			return null;
-		}
-
-		return Path.Combine(Program.ExeDir + path);
+		// Normalizes and proves containment; a rejected path never reaches the file system.
+		return GamePath.TryResolve(Program.GameRoot, path, out GamePath? resolved, out _)
+			? resolved.FullName
+			: null;
 	}
 
 	public static void MixedNum4ToInt4(MixedNum[]? mnums, ref int[]? nums)
