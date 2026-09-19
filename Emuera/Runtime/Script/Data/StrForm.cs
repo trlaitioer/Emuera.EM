@@ -43,8 +43,7 @@ internal sealed class StrForm
 
 		if (funcnameTerm is FunctionMethodTerm fmt
 		    && ReferenceEquals(fmt.Method, formatCurlyBrace)
-		    && fmt.Arguments[0] is AExpression operand
-		    && operand.GetOperandType() == typeof(long))
+		    && fmt.Arguments[0] is { IsInteger: true } operand)
 		{
 			return operand;
 		}
@@ -122,11 +121,11 @@ internal sealed class StrForm
 				throw new ExeEE(trerror.StrFormUnexpected.Text);
 			}
 
-			WordCollection wc;
+			WordCollection? wc;
 			AExpression? operand;
 			if (SWT is YenAtSubWord yenat)
 			{
-				wc = yenat.Words!;
+				wc = yenat.Words;
 				if (wc != null)
 				{
 					operand = ExpressionParser.ReduceIntegerTerm(wc, TermEndWith.EoL);
@@ -141,15 +140,7 @@ internal sealed class StrForm
 				}
 
 				AExpression left = new StrFormTerm(FromWordToken(yenat.Left));
-				AExpression right;
-				if (yenat.Right == null)
-				{
-					right = new SingleStrTerm("");
-				}
-				else
-				{
-					right = new StrFormTerm(FromWordToken(yenat.Right));
-				}
+				AExpression right = yenat.Right == null ? new SingleStrTerm("") : new StrFormTerm(FromWordToken(yenat.Right));
 
 				termArray[i] = new FunctionMethodTerm(formatYenAt, [operand, left, right]);
 				continue;
@@ -163,10 +154,8 @@ internal sealed class StrForm
 				{
 					throw new CodeEE(trerror.EmptyBrace.Text);
 				}
-				else
-				{
-					throw new CodeEE(trerror.EmptyPer.Text);
-				}
+
+				throw new CodeEE(trerror.EmptyPer.Text);
 			}
 
 			AExpression? second = null;
@@ -204,7 +193,7 @@ internal sealed class StrForm
 
 			if (SWT is CurlyBraceSubWord)
 			{
-				if (operand.GetOperandType() != typeof(long))
+				if (!operand.IsInteger)
 				{
 					throw new CodeEE(trerror.IsNotNumericBrace.Text);
 				}
@@ -213,7 +202,7 @@ internal sealed class StrForm
 				continue;
 			}
 
-			if (operand.GetOperandType() != typeof(string))
+			if (!operand.IsString)
 			{
 				throw new CodeEE(trerror.IsNotStringPer.Text);
 			}
@@ -230,12 +219,7 @@ internal sealed class StrForm
 
 	public AExpression? GetAExpression()
 	{
-		if (strs is [{ Length: 0 }, { Length: 0 }])
-		{
-			return terms[0];
-		}
-
-		return null;
+		return strs is [{ Length: 0 }, { Length: 0 }] ? terms[0] : null;
 	}
 
 	public void Restructure(ExpressionMediator exm)
@@ -264,14 +248,16 @@ internal sealed class StrForm
 		List<AExpression> termList = [.. terms];
 		for (int i = 0; i < termList.Count; i++)
 		{
-			if (termList[i] is SingleTerm single)
+			if (termList[i] is not SingleTerm single)
 			{
-				string str = single.GetStrValue(exm);
-				strList[i] = strList[i] + str + strList[i + 1];
-				termList.RemoveAt(i);
-				strList.RemoveAt(i + 1);
-				i--;
+				continue;
 			}
+
+			string str = single.GetStrValue(exm);
+			strList[i] = strList[i] + str + strList[i + 1];
+			termList.RemoveAt(i);
+			strList.RemoveAt(i + 1);
+			i--;
 		}
 
 		strs = [.. strList];
@@ -280,11 +266,12 @@ internal sealed class StrForm
 
 	public string GetString(ExpressionMediator exm)
 	{
-		DefaultInterpolatedStringHandler handler = new(strs.Length + terms.Length, 0);
 		if (strs.Length == 1)
 		{
 			return strs[0];
 		}
+
+		DefaultInterpolatedStringHandler handler = new(strs.Length + terms.Length, 0);
 
 		for (int i = 0; i < strs.Length - 1; i++)
 		{
@@ -327,21 +314,14 @@ internal sealed class StrForm
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string ret = arguments.Required(0).GetIntValue(exm).ToString();
-			if (arguments[1] is not AExpression widthArg)
+			if (arguments[1] is not { } widthArg)
 			{
 				return ret;
 			}
 
-			if (arguments[2] != null)
-			{
-				ret = ret.PadRight((int)widthArg.GetIntValue(exm), ' '); //LEFT
-			}
-			else
-			{
-				ret = ret.PadLeft((int)widthArg.GetIntValue(exm), ' '); //RIGHT
-			}
-
-			return ret;
+			return arguments[2] != null
+				? ret.PadRight((int)widthArg.GetIntValue(exm), ' ') //LEFT
+				: ret.PadLeft((int)widthArg.GetIntValue(exm), ' '); //RIGHT
 		}
 	}
 
@@ -350,7 +330,7 @@ internal sealed class StrForm
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			string ret = arguments.Required(0).GetStrValue(exm);
-			if (arguments[1] is not AExpression widthArg)
+			if (arguments[1] is not { } widthArg)
 			{
 				return ret;
 			}
@@ -363,16 +343,9 @@ internal sealed class StrForm
 				return ret; //PadLeftは0未満を送ると例外を投げる
 			}
 
-			if (arguments[2] != null)
-			{
-				ret = ret.PadRight(totalLength, ' '); //LEFT
-			}
-			else
-			{
-				ret = ret.PadLeft(totalLength, ' '); //RIGHT
-			}
-
-			return ret;
+			return arguments[2] != null
+				? ret.PadRight(totalLength, ' ') //LEFT
+				: ret.PadLeft(totalLength, ' '); //RIGHT
 		}
 	}
 

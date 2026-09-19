@@ -47,7 +47,7 @@ internal sealed class UserDefinedVariableData
 			//TODO ifの数があたまわるい なんとかしたい
 			switch (keyword)
 			{
-				case var s when s.Equals("CONST", cmp):
+				case var _ when keyword.Equals("CONST", cmp):
 					if (ret.CharaData)
 					{
 						throw new CodeEE(string.Format(trerror.CanNotSpecifiedWith.Text, keyword, "CHARADATA"), sc);
@@ -80,7 +80,7 @@ internal sealed class UserDefinedVariableData
 
 					ret.Const = true;
 					break;
-				case var s when s.Equals("REF", cmp):
+				case var _ when keyword.Equals("REF", cmp):
 					//throw new CodeEE("未実装の機能です", sc);
 					//if (!isPrivate)
 					//	throw new CodeEE("広域変数の宣言に" + keyword + "キーワードは指定できません", sc);
@@ -117,7 +117,7 @@ internal sealed class UserDefinedVariableData
 					ret.Reference = true;
 					ret.Static = false;
 					break;
-				case var s when s.Equals("DYNAMIC", cmp):
+				case var _ when keyword.Equals("DYNAMIC", cmp):
 					if (!isPrivate)
 					{
 						throw new CodeEE(string.Format(trerror.CanNotUseKeywordGlobalVar.Text, keyword), sc);
@@ -139,16 +139,14 @@ internal sealed class UserDefinedVariableData
 						{
 							throw new CodeEE(string.Format(trerror.CanNotSpecifiedWith.Text, "STATIC", "DYNAMIC"), sc);
 						}
-						else
-						{
-							throw new CodeEE(string.Format(trerror.DuplicateKeyword.Text, keyword), sc);
-						}
+
+						throw new CodeEE(string.Format(trerror.DuplicateKeyword.Text, keyword), sc);
 					}
 
 					staticDefined = true;
 					ret.Static = false;
 					break;
-				case var s when s.Equals("STATIC", cmp):
+				case var _ when keyword.Equals("STATIC", cmp):
 					if (!isPrivate)
 					{
 						throw new CodeEE(string.Format(trerror.CanNotUseKeywordGlobalVar.Text, keyword), sc);
@@ -165,10 +163,8 @@ internal sealed class UserDefinedVariableData
 						{
 							throw new CodeEE(string.Format(trerror.CanNotSpecifiedWith.Text, "STATIC", "DYNAMIC"), sc);
 						}
-						else
-						{
-							throw new CodeEE(string.Format(trerror.DuplicateKeyword.Text, keyword), sc);
-						}
+
+						throw new CodeEE(string.Format(trerror.DuplicateKeyword.Text, keyword), sc);
 					}
 
 					if (ret.Reference)
@@ -179,7 +175,7 @@ internal sealed class UserDefinedVariableData
 					staticDefined = true;
 					ret.Static = true;
 					break;
-				case var s when s.Equals("GLOBAL", cmp):
+				case var _ when keyword.Equals("GLOBAL", cmp):
 					if (isPrivate)
 					{
 						throw new CodeEE(string.Format(trerror.CanNotUseKeywordLocalVar.Text, keyword), sc);
@@ -214,7 +210,7 @@ internal sealed class UserDefinedVariableData
 
 					ret.Global = true;
 					break;
-				case var s when s.Equals("SAVEDATA", cmp):
+				case var _ when keyword.Equals("SAVEDATA", cmp):
 					if (isPrivate)
 					{
 						throw new CodeEE(string.Format(trerror.CanNotUseKeywordLocalVar.Text, keyword), sc);
@@ -226,10 +222,8 @@ internal sealed class UserDefinedVariableData
 						{
 							throw new CodeEE(string.Format(trerror.CanNotSpecifiedWith.Text, "STATIC", "SAVEDATA"), sc);
 						}
-						else
-						{
-							throw new CodeEE(string.Format(trerror.CanNotSpecifiedWith.Text, "DYNAMIC", "SAVEDATA"), sc);
-						}
+
+						throw new CodeEE(string.Format(trerror.CanNotSpecifiedWith.Text, "DYNAMIC", "SAVEDATA"), sc);
 					}
 
 					if (ret.Reference)
@@ -249,7 +243,7 @@ internal sealed class UserDefinedVariableData
 
 					ret.Save = true;
 					break;
-				case var s when s.Equals("CHARADATA", cmp):
+				case var _ when keyword.Equals("CHARADATA", cmp):
 					if (isPrivate)
 					{
 						throw new CodeEE(string.Format(trerror.CanNotUseKeywordLocalVar.Text, keyword), sc);
@@ -271,10 +265,8 @@ internal sealed class UserDefinedVariableData
 						{
 							throw new CodeEE(string.Format(trerror.CanNotSpecifiedWith.Text, keyword, "STATIC"), sc);
 						}
-						else
-						{
-							throw new CodeEE(string.Format(trerror.CanNotSpecifiedWith.Text, keyword, "DYNAMIC"), sc);
-						}
+
+						throw new CodeEE(string.Format(trerror.CanNotSpecifiedWith.Text, keyword, "DYNAMIC"), sc);
 					}
 
 					if (ret.Global)
@@ -387,7 +379,8 @@ internal sealed class UserDefinedVariableData
 
 					continue;
 				}
-				else if (sizeTerm.Int is <= 0 or > 1000000)
+
+				if (sizeTerm.Int is <= 0 or > 1000000)
 				{
 					throw new CodeEE(trerror.OoRDefinable.Text, sc);
 				}
@@ -508,19 +501,14 @@ internal sealed class UserDefinedVariableData
 
 		ret.Private = isPrivate;
 		ret.Dimension = sizeNum.Count;
-		if (ret is { Const: true, Dimension: > 1 })
+		switch (ret)
 		{
-			throw new CodeEE(trerror.CanNotDeclareConstArray.Text);
-		}
-
-		if (ret is { CharaData: true, Dimension: > 2 })
-		{
-			throw new CodeEE(trerror.CharaVarCanNotDeclareMoreThan3D.Text, sc);
-		}
-
-		if (ret.Dimension > 3)
-		{
-			throw new CodeEE(trerror.VarCanNotDeclareMoreThan4D.Text, sc);
+			case { Const: true, Dimension: > 1 }:
+				throw new CodeEE(trerror.CanNotDeclareConstArray.Text);
+			case { CharaData: true, Dimension: > 2 }:
+				throw new CodeEE(trerror.CharaVarCanNotDeclareMoreThan3D.Text, sc);
+			case { Dimension: > 3 }:
+				throw new CodeEE(trerror.VarCanNotDeclareMoreThan4D.Text, sc);
 		}
 
 		ret.Lengths = new int[sizeNum.Count];
@@ -541,34 +529,24 @@ internal sealed class UserDefinedVariableData
 			throw new CodeEE(trerror.OoRDefinable.Text, sc);
 		}
 
-		if (!isPrivate && ret.Save && !Config.Config.SystemSaveInBinary)
+		if (isPrivate || !ret.Save || Config.Config.SystemSaveInBinary)
 		{
-			if (dims && ret.Dimension > 1)
-			{
-				throw new CodeEE(trerror.StrVarrRequiredBinaryOption.Text, sc);
-			}
-			else if (ret.CharaData)
-			{
-				throw new CodeEE(trerror.CharaStrRequiredBinaryOption.Text, sc);
-			}
+			return ret;
 		}
 
-		return ret;
+		if (dims && ret.Dimension > 1)
+		{
+			throw new CodeEE(trerror.StrVarrRequiredBinaryOption.Text, sc);
+		}
+
+		return ret.CharaData ? throw new CodeEE(trerror.CharaStrRequiredBinaryOption.Text, sc) : ret;
 	}
 }
 
-internal sealed class DimLineWC
+internal sealed class DimLineWC(WordCollection wc, bool isString, bool isPrivate, ScriptPosition? position)
 {
-	public readonly WordCollection WC;
-	public readonly bool Dims;
-	public readonly bool IsPrivate;
-	public ScriptPosition? SC;
-
-	public DimLineWC(WordCollection wc, bool isString, bool isPrivate, ScriptPosition? position)
-	{
-		WC = wc;
-		Dims = isString;
-		IsPrivate = isPrivate;
-		SC = position;
-	}
+	public readonly WordCollection WC = wc;
+	public readonly bool Dims = isString;
+	public readonly bool IsPrivate = isPrivate;
+	public ScriptPosition? SC = position;
 }

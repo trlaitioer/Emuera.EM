@@ -60,21 +60,11 @@ internal partial class IdentifierDictionary
 
 	public static bool IsEventLabelName(string labelName)
 	{
-		switch (labelName)
+		return labelName switch
 		{
-			case "EVENTFIRST":
-			case "EVENTTRAIN":
-			case "EVENTSHOP":
-			case "EVENTBUY":
-			case "EVENTCOM":
-			case "EVENTTURNEND":
-			case "EVENTCOMEND":
-			case "EVENTEND":
-			case "EVENTLOAD":
-				return true;
-		}
-
-		return false;
+			"EVENTFIRST" or "EVENTTRAIN" or "EVENTSHOP" or "EVENTBUY" or "EVENTCOM" or "EVENTTURNEND" or "EVENTCOMEND" or "EVENTEND" or "EVENTLOAD" => true,
+			_ => false
+		};
 	}
 
 	public static bool IsSystemLabelName(string labelName)
@@ -109,22 +99,7 @@ internal partial class IdentifierDictionary
 				return true;
 		}
 
-		if (regexCom.IsMatch(labelName))
-		{
-			return true;
-		}
-
-		if (regexComAble.IsMatch(labelName))
-		{
-			return true;
-		}
-
-		if (regexAblup.IsMatch(labelName))
-		{
-			return true;
-		}
-
-		return false;
+		return regexCom.IsMatch(labelName) || regexComAble.IsMatch(labelName) || regexAblup.IsMatch(labelName);
 	}
 
 	#endregion
@@ -241,54 +216,56 @@ internal partial class IdentifierDictionary
 			return;
 		}
 
-		if (nameDic.TryGetValue(labelName, out DefinedNameType value))
+		if (!nameDic.TryGetValue(labelName, out DefinedNameType value))
 		{
-			switch (value)
-			{
-				case DefinedNameType.Reserved:
-					if (Config.AllowFunctionOverloading)
-					{
-						errMes = string.Format(treer.LabelConflictReservedWord1.Text, labelName);
-						warnLevel = 1;
-					}
-					else
-					{
-						errMes = string.Format(treer.LabelConflictReservedWord2.Text, labelName);
-						warnLevel = 2;
-					}
+			return;
+		}
 
-					break;
-				case DefinedNameType.SystemMethod:
-					if (Config.AllowFunctionOverloading)
-					{
-						errMes = string.Format(treer.LabelOverwriteInternalExpression.Text, labelName);
-						warnLevel = 1;
-					}
-					else
-					{
-						errMes = string.Format(treer.LabelNameAlreadyUsedInternalExpression.Text, labelName);
-						warnLevel = 2;
-					}
+		switch (value)
+		{
+			case DefinedNameType.Reserved:
+				if (Config.AllowFunctionOverloading)
+				{
+					errMes = string.Format(treer.LabelConflictReservedWord1.Text, labelName);
+					warnLevel = 1;
+				}
+				else
+				{
+					errMes = string.Format(treer.LabelConflictReservedWord2.Text, labelName);
+					warnLevel = 2;
+				}
 
-					break;
-				case DefinedNameType.SystemVariable:
-					errMes = string.Format(treer.LabelNameAlreadyUsedInternalVariable.Text, labelName);
+				break;
+			case DefinedNameType.SystemMethod:
+				if (Config.AllowFunctionOverloading)
+				{
+					errMes = string.Format(treer.LabelOverwriteInternalExpression.Text, labelName);
 					warnLevel = 1;
-					break;
-				case DefinedNameType.SystemInstrument:
-					errMes = string.Format(treer.LabelNameAlreadyUsedInternalInstruction.Text, labelName);
-					warnLevel = 1;
-					break;
-				case DefinedNameType.UserMacro:
-					//字句解析がうまくいっていれば本来あり得ないはず
-					errMes = string.Format(treer.LabelNameAlreadyUsedMacro.Text, labelName);
+				}
+				else
+				{
+					errMes = string.Format(treer.LabelNameAlreadyUsedInternalExpression.Text, labelName);
 					warnLevel = 2;
-					break;
-				case DefinedNameType.UserRefMethod:
-					errMes = string.Format(treer.LabelNameAlreadyUsedRefFunction.Text, labelName);
-					warnLevel = 2;
-					break;
-			}
+				}
+
+				break;
+			case DefinedNameType.SystemVariable:
+				errMes = string.Format(treer.LabelNameAlreadyUsedInternalVariable.Text, labelName);
+				warnLevel = 1;
+				break;
+			case DefinedNameType.SystemInstrument:
+				errMes = string.Format(treer.LabelNameAlreadyUsedInternalInstruction.Text, labelName);
+				warnLevel = 1;
+				break;
+			case DefinedNameType.UserMacro:
+				//字句解析がうまくいっていれば本来あり得ないはず
+				errMes = string.Format(treer.LabelNameAlreadyUsedMacro.Text, labelName);
+				warnLevel = 2;
+				break;
+			case DefinedNameType.UserRefMethod:
+				errMes = string.Format(treer.LabelNameAlreadyUsedRefFunction.Text, labelName);
+				warnLevel = 2;
+				break;
 		}
 	}
 
@@ -314,37 +291,39 @@ internal partial class IdentifierDictionary
 		//    return;
 		//}
 
-		if (nameDic.TryGetValue(varName, out DefinedNameType value))
+		if (!nameDic.TryGetValue(varName, out DefinedNameType value))
 		{
-			switch (value)
-			{
-				case DefinedNameType.Reserved:
-					errMes = string.Format(treer.VarConflictReservedWord.Text, varName);
-					warnLevel = 2;
-					break;
-				case DefinedNameType.SystemInstrument:
-				case DefinedNameType.SystemMethod:
-					//代入文が使えなくなるために命令名との衝突は致命的。
-					errMes = string.Format(treer.VarNameAlreadyUsedInternalInstruction.Text, varName);
-					warnLevel = 2;
-					break;
-				case DefinedNameType.SystemVariable:
-					errMes = string.Format(treer.VarNameAlreadyUsedInternalVariable.Text, varName);
-					warnLevel = 2;
-					break;
-				case DefinedNameType.UserMacro:
-					errMes = string.Format(treer.VarNameAlreadyUsedMacro.Text, varName);
-					warnLevel = 2;
-					break;
-				case DefinedNameType.UserGlobalVariable:
-					errMes = string.Format(treer.VarNameAlreadyUsedGlobalVariable.Text, varName);
-					warnLevel = 2;
-					break;
-				case DefinedNameType.UserRefMethod:
-					errMes = string.Format(treer.VarNameAlreadyUsedRefFunction.Text, varName);
-					warnLevel = 2;
-					break;
-			}
+			return;
+		}
+
+		switch (value)
+		{
+			case DefinedNameType.Reserved:
+				errMes = string.Format(treer.VarConflictReservedWord.Text, varName);
+				warnLevel = 2;
+				break;
+			case DefinedNameType.SystemInstrument:
+			case DefinedNameType.SystemMethod:
+				//代入文が使えなくなるために命令名との衝突は致命的。
+				errMes = string.Format(treer.VarNameAlreadyUsedInternalInstruction.Text, varName);
+				warnLevel = 2;
+				break;
+			case DefinedNameType.SystemVariable:
+				errMes = string.Format(treer.VarNameAlreadyUsedInternalVariable.Text, varName);
+				warnLevel = 2;
+				break;
+			case DefinedNameType.UserMacro:
+				errMes = string.Format(treer.VarNameAlreadyUsedMacro.Text, varName);
+				warnLevel = 2;
+				break;
+			case DefinedNameType.UserGlobalVariable:
+				errMes = string.Format(treer.VarNameAlreadyUsedGlobalVariable.Text, varName);
+				warnLevel = 2;
+				break;
+			case DefinedNameType.UserRefMethod:
+				errMes = string.Format(treer.VarNameAlreadyUsedRefFunction.Text, varName);
+				warnLevel = 2;
+				break;
 		}
 	}
 
@@ -357,38 +336,40 @@ internal partial class IdentifierDictionary
 			return;
 		}
 
-		if (nameDic.TryGetValue(macroName, out DefinedNameType value))
+		if (!nameDic.TryGetValue(macroName, out DefinedNameType value))
 		{
-			switch (value)
-			{
-				case DefinedNameType.Reserved:
-					errMes = string.Format(treer.MacroConflictReservedWord.Text, macroName);
-					warnLevel = 2;
-					break;
-				case DefinedNameType.SystemInstrument:
-				case DefinedNameType.SystemMethod:
-					//命令名を上書きした時が面倒なのでとりあえず許可しない
-					errMes = string.Format(treer.MacroNameAlreadyUsedInternalInstruction.Text, macroName);
-					warnLevel = 2;
-					break;
-				case DefinedNameType.SystemVariable:
-					//別に上書きしてもいいがとりあえず許可しないでおく。いずれ解放するかもしれない
-					errMes = string.Format(treer.MacroNameAlreadyUsedInternalVariable.Text, macroName);
-					warnLevel = 2;
-					break;
-				case DefinedNameType.UserMacro:
-					errMes = string.Format(treer.MacroNameAlreadyUsedMacro.Text, macroName);
-					warnLevel = 2;
-					break;
-				case DefinedNameType.UserGlobalVariable:
-					errMes = string.Format(treer.MacroNameAlreadyUsedGlobalVariable.Text, macroName);
-					warnLevel = 2;
-					break;
-				case DefinedNameType.UserRefMethod:
-					errMes = string.Format(treer.MacroNameAlreadyUsedRefFunction.Text, macroName);
-					warnLevel = 2;
-					break;
-			}
+			return;
+		}
+
+		switch (value)
+		{
+			case DefinedNameType.Reserved:
+				errMes = string.Format(treer.MacroConflictReservedWord.Text, macroName);
+				warnLevel = 2;
+				break;
+			case DefinedNameType.SystemInstrument:
+			case DefinedNameType.SystemMethod:
+				//命令名を上書きした時が面倒なのでとりあえず許可しない
+				errMes = string.Format(treer.MacroNameAlreadyUsedInternalInstruction.Text, macroName);
+				warnLevel = 2;
+				break;
+			case DefinedNameType.SystemVariable:
+				//別に上書きしてもいいがとりあえず許可しないでおく。いずれ解放するかもしれない
+				errMes = string.Format(treer.MacroNameAlreadyUsedInternalVariable.Text, macroName);
+				warnLevel = 2;
+				break;
+			case DefinedNameType.UserMacro:
+				errMes = string.Format(treer.MacroNameAlreadyUsedMacro.Text, macroName);
+				warnLevel = 2;
+				break;
+			case DefinedNameType.UserGlobalVariable:
+				errMes = string.Format(treer.MacroNameAlreadyUsedGlobalVariable.Text, macroName);
+				warnLevel = 2;
+				break;
+			case DefinedNameType.UserRefMethod:
+				errMes = string.Format(treer.MacroNameAlreadyUsedRefFunction.Text, macroName);
+				warnLevel = 2;
+				break;
 		}
 	}
 
@@ -507,12 +488,7 @@ internal partial class IdentifierDictionary
 				ret = line.ParentLabelLine.GetPrivateVariable(key);
 				if (ret != null)
 				{
-					if (subKey != null)
-					{
-						throw new CodeEE(string.Format(treer.UsedAtForPrivVar.Text, key));
-					}
-
-					return ret;
+					return subKey != null ? throw new CodeEE(string.Format(treer.UsedAtForPrivVar.Text, key)) : ret;
 				}
 			}
 		}
@@ -528,7 +504,7 @@ internal partial class IdentifierDictionary
 			if (string.IsNullOrEmpty(subKey))
 			{
 				//システムの入力待ち中にデバッグコマンドからLOCALを呼んだとき。
-				if (line == null || line.ParentLabelLine == null)
+				if (line?.ParentLabelLine == null)
 				{
 					throw new CodeEE(string.Format(treer.CannotGetKeyNotExistRunningFunction.Text, key));
 				}
@@ -546,35 +522,25 @@ internal partial class IdentifierDictionary
 			return retLocal;
 		}
 
-		if (varTokenDic.TryGetValue(key, out ret))
+		if (!varTokenDic.TryGetValue(key, out ret))
 		{
-			//一文字変数の禁止オプションを考えた名残
-			//if (Config.ForbidOneCodeVariable && ret.CanForbid)
-			//    throw new CodeEE("設定によりシステム一文字数値変数の使用が禁止されています(呼び出された変数：" + ret.Name +")");
-			if (ret.IsForbid)
-			{
-				if (!ret.CanForbid)
-				{
-					throw new ExeEE(string.Format(treer.InvalidProhibitedVar.Text, ret.Name));
-				}
-
-				throw new CodeEE(string.Format(treer.UsedProhibitedVar.Text, ret.Name));
-			}
-
-			if (subKey != null)
-			{
-				throw new CodeEE(string.Format(treer.UsedAtForGlobalVar.Text, key));
-			}
-
-			return ret;
+			return subKey != null ? throw new CodeEE(treer.InvalidAt.Text) : null;
 		}
 
-		if (subKey != null)
+		//一文字変数の禁止オプションを考えた名残
+		//if (Config.ForbidOneCodeVariable && ret.CanForbid)
+		//    throw new CodeEE("設定によりシステム一文字数値変数の使用が禁止されています(呼び出された変数：" + ret.Name +")");
+		if (!ret.IsForbid)
 		{
-			throw new CodeEE(treer.InvalidAt.Text);
+			return subKey != null ? throw new CodeEE(string.Format(treer.UsedAtForGlobalVar.Text, key)) : ret;
 		}
 
-		return null;
+		if (!ret.CanForbid)
+		{
+			throw new ExeEE(string.Format(treer.InvalidProhibitedVar.Text, ret.Name));
+		}
+
+		throw new CodeEE(string.Format(treer.UsedProhibitedVar.Text, ret.Name));
 	}
 
 	public FunctionIdentifier? GetFunctionIdentifier(string str)
@@ -595,24 +561,7 @@ internal partial class IdentifierDictionary
 
 	public List<string> GetOverloadedList(LabelDictionary labelDic)
 	{
-		List<string> list = [];
-		foreach (KeyValuePair<string, FunctionMethod> pair in methodDic)
-		{
-			FunctionLabelLine? func = labelDic.GetNonEventLabel(pair.Key);
-			if (func == null)
-			{
-				continue;
-			}
-
-			if (!func.IsMethod)
-			{
-				continue;
-			}
-
-			list.Add(pair.Key);
-		}
-
-		return list;
+		return [.. methodDic.Where(pair => labelDic.GetNonEventLabel(pair.Key) is { IsMethod: true }).Select(pair => pair.Key)];
 	}
 
 	public UserDefinedRefMethod? GetRefMethod(string codeStr)
@@ -626,12 +575,7 @@ internal partial class IdentifierDictionary
 		//	codeStr = codeStr.ToUpper();
 		if (arguments == null) //引数なし、名前のみの探索
 		{
-			if (refmethodDic.TryGetValue(codeStr, out UserDefinedRefMethod? value))
-			{
-				return new UserDefinedRefMethodNoArgTerm(value);
-			}
-
-			return null;
+			return refmethodDic.TryGetValue(codeStr, out UserDefinedRefMethod? value) ? new UserDefinedRefMethodNoArgTerm(value) : null;
 		}
 
 		if (labelDic is { Initialized: true })
@@ -651,13 +595,7 @@ internal partial class IdentifierDictionary
 
 				if (func.IsMethod)
 				{
-					AExpression? ret = UserDefinedMethodTerm.Create(func, arguments, out string errMes);
-					if (ret == null)
-					{
-						throw new CodeEE(errMes);
-					}
-
-					return ret;
+					return UserDefinedMethodTerm.Create(func, arguments, out string errMes) ?? throw new CodeEE(errMes);
 				}
 
 				//1.721 #FUNCTIONが定義されていない関数は組み込み関数を上書きしない方向に。 PANCTION.ERBのRANDとか。
@@ -679,39 +617,32 @@ internal partial class IdentifierDictionary
 		}
 
 		string? errmes = method.CheckArgumentType(codeStr, arguments);
-		if (errmes != null)
-		{
-			throw new CodeEE(errmes);
-		}
-
-		return new FunctionMethodTerm(method, arguments);
+		return errmes == null ? new FunctionMethodTerm(method, arguments) : throw new CodeEE(errmes);
 	}
 
 	//1756 作成中途
 	//名前リストを元に何がやりたかったのかを推定してCodeEEを投げる
 	//1822 DIMリストの解決中にIdentifierNotFoundCodeEEが飛んだ場合にはやり直しの可能性がある
-	public void ThrowException(string str, bool isFunc)
+	public void ThrowException(string idStr, bool isFunc)
 	{
-		string idStr = str;
 		//if (Config.Config.IgnoreCase || Config.Config.IgnoreCase) //片方だけなのは互換性用オプションなのでレアケースのはず。対応しない。
 		//	idStr = idStr.ToUpper();
 		if (!isFunc && privateDimList.Contains(idStr))
 		{
-			throw new IdentifierNotFoundCodeEE(string.Format(treer.VarNotDefinedThisFunc.Text, str));
+			throw new IdentifierNotFoundCodeEE(string.Format(treer.VarNotDefinedThisFunc.Text, idStr));
 		}
 
 		if (nameDic.TryGetValue(idStr, out DefinedNameType value))
 		{
-			DefinedNameType type = value;
-			switch (type)
+			switch (value)
 			{
 				case DefinedNameType.Reserved:
-					throw new CodeEE(string.Format(treer.IllegalUseReservedWord.Text, str));
+					throw new CodeEE(string.Format(treer.IllegalUseReservedWord.Text, idStr));
 				case DefinedNameType.SystemVariable:
 				case DefinedNameType.UserGlobalVariable:
 					if (isFunc)
 					{
-						throw new CodeEE(string.Format(treer.UseVarLikeFunc.Text, str));
+						throw new CodeEE(string.Format(treer.UseVarLikeFunc.Text, idStr));
 					}
 
 					break;
@@ -719,26 +650,23 @@ internal partial class IdentifierDictionary
 				case DefinedNameType.UserRefMethod:
 					if (!isFunc)
 					{
-						throw new CodeEE(string.Format(treer.UseFuncLikeVar.Text, str));
+						throw new CodeEE(string.Format(treer.UseFuncLikeVar.Text, idStr));
 					}
 
 					break;
 				case DefinedNameType.UserMacro:
-					throw new CodeEE(string.Format(treer.UnexpectedMacro.Text, str));
+					throw new CodeEE(string.Format(treer.UnexpectedMacro.Text, idStr));
 				case DefinedNameType.SystemInstrument:
 					if (isFunc)
 					{
-						throw new CodeEE(string.Format(treer.UseInstructionLikeFunc.Text, str));
+						throw new CodeEE(string.Format(treer.UseInstructionLikeFunc.Text, idStr));
 					}
-					else
-					{
-						throw new CodeEE(string.Format(treer.UseInstructionLikeVar.Text, str));
-					}
+
+					throw new CodeEE(string.Format(treer.UseInstructionLikeVar.Text, idStr));
 			}
 		}
 
-		if (!JSONConfig.Data.UseScopedVariableInstruction &&
-		    idStr is "VARS" or "VARI")
+		if (!JSONConfig.Data.UseScopedVariableInstruction && idStr is "VARS" or "VARI")
 		{
 			throw new CodeEE(string.Format(treer.CanNotUseVAR.Text, idStr));
 		}
@@ -782,12 +710,7 @@ internal partial class IdentifierDictionary
 		}
 
 		varTokenDic.TryGetValue(key, out VariableToken? var);
-		if (var != null)
-		{
-			return var.IsForbid;
-		}
-
-		return true;
+		return var == null || var.IsForbid;
 	}
 
 	#endregion

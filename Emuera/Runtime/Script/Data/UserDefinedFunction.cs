@@ -38,7 +38,7 @@ internal sealed class UserDefinedFunctionData
 		string dimtype = dims ? "#FUNCTION" : "#FUNCTIONS";
 		UserDefinedFunctionData ret = new() { TypeIsStr = dims };
 		string keyword = dimtype;
-		while (!wc.EOL && (wc.Current as IdentifierWord) is { } idw)
+		if (wc is { EOL: false, Current: IdentifierWord idw })
 		{
 			wc.ShiftNext();
 			keyword = idw.Code;
@@ -54,11 +54,10 @@ internal sealed class UserDefinedFunctionData
 					throw new CodeEE(string.Format(trerror.CanNotSpecifiedKeyword.Text, dims, keyword), sc);
 				default:
 					ret.Name = keyword;
-					goto whilebreak;
+					break;
 			}
 		}
 
-		whilebreak:
 		if (ret.Name == null)
 		{
 			throw new CodeEE(string.Format(trerror.NotIdentifierAfterKeyword.Text, keyword), sc);
@@ -100,24 +99,19 @@ internal sealed class UserDefinedFunctionData
 				case '\0':
 					throw new CodeEE(trerror.NotCloseBrackets.Text, sc);
 				case ')':
-					if (state is 0 or 1)
+					switch (state)
 					{
-						goto argend;
-					}
-
-					if (state is 4 or 5)
-					{
-						if ((argType & UserDifinedFunctionDataArgType.__Dimention) == 0)
-						{
+						case 0 or 1:
+							goto argend;
+						case 4 or 5 when (argType & UserDifinedFunctionDataArgType.__Dimention) == 0:
 							throw new CodeEE(trerror.RefArgIsNotArray.Text, sc);
-						}
-
-						//state = 2;
-						argList.Add(argType);
-						goto argend;
+						case 4 or 5:
+							//state = 2;
+							argList.Add(argType);
+							goto argend;
+						default:
+							throw new CodeEE(trerror.UnexpectedBrackets.Text, sc);
 					}
-
-					throw new CodeEE(trerror.UnexpectedBrackets.Text, sc);
 				case '0':
 					if (((LiteralIntegerWord)wc.Current).Int != 0)
 					{
@@ -146,68 +140,47 @@ internal sealed class UserDefinedFunctionData
 
 					goto argerr;
 				case ',':
-					if (state == 1)
+					switch (state)
 					{
-						state = 2;
-						continue;
-					}
-
-					if (state is 4 or 5)
-					{
-						if ((argType & UserDifinedFunctionDataArgType.__Dimention) == 0)
-						{
+						case 1:
+							state = 2;
+							continue;
+						case 4 or 5 when (argType & UserDifinedFunctionDataArgType.__Dimention) == 0:
 							throw new CodeEE(trerror.RefArgIsNotArray.Text, sc);
-						}
-
-						state = 2;
-						argList.Add(argType);
-						continue;
+						case 4 or 5:
+							state = 2;
+							argList.Add(argType);
+							continue;
+						default:
+							goto argerr;
 					}
-
-					goto argerr;
 				case 'A':
 				{
 					string str = ((IdentifierWord)wc.Current).Code;
-					if (str == "REF")
+					switch (str)
 					{
-						if (state is 0 or 2)
-						{
+						case "REF" when state is 0 or 2:
 							state = 3;
 							continue;
-						}
-
-						goto argerr;
-					}
-					else if (str is "INT" or "STR")
-					{
-						if (str == "INT")
-						{
-							argType = UserDifinedFunctionDataArgType.Int;
-						}
-						else
-						{
-							argType = UserDifinedFunctionDataArgType.Str;
-						}
-
-						if (state is 0 or 2)
-						{
-							state = 1;
-							argList.Add(argType);
-							continue;
-						}
-
-						if (state == 3)
-						{
-							argType = argType | UserDifinedFunctionDataArgType.__Ref;
-							state = 4;
-							continue;
-						}
-
-						goto argerr;
-					}
-					else
-					{
-						goto argerr;
+						case "REF":
+							goto argerr;
+						case "INT" or "STR":
+							argType = str == "INT" ? UserDifinedFunctionDataArgType.Int : UserDifinedFunctionDataArgType.Str;
+							switch (state)
+							{
+								case 0 or 2:
+									state = 1;
+									argList.Add(argType);
+									continue;
+								case 3:
+									argType |= UserDifinedFunctionDataArgType.__Ref;
+									state = 4;
+									continue;
+								default:
+									goto argerr;
+							}
+						default:
+							goto argerr;
 					}
 				}
 				default:

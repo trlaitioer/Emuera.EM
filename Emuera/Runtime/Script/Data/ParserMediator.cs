@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace MinorShift.Emuera;
 
@@ -14,11 +15,6 @@ namespace MinorShift.Emuera;
 //本当は引数として渡すべきなのかもしれないが全てのParserの引数を書きなおすのが面倒なのでstatic
 internal partial class ParserMediator
 {
-	static ParserMediator()
-	{
-		RenameDic = [];
-	}
-
 	/// <summary>
 	/// emuera.config等で発生した警告
 	/// Initializeより前に発生する
@@ -61,7 +57,7 @@ internal partial class ParserMediator
 	{
 		if (DeferParseErrorSound)
 		{
-			System.Threading.Interlocked.Increment(ref parseErrorCount);
+			Interlocked.Increment(ref parseErrorCount);
 			return;
 		}
 
@@ -73,7 +69,7 @@ internal partial class ParserMediator
 	/// </summary>
 	public static int TakeParseErrorCount()
 	{
-		return System.Threading.Interlocked.Exchange(ref parseErrorCount, 0);
+		return Interlocked.Exchange(ref parseErrorCount, 0);
 	}
 
 	/// <summary>
@@ -97,7 +93,7 @@ internal partial class ParserMediator
 
 	#region Rename
 
-	public static Dictionary<string, string> RenameDic { get; private set; }
+	public static Dictionary<string, string> RenameDic { get; } = [];
 
 	//1756 Process.Load.csより移動
 	public static void LoadEraExRenameFile(string filepath)
@@ -146,26 +142,23 @@ internal partial class ParserMediator
 
 	#endregion
 
-	private static readonly object warningListLock = new();
+	private static readonly Lock warningListLock = new();
 
-	public static void Warn(string str, ScriptPosition? pos, int level)
-	{
-		Warn(str, pos, level, null);
-	}
-
-	public static void Warn(string str, ScriptPosition? pos, int level, string? stack)
+	public static void Warn(string str, ScriptPosition? pos, int level, string? stack = null)
 	{
 		if (level < Config.DisplayWarningLevel && !Program.AnalysisMode)
 		{
 			return;
 		}
 
-		if (console is { RunERBFromMemory: false })
+		if (console is not { RunERBFromMemory: false })
 		{
-			lock (warningListLock)
-			{
-				warningList.Add(new ParserWarning(str, pos, level, stack));
-			}
+			return;
+		}
+
+		lock (warningListLock)
+		{
+			warningList.Add(new ParserWarning(str, pos, level, stack));
 		}
 	}
 
@@ -175,12 +168,7 @@ internal partial class ParserMediator
 	/// <param name="str"></param>
 	/// <param name="line"></param>
 	/// <param name="level">警告レベル.0:軽微なミス.1:無視できる行.2:行が実行されなければ無害.3:致命的</param>
-	public static void Warn(string str, LogicalLine line, int level, bool isError, bool isBackComp)
-	{
-		Warn(str, line, level, isError, isBackComp, null);
-	}
-
-	public static void Warn(string str, LogicalLine line, int level, bool isError, bool isBackComp, string? stack)
+	public static void Warn(string str, LogicalLine line, int level, bool isError, bool isBackComp, string? stack = null)
 	{
 		if (isError)
 		{
@@ -203,12 +191,14 @@ internal partial class ParserMediator
 			return;
 		}
 
-		if (console is { RunERBFromMemory: false })
+		if (console is not { RunERBFromMemory: false })
 		{
-			lock (warningListLock)
-			{
-				warningList.Add(new ParserWarning(str, line.Position, level, stack));
-			}
+			return;
+		}
+
+		lock (warningListLock)
+		{
+			warningList.Add(new ParserWarning(str, line.Position, level, stack));
 		}
 		//				console.PrintWarning(str, line.Position, level);
 	}
@@ -243,36 +233,28 @@ internal partial class ParserMediator
 			warningList.Clear();
 		}
 
-		for (int i = 0; i < pending.Length; i++)
+		foreach (ParserWarning warning in pending)
 		{
-			ParserWarning warning = pending[i];
 			// console is non-null whenever warnings reached the list, and the dereference is kept as-is
 			console!.PrintWarning(warning.WarningMes, warning.WarningPos, warning.WarningLevel);
-			if (warning.StackTrace != null)
+			if (warning.StackTrace == null)
 			{
-				string[] stacks = warning.StackTrace.Split('\n');
-				for (int j = 0; j < stacks.Length; j++)
-				{
-					console.PrintSystemLine(stacks[j]);
-				}
+				continue;
+			}
+
+			foreach (string stack in warning.StackTrace.Split('\n'))
+			{
+				console.PrintSystemLine(stack);
 			}
 		}
 	}
 
-	private sealed class ParserWarning
+	private sealed class ParserWarning(string mes, ScriptPosition? pos, int level, string? stackTrace)
 	{
-		public ParserWarning(string mes, ScriptPosition? pos, int level, string? stackTrace)
-		{
-			WarningMes = mes;
-			WarningPos = pos;
-			WarningLevel = level;
-			StackTrace = stackTrace;
-		}
-
-		public readonly string WarningMes;
-		public readonly ScriptPosition? WarningPos;
-		public readonly int WarningLevel;
-		public readonly string? StackTrace;
+		public readonly string WarningMes = mes;
+		public readonly ScriptPosition? WarningPos = pos;
+		public readonly int WarningLevel = level;
+		public readonly string? StackTrace = stackTrace;
 	}
 
 	[GeneratedRegex(@"(?<!\\),")]

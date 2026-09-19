@@ -9,7 +9,7 @@ using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 
 namespace MinorShift.Emuera.Runtime.Script.Data;
 
-internal sealed class GameBase
+internal sealed partial class GameBase
 {
 	public string ScriptAutherName = "";
 	public string ScriptDetail = ""; //詳細な説明
@@ -92,7 +92,7 @@ internal sealed class GameBase
 			return true;
 		}
 
-		StringBuilder sb = new(str.Length);
+		int length = 0;
 		foreach (char character in str)
 		{
 			if (!char.IsNumber(character))
@@ -100,18 +100,10 @@ internal sealed class GameBase
 				break;
 			}
 
-			sb.Append(character);
+			length++;
 		}
 
-		if (sb.Length > 0)
-		{
-			if (long.TryParse(sb.ToString(), out i))
-			{
-				return true;
-			}
-		}
-
-		return false;
+		return length > 0 && long.TryParse(str[..length], out i);
 	}
 
 	/// <summary>
@@ -188,7 +180,7 @@ internal sealed class GameBase
 
 					case "動作に必要なEmueraのバージョン":
 						Compatible_EmueraVer = tokens[1];
-						if (!Regex.IsMatch(Compatible_EmueraVer, @"^\d+\.\d+\.\d+\.\d+$"))
+						if (!VersionRegex().IsMatch(Compatible_EmueraVer))
 						{
 							ParserMediator.Warn(trerror.CanNotReadVersion.Text, pos, 0);
 							break;
@@ -227,18 +219,23 @@ internal sealed class GameBase
 			eReader.Close();
 		}
 
-		if (ScriptWindowTitle == null)
+		if (ScriptWindowTitle != null)
 		{
-			if (string.IsNullOrEmpty(ScriptTitle))
-			{
-				ScriptWindowTitle = "Emuera";
-			}
-			else
-			{
-				ScriptWindowTitle = ScriptTitle + " " + ScriptVersionText;
-			}
+			return true;
+		}
+
+		if (string.IsNullOrEmpty(ScriptTitle))
+		{
+			ScriptWindowTitle = "Emuera";
+		}
+		else
+		{
+			ScriptWindowTitle = ScriptTitle + " " + ScriptVersionText;
 		}
 
 		return true;
 	}
+
+	[GeneratedRegex(@"^\d+\.\d+\.\d+\.\d+$")]
+	private static partial Regex VersionRegex();
 }

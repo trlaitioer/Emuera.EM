@@ -1,5 +1,7 @@
-﻿using MinorShift.Emuera.Runtime.Script.Statements;
+﻿using System;
+using MinorShift.Emuera.Runtime.Script.Statements;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MinorShift.Emuera.Runtime.Script.Data;
 
@@ -15,11 +17,6 @@ internal sealed class LabelDictionary
 
 	#endregion
 
-	public LabelDictionary()
-	{
-		Initialized = false;
-	}
-
 	/// <summary>
 	/// 本体。全てのFunctionLabelLineを記録
 	/// </summary>
@@ -27,13 +24,12 @@ internal sealed class LabelDictionary
 
 	private readonly List<FunctionLabelLine> invalidList = [];
 	private readonly Dictionary<string, Dictionary<FunctionLabelLine, GotoLabelLine>> labelDollarList = new(Config.Config.StrComper);
-	private int count;
 
 	private readonly HashSet<string> loadedFileSet = [];
 	private int currentFileCount;
 	private int totalFileCount;
 
-	public int Count => count;
+	public int Count { get; private set; }
 
 	/// <summary>
 	/// これがfalseである間は式中関数は呼べない
@@ -56,13 +52,7 @@ internal sealed class LabelDictionary
 			return null;
 		}
 
-		List<FunctionLabelLine> labelList = value;
-		if (labelList.Count <= 1)
-		{
-			return null;
-		}
-
-		return labelList[0];
+		return value.Count <= 1 ? null : value[0];
 	}
 
 
@@ -71,18 +61,15 @@ internal sealed class LabelDictionary
 
 	public void SortLabels()
 	{
-		foreach (KeyValuePair<string, List<FunctionLabelLine>[]> pair in eventLabelDic)
-		foreach (List<FunctionLabelLine> list in pair.Value)
+		foreach (List<FunctionLabelLine> list in eventLabelDic.SelectMany(pair => pair.Value))
 		{
 			list.Clear();
 		}
 
 		eventLabelDic.Clear();
 		noneventLabelDic.Clear();
-		foreach (KeyValuePair<string, List<FunctionLabelLine>> pair in labelAtDic)
+		foreach ((string key, List<FunctionLabelLine> list) in labelAtDic)
 		{
-			string key = pair.Key;
-			List<FunctionLabelLine> list = pair.Value;
 			if (list.Count > 1)
 			{
 				list.Sort();
@@ -103,60 +90,39 @@ internal sealed class LabelDictionary
 				noneventLabelDic.Add(key, list[0]);
 			}
 
-			List<FunctionLabelLine>[] eventLabels = new List<FunctionLabelLine>[4];
 			List<FunctionLabelLine> onlylist = [];
 			List<FunctionLabelLine> prilist = [];
 			List<FunctionLabelLine> normallist = [];
 			List<FunctionLabelLine> laterlist = [];
-			int localMax = 0;
-			int localsMax = 0;
-			for (int i = 0; i < list.Count; i++)
+			int localMax = GlobalStatic.IdentifierDictionary.getLocalDefaultSize("LOCAL");
+			int localsMax = GlobalStatic.IdentifierDictionary.getLocalDefaultSize("LOCALS");
+			foreach (FunctionLabelLine line in list)
 			{
-				if (list[i].LocalLength > localMax)
+				localMax = Math.Max(localMax, line.LocalLength);
+				localsMax = Math.Max(localsMax, line.LocalsLength);
+
+				if (line.IsOnly)
 				{
-					localMax = list[i].LocalLength;
+					onlylist.Add(line);
 				}
 
-				if (list[i].LocalsLength > localsMax)
+				if (line.IsPri)
 				{
-					localsMax = list[i].LocalsLength;
+					prilist.Add(line);
 				}
 
-				if (list[i].IsOnly)
+				if (line.IsLater)
 				{
-					onlylist.Add(list[i]);
+					laterlist.Add(line); //#PRIかつ#LATERなら二重に登録する。eramakerの仕様
 				}
 
-				if (list[i].IsPri)
+				if (line is { IsPri: false, IsLater: false })
 				{
-					prilist.Add(list[i]);
-				}
-
-				if (list[i].IsLater)
-				{
-					laterlist.Add(list[i]); //#PRIかつ#LATERなら二重に登録する。eramakerの仕様
-				}
-
-				if (!list[i].IsPri && !list[i].IsLater)
-				{
-					normallist.Add(list[i]);
+					normallist.Add(line);
 				}
 			}
 
-			if (localMax < GlobalStatic.IdentifierDictionary.getLocalDefaultSize("LOCAL"))
-			{
-				localMax = GlobalStatic.IdentifierDictionary.getLocalDefaultSize("LOCAL");
-			}
-
-			if (localsMax < GlobalStatic.IdentifierDictionary.getLocalDefaultSize("LOCALS"))
-			{
-				localsMax = GlobalStatic.IdentifierDictionary.getLocalDefaultSize("LOCALS");
-			}
-
-			eventLabels[0] = onlylist;
-			eventLabels[1] = prilist;
-			eventLabels[2] = normallist;
-			eventLabels[3] = laterlist;
+			List<FunctionLabelLine>[] eventLabels = [onlylist, prilist, normallist, laterlist];
 			for (int i = 0; i < 4; i++)
 			{
 				for (int j = 0; j < eventLabels[i].Count; j++)
@@ -173,7 +139,7 @@ internal sealed class LabelDictionary
 	public void RemoveAll()
 	{
 		Initialized = false;
-		count = 0;
+		Count = 0;
 		foreach ((string _, List<FunctionLabelLine>[] array) in eventLabelDic)
 		foreach (List<FunctionLabelLine> list in array)
 		{
@@ -204,12 +170,14 @@ internal sealed class LabelDictionary
 	//ファイル名に基づき、そのファイルに紐づくラベルを削除する
 	public void RemoveLabelWithPath(string fname)
 	{
+		static bool IsMatch(string fname, FunctionLabelLine line) => string.Equals(line.Position!.Value.Filename, fname, Config.Config.SCIgnoreCase);
+
 		List<string> removeFunctions = [];
 		foreach ((string functionName, List<FunctionLabelLine> functions) in labelAtDic)
 		{
 			int removeCount = functions.RemoveAll(line => IsMatch(fname, line));
 
-			count -= removeCount;
+			Count -= removeCount;
 
 			if (functions.Count == 0)
 			{
@@ -223,8 +191,6 @@ internal sealed class LabelDictionary
 		}
 
 		invalidList.RemoveAll(line => IsMatch(fname, line));
-
-		static bool IsMatch(string fname, FunctionLabelLine line) => string.Equals(line.Position!.Value.Filename, fname, Config.Config.SCIgnoreCase);
 	}
 
 
@@ -247,9 +213,9 @@ internal sealed class LabelDictionary
 
 	public void AddLabel(FunctionLabelLine point)
 	{
-		point.Index = count;
+		point.Index = Count;
 		point.FileIndex = currentFileCount;
-		count++;
+		Count++;
 		string id = point.LabelName;
 		if (labelAtDic.TryGetValue(id, out List<FunctionLabelLine>? labelList))
 		{
@@ -304,15 +270,7 @@ internal sealed class LabelDictionary
 
 	public GotoLabelLine? GetLabelDollar(string key, FunctionLabelLine labelAtLine)
 	{
-		if (labelDollarList.TryGetValue(key, out Dictionary<FunctionLabelLine, GotoLabelLine>? labels))
-		{
-			if (labels.TryGetValue(labelAtLine, out GotoLabelLine? label))
-			{
-				return label;
-			}
-		}
-
-		return null;
+		return labelDollarList.TryGetValue(key, out Dictionary<FunctionLabelLine, GotoLabelLine>? labels) ? labels.GetValueOrDefault(labelAtLine) : null;
 	}
 
 	internal void AddInvalidLabel(FunctionLabelLine invalidLabelLine)
