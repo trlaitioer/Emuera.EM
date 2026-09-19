@@ -593,7 +593,7 @@ internal sealed class ProcessState
 					{
 						((ReferenceToken)call.TopLabel.Arg[i].Identifier).SetRef(srcArgs.TransporterRef[i]);
 					}
-					else if (srcArgs.Arguments.Required(i).GetOperandType() == typeof(long))
+					else if (srcArgs.Arguments.Required(i).IsInteger)
 					{
 						call.TopLabel.Arg[i].SetValue(srcArgs.TransporterInt[i], exm!);
 					}

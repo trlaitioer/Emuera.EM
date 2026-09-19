@@ -99,7 +99,7 @@ internal static class OperatorMethodManager
 			}
 		}
 
-		if (o1.GetOperandType() == typeof(long))
+		if (o1.IsInteger)
 		{
 			if (op == OperatorCode.Plus)
 			{
@@ -118,11 +118,11 @@ internal static class OperatorMethodManager
 		}
 
 		string errMes;
-		if (o1.GetOperandType() == typeof(long))
+		if (o1.IsInteger)
 		{
 			errMes = trerror.NumericType.Text;
 		}
-		else if (o1.GetOperandType() == typeof(string))
+		else if (o1.IsString)
 		{
 			errMes = trerror.StringType.Text;
 		}
@@ -151,7 +151,7 @@ internal static class OperatorMethodManager
 			}
 		}
 
-		if (o1.GetOperandType() == typeof(long))
+		if (o1.IsInteger)
 		{
 			if (unaryAfterDic.TryGetValue(op, out OperatorMethod? value))
 			{
@@ -165,11 +165,11 @@ internal static class OperatorMethodManager
 		}
 
 		string errMes;
-		if (o1.GetOperandType() == typeof(long))
+		if (o1.IsInteger)
 		{
 			errMes = trerror.NumericType.Text;
 		}
-		else if (o1.GetOperandType() == typeof(string))
+		else if (o1.IsString)
 		{
 			errMes = trerror.StringType.Text;
 		}
@@ -206,22 +206,21 @@ internal static class OperatorMethodManager
 		}
 
 		OperatorMethod? method = null;
-		if (left.GetOperandType() == typeof(long) && right.GetOperandType() == typeof(long))
+		if (left.IsInteger && right.IsInteger)
 		{
 			if (binaryIntIntDic.TryGetValue(op, out OperatorMethod? value))
 			{
 				method = value;
 			}
 		}
-		else if (left.GetOperandType() == typeof(string) && right.GetOperandType() == typeof(string))
+		else if (left.IsString && right.IsString)
 		{
 			if (binaryStrStrDic.TryGetValue(op, out OperatorMethod? value))
 			{
 				method = value;
 			}
 		}
-		else if ((left.GetOperandType() == typeof(long) && right.GetOperandType() == typeof(string))
-		         || (left.GetOperandType() == typeof(string) && right.GetOperandType() == typeof(long)))
+		else if ((left.IsInteger && right.IsString) || (left.IsString && right.IsInteger))
 		{
 			if (op == OperatorCode.Mult)
 			{
@@ -436,11 +435,11 @@ internal static class OperatorMethodManager
 	public static AExpression ReduceTernaryTerm(AExpression o1, AExpression o2, AExpression o3)
 	{
 		OperatorMethod? method = null;
-		if (o1.GetOperandType() == typeof(long) && o2.GetOperandType() == typeof(long) && o3.GetOperandType() == typeof(long))
+		if (o1.IsInteger && o2.IsInteger && o3.IsInteger)
 		{
 			method = ternaryIntIntInt;
 		}
-		else if (o1.GetOperandType() == typeof(long) && o2.GetOperandType() == typeof(string) && o3.GetOperandType() == typeof(string))
+		else if (o1.IsInteger && o2.IsString && o3.IsString)
 		{
 			method = ternaryIntStrStr;
 		}
@@ -524,7 +523,7 @@ internal static class OperatorMethodManager
 		{
 			string str;
 			long value;
-			if (arguments.Required(0).GetOperandType() == typeof(long))
+			if (arguments.Required(0).IsInteger)
 			{
 				value = arguments.Required(0).GetIntValue(exm);
 				str = arguments.Required(1).GetStrValue(exm);

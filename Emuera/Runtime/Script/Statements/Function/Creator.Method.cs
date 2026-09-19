@@ -100,9 +100,9 @@ internal static partial class FunctionMethodCreator
 		{
 			XmlDocument? doc = null;
 			XmlNodeList nodes = null!;
-			if (arguments.Required(0).GetOperandType() == typeof(long) || (byName && arguments.Required(0).GetOperandType() == typeof(string)))
+			if (arguments.Required(0).IsInteger || (byName && arguments.Required(0).IsString))
 			{
-				string idx = arguments.Required(0).GetOperandType() == typeof(string)
+				string idx = arguments.Required(0).IsString
 					? arguments.Required(0).GetStrValue(exm)
 					: arguments.Required(0).GetIntValue(exm).ToString();
 				Dictionary<string, XmlDocument> dict = exm.VEvaluator.VariableData.DataXmlDocument;
@@ -143,7 +143,7 @@ internal static partial class FunctionMethodCreator
 
 			if (arguments.Count >= 3)
 			{
-				if (arguments.Required(2).GetOperandType() == typeof(long) && arguments.Required(2).GetIntValue(exm) != 0)
+				if (arguments.Required(2).IsInteger && arguments.Required(2).GetIntValue(exm) != 0)
 				{
 					for (int i = 0; i < Math.Min(nodes.Count, exm.VEvaluator.RESULTS_ARRAY.Length); i++)
 					{
@@ -718,7 +718,7 @@ internal static partial class FunctionMethodCreator
 
 				if (var.IsString)
 				{
-					if (arguments.Required(1).GetOperandType() != typeof(string))
+					if (!arguments.Required(1).IsString)
 					{
 						throw new CodeEE(string.Format(trerror.IsNotInt.Text, name));
 					}
@@ -727,7 +727,7 @@ internal static partial class FunctionMethodCreator
 				}
 				else
 				{
-					if (arguments.Required(1).GetOperandType() != typeof(long))
+					if (!arguments.Required(1).IsInteger)
 					{
 						throw new CodeEE(string.Format(trerror.IsNotStr.Text, name));
 					}
@@ -789,7 +789,7 @@ internal static partial class FunctionMethodCreator
 				if (var.IsString)
 				{
 					string val = string.Empty;
-					if (arguments.Count > 1 && arguments.Required(1).GetOperandType() != typeof(string))
+					if (arguments.Count > 1 && !arguments.Required(1).IsString)
 					{
 						throw new CodeEE(string.Format(trerror.SetStrToInt.Text, name));
 					}
@@ -829,7 +829,7 @@ internal static partial class FunctionMethodCreator
 				else
 				{
 					long val = 0;
-					if (arguments.Count > 1 && arguments.Required(1).GetOperandType() != typeof(long))
+					if (arguments.Count > 1 && !arguments.Required(1).IsInteger)
 					{
 						throw new CodeEE(string.Format(trerror.SetIntToStr.Text, name));
 					}
@@ -1049,7 +1049,7 @@ internal static partial class FunctionMethodCreator
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string idx = arguments.Required(0).GetOperandType() == typeof(string)
+			string idx = arguments.Required(0).IsString
 				? arguments.Required(0).GetStrValue(exm)
 				: arguments.Required(0).GetIntValue(exm).ToString();
 			Dictionary<string, XmlDocument> xmlDict = exm.VEvaluator.VariableData.DataXmlDocument;
@@ -1165,10 +1165,10 @@ internal static partial class FunctionMethodCreator
 		{
 			XmlDocument doc;
 			bool saveToArg0 = true;
-			if (arguments.Required(0).GetOperandType() == typeof(long) || (byName && arguments.Required(0).GetOperandType() == typeof(string)))
+			if (arguments.Required(0).IsInteger || (byName && arguments.Required(0).IsString))
 			{
 				saveToArg0 = false;
-				string idx = arguments.Required(0).GetOperandType() == typeof(string)
+				string idx = arguments.Required(0).IsString
 					? arguments.Required(0).GetStrValue(exm)
 					: arguments.Required(0).GetIntValue(exm).ToString();
 				Dictionary<string, XmlDocument> dict = exm.VEvaluator.VariableData.DataXmlDocument;
@@ -1255,7 +1255,7 @@ internal static partial class FunctionMethodCreator
 
 		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			string idx = arguments.Required(0).GetOperandType() == typeof(string)
+			string idx = arguments.Required(0).IsString
 				? arguments.Required(0).GetStrValue(exm)
 				: arguments.Required(0).GetIntValue(exm).ToString();
 			Dictionary<string, XmlDocument> xmlDict = exm.VEvaluator.VariableData.DataXmlDocument;
@@ -1453,10 +1453,10 @@ internal static partial class FunctionMethodCreator
 			}
 
 			bool saveToArg0 = true;
-			if (arguments.Required(0).GetOperandType() == typeof(long) || (byName && arguments.Required(0).GetOperandType() == typeof(string)))
+			if (arguments.Required(0).IsInteger || (byName && arguments.Required(0).IsString))
 			{
 				saveToArg0 = false;
-				string idx = arguments.Required(0).GetOperandType() == typeof(string)
+				string idx = arguments.Required(0).IsString
 					? arguments.Required(0).GetStrValue(exm)
 					: arguments.Required(0).GetIntValue(exm).ToString();
 				Dictionary<string, XmlDocument> dict = exm.VEvaluator.VariableData.DataXmlDocument;
@@ -1623,10 +1623,10 @@ internal static partial class FunctionMethodCreator
 			}
 
 			bool saveToArg0 = true;
-			if (arguments.Required(0).GetOperandType() == typeof(long) || (byName && arguments.Required(0).GetOperandType() == typeof(string)))
+			if (arguments.Required(0).IsInteger || (byName && arguments.Required(0).IsString))
 			{
 				saveToArg0 = false;
-				string idx = arguments.Required(0).GetOperandType() == typeof(string)
+				string idx = arguments.Required(0).IsString
 					? arguments.Required(0).GetStrValue(exm)
 					: arguments.Required(0).GetIntValue(exm).ToString();
 				Dictionary<string, XmlDocument> dict = exm.VEvaluator.VariableData.DataXmlDocument;
@@ -1744,11 +1744,11 @@ internal static partial class FunctionMethodCreator
 			}
 			bool saveToArg0 = true;
 			XmlDocument? doc = null;
-			if (arguments.Required(0).GetOperandType() == typeof(long) || (byName && arguments.Required(0).GetOperandType() == typeof(string)) ||
-			    (arguments.Required(0).GetOperandType() == typeof(string) && arguments.Count == 2))
+			if (arguments.Required(0).IsInteger || (byName && arguments.Required(0).IsString) ||
+			    (arguments.Required(0).IsString && arguments.Count == 2))
 			{
 				saveToArg0 = false;
-				string idx = arguments.Required(0).GetOperandType() == typeof(string)
+				string idx = arguments.Required(0).IsString
 					? arguments.Required(0).GetStrValue(exm)
 					: arguments.Required(0).GetIntValue(exm).ToString();
 				Dictionary<string, XmlDocument> dict = exm.VEvaluator.VariableData.DataXmlDocument;
@@ -2031,7 +2031,7 @@ internal static partial class FunctionMethodCreator
 			Type? t = null;
 			if (arguments.Count >= 3)
 			{
-				if (arguments.Required(2).GetOperandType() == typeof(string))
+				if (arguments.Required(2).IsString)
 				{
 					t = Utils.DataTable.NameToType(arguments.Required(2).GetStrValue(exm));
 				}
@@ -2128,19 +2128,17 @@ internal static partial class FunctionMethodCreator
 				return;
 			}
 
-			bool isString = dt.Columns[name]!.DataType == typeof(string);
-			if (v.GetOperandType() != (isString ? typeof(string) : typeof(long)))
+			switch (dt.Columns[name]!.DataType == typeof(string))
 			{
-				throw new CodeEE(string.Format(trerror.DTInvalidDataType.Text, Name, key, name));
-			}
-
-			if (isString)
-			{
-				row[name] = v.GetStrValue(exm);
-			}
-			else
-			{
-				row[name] = Utils.DataTable.ConvertInt(v.GetIntValue(exm), dt.Columns[name]!.DataType);
+				case true when !v.IsString:
+				case false when !v.IsInteger:
+					throw new CodeEE(string.Format(trerror.DTInvalidDataType.Text, Name, key, name));
+				case true:
+					row[name] = v.GetStrValue(exm);
+					break;
+				default:
+					row[name] = Utils.DataTable.ConvertInt(v.GetIntValue(exm), dt.Columns[name]!.DataType);
+					break;
 			}
 		}
 
@@ -2200,7 +2198,7 @@ internal static partial class FunctionMethodCreator
 			{
 				string[] names = ((arguments[b + 1] as VariableTerm)!.Identifier.GetArray() as string[])!;
 				long count = Math.Min(names.Length, arguments.Required(b + 3).GetIntValue(exm));
-				if (arguments.Required(b + 2).GetOperandType() == typeof(string))
+				if (arguments.Required(b + 2).IsString)
 				{
 					string[] vals = ((arguments[b + 2] as VariableTerm)!.Identifier.GetArray() as string[])!;
 					count = Math.Min(vals.Length, count);
@@ -2492,19 +2490,17 @@ internal static partial class FunctionMethodCreator
 				}
 				else
 				{
-					bool isString = dt.Columns[name]!.DataType == typeof(string);
-					if (v.GetOperandType() != (isString ? typeof(string) : typeof(long)))
+					switch (dt.Columns[name]!.DataType == typeof(string))
 					{
-						return -2;
-					}
-
-					if (isString)
-					{
-						row[name] = v.GetStrValue(exm);
-					}
-					else
-					{
-						row[name] = Utils.DataTable.ConvertInt(v.GetIntValue(exm), dt.Columns[name]!.DataType);
+						case true when !v.IsString:
+						case false when !v.IsInteger:
+							return -2;
+						case true:
+							row[name] = v.GetStrValue(exm);
+							break;
+						case false:
+							row[name] = Utils.DataTable.ConvertInt(v.GetIntValue(exm), dt.Columns[name]!.DataType);
+							break;
 					}
 				}
 
@@ -4640,7 +4636,7 @@ internal static partial class FunctionMethodCreator
 			if (!isCharaRange)
 			{
 				p.IsArrayRangeValid(start, end, "MATCH", 3L, 4L);
-				if (arguments.Required(0).GetOperandType() == typeof(long))
+				if (arguments.Required(0).IsInteger)
 				{
 					long targetValue = arguments.Required(1).GetIntValue(exm);
 					return VariableEvaluator.GetMatch(p, targetValue, start, end);
@@ -4660,7 +4656,7 @@ internal static partial class FunctionMethodCreator
 					throw new CodeEE(string.Format(trerror.CharacterRangeInvalid.Text, Name, start, end));
 				}
 
-				if (arguments.Required(0).GetOperandType() == typeof(long))
+				if (arguments.Required(0).IsInteger)
 				{
 					long targetValue = arguments.Required(1).GetIntValue(exm);
 					return VariableEvaluator.GetMatchChara(p, targetValue, start, end);
@@ -4722,7 +4718,7 @@ internal static partial class FunctionMethodCreator
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
 			long ret = 0;
-			if (arguments.Required(0).GetOperandType() == typeof(long))
+			if (arguments.Required(0).IsInteger)
 			{
 				long baseValue = arguments.Required(0).GetIntValue(exm);
 				for (int i = 1; i < arguments.Count; i++)
@@ -4780,7 +4776,7 @@ internal static partial class FunctionMethodCreator
 		//}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			if (arguments.Required(0).GetOperandType() == typeof(long))
+			if (arguments.Required(0).IsInteger)
 			{
 				long[] valueArray = new long[arguments.Count];
 				for (int i = 0; i < arguments.Count; i++)
@@ -4844,7 +4840,7 @@ internal static partial class FunctionMethodCreator
 		//}
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
 		{
-			if (arguments.Required(0).GetOperandType() == typeof(long))
+			if (arguments.Required(0).IsInteger)
 			{
 				long baseValue = arguments.Required(0).GetIntValue(exm);
 				for (int i = 1; i < arguments.Count; i++)
@@ -5272,7 +5268,7 @@ internal static partial class FunctionMethodCreator
 			FixedVariableTerm p = varTerm.GetFixedVariableTerm(exm);
 			p.IsArrayRangeValid(start, end, funcName, 3L, 4L);
 
-			if (arguments.Required(0).GetOperandType() == typeof(long))
+			if (arguments.Required(0).IsInteger)
 			{
 				long targetValue = arguments.Required(1).GetIntValue(exm);
 				return VariableEvaluator.FindElement(p, targetValue, start, end, isExact, isLast);
@@ -9192,7 +9188,7 @@ internal static partial class FunctionMethodCreator
 			bool forceUTF8 = arguments.Count > 3 && arguments.Required(3).GetIntValue(exm) != 0;
 
 
-			if (arguments.Required(1).GetOperandType() == typeof(long))
+			if (arguments.Required(1).IsInteger)
 			{
 				i64 = arguments.Required(1).GetIntValue(exm);
 				if (i64 is < 0 or > int.MaxValue)
@@ -9320,7 +9316,7 @@ internal static partial class FunctionMethodCreator
 			long i64 = -1;
 			bool forceSavdir = arguments.Count > 1 && arguments.Required(1).GetIntValue(exm) != 0;
 			bool forceUTF8 = arguments.Count > 2 && arguments.Required(2).GetIntValue(exm) != 0;
-			if (arguments.Required(0).GetOperandType() == typeof(long))
+			if (arguments.Required(0).IsInteger)
 			{
 				i64 = arguments.Required(0).GetIntValue(exm);
 				if (i64 is < 0 or > int.MaxValue)

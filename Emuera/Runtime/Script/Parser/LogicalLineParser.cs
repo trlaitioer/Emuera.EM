@@ -243,7 +243,7 @@ internal static class LogicalLineParser
 					}
 
 					AExpression arg = ExpressionParser.ReduceIntegerTerm(wc, TermEndWith.EoL);
-					if (arg.Restructure(null!) is not SingleLongTerm sizeTerm || sizeTerm.GetOperandType() != typeof(long))
+					if (arg.Restructure(null!) is not SingleLongTerm { IsInteger: true } sizeTerm)
 					{
 						ParserMediator.Warn(string.Format(trerror.SharpHasNotValidValue.Text, token), position, 2);
 						break;

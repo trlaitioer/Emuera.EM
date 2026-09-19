@@ -787,7 +787,7 @@ internal sealed class ErbLoader
 					{
 						if (canDef) // && label.ArgOptional)
 						{
-							if (vTerm.GetOperandType() == typeof(long))
+							if (vTerm.IsInteger)
 							{
 								def = new SingleLongTerm(0);
 							}

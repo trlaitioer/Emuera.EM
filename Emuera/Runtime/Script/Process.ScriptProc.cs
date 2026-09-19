@@ -162,7 +162,7 @@ internal sealed partial class Process
 				str = bArg.PrintStrTerm.GetStrValue(exm);
 				//ボタン処理に絡んで表示がおかしくなるため、PRINTBUTTONでの改行コードはオミット
 				str = str.Replace("\n", "");
-				if (bArg.ButtonWord.GetOperandType() == typeof(long))
+				if (bArg.ButtonWord.IsInteger)
 				{
 					exm.Console.PrintButton(str, bArg.ButtonWord.GetIntValue(exm));
 				}
@@ -188,7 +188,7 @@ internal sealed partial class Process
 				//ボタン処理に絡んで表示がおかしくなるため、PRINTBUTTONでの改行コードはオミット
 				str = str.Replace("\n", "");
 				bool isRight = func.FunctionCode == FunctionCode.PRINTBUTTONC;
-				if (bArg.ButtonWord.GetOperandType() == typeof(long))
+				if (bArg.ButtonWord.IsInteger)
 				{
 					exm.Console.PrintButtonC(str, bArg.ButtonWord.GetIntValue(exm), isRight);
 				}
@@ -505,13 +505,13 @@ internal sealed partial class Process
 					throw new CodeEE(trerror.VarsTypeDifferent.Text);
 				}
 
-				if (vTerm1.GetOperandType() == typeof(long))
+				if (vTerm1.IsInteger)
 				{
 					long temp = vTerm1.GetIntValue(exm);
 					vTerm1.SetValue(vTerm2.GetIntValue(exm), exm);
 					vTerm2.SetValue(temp, exm);
 				}
-				else if (arg.var1.GetOperandType() == typeof(string))
+				else if (arg.var1.IsString)
 				{
 					string temps = vTerm1.GetStrValue(exm);
 					vTerm1.SetValue(vTerm2.GetStrValue(exm), exm);

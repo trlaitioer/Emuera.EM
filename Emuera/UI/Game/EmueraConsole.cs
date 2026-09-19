@@ -2823,7 +2823,7 @@ internal sealed partial class EmueraConsole : IDisposable
 					throw new CodeEE(trerror.CanNotInterpretedLine.Text);
 				}
 
-				if (term.GetOperandType() == typeof(long))
+				if (term.IsInteger)
 				{
 					if (outputDebugConsole)
 					{

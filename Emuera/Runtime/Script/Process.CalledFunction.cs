@@ -61,7 +61,7 @@ internal sealed class UserDefinedFunctionArgument
 					TransporterRef[i] = (Array)vTerm.Identifier.GetArray();
 				}
 			}
-			else if (Arguments.Required(i).GetOperandType() == typeof(long))
+			else if (Arguments.Required(i).IsInteger)
 			{
 				TransporterInt[i] = Arguments.Required(i).GetIntValue(exm);
 			}
@@ -235,7 +235,7 @@ internal sealed class CalledFunction
 			}
 			else if (term.GetOperandType() != destArg.GetOperandType())
 			{
-				if (term.GetOperandType() == typeof(string))
+				if (term.IsString)
 				{
 					errMes = string.Format(trerror.CanNotConvertStrToInt.Text, func.LabelName, (i + 1).ToString());
 					return null;

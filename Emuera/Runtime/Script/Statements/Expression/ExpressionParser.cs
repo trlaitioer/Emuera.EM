@@ -146,7 +146,7 @@ internal static class ExpressionParser
 					}
 					else
 					{
-						if (terms.Last!.Value!.GetOperandType() == typeof(long))
+						if (terms.Last!.Value!.IsInteger)
 						{
 							terms.AddLast(new NullTerm(0));
 						}
@@ -204,7 +204,7 @@ internal static class ExpressionParser
 			throw new CodeEE(trerror.CanNotInterpretedExpression.Text);
 		}
 
-		if (term.GetOperandType() != typeof(long))
+		if (!term.IsInteger)
 		{
 			throw new CodeEE(trerror.ExpressionResultIsNotNumeric.Text);
 		}

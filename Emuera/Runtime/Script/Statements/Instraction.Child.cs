@@ -207,7 +207,7 @@ internal sealed partial class FunctionIdentifier
 				List<AExpression?> terms = ((SpPrintVArgument)func.BuiltArgument).Terms;
 				foreach (AExpression? termV in terms)
 				{
-					if (termV!.GetOperandType() == typeof(long))
+					if (termV!.IsInteger)
 					{
 						builder.Append(termV.GetIntValue(exm));
 					}
@@ -732,7 +732,7 @@ internal sealed partial class FunctionIdentifier
 		{
 			AExpression term = ((MethodArgument)func.BuiltArgument).MethodTerm;
 			//Type type = term.GetOperandType();
-			if (term.GetOperandType() == typeof(long))
+			if (term.IsInteger)
 			{
 				exm.VEvaluator.RESULT = term.GetIntValue(exm);
 			}
@@ -3122,25 +3122,21 @@ internal sealed partial class FunctionIdentifier
 			int idx = 0;
 			foreach (SpDtColumnOptions.DTOptions opt in arg.Options)
 			{
-				AExpression v = arg.Values.Required(idx);
-				switch (opt)
+				if (opt == SpDtColumnOptions.DTOptions.Default)
 				{
-					case SpDtColumnOptions.DTOptions.Default:
-						if (v.GetOperandType() != (isString ? typeof(string) : typeof(long)))
-						{
+					AExpression v = arg.Values.Required(idx);
+					switch (isString)
+					{
+						case true when !v.IsString:
+						case false when !v.IsInteger:
 							throw new CodeEE(string.Format(trerror.DTInvalidDataType.Text, "DT_COLUMN_OPTIONS", key, cName));
-						}
-
-						if (isString)
-						{
+						case true:
 							column.DefaultValue = v.GetStrValue(exm);
-						}
-						else
-						{
+							break;
+						case false:
 							column.DefaultValue = Utils.DataTable.ConvertInt(v.GetIntValue(exm), column.DataType);
-						}
-
-						break;
+							break;
+					}
 				}
 
 				idx++;

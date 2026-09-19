@@ -41,7 +41,7 @@ internal abstract class SuperUserDefinedMethodTerm : AExpression
 		SingleTerm? term = exm.Process.GetValue(this);
 		if (term == null)
 		{
-			if (GetOperandType() == typeof(long))
+			if (IsInteger)
 			{
 				return new SingleLongTerm(0);
 			}
