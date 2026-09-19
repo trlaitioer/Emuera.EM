@@ -89,6 +89,11 @@ internal sealed class FileEE : EmueraException
 /// <summary>
 /// エラー箇所を表示するための位置データ。整形前のデータなのでエラー表示以外の理由で参照するべきではない。
 /// </summary>
+/// <remarks>
+/// <see cref="Filename"/> is a position name rather than a path: a normal position is relative to csv\ or erb\,
+/// while an analyzed file carries the path it was given on the command line. <c>Program.TryResolveScriptFile</c>
+/// turns the former into the file it names; the latter has to be kept as it is.
+/// </remarks>
 internal readonly record struct ScriptPosition
 {
 	public ScriptPosition()

@@ -467,6 +467,29 @@ internal static class Program
 		return SoundRoot.TryResolveChild(name, out file, out _);
 	}
 
+	/// <summary>
+	/// Resolves <see cref="ScriptPosition.Filename"/> to the file it names: a rooted value is the file itself,
+	/// otherwise the name is relative to csv\ or erb\, chosen by the extension. Callers that must keep an
+	/// analyzed position as it was given on the command line do not call this.
+	/// </summary>
+	public static bool TryResolveScriptFile(string? filename, [NotNullWhen(true)] out PurePath? file)
+	{
+		file = null;
+		if (!PurePath.TryFrom(filename, out PurePath? path, out _))
+		{
+			return false;
+		}
+
+		if (!path.IsRooted)
+		{
+			PurePath baseDirectory = PurePath.From(path.Extension.Equals(".csv", StringComparison.OrdinalIgnoreCase) ? CsvDir : ErbDir);
+			path = baseDirectory.Combine(path);
+		}
+
+		file = path;
+		return true;
+	}
+
 
 	public static bool rebootFlag;
 

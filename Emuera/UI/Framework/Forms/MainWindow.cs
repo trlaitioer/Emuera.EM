@@ -336,14 +336,7 @@ internal sealed partial class MainWindow : Form
 								doit = false;
 							}
 
-							if (fname.StartsWith(Program.ErbDir, StringComparison.OrdinalIgnoreCase))
-							{
-								filepath.Add(string.Concat(Program.ErbDir, fname.AsSpan(Program.ErbDir.Length)));
-							}
-							else
-							{
-								filepath.Add(fname);
-							}
+							filepath.Add(fname);
 						}
 
 						if (doit)
@@ -1474,14 +1467,7 @@ internal sealed partial class MainWindow : Form
 					return;
 				}
 
-				if (fname.StartsWith(Program.ErbDir, StringComparison.OrdinalIgnoreCase))
-				{
-					filepath.Add(Program.ErbDir + fname[Program.ErbDir.Length..]);
-				}
-				else
-				{
-					filepath.Add(fname);
-				}
+				filepath.Add(fname);
 			}
 
 			await console.ReloadPartialErb(filepath);

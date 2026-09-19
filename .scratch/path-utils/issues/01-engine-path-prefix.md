@@ -1,6 +1,6 @@
 # 路径:引擎与 UI 侧的前缀判断、相对化与剥前缀收敛
 
-Status: needs-triage
+Status: implemented
 
 ## 任务
 
@@ -26,19 +26,26 @@ Status: needs-triage
 ## 方案
 
 1. 每处先把「根」表达成 `PurePath`：`Program.GameRoot` 已存在；`Config.getFiles` 的 `dir`/`rootdir` 由调用方保证为同一根下的绝对路径，直接 `PurePath.From` 或改用已类型化的
-   `Program.ErbRoot`/`CsvRoot`（若 02 已完成，优先用它，避免重复解析）。
-2. 前缀判断一律换成 `IsRelativeTo(root)`；需要相对串时用 `RelativeTo(root).ToString()`。`ENUMFILES` 已经在 S2 走过这条路，形态（`erb\a.erb`）保持不变。
-3. `getRawTextFormFilewithLine` 单独定案：`ScriptPosition.Filename` 在分析模式携带的是命令行传入的原始路径，可能是游戏目录之外的绝对路径。倾向按 `PurePath` 的「可相对可绝对」表达它，取值时若
-   `IsRooted` 则直接使用、否则 `Combine(ErbRoot)`；不要引入新的类型。
+   `Program.ErbRoot`/`CsvRoot`（若 02 已完成，优先用它，避免重复解析）。`dir` 不在 `rootdir` 之下时沿用原行为——用 `dir` 自身作 Key 前缀；该情形当前无调用点。
+2. 前缀判断一律换成 `IsRelativeTo`；需要相对串时用 `RelativeTo(root).ToString()`。`ENUMFILES` 已经在 S2 走过这条路，形态（`erb\a.erb`）保持不变。
+3. `ScriptPosition.Filename` 的取值规则由 `Program.TryResolveScriptFile` 单点定义（不引入新类型）：`IsRooted` 则直接使用，否则按扩展名选 `csv\`/`erb\` 后 `Combine`（02 完成后换成
+   `CsvRoot`/`ErbRoot`）。
+   消费方：`getRawTextFormFilewithLine` 再按扩展名只放行 `.erb`/`.csv`；`OpenErrorFile` 在分析模式对非 `.csv` 位置保留原样（命令行给的相对路径按 CWD 解析才是它真正读过的文件），`.csv`
+   位置一律按 `csv\` 解析，解析失败时退回原串。
 4. 无操作剥前缀的两处直接删分支，不保留「为了对称」的写法。
 
 ## 曾考虑的替代方案
 
 1. 为 `ScriptPosition.Filename` 引入独立的「任意路径」类型：分析模式下它携带游戏目录之外的绝对路径，看似需要与 `GamePath` 区分的第二个类型。放弃原因是该字段只用于显示与定位、不参与写入，
    `PurePath` 的「可相对可绝对」已经覆盖它，引入类型只会增加转换面。
+2. 两个消费方各自内联解析规则：放弃原因是同一不变量要写两遍，且 `OpenErrorFile` 是私有 UI 方法无法单测；`Program.TryResolveScriptFile` 让这条规则可被测试覆盖。
 
 ## 影响
 
-- 行为变化：`Config.getFiles` 的相对路径在「`rootdir` 不带尾分隔符」时由错误截断变为正确结果；`ErbLoader` 的相对化不再受脚本大小写配置影响。
+- 行为变化：`Config.getFiles` 的相对路径在「`rootdir` 不带尾分隔符」时由错误截断变为正确结果；`ErbLoader` 的相对化不再受脚本大小写配置影响（`SCIgnoreCase` 本就是 `OrdinalIgnoreCase`
+  ，变的是「字符串前缀」→「段比较」）。
+- 行为变化：`OpenErrorFile` 传给编辑器的路径保留原始大小写（此前整体 `ToUpper()`）；`getRawTextFormFilewithLine` 在分析模式（绝对路径）现在能取到源码行，此前恒为空串。
+- `ScriptPosition.Filename` 的形态（`erb\` 下相对、`csv` 单段名）是脚本可见契约（`__FILE__`）与警告抑制配置的键，本票不改。
 - 与 03 共享 `EmueraConsole.cs`（本票动 `OpenErrorFile`，03 不动该函数），不构成阻塞。
 - 若 02 先完成，本票可直接使用 `Program.ErbRoot`/`CsvRoot`；否则先用 `PurePath.From(Program.ErbDir)`，02 完成后再收敛。
+- 新增测试的命名空间不能取 `Emuera.Tests.Runtime.Config`：会让同项目其它文件里的 `Config` 解析成命名空间而非类型（与 spec 记的 `Runtime/Utils/Path` 同类地雷）。

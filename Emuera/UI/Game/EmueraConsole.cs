@@ -15,6 +15,7 @@ using MinorShift.Emuera.Runtime.Script.Statements;
 using MinorShift.Emuera.Runtime.Script.Statements.Expression;
 using MinorShift.Emuera.Runtime.Utils;
 using MinorShift.Emuera.Runtime.Utils.EvilMask;
+using MinorShift.Emuera.Runtime.Utils.PathUtils;
 using MinorShift.Emuera.UI;
 using MinorShift.Emuera.UI.Game;
 using MinorShift.Emuera.UI.Game.Image;
@@ -1785,48 +1786,31 @@ internal sealed partial class EmueraConsole : IDisposable
 
 	private void OpenErrorFile(ScriptPosition? pos)
 	{
-		ProcessStartInfo pInfo = new() { FileName = Config.TextEditor };
-		StringComparison ignoreCaseCmp = StringComparison.OrdinalIgnoreCase;
 		// the only caller checks the position before passing it
-		string fname = pos!.Value.Filename.ToUpper();
-		if (fname.EndsWith(".CSV", ignoreCaseCmp))
-		{
-			if (fname.Contains(Program.CsvDir, ignoreCaseCmp))
-			{
-				fname = fname.Replace(Program.CsvDir, "", ignoreCaseCmp);
-			}
+		ScriptPosition position = pos!.Value;
+		// An analyzed file keeps the path it was given on the command line, which may live outside the game
+		// directory; only a csv position is always a name inside csv\.
+		bool keepAsIs = Program.AnalysisMode && !position.Filename.EndsWith(".csv", StringComparison.OrdinalIgnoreCase);
+		string fname = keepAsIs || !Program.TryResolveScriptFile(position.Filename, out PurePath? file)
+			? position.Filename
+			: file.ToString();
 
-			fname = Program.CsvDir + fname;
-		}
-		else
-		{
-			//解析モードの場合は見ているファイルがERB\の下にあるとは限らないかつフルパスを持っているのでこの補正はしなくてよい
-			if (!Program.AnalysisMode)
-			{
-				if (fname.Contains(Program.ErbDir, ignoreCaseCmp))
-				{
-					fname = fname.Replace(Program.ErbDir, "", ignoreCaseCmp);
-				}
-
-				fname = Path.Combine(Program.ErbDir + fname);
-			}
-		}
-
+		ProcessStartInfo pInfo = new() { FileName = Config.TextEditor };
 		switch (Config.EditorType)
 		{
 			case TextEditorType.SAKURA:
-				pInfo.Arguments = "-Y=" + pos.Value.LineNo + " \"" + fname + "\"";
+				pInfo.Arguments = "-Y=" + position.LineNo + " \"" + fname + "\"";
 				break;
 			case TextEditorType.TERAPAD:
-				pInfo.Arguments = "/jl=" + pos.Value.LineNo + " \"" + fname + "\"";
+				pInfo.Arguments = "/jl=" + position.LineNo + " \"" + fname + "\"";
 				break;
 			case TextEditorType.EMEDITOR:
-				pInfo.Arguments = "/l " + pos.Value.LineNo + " \"" + fname + "\"";
+				pInfo.Arguments = "/l " + position.LineNo + " \"" + fname + "\"";
 				break;
 			case TextEditorType.USER_SETTING:
 				if (!string.IsNullOrEmpty(Config.EditorArg) && Config.EditorArg != null)
 				{
-					pInfo.Arguments = Config.EditorArg + pos.Value.LineNo + " \"" + fname + "\"";
+					pInfo.Arguments = Config.EditorArg + position.LineNo + " \"" + fname + "\"";
 				}
 				else
 				{

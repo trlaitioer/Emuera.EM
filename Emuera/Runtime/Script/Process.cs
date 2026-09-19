@@ -9,6 +9,7 @@ using MinorShift.Emuera.Runtime.Script.Statements.Expression;
 using MinorShift.Emuera.Runtime.Script.Statements.Function;
 using MinorShift.Emuera.Runtime.Script.Statements.Variable;
 using MinorShift.Emuera.Runtime.Utils;
+using MinorShift.Emuera.Runtime.Utils.PathUtils;
 using MinorShift.Emuera.Runtime.Utils.PluginSystem;
 using MinorShift.Emuera.UI.Game.Image;
 using System;
@@ -711,28 +712,20 @@ internal sealed partial class Process(EmueraConsole view)
 
 	public static string getRawTextFormFilewithLine(ScriptPosition? position)
 	{
-		ReadOnlySpan<char> filename = position!.Value.Filename.AsSpan();
-		if (filename.EndsWith(".erb", StringComparison.OrdinalIgnoreCase))
-		{
-			return File.Exists(Program.ErbDir + position.Value.Filename)
-				? position.Value.LineNo > 0
-					? File.ReadLines(Program.ErbDir + position.Value.Filename,
-						EncodingHandler.DetectEncoding(Program.ErbDir + position.Value.Filename)).Skip(position.Value.LineNo - 1).First()
-					: ""
-				: "";
-		}
-		else if (filename.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
-		{
-			return File.Exists(Program.CsvDir + position.Value.Filename)
-				? position.Value.LineNo > 0
-					? File.ReadLines(Program.CsvDir + position.Value.Filename,
-						EncodingHandler.DetectEncoding(Program.CsvDir + position.Value.Filename)).Skip(position.Value.LineNo - 1).First()
-					: ""
-				: "";
-		}
-		else
+		if (position is not { } pos || pos.LineNo <= 0
+		                            || !Program.TryResolveScriptFile(pos.Filename, out PurePath? file)
+		                            || !(file.Extension.Equals(".erb", StringComparison.OrdinalIgnoreCase)
+		                                 || file.Extension.Equals(".csv", StringComparison.OrdinalIgnoreCase)))
 		{
 			return "";
 		}
+
+		string path = file.ToString();
+		if (!File.Exists(path))
+		{
+			return "";
+		}
+
+		return File.ReadLines(path, EncodingHandler.DetectEncoding(path)).Skip(pos.LineNo - 1).First();
 	}
 }

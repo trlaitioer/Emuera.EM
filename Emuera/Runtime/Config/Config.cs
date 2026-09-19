@@ -1,4 +1,5 @@
 ﻿using MinorShift.Emuera.Runtime.Utils;
+using MinorShift.Emuera.Runtime.Utils.PathUtils;
 using MinorShift.Emuera.UI;
 using System;
 using System.Collections.Generic;
@@ -520,43 +521,40 @@ internal static class Config
 
 	public static List<KeyValuePair<string, string>> GetFiles(string rootdir, string pattern)
 	{
-		return getFiles(rootdir, rootdir, pattern, !SearchSubdirectory, SortWithFilename);
+		return GetFiles(rootdir, rootdir, pattern);
 	}
 
 	public static List<KeyValuePair<string, string>> GetFiles(string dir, string rootdir, string pattern)
 	{
-		return getFiles(dir, rootdir, pattern, !SearchSubdirectory, SortWithFilename);
+		return getFiles(PurePath.From(dir), PurePath.From(rootdir), pattern, !SearchSubdirectory, SortWithFilename);
 	}
 
 	//KeyValuePair<相対パス, 完全パス>のリストを返す。
-	private static List<KeyValuePair<string, string>> getFiles(string dir, string rootdir, string pattern, bool toponly, bool sort)
+	private static List<KeyValuePair<string, string>> getFiles(PurePath dir, PurePath rootdir, string pattern, bool toponly, bool sort)
 	{
 		List<KeyValuePair<string, string>> retList = [];
 
-		string RelativePath; //相対ディレクトリ名
-		if (string.Equals(dir, rootdir, StringComparison.OrdinalIgnoreCase)) //現在のパスが検索ルートパスに等しい
+		// The key prefix: the part of dir below the search root, or dir itself when it is not below it.
+		PurePath? keyPrefix = null;
+		if (!dir.Equals(rootdir))
 		{
-			RelativePath = "";
-		}
-		else
-		{
-			RelativePath = !dir.StartsWith(rootdir, StringComparison.OrdinalIgnoreCase) ? dir : dir[rootdir.Length..]; //前方が検索ルートパスと一致するならその部分を切り取る
-
-			if (!RelativePath.EndsWith('\\') && !RelativePath.EndsWith('/'))
-			{
-				RelativePath += "\\"; //末尾が\又は/で終わるように。後でFile名を直接加算できるようにしておく
-			}
+			keyPrefix = dir.TryRelativeTo(rootdir, out PurePath? relative) ? relative : dir;
 		}
 
 		//filepathsは完全パスである
-		string[] filepaths = Directory.GetFiles(dir, pattern, SearchOption.TopDirectoryOnly);
+		string[] filepaths = Directory.GetFiles(dir.ToString(), pattern, SearchOption.TopDirectoryOnly);
 		if (sort)
 		{
 			Array.Sort(filepaths);
 		}
 
 		retList.AddRange(filepaths.Where(filepath => Path.GetExtension(filepath).Length <= 4)
-			.Select(filepath => new KeyValuePair<string, string>(Path.Combine(RelativePath, Path.GetFileName(filepath)), filepath)));
+			.Select(filepath =>
+			{
+				PurePath entry = PurePath.From(filepath);
+				string key = keyPrefix is null ? entry.Name : keyPrefix.Combine(entry.Name).ToString();
+				return new KeyValuePair<string, string>(key, filepath);
+			}));
 
 		if (toponly)
 		{
@@ -564,7 +562,7 @@ internal static class Config
 		}
 
 		//サブフォルダ内の検索
-		string[] dirList = Directory.GetDirectories(dir, "*", SearchOption.TopDirectoryOnly);
+		string[] dirList = Directory.GetDirectories(dir.ToString(), "*", SearchOption.TopDirectoryOnly);
 		if (dirList.Length <= 0)
 		{
 			return retList;
@@ -577,7 +575,7 @@ internal static class Config
 
 		foreach (string subdir in dirList)
 		{
-			retList.AddRange(getFiles(subdir, rootdir, pattern, toponly, sort));
+			retList.AddRange(getFiles(PurePath.From(subdir), rootdir, pattern, toponly, sort));
 		}
 
 		return retList;

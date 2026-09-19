@@ -9,6 +9,7 @@ using MinorShift.Emuera.Runtime.Script.Statements;
 using MinorShift.Emuera.Runtime.Script.Statements.Expression;
 using MinorShift.Emuera.Runtime.Script.Statements.Variable;
 using MinorShift.Emuera.Runtime.Utils;
+using MinorShift.Emuera.Runtime.Utils.PathUtils;
 using MinorShift.Emuera.Sub;
 using System;
 using System.Collections.Generic;
@@ -175,11 +176,15 @@ internal sealed class ErbLoader
 
 		await Task.Run(() =>
 		{
+			PurePath erbRoot = PurePath.From(Program.ErbDir);
 			foreach (string fpath in paths)
 			{
-				if (fpath.StartsWith(Program.ErbDir, Config.Config.SCIgnoreCase) && !Program.AnalysisMode)
+				// An analyzed file may live outside erb\, so its own path is the name to show.
+				if (!Program.AnalysisMode
+				    && PurePath.TryFrom(fpath, out PurePath? filePath, out _)
+				    && filePath.TryRelativeTo(erbRoot, out PurePath? relative))
 				{
-					fname = Path.GetRelativePath(Program.ErbDir, fpath);
+					fname = relative.ToString();
 				}
 				else
 				{
