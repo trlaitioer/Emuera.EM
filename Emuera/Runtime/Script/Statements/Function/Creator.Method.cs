@@ -9201,7 +9201,8 @@ internal static partial class FunctionMethodCreator
 			}
 			else
 			{
-				if (!GamePath.TryResolve(Program.GameRoot, arguments.Required(1).GetStrValue(exm), out GamePath? textFile, out _))
+				string rawName = arguments.Required(1).GetStrValue(exm);
+				if (!GamePath.TryResolve(Program.GameRoot, rawName, out GamePath? textFile, out _))
 				{
 					return 0;
 				}
@@ -9209,7 +9210,14 @@ internal static partial class FunctionMethodCreator
 				string tmp = textFile.Extension.Length > 1 ? textFile.Extension[1..].ToLower() : "";
 				if (!Config.ValidExtension.Contains(tmp))
 				{
-					textFile = textFile.ChangeExtension(".txt");
+					// A name that folded onto the game directory itself has no file name to extend, so it is
+					// refused instead of raising out of the script.
+					if (!textFile.TryChangeExtension(".txt", out GamePath? withTxt))
+					{
+						return 0;
+					}
+
+					textFile = withTxt;
 				}
 
 				filepath = textFile.FullName;

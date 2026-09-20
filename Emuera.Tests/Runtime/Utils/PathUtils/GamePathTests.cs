@@ -52,6 +52,27 @@ public class GamePathTests
 		Assert.Throws<ArgumentException>(() => path.ChangeExtension(@"D:\evil"));
 	}
 
+	[Fact]
+	public void TryChangeExtension_ReplacesTheExtensionInsideTheRoot()
+	{
+		Assert.True(GamePath.TryResolve(GameRoot, @"dat\memo", out var path, out _));
+
+		Assert.True(path!.TryChangeExtension(".txt", out var changed));
+		Assert.Equal(@"C:\__emuera_path_test__\dat\memo.txt", changed!.FullName);
+		Assert.Equal(GameRoot, changed.Root);
+	}
+
+	[Fact]
+	public void TryChangeExtension_ReportsTheGameDirectoryItself()
+	{
+		// 游戏根没有文件名可换扩展名:Path.ChangeExtension 会落到根的兄弟位置。
+		// 脚本来源的名字走 Try 版,必须拿到 false 而不是撞上异常。
+		Assert.True(GamePath.TryResolve(GameRoot, ".", out var path, out _));
+
+		Assert.False(path!.TryChangeExtension(".txt", out var changed));
+		Assert.Null(changed);
+	}
+
 	[Theory]
 	[InlineData(null)]
 	[InlineData("")]

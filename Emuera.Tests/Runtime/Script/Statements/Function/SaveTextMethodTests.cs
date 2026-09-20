@@ -58,6 +58,21 @@ public class SaveTextMethodTests
 		Assert.False(File.Exists(Path.Combine(Path.GetDirectoryName(root)!, "evil.txt")));
 	}
 
+	[Fact]
+	public void Savetext_NameResolvingToTheGameRoot_ReturnsZero()
+	{
+		string root = GameRootScope.UseTempRoot("savetext-game-root");
+		EnsureValidExtension();
+
+		// 三种写法词法折叠后都是游戏根:没有文件名可补 .txt,按失败返回,
+		// 不能在 GamePath.ChangeExtension 的越界校验上抛出并中断脚本。
+		Assert.Equal(0L, SaveText("body", "."));
+		Assert.Equal(0L, SaveText("body", @"erb\.."));
+		Assert.Equal(0L, SaveText("body", Path.Combine("..", Path.GetFileName(root))));
+		Assert.Empty(Directory.GetFiles(root));
+		Assert.False(File.Exists(root + ".txt"));
+	}
+
 	private static long SaveText(string text, string filename)
 		=> FunctionMethodCreator.GetMethodList()["SAVETEXT"]
 			.GetIntValue(null!, [new SingleStrTerm(text), new SingleStrTerm(filename)]);

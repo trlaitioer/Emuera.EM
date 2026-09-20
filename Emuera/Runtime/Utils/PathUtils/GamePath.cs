@@ -27,17 +27,26 @@ public sealed class GamePath : PurePath
 	/// <summary>
 	/// Replaces the extension and keeps the guarantees of this type: an extension that would leave the game
 	/// directory, or that brings in a segment which is not a usable file name, is refused instead of being
-	/// resolved.
+	/// resolved. Use this form on script input; <see cref="ChangeExtension"/> raises instead of reporting.
 	/// </summary>
-	public override GamePath ChangeExtension(string? extension)
+	public bool TryChangeExtension(string? extension, [NotNullWhen(true)] out GamePath? changed)
 	{
-		PurePath changed = base.ChangeExtension(extension);
-		if (!AreSegmentsValid(changed) || !changed.IsRelativeTo(root))
+		PurePath candidate = base.ChangeExtension(extension);
+		if (!AreSegmentsValid(candidate) || !candidate.IsRelativeTo(root))
 		{
-			throw new ArgumentException($"'{changed}' cannot be resolved inside '{root}'.", nameof(extension));
+			changed = null;
+			return false;
 		}
 
-		return new GamePath(root, changed.ToString());
+		changed = new GamePath(root, candidate.ToString());
+		return true;
+	}
+
+	public override GamePath ChangeExtension(string? extension)
+	{
+		return TryChangeExtension(extension, out GamePath? changed)
+			? changed
+			: throw new ArgumentException($"'{base.ChangeExtension(extension)}' cannot be resolved inside '{root}'.", nameof(extension));
 	}
 
 	/// <summary>
