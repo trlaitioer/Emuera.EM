@@ -384,20 +384,20 @@ internal static class Program
 	private static GamePath? defaultLogFile;
 
 	/// <summary>The game directory. Every other directory below is one of its entries.</summary>
-	public static GamePath GameRoot => gameRoot ?? throw NotSetUp();
+	public static GamePath GameRoot => gameRoot ?? throw NotSetUpException();
 
-	public static GamePath CsvRoot => csvRoot ?? throw NotSetUp();
-	public static GamePath ErbRoot => erbRoot ?? throw NotSetUp();
-	public static GamePath DebugRoot => debugRoot ?? throw NotSetUp();
-	public static GamePath DatRoot => datRoot ?? throw NotSetUp();
-	public static GamePath ContentRoot => contentRoot ?? throw NotSetUp();
-	public static GamePath SoundRoot => soundRoot ?? throw NotSetUp();
-	public static GamePath FontRoot => fontRoot ?? throw NotSetUp();
+	public static GamePath CsvRoot => csvRoot ?? throw NotSetUpException();
+	public static GamePath ErbRoot => erbRoot ?? throw NotSetUpException();
+	public static GamePath DebugRoot => debugRoot ?? throw NotSetUpException();
+	public static GamePath DatRoot => datRoot ?? throw NotSetUpException();
+	public static GamePath ContentRoot => contentRoot ?? throw NotSetUpException();
+	public static GamePath SoundRoot => soundRoot ?? throw NotSetUpException();
+	public static GamePath FontRoot => fontRoot ?? throw NotSetUpException();
 
 	/// <summary>Log file written when OUTPUTLOG is called without a name.</summary>
-	public static GamePath DefaultLogFile => defaultLogFile ?? throw NotSetUp();
+	public static GamePath DefaultLogFile => defaultLogFile ?? throw NotSetUpException();
 
-	private static InvalidOperationException NotSetUp()
+	private static InvalidOperationException NotSetUpException()
 	{
 		return new InvalidOperationException($"{nameof(SetDirPaths)} has to run before the game directories are read.");
 	}
