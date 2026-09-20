@@ -413,6 +413,26 @@ internal static class Program
 	}
 
 	/// <summary>
+	/// Resolves a script supplied file name for GCREATEFROMFILE. An absolute name has to live inside the
+	/// resources directory; otherwise <paramref name="isRelative"/> picks the game directory itself over
+	/// resources\.
+	/// </summary>
+	public static bool TryResolveContentFile(string? name, bool isRelative, [NotNullWhen(true)] out GamePath? file)
+	{
+		if (Path.IsPathRooted(name))
+		{
+			return GamePath.TryResolveAbsolute(ContentRoot, name, out file, out _);
+		}
+
+		if (isRelative)
+		{
+			return GamePath.TryResolve(GameRoot, name, out file, out _);
+		}
+
+		return ContentRoot.TryResolveChild(name, out file, out _);
+	}
+
+	/// <summary>
 	/// Resolves <see cref="ScriptPosition.Filename"/> to the file it names: a rooted value is the file itself,
 	/// otherwise the name is relative to csv\ or erb\, chosen by the extension. Callers that must keep an
 	/// analyzed position as it was given on the command line do not call this.

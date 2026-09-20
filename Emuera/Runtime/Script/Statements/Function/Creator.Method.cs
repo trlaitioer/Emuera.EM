@@ -7898,18 +7898,7 @@ internal static partial class FunctionMethodCreator
 			Bitmap? bmp = null;
 			try
 			{
-				// Both branches resolve inside the game directory.
-				GamePath? contentFile = null;
-				if (isRelative)
-				{
-					GamePath.TryResolve(Program.GameRoot, filename, out contentFile, out _);
-				}
-				else
-				{
-					Program.ContentRoot.TryResolveChild(filename, out contentFile, out _);
-				}
-
-				if (contentFile == null)
+				if (!Program.TryResolveContentFile(filename, isRelative, out GamePath? contentFile))
 				{
 					return 0;
 				}

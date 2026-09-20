@@ -70,9 +70,9 @@ Status: in-progress
 
 ## 影响
 
-- **行为变化（脚本可见）**：所有脚本可达路径不再能离开游戏目录；`GCREATEFROMFILE` 的 `isRelative` 基准由 CWD 改为游戏根；`EXISTSOUND` 基准由 CWD 改为 sound 目录；`ENUMFILES` / `FIND_*` 的
+- **行为变化（脚本可见）**：所有脚本可达路径不再能离开游戏目录；`GCREATEFROMFILE` 的绝对路径改为须落在 `resources\` 内、`isRelative` 基准由 CWD 改为游戏根；`EXISTSOUND` 基准由 CWD 改为 sound 目录；`ENUMFILES` / `FIND_*` 的
   `pattern` 含分隔符时不再枚举。越界输入按各入口原有失败语义处理。
 - **兼容契约未动**：`ENUMFILES` 返回的 `erb\a.erb` 形态不变；`SAVETEXT`/`LOADTEXT` 的扩展名判断保持原有 `ToLower()`。
 - **无插件 API 影响**：`Program` 是 `internal static class`。
-- **验证**：`dotnet build Emuera/Emuera.csproj -c Debug-NAudio -p:Platform=x64` 0 错误、警告数与基线一致；`Emuera.Tests` 238 通过（基线 144 + 新增 94）。
+- **验证**：`dotnet build Emuera/Emuera.csproj -c Debug-NAudio -p:Platform=x64` 0 错误、警告数与基线一致；`Emuera.Tests` 262 通过（基线 144 + 新增 118）。
 - **未覆盖**：词法包含性判断无法拦截符号链接 / junction；`Utils.GetValidPath` 保留原签名，其"返回值可被丢弃"的形状仍在。
