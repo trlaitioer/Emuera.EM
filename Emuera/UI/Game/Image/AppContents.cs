@@ -1,6 +1,7 @@
 ﻿using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.Runtime.Utils;
 using MinorShift.Emuera.Runtime.Utils.EvilMask;
+using MinorShift.Emuera.Runtime.Utils.PathUtils;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -146,7 +147,8 @@ internal static class AppContents
 				{
 					//アニメスプライト宣言。nullでないとき、フレーム追加モード
 					SpriteAnime? currentAnime = null;
-					string directory = Path.GetDirectoryName(path) + "\\";
+					// The enumeration yields files of this directory, so every one of them has a parent.
+					PurePath directory = PurePath.From(path).Directory!;
 					string filename = Path.GetFileName(path);
 					string[] lines = File.ReadAllLines(path, EncodingHandler.DetectEncoding(path));
 					int lineNo = 0;
@@ -267,7 +269,7 @@ internal static class AppContents
 	/// <param name="currentAnime"></param>
 	/// <param name="sp"></param>
 	/// <returns></returns>
-	private static AContentItem? CreateFromCsv(string[] tokens, string dir, SpriteAnime? currentAnime, ScriptPosition? sp)
+	private static AContentItem? CreateFromCsv(string[] tokens, PurePath dir, SpriteAnime? currentAnime, ScriptPosition? sp)
 	{
 		if (tokens.Length < 2)
 		{
@@ -317,7 +319,7 @@ internal static class AppContents
 			return null;
 		}
 
-		string parentName = dir + arg2;
+		string parentName = dir.Combine(arg2).ToString();
 
 
 		//親画像のロードConstImage

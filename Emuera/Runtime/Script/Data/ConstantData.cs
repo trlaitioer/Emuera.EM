@@ -2,6 +2,7 @@
 using MinorShift.Emuera.Runtime.Script.Parser;
 using MinorShift.Emuera.Runtime.Script.Statements.Variable;
 using MinorShift.Emuera.Runtime.Utils;
+using MinorShift.Emuera.Runtime.Utils.PathUtils;
 using MinorShift.Emuera.Sub;
 using System;
 using System.Collections.Generic;
@@ -2149,7 +2150,7 @@ internal sealed class ConstantData
 			eReader.Close();
 		}
 
-		string aliasPath = Path.GetDirectoryName(csvPath) + "\\" + Path.GetFileNameWithoutExtension(csvPath) + ".als";
+		string aliasPath = PurePath.From(csvPath).ChangeExtension(".als").ToString();
 		if (File.Exists(aliasPath))
 		{
 			loadAliases(aliasPath, targetIndex);
