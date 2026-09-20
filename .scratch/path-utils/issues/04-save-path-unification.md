@@ -1,8 +1,6 @@
 # 路径:存档路径统一到 GamePath
 
-Status: ready-for-human
-
-Blocked by: 02
+Status: implemented
 
 ## 任务
 

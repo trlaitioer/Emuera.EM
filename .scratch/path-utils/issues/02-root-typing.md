@@ -1,6 +1,6 @@
 # 路径:根目录类型化与「游戏目录」唯一定义
 
-Status: ready-for-human
+Status: implemented
 
 ## 任务
 

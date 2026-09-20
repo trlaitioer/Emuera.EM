@@ -1,6 +1,6 @@
 # 路径:剩余硬编码分隔符与死代码清理
 
-Status: ready-for-human
+Status: implemented
 
 ## 任务
 

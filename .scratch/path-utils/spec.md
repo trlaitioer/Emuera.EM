@@ -1,7 +1,7 @@
 # 路径处理统一：PurePath / GamePath
 
 Date: 2026-09-20
-Status: in-progress
+Status: implemented
 
 ## 问题/背景
 
