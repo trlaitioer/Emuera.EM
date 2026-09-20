@@ -44,7 +44,7 @@ Status: implemented
 2. **游戏根单点**：`Program.GameRoot`（`PurePath`，根自身）+ `ContentRoot`/`SoundRoot`/`DatRoot`/`DefaultLogFile`（`GamePath`），在 `SetDirPaths` 构造。`GamePath` **不持有进程级静态根**
    ——避免全局状态与静态初始化顺序风险，根由调用方传入。
 3. **脚本入口一律先解析再触碰文件系统**，拒绝时沿用各入口原有失败语义（返回 `0`/空串/既有对话框），不新增 `Lang` 文案。
-4. 根目录的字符串形态暂时保留（`Program.*Dir` 另有 97 处 / 23 文件引用），逐步收敛。
+4. 根目录以 `Program.GameRoot`（`GamePath`）为唯一定义；`Program.*Dir` 八个字符串成员随之删除（`ExeDir` 的消费点改用 `GameRoot.FullName`），`AssemblyData.WorkingDir`/`ExeDir` 死常量一并清理。
 
 待拆票：
 
@@ -72,7 +72,8 @@ Status: implemented
 
 - **行为变化（脚本可见）**：所有脚本可达路径不再能离开游戏目录；`GCREATEFROMFILE` 的绝对路径改为须落在 `resources\` 内、`isRelative` 基准由 CWD 改为游戏根；`EXISTSOUND` 基准由 CWD 改为 sound 目录；`ENUMFILES` / `FIND_*` 的
   `pattern` 含分隔符时不再枚举。越界输入按各入口原有失败语义处理。
+- **行为变化（资源与文本）**：`resources\` 下 csv 给出的图片名以 `resources\` 为界解析，rooted 或越出该目录的名字告警跳过（`..\b.png` 这类仍在 `resources\` 内的相对名保持可用）；名字词法折叠成游戏根时（`"."`、`"erb\.."`、`"..\<游戏目录名>"`），`SAVETEXT` 返回 0、`LOADTEXT` 返回空串——没有文件名可补扩展名，入口不得因此抛异常中断脚本。
 - **兼容契约未动**：`ENUMFILES` 返回的 `erb\a.erb` 形态不变；`SAVETEXT`/`LOADTEXT` 的扩展名判断保持原有 `ToLower()`。
 - **无插件 API 影响**：`Program` 是 `internal static class`。
-- **验证**：`dotnet build Emuera/Emuera.csproj -c Debug-NAudio -p:Platform=x64` 0 错误、警告数与基线一致；`Emuera.Tests` 262 通过（基线 144 + 新增 118）。
-- **未覆盖**：词法包含性判断无法拦截符号链接 / junction；`Utils.GetValidPath` 保留原签名，其"返回值可被丢弃"的形状仍在。
+- **验证**：`dotnet build Emuera/Emuera.csproj -c Debug-NAudio -p:Platform=x64` 0 错误、警告数与基线一致；`Emuera.Tests` 278 通过（基线 144 + spec 落地新增 118 + 回归修复新增 16）。
+- **未覆盖**：词法包含性判断无法拦截符号链接 / junction；`Utils.GetValidPath` 保留原签名，其"返回值可被丢弃"的形状仍在；`Rikai- Dictionary Filename` 的目录外绝对路径不再可用（迁移期引入，按「不得离开游戏目录」保留）；`ENUMFILES("")` 由枚举游戏根变为 -1（`"."` 仍可用）。

@@ -12,21 +12,9 @@ dotnet test Emuera.Tests/Emuera.Tests.csproj -c Debug-NAudio
 
 不要用 ProjectReference 的 `SetConfiguration`/`AdditionalProperties` 元数据代替:`SetConfiguration` 与 `dotnet test` 存在冲突(MSB3100),`AdditionalProperties` 不作用于还原阶段。
 
-## 覆盖范围
+## 组织方式
 
-测试文件按被测源码路径镜像组织(路径相对 `Emuera.Tests/`,与 `Emuera/` 下源码对应):
-
-| 文件 | 被测对象 |
-| --- | --- |
-| `Runtime/Script/Parser/LexicalAnalyzerTests.cs`(19 例) | 词法分析(`Analyse`/`AnalyseFormattedString`):标识符/整数/运算符/字符串/注释/括号/FORM `%` 终止/错误用例 + FORM 字符串构造(`\@…?…#…\@` 三元、`%…%` 段、`{…}`、`%TEXTR(…)` 嵌套、全角空格) |
-| `Runtime/Utils/EncodingHandlerTests.cs`(4 例) | 编码检测:UTF-8 带/不带 BOM、Shift-JIS 回落、`GetEncoding(932)` |
-| `Runtime/Script/Statements/Function/FunctionMethodTests.cs`(11 例) | 内建函数纯函数(`TOUPPER`/`TOLOWER`/`ABS`/`MAX`/`MIN`/`SQRT`/`GETBIT`/`INRANGE`/`TOSTR`/`TOFULL`/`TOHALF`,经 `GetMethodList()` 取实例) |
-| `Runtime/Script/Statements/Expression/ExpressionParserTests.cs`(9 例) | 表达式解析与求值:常量四则/比较/逻辑(传 null mediator)+ 变量引用/方法调用/三元(`?` `#`)/未知标识符异常(需 TestBootstrap) |
-| `Runtime/Script/Statements/Variable/VariableParserTests.cs`(5 例) | 变量解析:`IsVariable`、`ZeroTerm`/`TARGET` 静态项、`ReduceVariable`(含下标/角色字符串变量) |
-| `Runtime/Script/Data/StrFormTests.cs`(14 例) | `StrForm`(`AnalyseFormattedString` → `FromWordToken` → 求值):字面量/`{}`/`%%`/对齐(语言字节宽)/三连符号绑定/`\@…\@` 三元/`GetAExpression`/`Restructure` 折叠/错误路径 |
-| `Runtime/Script/Parser/LogicalLineParserTests.cs`(11 例) | `LogicalLineParser`:空行/指令行/赋值行/前置自增/无效行/`@`/`$` 标签/`#FUNCTION`/`#DIM` + 脚本级冒烟(按 ErbLoader 路由逐行解析无错误) |
-| `UI/Game/StBarTests.cs`(4 例) | `EmueraConsole.BuildStBar` 与原版 `getStBar` 的等价性、零显示宽度重复的前提(`GetDisplayLength` 对空串/null/零宽字符返回 0)、`targetWidth == 0` 时与旧实现的差异、配置宽度可用性 |
-| `TestBootstrapTests.cs`(4 例) | TestBootstrap 最小初始化夹具的 sanity 验证 |
+测试文件按被测源码路径镜像组织(路径相对 `Emuera.Tests/`,与 `Emuera/` 下源码对应),每个文件头部用 `<summary>` 说明被测对象;本文件不维护文件清单。
 
 ## 运行时初始化(TestBootstrap)
 
@@ -35,6 +23,6 @@ Phase 2 起的用例(变量求值/StrForm/LogicalLineParser)依赖 `TestBootstra
 
 - `ParserMediator.Initialize(null)` + `console` 传 null:`LogicalLineParser` 在非 AnalysisMode 下不参与解析,无需 STA/WinForms
 - `Config.SetReplace(ConfigData.Instance)`:填充 `PalamLvDef` 等 replace 系静态默认值(`VariableData.SetDefaultValue` 依赖)
-- `JSONConfig.Data = new JSONConfigData()`:`FunctionIdentifier` 静态构造读取;`Load()` 依赖 `Program.ExeDir`(测试中未设)
+- `JSONConfig.Data = new JSONConfigData()`:`FunctionIdentifier` 静态构造读取;`Load()` 依赖 `Program.GameRoot`(由 `SetDirPaths` 设定,本夹具不设游戏目录)
 - `LangManager.setEncode(932)`:`GetStrlenLang` 非 ASCII 路径不设必 NRE
 - `GlobalStatic.Process.scaningLine` 置占位行:`GetScaningLine` 在其为 null 时解引用仅 `Initialize` 创建的 `state`
