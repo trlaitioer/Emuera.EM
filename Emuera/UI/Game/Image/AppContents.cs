@@ -319,7 +319,12 @@ internal static class AppContents
 			return null;
 		}
 
-		string parentName = dir.Combine(arg2).ToString();
+		string? parentName = ResolveResourcePath(dir, arg2);
+		if (parentName is null)
+		{
+			ParserMediator.Warn(string.Format(trerror.FailedLoadFile.Text, arg2), sp, 1);
+			return null;
+		}
 
 
 		//親画像のロードConstImage
@@ -457,5 +462,28 @@ internal static class AppContents
 		//if (Config.DisplayReport)
 		//	ParserMediator.SingleLine(string.Format(Lang.SystemLine.CreateFromCSV.Text, arg2, name));
 		return image;
+	}
+
+	/// <summary>
+	/// Resolves the image name a resources csv gives, relative to that csv's directory. The result has to stay
+	/// inside resources\, so a name cannot climb out of the resource directory.
+	/// </summary>
+	internal static string? ResolveResourcePath(PurePath resourceCsvDirectory, string imageName)
+	{
+		if (string.IsNullOrWhiteSpace(imageName))
+		{
+			return null;
+		}
+
+		// The caller enumerates inside resources\, so this only holds the invariant for other callers.
+		if (!resourceCsvDirectory.IsRelativeTo(Program.ContentRoot))
+		{
+			return null;
+		}
+
+		PurePath candidate = resourceCsvDirectory.RelativeTo(Program.ContentRoot).Combine(imageName);
+		return Program.ContentRoot.TryResolveChild(candidate.ToString(), out GamePath? file, out _)
+			? file.FullName
+			: null;
 	}
 }

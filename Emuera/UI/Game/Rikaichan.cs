@@ -4,6 +4,7 @@ using MinorShift.Emuera.Runtime.Utils.PathUtils;
 using MinorShift.Emuera.UI.Game;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.IO; //for File
 using System.Text;
@@ -52,11 +53,10 @@ internal partial class Rikaichan
 			return;
 		}
 
-		// The setting is a path relative to the game directory, not a plain file name.
-		if (!Program.GameRoot.TryResolveChild(Config.RikaiFilename, out GamePath? rikaiFile, out _)
+		if (!TryResolveRikaiFile(Config.RikaiFilename, out GamePath? rikaiFile)
 		    || !File.Exists(rikaiFile.FullName))
 		{
-			MessageBox.Show($"{Config.RikaiFilename} not found, rikaichan can't work without that");
+			MessageBox.Show($"{Config.RikaiFilename} not found inside the game directory, rikaichan can't work without that");
 			// You need jmdict in edict format, not edict2 or xml, just edict. For now.
 			enabled = false;
 			return;
@@ -75,6 +75,23 @@ internal partial class Rikaichan
 			RikaiDialog dialog = new(edict, ReceiveIndex, rikaiFile);
 			dialog.Show();
 		}
+	}
+
+	/// <summary>
+	/// Resolves the configured dictionary: a path relative to the game directory, or an absolute path that is
+	/// inside it. The index file is written next to the dictionary, so the setting cannot point outside the game.
+	/// </summary>
+	internal static bool TryResolveRikaiFile(string? configuredPath, [NotNullWhen(true)] out GamePath? file)
+	{
+		if (string.IsNullOrWhiteSpace(configuredPath))
+		{
+			file = null;
+			return false;
+		}
+
+		return Path.IsPathRooted(configuredPath)
+			? GamePath.TryResolveAbsolute(Program.GameRoot, configuredPath, out file, out _)
+			: Program.GameRoot.TryResolveChild(configuredPath, out file, out _);
 	}
 
 	private static void Autogenerate()
