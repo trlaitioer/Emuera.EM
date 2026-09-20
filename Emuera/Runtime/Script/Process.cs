@@ -103,16 +103,14 @@ internal sealed partial class Process(EmueraConsole view)
 
 			if (Config.UseKeyMacro && !Program.AnalysisMode)
 			{
-				//if (File.Exists(Program.ExeDir + "macro.txt"))
-				if (File.Exists(Program.ExeDir + "macro.txt"))
+				if (File.Exists(KeyMacro.MacroPath.FullName))
 				{
 					if (Config.DisplayReport)
 					{
 						console.PrintSystemLine(trsl.LoadingMacro.Text);
 					}
 
-					//KeyMacro.LoadMacroFile(Program.ExeDir + "macro.txt");
-					KeyMacro.LoadMacroFile(Program.ExeDir + "macro.txt");
+					KeyMacro.LoadMacroFile(KeyMacro.MacroPath.FullName);
 				}
 			}
 
@@ -124,14 +122,14 @@ internal sealed partial class Process(EmueraConsole view)
 			//_replace.csv読み込み
 			if (Config.UseReplaceFile && !Program.AnalysisMode)
 			{
-				if (File.Exists(Program.CsvDir + "_Replace.csv"))
+				if (File.Exists(Program.CsvRoot.CombineName("_Replace.csv").FullName))
 				{
 					if (Config.DisplayReport)
 					{
 						console.PrintSystemLine(trsl.LoadingReplace.Text);
 					}
 
-					ConfigData.Instance.LoadReplaceFile(Program.CsvDir + "_Replace.csv");
+					ConfigData.Instance.LoadReplaceFile(Program.CsvRoot.CombineName("_Replace.csv").FullName);
 					if (ParserMediator.HasWarning)
 					{
 						ParserMediator.FlushWarningList();
@@ -154,14 +152,14 @@ internal sealed partial class Process(EmueraConsole view)
 			//_rename.csv読み込み
 			if (Config.UseRenameFile)
 			{
-				if (File.Exists(Program.CsvDir + "_Rename.csv"))
+				if (File.Exists(Program.CsvRoot.CombineName("_Rename.csv").FullName))
 				{
 					if (Config.DisplayReport || Program.AnalysisMode)
 					{
 						console.PrintSystemLine(trsl.LoadingRename.Text);
 					}
 
-					ParserMediator.LoadEraExRenameFile(Program.CsvDir + "_Rename.csv");
+					ParserMediator.LoadEraExRenameFile(Program.CsvRoot.CombineName("_Rename.csv").FullName);
 				}
 				else
 				{
@@ -179,7 +177,7 @@ internal sealed partial class Process(EmueraConsole view)
 
 			//gamebase.csv読み込み
 			gamebase = new GameBase();
-			if (!await Task.Run(() => gamebase.LoadGameBaseCsv(Program.CsvDir + "GAMEBASE.CSV")))
+			if (!await Task.Run(() => gamebase.LoadGameBaseCsv(Program.CsvRoot.CombineName("GAMEBASE.CSV").FullName)))
 			{
 				ParserMediator.FlushWarningList();
 				console.PrintSystemLine(trsl.GamebaseError.Text);
@@ -192,7 +190,7 @@ internal sealed partial class Process(EmueraConsole view)
 
 			//前記以外のcsvを全て読み込み
 			ConstantData constant = new();
-			constant.LoadData(Program.CsvDir, console, Config.DisplayReport);
+			constant.LoadData(Program.CsvRoot.FullName, console, Config.DisplayReport);
 			logWriter?.WriteLine($"Proc:Init:EtcCSV:End {stopWatch.ElapsedMilliseconds}ms");
 
 			GlobalStatic.ConstantData = constant;
@@ -226,7 +224,7 @@ internal sealed partial class Process(EmueraConsole view)
 			}
 
 			//ERH読込
-			if (!await Task.Run(() => hLoader.LoadHeaderFiles(Program.ErbDir, Config.DisplayReport)))
+			if (!await Task.Run(() => hLoader.LoadHeaderFiles(Program.ErbRoot.FullName, Config.DisplayReport)))
 			{
 				ParserMediator.FlushWarningList();
 				console.PrintSystemLine("");
@@ -247,7 +245,7 @@ internal sealed partial class Process(EmueraConsole view)
 			}
 			else
 			{
-				noError = await loader.LoadErbDir(Program.ErbDir, Config.DisplayReport, labelDic);
+				noError = await loader.LoadErbDir(Program.ErbRoot.FullName, Config.DisplayReport, labelDic);
 			}
 
 			logWriter?.WriteLine($"Proc:Init:ERB:End {stopWatch.ElapsedMilliseconds}ms");
@@ -275,12 +273,12 @@ internal sealed partial class Process(EmueraConsole view)
 
 	public async Task ReloadErb()
 	{
-		await Preload.Load(Program.ErbDir);
-		await Preload.Load(Program.CsvDir);
+		await Preload.Load(Program.ErbRoot.FullName);
+		await Preload.Load(Program.CsvRoot.FullName);
 		saveCurrentState(false);
 		state.SystemState = SystemStateCode.System_Reloaderb;
 		ErbLoader loader = new(console, exm, this);
-		await loader.LoadErbDir(Program.ErbDir, false, labelDic);
+		await loader.LoadErbDir(Program.ErbRoot.FullName, false, labelDic);
 		console.ReadAnyKey();
 	}
 

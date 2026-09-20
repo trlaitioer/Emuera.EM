@@ -1,5 +1,6 @@
 ﻿using MinorShift.Emuera.Runtime.Script.Statements.Expression;
 using MinorShift.Emuera.Runtime.Utils;
+using MinorShift.Emuera.Runtime.Utils.PathUtils;
 using MinorShift.Emuera.Sub;
 using System;
 using System.Collections.Generic;
@@ -20,11 +21,12 @@ internal sealed class ConfigData
 {
 	#region eee_カレントディレクトリー
 
-	private static readonly string configPath = Program.ExeDir + "emuera.config";
+	// Resolved on every read: the game directory is only known once SetDirPaths has run.
+	private static GamePath ConfigPath => Program.GameRoot.CombineName("emuera.config");
 
 	#endregion
 
-	private static readonly string configdebugPath = Program.DebugDir + "debug.config";
+	private static GamePath ConfigDebugPath => Program.DebugRoot.CombineName("debug.config");
 
 	static ConfigData()
 	{ }
@@ -693,7 +695,7 @@ internal sealed class ConfigData
 		{
 			#region EM_私家版_Emuera多言語化改造
 
-			using StreamWriter writer = new(configPath, false, Config.Encode);
+			using StreamWriter writer = new(ConfigPath.FullName, false, Config.Encode);
 			foreach (var item in configArray)
 
 				#endregion
@@ -772,24 +774,24 @@ internal sealed class ConfigData
 
 	public bool LoadConfig()
 	{
-		string defaultConfigPath = Program.CsvDir + "_default.config";
-		string fixedConfigPath = Program.CsvDir + "_fixed.config";
+		string defaultConfigPath = Program.CsvRoot.CombineName("_default.config").FullName;
+		string fixedConfigPath = Program.CsvRoot.CombineName("_fixed.config").FullName;
 		if (!File.Exists(defaultConfigPath))
 		{
-			defaultConfigPath = Program.CsvDir + "default.config";
+			defaultConfigPath = Program.CsvRoot.CombineName("default.config").FullName;
 		}
 
 		if (!File.Exists(fixedConfigPath))
 		{
-			fixedConfigPath = Program.CsvDir + "fixed.config";
+			fixedConfigPath = Program.CsvRoot.CombineName("fixed.config").FullName;
 		}
 
 		loadConfig(defaultConfigPath, false);
-		loadConfig(configPath, false);
+		loadConfig(ConfigPath.FullName, false);
 		loadConfig(fixedConfigPath, true);
 
 		Config.SetConfig(this);
-		bool needSave = !File.Exists(configPath);
+		bool needSave = !File.Exists(ConfigPath.FullName);
 
 		if (Config.CheckUpdate())
 		{
@@ -975,8 +977,7 @@ internal sealed class ConfigData
 		{
 			#region EM_私家版_Emuera多言語化改造
 
-			// writer = new StreamWriter(configdebugPath, false, Config.Encode);
-			using StreamWriter writer = new(configdebugPath, false, Config.Encode);
+			using StreamWriter writer = new(ConfigDebugPath.FullName, false, Config.Encode);
 
 			// for (int i = 0; i < debugArray.Length; i++)
 			foreach (var item in debugArray)
@@ -1003,12 +1004,12 @@ internal sealed class ConfigData
 	public bool LoadDebugConfig()
 	{
 		using EraStreamReader eReader = new(false);
-		if (!File.Exists(configdebugPath))
+		if (!File.Exists(ConfigDebugPath.FullName))
 		{
 			goto err;
 		}
 
-		if (!eReader.Open(configdebugPath))
+		if (!eReader.Open(ConfigDebugPath.FullName))
 		{
 			goto err;
 		}

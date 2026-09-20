@@ -4,6 +4,7 @@ using MinorShift.Emuera.Runtime.Script;
 using MinorShift.Emuera.Runtime.Script.Parser;
 using MinorShift.Emuera.Runtime.Script.Statements;
 using MinorShift.Emuera.Runtime.Script.Statements.Variable;
+using MinorShift.Emuera.Runtime.Utils.PathUtils;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -282,15 +283,15 @@ public class PluginManager
 	/// </summary>
 	public void LoadPlugins()
 	{
-		if (!Directory.Exists(Path.Combine(Program.ExeDir, "Plugins")))
+		GamePath pluginDir = Program.GameRoot.CombineName("Plugins");
+		if (!Directory.Exists(pluginDir.FullName))
 		{
 			//フォルダを作らないようにする
 			return;
 			//Directory.CreateDirectory("Plugins");
 		}
 
-		string[] plugins = Directory.GetFiles(Path.Combine(Program.ExeDir, "Plugins"), "*.dll");
-		//bool pluginsAware = File.Exists(Program.ExeDir + "pluginsAware.txt");
+		string[] plugins = Directory.GetFiles(pluginDir.FullName, "*.dll");
 		ClearMethods();
 
 		//プラグインがある

@@ -2537,22 +2537,22 @@ internal sealed class VariableEvaluator : IDisposable
 
 	private static string getSaveDataPathG()
 	{
-		return Config.Config.SavDir + "global.sav";
+		return Config.Config.SavDir.CombineName("global.sav").FullName;
 	}
 
 	private static string getSaveDataPath(int index)
 	{
-		return string.Create(CultureInfo.InvariantCulture, $"{Config.Config.SavDir}save{index:00}.sav");
+		return Config.Config.SavDir.CombineName(string.Create(CultureInfo.InvariantCulture, $"save{index:00}.sav")).FullName;
 	}
 
 	private static string getSaveDataPathV(int index)
 	{
-		return Program.DatDir + $"var_{index:00}.dat";
+		return Program.DatRoot.CombineName($"var_{index:00}.dat").FullName;
 	}
 
 	private static string getSaveDataPathC(int index)
 	{
-		return Program.DatDir + $"chara_{index:00}.dat";
+		return Program.DatRoot.CombineName($"chara_{index:00}.dat").FullName;
 	}
 
 	/// <summary>
@@ -2561,14 +2561,14 @@ internal sealed class VariableEvaluator : IDisposable
 	/// <returns></returns>
 	public static void CreateDatFolder()
 	{
-		if (Directory.Exists(Program.DatDir))
+		if (Directory.Exists(Program.DatRoot.FullName))
 		{
 			return;
 		}
 
 		try
 		{
-			Directory.CreateDirectory(Program.DatDir);
+			Directory.CreateDirectory(Program.DatRoot.FullName);
 		}
 		catch
 		{
@@ -2581,7 +2581,7 @@ internal sealed class VariableEvaluator : IDisposable
 	{
 		List<string> files = [];
 		// A pattern is not a path: separators would let it enumerate outside the data folder.
-		if (!Directory.Exists(Program.DatDir) || !NamePattern.IsSingleDirectory(pattern))
+		if (!Directory.Exists(Program.DatRoot.FullName) || !NamePattern.IsSingleDirectory(pattern))
 		{
 			return files;
 		}
@@ -2589,7 +2589,7 @@ internal sealed class VariableEvaluator : IDisposable
 		string prefix = charadat ? "chara_" : "var_";
 		string searchPattern = prefix + pattern + ".dat";
 
-		string[] pathes = Directory.GetFiles(Program.DatDir, searchPattern, SearchOption.TopDirectoryOnly);
+		string[] pathes = Directory.GetFiles(Program.DatRoot.FullName, searchPattern, SearchOption.TopDirectoryOnly);
 		foreach (string path in pathes)
 		{
 			PurePath entry = PurePath.From(path);
@@ -2616,22 +2616,22 @@ internal sealed class VariableEvaluator : IDisposable
 	}
 
 	/// <summary>
-	/// Resolves "&lt;prefix&gt;&lt;savename&gt;.dat" inside the data directory. The name is a single
-	/// segment, so a name carrying separators is rejected instead of walking out of the folder.
+	/// Resolves "&lt;prefix&gt;&lt;savename&gt;.dat" inside the data directory. The name may point into a
+	/// subdirectory of the data directory, but it cannot leave it.
 	/// </summary>
 	private static bool TryResolveSaveDataPath(string prefix, string? savename, [NotNullWhen(true)] out GamePath? path)
 	{
-		return Program.DatRoot.TryResolveChildName($"{prefix}{savename}.dat", out path, out _);
+		return Program.DatRoot.TryResolveChild($"{prefix}{savename}.dat", out path, out _);
 	}
 
 	/// <summary>
 	/// Resolves "save&lt;savename&gt;.sav" inside the save directory, which is either the game
-	/// directory itself or its "sav" subdirectory.
+	/// directory itself or its "sav" subdirectory. The name may point into a subdirectory of the
+	/// save directory, but it cannot leave it.
 	/// </summary>
 	private static bool TryResolveSaveFilePath(string? savename, [NotNullWhen(true)] out string? filepath)
 	{
-		if (!GamePath.TryResolveAbsolute(Program.GameRoot, $"{Config.Config.SavDir}save{savename}.sav",
-			    out GamePath? saveFile, out _))
+		if (!Config.Config.SavDir.TryResolveChild($"save{savename}.sav", out GamePath? saveFile, out _))
 		{
 			filepath = null;
 			return false;

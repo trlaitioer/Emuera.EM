@@ -1,4 +1,5 @@
-﻿using MinorShift.Emuera.Sub;
+﻿using MinorShift.Emuera.Runtime.Utils.PathUtils;
+using MinorShift.Emuera.Sub;
 using System;
 using System.IO;
 using trmk = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.KeyMacro;
@@ -9,8 +10,8 @@ internal static class KeyMacro
 {
 	#region eee_カレントディレクトリー
 
-	//readonly static string macroPath = Program.ExeDir + "macro.txt";
-	private static readonly string macroPath = Program.ExeDir + "macro.txt";
+	// Resolved on every read: the game directory is only known once SetDirPaths has run.
+	internal static GamePath MacroPath => Program.GameRoot.CombineName("macro.txt");
 
 	#endregion
 
@@ -69,7 +70,7 @@ internal static class KeyMacro
 
 		try
 		{
-			writer = new StreamWriter(macroPath, false, Config.Config.Encode);
+			writer = new StreamWriter(MacroPath.FullName, false, Config.Config.Encode);
 			for (int g = 0; g < MaxGroup; g++)
 			{
 				writer.WriteLine(gID + g + ":" + groupName[g]);

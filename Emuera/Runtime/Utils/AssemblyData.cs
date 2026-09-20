@@ -9,14 +9,6 @@ public static class AssemblyData
 	static AssemblyData()
 	{
 		ExePath = Environment.ProcessPath!;
-
-		#region eee_カレントディレクトリー
-
-		WorkingDir = Directory.GetCurrentDirectory() + "\\";
-
-		#endregion
-
-		ExeDir = Path.GetDirectoryName(ExePath) + "\\";
 		ExeName = Path.GetFileName(ExePath);
 		emueraVer = typeof(AssemblyData).Assembly.GetName().Version!;
 
@@ -31,20 +23,6 @@ public static class AssemblyData
 	public static readonly Version emueraVer;
 
 	public static readonly string EmueraVersionText;
-
-	/// <summary>
-	/// 実行ファイルのディレクトリ。最後に\を付けたstring
-	/// </summary>
-	public static readonly string ExeDir;
-
-	#region eee_カレントディレクトリー
-
-	/// <summary>
-	/// 実行ファイルのディレクトリ。最後に\を付けたstring
-	/// </summary>
-	public static readonly string WorkingDir;
-
-	#endregion
 
 	/// <summary>
 	/// 実行ファイルの名前。ディレクトリなし

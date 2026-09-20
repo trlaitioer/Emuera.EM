@@ -9375,14 +9375,14 @@ internal static partial class FunctionMethodCreator
 	}
 
 
-	private static string GetSaveDataPathText(int index, string dir)
+	private static string GetSaveDataPathText(int index, GamePath dir)
 	{
-		return $"{dir}txt{index:00}.txt";
+		return dir.CombineName($"txt{index:00}.txt").FullName;
 	}
 
 	private static string GetSaveDataPathGraphics(int index)
 	{
-		return $"{Config.SavDir}img{index:0000}.png";
+		return Config.SavDir.CombineName($"img{index:0000}.png").FullName;
 	}
 
 	/// <summary>

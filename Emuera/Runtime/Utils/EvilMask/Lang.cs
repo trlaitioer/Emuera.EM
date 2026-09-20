@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
 using MinorShift.Emuera.Runtime.Config;
+using MinorShift.Emuera.Runtime.Utils.PathUtils;
 
 namespace MinorShift.Emuera.Runtime.Utils.EvilMask;
 
@@ -1439,9 +1440,9 @@ internal sealed partial class Lang
 			pair.Value.Clear();
 		}
 
-		if (Directory.Exists(langDir))
+		if (Directory.Exists(LangDir.FullName))
 		{
-			foreach (string path in Directory.EnumerateFiles(langDir, "emuera.*.xml", SearchOption.TopDirectoryOnly))
+			foreach (string path in Directory.EnumerateFiles(LangDir.FullName, "emuera.*.xml", SearchOption.TopDirectoryOnly))
 			{
 				AddLanguageFile(path);
 			}
@@ -1579,12 +1580,12 @@ internal sealed partial class Lang
 
 	public static void GenerateDefaultLangFile()
 	{
-		if (!Directory.Exists(langDir))
+		if (!Directory.Exists(LangDir.FullName))
 		{
-			Directory.CreateDirectory(langDir);
+			Directory.CreateDirectory(LangDir.FullName);
 		}
 
-		FileStream fs = new(langDir + "emuera-default-lang.xml", FileMode.Create);
+		FileStream fs = new(LangDir.CombineName("emuera-default-lang.xml").FullName, FileMode.Create);
 		XmlWriterSettings settings = new() { Indent = true, IndentChars = "\t" };
 		XmlWriter writer = XmlWriter.Create(fs, settings);
 		XmlDocument xml = new();
@@ -1607,7 +1608,8 @@ internal sealed partial class Lang
 		writer.Flush();
 	}
 
-	private static readonly string langDir = Path.Combine(Program.ExeDir, "lang") + Path.DirectorySeparatorChar;
+	// Resolved on every read: the game directory is only known once SetDirPaths has run.
+	private static GamePath LangDir => Program.GameRoot.CombineName("lang");
 
 	private static readonly Dictionary<string, string> langList = [];
 	private static readonly Dictionary<string, string> localeList = [];

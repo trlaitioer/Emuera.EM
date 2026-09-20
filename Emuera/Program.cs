@@ -89,16 +89,9 @@ internal static class Program
 
 		ParseResult result = rootCommand.Parse(args);
 
-		//実行ディレクトリが引数で与えられた場合
+		//実行ディレクトリが引数で与えられない場合、カレントディレクトリーをゲームフォルダとする
 		string? exeDir = result.GetValueForOption(exeDirOption);
-		if (exeDir != null)
-		{
-			SetDirPaths(exeDir);
-		}
-		else
-		{
-			SetDirPaths(AssemblyData.WorkingDir);
-		}
+		SetDirPaths(exeDir ?? Directory.GetCurrentDirectory());
 
 		#endregion
 
@@ -154,7 +147,7 @@ internal static class Program
 
 		Application.SetCompatibleTextRenderingDefault(false);
 
-		ProfileOptimization.SetProfileRoot(exeDir ?? ExeDir);
+		ProfileOptimization.SetProfileRoot(exeDir ?? GameRoot.FullName);
 		ProfileOptimization.StartProfile("profile");
 
 		//Font files are registered before the configuration is loaded: loading it derives the render font size
@@ -164,14 +157,14 @@ internal static class Program
 		#region EE_フォントファイル対応
 
 		//フォントファイルを読み込む
-		if (Directory.Exists(FontDir))
+		if (Directory.Exists(FontRoot.FullName))
 		{
-			foreach (string fontFile in Directory.GetFiles(FontDir, "*.ttf", SearchOption.AllDirectories))
+			foreach (string fontFile in Directory.GetFiles(FontRoot.FullName, "*.ttf", SearchOption.AllDirectories))
 			{
 				GlobalStatic.Pfc.AddFontFile(fontFile);
 			}
 
-			foreach (string fontFile in Directory.GetFiles(FontDir, "*.otf", SearchOption.AllDirectories))
+			foreach (string fontFile in Directory.GetFiles(FontRoot.FullName, "*.otf", SearchOption.AllDirectories))
 			{
 				GlobalStatic.Pfc.AddFontFile(fontFile);
 			}
@@ -218,14 +211,14 @@ internal static class Program
 			return;
 		}
 
-		if (!Directory.Exists(CsvDir))
+		if (!Directory.Exists(CsvRoot.FullName))
 		{
 			//Dialog.Show("フォルダなし", "csvフォルダが見つかりません");
 			Dialog.Show(Lang.UI.MainWindow.MsgBox.FolderNotFound.Text, Lang.UI.MainWindow.MsgBox.NoCsvFolder.Text);
 			return;
 		}
 
-		if (!Directory.Exists(ErbDir))
+		if (!Directory.Exists(ErbRoot.FullName))
 		{
 			//Dialog.Show("フォルダなし", "erbフォルダが見つかりません");
 			Dialog.Show(Lang.UI.MainWindow.MsgBox.FolderNotFound.Text, Lang.UI.MainWindow.MsgBox.NoErbFolder.Text);
@@ -235,11 +228,11 @@ internal static class Program
 		if (DebugMode)
 		{
 			ConfigData.Instance.LoadDebugConfig();
-			if (!Directory.Exists(DebugDir))
+			if (!Directory.Exists(DebugRoot.FullName))
 			{
 				try
 				{
-					Directory.CreateDirectory(DebugDir);
+					Directory.CreateDirectory(DebugRoot.FullName);
 				}
 				catch
 				{
@@ -358,108 +351,60 @@ internal static class Program
 		*/
 	}
 
-	[MemberNotNull(nameof(GameRoot))]
-	[MemberNotNull(nameof(ContentRoot))]
-	[MemberNotNull(nameof(SoundRoot))]
-	[MemberNotNull(nameof(DatRoot))]
-	[MemberNotNull(nameof(DefaultLogFile))]
-	[MemberNotNull(nameof(ExeDir))]
-	[MemberNotNull(nameof(CsvDir))]
-	[MemberNotNull(nameof(ErbDir))]
-	[MemberNotNull(nameof(DebugDir))]
-	[MemberNotNull(nameof(DatDir))]
-	[MemberNotNull(nameof(ContentDir))]
-	internal static void SetDirPaths(string exeDir)
-	{
-		ExeDir = Path.GetFullPath(new DirectoryInfo(exeDir).FullName + Path.DirectorySeparatorChar);
-
-		CsvDir = Path.Combine(ExeDir, "csv") + Path.DirectorySeparatorChar;
-		ErbDir = Path.Combine(ExeDir, "erb") + Path.DirectorySeparatorChar;
-		DebugDir = Path.Combine(ExeDir, "debug") + Path.DirectorySeparatorChar;
-		DatDir = Path.Combine(ExeDir, "dat") + Path.DirectorySeparatorChar;
-		ContentDir = Path.Combine(ExeDir, "resources") + Path.DirectorySeparatorChar;
-
-		#region EE_PLAYSOUND系
-
-		SoundDir = Path.Combine(ExeDir, "sound") + Path.DirectorySeparatorChar;
-
-		#endregion
-
-		#region EE_フォントファイル対応
-
-		FontDir = Path.Combine(ExeDir, "font") + Path.DirectorySeparatorChar;
-
-		#endregion
-
-		// Pure path views of the directories above. The string forms keep their trailing separator
-		// contract until every consumer has moved over to PurePath.
-		GameRoot = PurePath.From(ExeDir);
-		ContentRoot = RootChild(GameRoot, "resources");
-		SoundRoot = RootChild(GameRoot, "sound");
-		DatRoot = RootChild(GameRoot, "dat");
-		DefaultLogFile = RootChild(GameRoot, "emuera.log");
-
-		/*
-		CsvDir = WorkingDir + "csv\\";
-		ErbDir = WorkingDir + "erb\\";
-		DebugDir = WorkingDir + "debug\\";
-		DatDir = WorkingDir + "dat\\";
-		ContentDir = WorkingDir + "resources\\";
-		#region EE_フォントファイル対応
-		FontDir = WorkingDir + "font\\";
-		#endregion
-		*/
-	}
-
 	/// <summary>
-	/// A fixed entry of the game directory. The name is a literal, so a rejection here means the caller
-	/// passed something that is not a plain single name.
+	/// Points every game directory at <paramref name="gameDir"/>. This is the single place a game directory
+	/// is normalized: "--ExeDir" may be relative, so it is resolved by the file system against the current
+	/// directory rather than lexically.
 	/// </summary>
-	private static GamePath RootChild(PurePath gameRoot, string name)
+	internal static void SetDirPaths(string gameDir)
 	{
-		if (!GamePath.FromRoot(gameRoot).TryResolveChildName(name, out GamePath? child, out PathReject reason))
-		{
-			throw new InvalidOperationException($"Cannot resolve the '{name}' entry inside '{gameRoot}' ({reason}).");
-		}
+		GamePath root = GamePath.FromRoot(PurePath.From(Path.GetFullPath(new DirectoryInfo(gameDir).FullName)));
 
-		return child;
+		gameRoot = root;
+		csvRoot = root.CombineName("csv");
+		erbRoot = root.CombineName("erb");
+		debugRoot = root.CombineName("debug");
+		datRoot = root.CombineName("dat");
+		contentRoot = root.CombineName("resources");
+		soundRoot = root.CombineName("sound");
+		fontRoot = root.CombineName("font");
+		defaultLogFile = root.CombineName("emuera.log");
 	}
 
 	#region eee_カレントディレクトリー
 
-	/// <summary>
-	/// 実行ファイルのディレクトリ。最後にPath.DirectorySeparatorCharを付けたstring
-	/// </summary>
-	public static string ExeDir { get; private set; }
+	private static GamePath? gameRoot;
+	private static GamePath? csvRoot;
+	private static GamePath? erbRoot;
+	private static GamePath? debugRoot;
+	private static GamePath? datRoot;
+	private static GamePath? contentRoot;
+	private static GamePath? soundRoot;
+	private static GamePath? fontRoot;
+	private static GamePath? defaultLogFile;
 
-	#endregion
+	/// <summary>The game directory. Every other directory below is one of its entries.</summary>
+	public static GamePath GameRoot => gameRoot ?? throw NotSetUp();
 
-	public static string CsvDir { get; private set; }
-	public static string ErbDir { get; private set; }
-	public static string DebugDir { get; private set; }
-	public static string DatDir { get; private set; }
-	public static string ContentDir { get; private set; }
-	public static string? ExeName { get; private set; }
-
-	#region EE_PLAYSOUND系
-
-	public static string? SoundDir { get; private set; }
-
-	#endregion
-
-	#region EE_フォントファイル対応
-
-	public static string? FontDir { get; private set; }
-
-	#endregion
-
-	public static PurePath GameRoot { get; private set; }
-	public static GamePath ContentRoot { get; private set; }
-	public static GamePath SoundRoot { get; private set; }
-	public static GamePath DatRoot { get; private set; }
+	public static GamePath CsvRoot => csvRoot ?? throw NotSetUp();
+	public static GamePath ErbRoot => erbRoot ?? throw NotSetUp();
+	public static GamePath DebugRoot => debugRoot ?? throw NotSetUp();
+	public static GamePath DatRoot => datRoot ?? throw NotSetUp();
+	public static GamePath ContentRoot => contentRoot ?? throw NotSetUp();
+	public static GamePath SoundRoot => soundRoot ?? throw NotSetUp();
+	public static GamePath FontRoot => fontRoot ?? throw NotSetUp();
 
 	/// <summary>Log file written when OUTPUTLOG is called without a name.</summary>
-	public static GamePath DefaultLogFile { get; private set; }
+	public static GamePath DefaultLogFile => defaultLogFile ?? throw NotSetUp();
+
+	private static InvalidOperationException NotSetUp()
+	{
+		return new InvalidOperationException($"{nameof(SetDirPaths)} has to run before the game directories are read.");
+	}
+
+	#endregion
+
+	public static string? ExeName { get; private set; }
 
 	/// <summary>Resolves a script supplied sound name inside the sound directory.</summary>
 	public static bool TryResolveSoundFile(string? name, [NotNullWhen(true)] out GamePath? file)
@@ -482,7 +427,7 @@ internal static class Program
 
 		if (!path.IsRooted)
 		{
-			PurePath baseDirectory = PurePath.From(path.Extension.Equals(".csv", StringComparison.OrdinalIgnoreCase) ? CsvDir : ErbDir);
+			PurePath baseDirectory = path.Extension.Equals(".csv", StringComparison.OrdinalIgnoreCase) ? CsvRoot : ErbRoot;
 			path = baseDirectory.Combine(path);
 		}
 
@@ -504,15 +449,4 @@ internal static class Program
 	//public static bool debugMode = false;
 	//public static bool DebugMode { get { return debugMode; } }
 	public static bool DebugMode { get; private set; }
-
-	static Program()
-	{
-		string baseDirectory = AppContext.BaseDirectory;
-		if (Directory.Exists(Path.Combine(baseDirectory, "Data", "erb")))
-		{
-			baseDirectory = Path.Combine(baseDirectory, "Data");
-		}
-
-		SetDirPaths(baseDirectory);
-	}
 }

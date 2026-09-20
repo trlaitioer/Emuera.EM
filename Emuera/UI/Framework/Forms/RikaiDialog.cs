@@ -1,4 +1,5 @@
 ﻿using MinorShift.Emuera.Runtime.Config;
+using MinorShift.Emuera.Runtime.Utils.PathUtils;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,6 +13,9 @@ public partial class RikaiDialog : Form
 {
 	private readonly byte[] mEdict;
 
+	//The index is written next to this dictionary file
+	private readonly GamePath mDictionaryFile;
+
 	//Built by the worker and only read back from bwRunWorkerCompleted
 	private byte[] mEdictIndex = null!;
 
@@ -22,9 +26,10 @@ public partial class RikaiDialog : Form
 	private readonly List<string> dialogLines = new(16);
 	private readonly DateTime start = DateTime.Now;
 
-	public RikaiDialog(byte[] edict, RikaiSendIndex rikaiSendIndex)
+	public RikaiDialog(byte[] edict, RikaiSendIndex rikaiSendIndex, GamePath dictionaryFile)
 	{
 		mEdict = edict;
+		mDictionaryFile = dictionaryFile;
 		this.rikaiSendIndex = rikaiSendIndex;
 
 		dialogLines.Add("");
@@ -368,7 +373,8 @@ public partial class RikaiDialog : Form
 
 		mEdictIndex = memory.ToArray();
 
-		using FileStream fileStream = new(Program.ExeDir + Config.RikaiFilename + ".ind", FileMode.Create, FileAccess.Write);
+		// The index keeps the extension of the configured dictionary name, so it is appended, not replaced.
+		using FileStream fileStream = new(mDictionaryFile.FullName + ".ind", FileMode.Create, FileAccess.Write);
 		memory.Position = 0;
 		memory.CopyTo(fileStream);
 	}

@@ -33,8 +33,8 @@ internal static class TestBootstrap
 		// 填充 PalamLvDef/ExpLvDef 等 replace 系静态默认值(VariableData.SetDefaultValue 依赖);
 		// GetConfigValue 直接取 ConfigData 内建默认值,不依赖配置文件
 		Config.SetReplace(ConfigData.Instance);
-		// FunctionIdentifier 静态构造读取 JSONConfig.Data;Load() 依赖 Program.ExeDir(测试中未设),
-		// 故直接赋默认值——等价于无 emuera.config.json 时的首次启动
+		// FunctionIdentifier 静态构造读取 JSONConfig.Data;Load() 需要先 SetDirPaths(本夹具不设游戏目录),
+		// 故直接赋默认值——等价于无 setting.json 时的首次启动
 		JSONConfig.Data = new JSONConfigData();
 
 		var gamebase = new GameBase();

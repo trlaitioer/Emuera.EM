@@ -600,7 +600,7 @@ internal sealed partial class EmueraConsole : IDisposable
 			{
 				if (Config.DisplayReport)
 				{
-					fs = new FileStream(Program.ExeDir + "time.log", FileMode.Create);
+					fs = new FileStream(Program.GameRoot.CombineName("time.log").FullName, FileMode.Create);
 					logWriter = new StreamWriter(fs) { AutoFlush = true };
 				}
 			}
@@ -615,8 +615,8 @@ internal sealed partial class EmueraConsole : IDisposable
 			_genericTimerStopwatch.Restart();
 
 			Preload.Clear();
-			await Preload.Load(Program.ErbDir);
-			await Preload.Load(Program.CsvDir);
+			await Preload.Load(Program.ErbRoot.FullName);
+			await Preload.Load(Program.CsvRoot.FullName);
 
 			logWriter?.WriteLine("File:Preload:End " + boottimeDebugStopwatch.ElapsedMilliseconds + "ms");
 
@@ -1257,9 +1257,8 @@ internal sealed partial class EmueraConsole : IDisposable
 		#region EE_OUTPUTLOG
 
 		if (state == ConsoleState.Error && !noOutputLog)
-			//OutputLog(Program.ExeDir + "emuera.log");
 		{
-			OutputSystemLog(Program.ExeDir + "emuera.log");
+			OutputSystemLog(Program.DefaultLogFile.FullName);
 		}
 
 		#endregion
@@ -1973,8 +1972,7 @@ internal sealed partial class EmueraConsole : IDisposable
 		{
 			#region EE_OUTPUTLOG
 
-			// this.OutputLog(Program.ExeDir + "emuera.log");
-			OutputSystemLog(Program.ExeDir + "emuera.log");
+			OutputSystemLog(Program.DefaultLogFile.FullName);
 
 			#endregion
 

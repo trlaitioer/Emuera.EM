@@ -115,7 +115,7 @@ internal static class AppContents
 
 	public static Exception? LoadContents(bool reload)
 	{
-		if (!Directory.Exists(Program.ContentDir))
+		if (!Directory.Exists(Program.ContentRoot.FullName))
 		{
 			return null;
 		}
@@ -139,7 +139,7 @@ internal static class AppContents
 			}
 
 			//resourcesフォルダ内の全てのcsvファイルを探索する
-			Directory.EnumerateFiles(Program.ContentDir, "*.csv", SearchOption.AllDirectories)
+			Directory.EnumerateFiles(Program.ContentRoot.FullName, "*.csv", SearchOption.AllDirectories)
 				.AsParallel()
 				.Where(path => Path.GetExtension(path).Equals(".csv", StringComparison.OrdinalIgnoreCase))
 				.ForAll(path =>

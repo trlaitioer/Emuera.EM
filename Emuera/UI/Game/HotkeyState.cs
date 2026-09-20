@@ -107,7 +107,7 @@ internal class HotkeyState
 
 	//private void DebugPrintBytecode()
 	//{
-	//	var filename = Program.ExeDir + "HOTKEY.ERB.bytecode.txt";
+	//	var filename = Program.GameRoot.CombineName("HOTKEY.ERB.bytecode.txt").FullName;
 	//	StreamWriter writetext = new StreamWriter(filename);
 	//	for (int i = 0; i < bytecode.Count; )
 	//	{
@@ -283,7 +283,7 @@ internal class HotkeyState
 			return;
 		}
 
-		string filename = Program.ExeDir + "HOTKEY.ERB";
+		string filename = Program.GameRoot.CombineName("HOTKEY.ERB").FullName;
 		if (!File.Exists(filename))
 		{
 			MessageBox.Show("HOTKEY.ERB not found.");

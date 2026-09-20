@@ -118,6 +118,20 @@ public sealed class GamePath : PurePath
 		return TryResolveCore(root, this, raw, true, out child, out reason);
 	}
 
+	/// <summary>
+	/// Appends a single name. A rejection is a programming error here: callers pass a literal or an already
+	/// formatted name, not script input, so the failure is raised instead of being handed back.
+	/// </summary>
+	public GamePath CombineName(string name)
+	{
+		if (!TryResolveChildName(name, out GamePath? child, out PathReject reason))
+		{
+			throw new ArgumentException($"'{name}' cannot be resolved inside '{this}' ({reason}).", nameof(name));
+		}
+
+		return child;
+	}
+
 	private static bool TryResolveCore(
 		PurePath invariantRoot,
 		PurePath baseDirectory,

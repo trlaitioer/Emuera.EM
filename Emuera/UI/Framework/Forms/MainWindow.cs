@@ -49,10 +49,10 @@ internal sealed partial class MainWindow : Form
 
 		richTextBox1.Font = Config.DefaultFont;
 		richTextBox1.LanguageOption = RichTextBoxLanguageOptions.UIFonts;
-		folderSelectDialog.SelectedPath = Program.ErbDir;
+		folderSelectDialog.SelectedPath = Program.ErbRoot.FullName;
 		folderSelectDialog.ShowNewFolderButton = false;
 
-		openFileDialog.InitialDirectory = Program.ErbDir;
+		openFileDialog.InitialDirectory = Program.ErbRoot.FullName;
 		openFileDialog.FileName = "";
 		openFileDialog.Multiselect = true;
 		openFileDialog.RestoreDirectory = true;
@@ -1401,8 +1401,7 @@ internal sealed partial class MainWindow : Form
 
 		#region eee_カレントディレクトリー
 
-		//saveFileDialog.InitialDirectory = Program.ExeDir;
-		saveFileDialog.InitialDirectory = Program.ExeDir;
+		saveFileDialog.InitialDirectory = Program.GameRoot.FullName;
 
 		#endregion
 

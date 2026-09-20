@@ -224,8 +224,7 @@ internal sealed partial class Process
 
 			#region EE_OUTPUTLOG
 
-			// console.OutputLog(Program.ExeDir + "Analysis.log");
-			console.OutputSystemLog(Program.ExeDir + "Analysis.log");
+			console.OutputSystemLog(Program.GameRoot.CombineName("Analysis.log").FullName);
 
 			#endregion
 
@@ -244,8 +243,7 @@ internal sealed partial class Process
 
 			#region EE_OUTPUTLOG
 
-			// console.OutputLog(Program.ExeDir + "emuera.log");
-			console.OutputSystemLog(Program.ExeDir + "emuera.log");
+			console.OutputSystemLog(Program.DefaultLogFile.FullName);
 
 			#endregion
 

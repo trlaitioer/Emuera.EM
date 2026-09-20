@@ -956,15 +956,15 @@ internal sealed partial class ConfigDialog : Form
 
 		#region EE_フォントファイル対応
 
-		if (Directory.Exists(Program.FontDir))
+		if (Directory.Exists(Program.FontRoot.FullName))
 		{
 			PrivateFontCollection pfc = new();
-			foreach (string fontFile in Directory.GetFiles(Program.FontDir, "*.ttf", SearchOption.AllDirectories))
+			foreach (string fontFile in Directory.GetFiles(Program.FontRoot.FullName, "*.ttf", SearchOption.AllDirectories))
 			{
 				pfc.AddFontFile(fontFile);
 			}
 
-			foreach (string fontFile in Directory.GetFiles(Program.FontDir, "*.otf", SearchOption.AllDirectories))
+			foreach (string fontFile in Directory.GetFiles(Program.FontRoot.FullName, "*.otf", SearchOption.AllDirectories))
 			{
 				pfc.AddFontFile(fontFile);
 			}

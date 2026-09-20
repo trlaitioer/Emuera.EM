@@ -189,6 +189,26 @@ public class GamePathTests
 	}
 
 	[Fact]
+	public void CombineName_AppendsASingleNameAndKeepsTheInvariant()
+	{
+		var sound = Root().CombineName("sound");
+
+		Assert.Equal(@"C:\__emuera_path_test__\sound", sound.FullName);
+		Assert.Equal(GameRoot, sound.Root);
+		Assert.Equal(@"C:\__emuera_path_test__\sound\bgm.mp3", sound.CombineName("bgm.mp3").FullName);
+	}
+
+	[Fact]
+	public void CombineName_ThrowsWhenTheNameIsNotAUsableEntry()
+	{
+		var root = Root();
+
+		Assert.Throws<ArgumentException>(() => root.CombineName(""));
+		Assert.Throws<ArgumentException>(() => root.CombineName(@"sub\evil.log"));
+		Assert.Throws<ArgumentException>(() => root.CombineName(".."));
+	}
+
+	[Fact]
 	public void GamePath_EqualsItsPurePathValue()
 	{
 		Assert.True(GamePath.TryResolve(GameRoot, @"erb\a.erb", out var path, out _));

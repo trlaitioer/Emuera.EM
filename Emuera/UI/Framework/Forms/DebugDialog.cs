@@ -246,8 +246,8 @@ public partial class DebugDialog : Form
 	}
 
 
-	private readonly string watchFilepath = Program.DebugDir + "watchlist.csv";
-	private readonly string consoleFilepath = Program.DebugDir + "console.log";
+	private readonly string watchFilepath = Program.DebugRoot.CombineName("watchlist.csv").FullName;
+	private readonly string consoleFilepath = Program.DebugRoot.CombineName("console.log").FullName;
 
 	private void saveData()
 	{

@@ -1,5 +1,6 @@
 ﻿using MinorShift.Emuera.Forms;
 using MinorShift.Emuera.Runtime.Config;
+using MinorShift.Emuera.Runtime.Utils.PathUtils;
 using MinorShift.Emuera.UI.Game;
 using System;
 using System.Collections.Generic;
@@ -51,9 +52,9 @@ internal partial class Rikaichan
 			return;
 		}
 
-		string rikaiFilename = Path.Combine(Program.ExeDir, Config.RikaiFilename);
-
-		if (!File.Exists(rikaiFilename))
+		// The setting is a path relative to the game directory, not a plain file name.
+		if (!Program.GameRoot.TryResolveChild(Config.RikaiFilename, out GamePath? rikaiFile, out _)
+		    || !File.Exists(rikaiFile.FullName))
 		{
 			MessageBox.Show($"{Config.RikaiFilename} not found, rikaichan can't work without that");
 			// You need jmdict in edict format, not edict2 or xml, just edict. For now.
@@ -61,16 +62,17 @@ internal partial class Rikaichan
 			return;
 		}
 
-		edict = File.ReadAllBytes(rikaiFilename);
+		edict = File.ReadAllBytes(rikaiFile.FullName);
 
-
+		// The index sits next to the dictionary and keeps the extension it was configured with.
+		string rikaiFilename = rikaiFile.FullName;
 		if (File.Exists(rikaiFilename + ".ind"))
 		{
 			edictind = File.ReadAllBytes(rikaiFilename + ".ind");
 		}
 		else
 		{
-			RikaiDialog dialog = new(edict, ReceiveIndex);
+			RikaiDialog dialog = new(edict, ReceiveIndex, rikaiFile);
 			dialog.Show();
 		}
 	}

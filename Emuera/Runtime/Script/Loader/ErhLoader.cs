@@ -443,7 +443,7 @@ internal sealed class ErhLoader
 			erdFileNames = [];
 		}
 
-		foreach (string path in Directory.GetFiles(Program.ErbDir, "*.erd", SearchOption.AllDirectories))
+		foreach (string path in Directory.GetFiles(Program.ErbRoot.FullName, "*.erd", SearchOption.AllDirectories))
 		{
 			string key = Path.GetFileNameWithoutExtension(path).ToUpper();
 			if (!erdFileNames.TryGetValue(key, out List<string>? value))
@@ -456,7 +456,7 @@ internal sealed class ErhLoader
 			}
 		}
 
-		foreach (string path in Directory.GetFiles(Program.CsvDir, "*.csv", SearchOption.TopDirectoryOnly))
+		foreach (string path in Directory.GetFiles(Program.CsvRoot.FullName, "*.csv", SearchOption.TopDirectoryOnly))
 		{
 			string key = Path.GetFileNameWithoutExtension(path).ToUpper();
 			if (!erdFileNames.TryGetValue(key, out List<string>? value))

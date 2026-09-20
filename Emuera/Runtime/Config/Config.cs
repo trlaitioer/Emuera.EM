@@ -273,22 +273,13 @@ internal static class Config
 
 		#region eee_カレントディレクトリー
 
-		// ForceSavDir = Program.ExeDir + "sav\\";
-		ForceSavDir = Program.ExeDir + "sav" + Path.DirectorySeparatorChar;
-		if (UseSaveFolder)
-			// SavDir = Program.ExeDir + "sav\\";
-		{
-			SavDir = Program.ExeDir + "sav" + Path.DirectorySeparatorChar;
-		}
-		else
-			// SavDir = Program.ExeDir;
-		{
-			SavDir = Program.ExeDir;
-		}
+		// The forced save folder, and the effective save folder when the save folder is used.
+		ForceSavDir = Program.GameRoot.CombineName("sav");
+		SavDir = UseSaveFolder ? ForceSavDir : Program.GameRoot;
 
 		#endregion
 
-		if (UseSaveFolder && !Directory.Exists(SavDir))
+		if (UseSaveFolder && !Directory.Exists(SavDir.FullName))
 		{
 			createSavDirAndMoveFiles();
 		}
@@ -371,9 +362,9 @@ internal static class Config
 	/// </summary>
 	public static void ForceCreateSavDir()
 	{
-		if (!Directory.Exists(ForceSavDir))
+		if (!Directory.Exists(ForceSavDir.FullName))
 		{
-			Directory.CreateDirectory(ForceSavDir);
+			Directory.CreateDirectory(ForceSavDir.FullName);
 		}
 	}
 
@@ -382,9 +373,9 @@ internal static class Config
 	/// </summary>
 	public static void CreateSavDir()
 	{
-		if (UseSaveFolder && !Directory.Exists(SavDir))
+		if (UseSaveFolder && !Directory.Exists(SavDir.FullName))
 		{
-			Directory.CreateDirectory(SavDir);
+			Directory.CreateDirectory(SavDir.FullName);
 		}
 	}
 
@@ -392,7 +383,7 @@ internal static class Config
 	{
 		try
 		{
-			Directory.CreateDirectory(SavDir);
+			Directory.CreateDirectory(SavDir.FullName);
 		}
 		catch
 		{
@@ -402,10 +393,9 @@ internal static class Config
 
 		#region eee_カレントディレクトリー
 
-		// bool existGlobal = File.Exists(Program.ExeDir + "global.sav");
-		// string[] savFiles = Directory.GetFiles(Program.ExeDir, "save*.sav", SearchOption.TopDirectoryOnly);
-		bool existGlobal = File.Exists(Program.ExeDir + "global.sav");
-		string[] savFiles = Directory.GetFiles(Program.ExeDir, "save*.sav", SearchOption.TopDirectoryOnly);
+		GamePath globalSav = Program.GameRoot.CombineName("global.sav");
+		bool existGlobal = File.Exists(globalSav.FullName);
+		string[] savFiles = Directory.GetFiles(Program.GameRoot.FullName, "save*.sav", SearchOption.TopDirectoryOnly);
 
 		#endregion
 
@@ -421,7 +411,7 @@ internal static class Config
 		}
 
 		//ダイアログが開いている間にフォルダを消してしまうような邪悪なユーザーがいるかもしれない
-		if (!Directory.Exists(SavDir))
+		if (!Directory.Exists(SavDir.FullName))
 		{
 			Dialog.Show(trmb.DataTransferFailure.Text, trmb.MissingSavFolder.Text);
 			return;
@@ -432,21 +422,18 @@ internal static class Config
 		{
 			#region eee_カレントディレクトリー
 
-			//if (File.Exists(Program.ExeDir + "global.sav"))
-			//	File.Move(Program.ExeDir + "global.sav", SavDir + "global.sav");
-			//savFiles = Directory.GetFiles(Program.ExeDir, "save*.sav", SearchOption.TopDirectoryOnly);
-			if (File.Exists(Program.ExeDir + "global.sav"))
+			if (File.Exists(globalSav.FullName))
 			{
-				File.Move(Program.ExeDir + "global.sav", SavDir + "global.sav");
+				File.Move(globalSav.FullName, SavDir.CombineName("global.sav").FullName);
 			}
 
-			savFiles = Directory.GetFiles(Program.ExeDir, "save*.sav", SearchOption.TopDirectoryOnly);
+			savFiles = Directory.GetFiles(Program.GameRoot.FullName, "save*.sav", SearchOption.TopDirectoryOnly);
 
 			#endregion
 
 			foreach (string oldpath in savFiles)
 			{
-				File.Move(oldpath, SavDir + Path.GetFileName(oldpath));
+				File.Move(oldpath, SavDir.CombineName(Path.GetFileName(oldpath)).FullName);
 			}
 		}
 		catch
@@ -487,8 +474,8 @@ internal static class Config
 			option = SearchOption.AllDirectories;
 		}
 
-		string[] erbFiles = Directory.GetFiles(Program.ErbDir, "*.ERB", option);
-		string[] csvFiles = Directory.GetFiles(Program.CsvDir, "*.CSV", option);
+		string[] erbFiles = Directory.GetFiles(Program.ErbRoot.FullName, "*.ERB", option);
+		string[] csvFiles = Directory.GetFiles(Program.CsvRoot.FullName, "*.CSV", option);
 		long[] writetimes = new long[erbFiles.Length + csvFiles.Length];
 		for (int i = 0; i < erbFiles.Length; i++)
 		{
@@ -704,8 +691,8 @@ internal static class Config
 
 	public static int Language { get; private set; }
 
-	public static string SavDir { get; private set; } = null!;
-	public static string ForceSavDir { get; private set; } = null!;
+	public static GamePath SavDir { get; private set; } = null!;
+	public static GamePath ForceSavDir { get; private set; } = null!;
 
 	public static bool NeedReduceArgumentOnLoad { get; private set; }
 

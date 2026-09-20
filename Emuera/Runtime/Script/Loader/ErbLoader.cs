@@ -176,7 +176,7 @@ internal sealed class ErbLoader
 
 		await Task.Run(() =>
 		{
-			PurePath erbRoot = PurePath.From(Program.ErbDir);
+			PurePath erbRoot = Program.ErbRoot;
 			foreach (string fpath in paths)
 			{
 				// An analyzed file may live outside erb\, so its own path is the name to show.
