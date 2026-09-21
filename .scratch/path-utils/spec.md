@@ -59,14 +59,14 @@ Status: implemented
 ## 曾考虑的替代方案
 
 1. 静态工具类（`TryResolve(string) → string?`）：改动最小，但路径仍是裸 `string`，校验靠"记得调用"，无法阻止"校验函数存在却被绕过/丢弃"的失效模式复发，只适合作为过渡。
-2. 全量类型化替换所有 `string`：`ScriptPosition.Filename`（分析模式下就是游戏目录外的原始绝对路径）、文件对话框取值、`--ExeDir` 都属于 **合法的任意路径**，全量类型化需要再造 2~3
+2. 全量类型化替换所有 `string`：`ScriptPosition.Filename`（分析模式下是命令行原样的路径：可相对当前目录，也可在游戏目录外）、文件对话框取值、`--ExeDir` 都属于 **合法的任意路径**，全量类型化需要再造 2~3
    个类型或放宽不变量，类型域大于不变量域。
 3. 把 `Dir + name` 全量替换为 `Path.Combine`：`Path.Combine` 在第二参为根路径时直接返回第二参，会把现有"拼错即报错"静默放宽为"直接使用该绝对路径"。
 4. 根目录保持 `string`：每次使用都要重新解析，且「目录常量必须以分隔符结尾」这条隐式契约无法消除——而该契约正是前缀判断与手工拼接能成立的前提。
 5. `GamePath` 持有进程级静态根（`Initialize` 单例）：调用点更短，代价是全局状态与静态初始化顺序风险。
 6. 目录与命名空间取名 `Runtime/Utils/Path`：实测在 `namespace MinorShift.Emuera.Runtime.Utils` 下会形成嵌套命名空间 `Path`，同命名空间文件里的 `Path.GetExtension` 报 CS0234；当下影响面仅
    `Sys.cs` 2 行，但会给该命名空间未来的新文件埋雷。
-7. 用 `IsAbsolute` 表达"是否已限定"：`Path.IsPathRooted(@"C:foo")` 为真而 `Path.IsPathFullyQualified(@"C:foo")` 为假，拒绝输入必须用前者，故采用 `IsRooted`。
+7. 用 `IsAbsolute` 表达"是否已限定"：`Path.IsPathRooted(@"C:foo")` 为真而 `Path.IsPathFullyQualified(@"C:foo")` 为假，拒绝输入必须用前者，故采用 `IsRooted`。两个判据方向相反：拒绝脚本输入要宽（`IsRooted`），校验「根必须是完全限定路径」要严（`IsPathFullyQualified`，见 06 的 `VerifyRoot`）。
 
 ## 影响
 
@@ -76,4 +76,4 @@ Status: implemented
 - **兼容契约未动**：`ENUMFILES` 返回的 `erb\a.erb` 形态不变；`SAVETEXT`/`LOADTEXT` 的扩展名判断保持原有 `ToLower()`。
 - **无插件 API 影响**：`Program` 是 `internal static class`。
 - **验证**：`dotnet build Emuera/Emuera.csproj -c Debug-NAudio -p:Platform=x64` 0 错误、警告数与基线一致；`Emuera.Tests` 278 通过（基线 144 + spec 落地新增 118 + 回归修复新增 16）。
-- **未覆盖**：词法包含性判断无法拦截符号链接 / junction；`Utils.GetValidPath` 保留原签名，其"返回值可被丢弃"的形状仍在；`Rikai- Dictionary Filename` 的目录外绝对路径不再可用（迁移期引入，按「不得离开游戏目录」保留）；`ENUMFILES("")` 由枚举游戏根变为 -1（`"."` 仍可用）。
+- **未覆盖**：词法包含性判断无法拦截符号链接 / junction；`Utils.GetValidPath` 保留原签名，其"返回值可被丢弃"的形状仍在；`Rikai- Dictionary Filename` 的目录外绝对路径不再可用（迁移期引入，按「不得离开游戏目录」保留）；`ENUMFILES("")` 在本次改动前后都是 -1（`"."` 仍可用；`Path.GetPathRoot("")` 在 .NET 上返回 `null`，空名没进旧 `GetValidPath` 的拼接分支）。
