@@ -435,7 +435,7 @@ internal static class Program
 	/// <summary>
 	/// Resolves <see cref="ScriptPosition.Filename"/> to the file it names: a rooted value is the file itself,
 	/// otherwise the name is relative to csv\ or erb\, chosen by the extension. Callers that must keep an
-	/// analyzed position as it was given on the command line do not call this.
+	/// analyzed position as it was given on the command line use <see cref="TryResolvePositionFile"/> instead.
 	/// </summary>
 	public static bool TryResolveScriptFile(string? filename, [NotNullWhen(true)] out PurePath? file)
 	{
@@ -455,6 +455,28 @@ internal static class Program
 		return true;
 	}
 
+	/// <summary>
+	/// Resolves the file a position points at for error reporting. An analyzed position keeps the path it was
+	/// given on the command line, which may be relative to the current directory or live outside the game
+	/// directory; a csv position is always a name inside csv\, even in AnalysisMode.
+	/// </summary>
+	public static bool TryResolvePositionFile(ScriptPosition position, [NotNullWhen(true)] out string? file)
+	{
+		if (AnalysisMode && !position.Filename.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+		{
+			file = position.Filename;
+			return !string.IsNullOrWhiteSpace(file);
+		}
+
+		if (!TryResolveScriptFile(position.Filename, out PurePath? resolved))
+		{
+			file = null;
+			return false;
+		}
+
+		file = resolved.ToString();
+		return true;
+	}
 
 	public static bool rebootFlag;
 

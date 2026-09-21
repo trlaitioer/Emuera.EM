@@ -119,6 +119,65 @@ public class ScriptPositionFileTests
 		Assert.Equal("", Process.getRawTextFormFilewithLine(new ScriptPosition()));
 	}
 
+	[Fact]
+	public void TryResolvePositionFile_NotAnalyzing_ResolvesBelowTheErbDirectory()
+	{
+		string root = GameRootScope.UseTempRoot("positionfile-erb");
+
+		Assert.True(Program.TryResolvePositionFile(new ScriptPosition(@"sub\a.erb", 1), out string? file));
+		Assert.Equal(Path.Combine(root, "erb", "sub", "a.erb"), file);
+	}
+
+	[Fact]
+	public void TryResolvePositionFile_AnalyzedRelativeName_KeepsTheCommandLinePath()
+	{
+		GameRootScope.UseTempRoot("positionfile-analyzed-relative");
+
+		WithAnalysisMode(() =>
+		{
+			Assert.True(Program.TryResolvePositionFile(new ScriptPosition(@"sub\a.erb", 1), out string? file));
+			Assert.Equal(@"sub\a.erb", file);
+		});
+	}
+
+	[Fact]
+	public void TryResolvePositionFile_AnalyzedCsvName_IsStillResolvedBelowTheCsvDirectory()
+	{
+		string root = GameRootScope.UseTempRoot("positionfile-analyzed-csv");
+
+		WithAnalysisMode(() =>
+		{
+			Assert.True(Program.TryResolvePositionFile(new ScriptPosition("Chara.csv", 1), out string? file));
+			Assert.Equal(Path.Combine(root, "csv", "Chara.csv"), file);
+		});
+	}
+
+	/// <summary>
+	/// 分析模式的相对名相对当前目录,不是相对 erb\:erb\ 下有同名文件时不得把它的行当成本行。
+	/// </summary>
+	[Fact]
+	public void GetRawTextFormFilewithLine_AnalyzedRelativeName_IsNotRebasedIntoTheErbDirectory()
+	{
+		string root = GameRootScope.UseTempRoot("rawtext-analyzed-relative");
+		WriteLines(Path.Combine(root, "erb", "sub", "a.erb"));
+
+		WithAnalysisMode(() => Assert.Equal("", Process.getRawTextFormFilewithLine(new ScriptPosition(@"sub\a.erb", 1))));
+	}
+
+	/// <summary>Program.AnalysisMode 是进程级静态,用例结束必须复位。</summary>
+	private static void WithAnalysisMode(Action body)
+	{
+		Program.AnalysisMode = true;
+		try
+		{
+			body();
+		}
+		finally
+		{
+			Program.AnalysisMode = false;
+		}
+	}
+
 	private static void WriteLines(string path)
 	{
 		Directory.CreateDirectory(Path.GetDirectoryName(path)!);

@@ -9,7 +9,6 @@ using MinorShift.Emuera.Runtime.Script.Statements.Expression;
 using MinorShift.Emuera.Runtime.Script.Statements.Function;
 using MinorShift.Emuera.Runtime.Script.Statements.Variable;
 using MinorShift.Emuera.Runtime.Utils;
-using MinorShift.Emuera.Runtime.Utils.PathUtils;
 using MinorShift.Emuera.Runtime.Utils.PluginSystem;
 using MinorShift.Emuera.UI.Game.Image;
 using System;
@@ -711,14 +710,13 @@ internal sealed partial class Process(EmueraConsole view)
 	public static string getRawTextFormFilewithLine(ScriptPosition? position)
 	{
 		if (position is not { } pos || pos.LineNo <= 0
-		                            || !Program.TryResolveScriptFile(pos.Filename, out PurePath? file)
-		                            || !(file.Extension.Equals(".erb", StringComparison.OrdinalIgnoreCase)
-		                                 || file.Extension.Equals(".csv", StringComparison.OrdinalIgnoreCase)))
+		                            || !Program.TryResolvePositionFile(pos, out string? path)
+		                            || !(Path.GetExtension(path).Equals(".erb", StringComparison.OrdinalIgnoreCase)
+		                                 || Path.GetExtension(path).Equals(".csv", StringComparison.OrdinalIgnoreCase)))
 		{
 			return "";
 		}
 
-		string path = file.ToString();
 		if (!File.Exists(path))
 		{
 			return "";

@@ -91,8 +91,8 @@ internal sealed class FileEE : EmueraException
 /// </summary>
 /// <remarks>
 /// <see cref="Filename"/> is a position name rather than a path: a normal position is relative to csv\ or erb\,
-/// while an analyzed file carries the path it was given on the command line. <c>Program.TryResolveScriptFile</c>
-/// turns the former into the file it names; the latter has to be kept as it is.
+/// while an analyzed file carries the path it was given on the command line. <c>Program.TryResolvePositionFile</c>
+/// turns a position into the file it names, keeping the analyzed path as it was given.
 /// </remarks>
 internal readonly record struct ScriptPosition
 {

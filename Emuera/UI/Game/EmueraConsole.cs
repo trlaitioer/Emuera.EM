@@ -15,7 +15,6 @@ using MinorShift.Emuera.Runtime.Script.Statements;
 using MinorShift.Emuera.Runtime.Script.Statements.Expression;
 using MinorShift.Emuera.Runtime.Utils;
 using MinorShift.Emuera.Runtime.Utils.EvilMask;
-using MinorShift.Emuera.Runtime.Utils.PathUtils;
 using MinorShift.Emuera.UI;
 using MinorShift.Emuera.UI.Game;
 using MinorShift.Emuera.UI.Game.Image;
@@ -1788,11 +1787,8 @@ internal sealed partial class EmueraConsole : IDisposable
 		// the only caller checks the position before passing it
 		ScriptPosition position = pos!.Value;
 		// An analyzed file keeps the path it was given on the command line, which may live outside the game
-		// directory; only a csv position is always a name inside csv\.
-		bool keepAsIs = Program.AnalysisMode && !position.Filename.EndsWith(".csv", StringComparison.OrdinalIgnoreCase);
-		string fname = keepAsIs || !Program.TryResolveScriptFile(position.Filename, out PurePath? file)
-			? position.Filename
-			: file.ToString();
+		// directory; the same rule decides where the source line is read from.
+		string fname = Program.TryResolvePositionFile(position, out string? file) ? file : position.Filename;
 
 		ProcessStartInfo pInfo = new() { FileName = Config.TextEditor };
 		switch (Config.EditorType)
