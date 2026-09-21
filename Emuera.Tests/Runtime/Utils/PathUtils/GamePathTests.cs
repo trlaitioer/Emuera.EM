@@ -250,6 +250,19 @@ public class GamePathTests
 	}
 
 	[Fact]
+	public void Factories_ThrowWhenTheRootIsNotFullyQualified()
+	{
+		// "C:foo" 与 "\foo" 都算 rooted,但不是完全限定:前者按 C 盘的当前目录解析,后者按当前盘解析,
+		// 都不能当游戏目录——它们的子路径也永远落不到自己下面。
+		var driveRelative = PurePath.From(@"C:foo");
+		var driveRooted = PurePath.From(@"\foo");
+
+		Assert.Throws<ArgumentException>(() => GamePath.FromRoot(driveRelative));
+		Assert.Throws<ArgumentException>(() => GamePath.TryResolve(driveRelative, "a.log", out _, out _));
+		Assert.Throws<ArgumentException>(() => GamePath.FromRoot(driveRooted));
+	}
+
+	[Fact]
 	public void TryResolveAbsolute_AcceptsAPathInsideTheRoot()
 	{
 		Assert.True(GamePath.TryResolveAbsolute(GameRoot, @"C:\__emuera_path_test__\sav\save01.sav", out var path, out var reason));

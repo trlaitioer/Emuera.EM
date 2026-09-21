@@ -44,9 +44,12 @@ public class PurePath : IEquatable<PurePath>
 	}
 
 	/// <summary>Segments after the volume prefix, with "." removed and ".." collapsed.</summary>
-	internal IReadOnlyList<string> Segments => segments;
+	internal ReadOnlySpan<string> Segments => segments;
 
 	public bool IsRooted => Path.IsPathRooted(value);
+
+	/// <summary>True when the value is rooted independently of the current directory.</summary>
+	public bool IsFullyQualified => Path.IsPathFullyQualified(value);
 
 	public string Name => Path.GetFileName(value);
 

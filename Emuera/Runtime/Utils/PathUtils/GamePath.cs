@@ -250,9 +250,9 @@ public sealed class GamePath : PurePath
 	{
 		ArgumentNullException.ThrowIfNull(root);
 
-		if (!root.IsRooted)
+		if (!root.IsFullyQualified)
 		{
-			throw new ArgumentException("A game directory has to be an absolute path.", nameof(root));
+			throw new ArgumentException("A game directory has to be a fully qualified path.", nameof(root));
 		}
 	}
 }
