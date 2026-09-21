@@ -807,7 +807,7 @@ internal sealed class ConfigData
 		return true;
 	}
 
-	private bool loadConfig(string confPath, bool fix)
+	internal bool loadConfig(string confPath, bool fix)
 	{
 		if (!File.Exists(confPath))
 		{
@@ -864,26 +864,10 @@ internal sealed class ConfigData
 					//        item.Fixed = false;
 					//}
 					case ConfigCode.TextEditor:
-					{
-						//パスの関係上tokens[2]は使わないといけない
-						if (tokens.Length > 2)
-						{
-							if (tokens[2].StartsWith('\\'))
-							{
-								tokens[1] += ":" + tokens[2];
-							}
-
-							if (tokens.Length > 3)
-							{
-								for (int i = 3; i < tokens.Length; i++)
-								{
-									tokens[1] += ":" + tokens[i];
-								}
-							}
-						}
-
+						// The value is a path: only the first ":" separates it from the key, so everything after
+						// it belongs to the value even when it holds further colons (a drive letter).
+						tokens[1] = line[(line.IndexOf(':') + 1)..];
 						break;
-					}
 					case ConfigCode.EditorArgument:
 						//半角スペースを要求する引数が必要なエディタがあるので別処理で
 						((ConfigItem<string>)item).Value = tokens[1];
