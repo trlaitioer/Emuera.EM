@@ -1,6 +1,6 @@
 # Nullable:`!` 收敛(冗余删除与单点断言入口)
 
-Status: in-progress
+Status: implemented
 
 ## 任务
 
