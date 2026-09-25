@@ -17,14 +17,14 @@ issues/05 把方法调用与指令参数的元素类型定为 `List<AExpression?
 | `Instraction.Child.cs` 的 `INPUT_Instruction`、`ONEINPUT_Instruction`、`BINPUT_Instruction`、`ONEBINPUT_Instruction` 的 `DoInstruction` | `INPUT ,,1` 一类只给第三实参（`CanSkip`）的写法，配合消息跳过开启 | `arg.Mouse!` 先解引用 null |
 | `Instraction.Child.cs` 的 `CALLSHARP_Instruction.DoInstruction` | `CALLSHARP "m", 1, , 3`（中间省略）或 `CALLSHARP "m", , 3`（首个省略），且该插件方法已注册 | `PluginMethodParameterBuilder.ConvertTerm(term!)` 解引用 null，插件方法不会被调用 |
 | `ArgumentBuilder.cs` 的 `SP_CALLSHARP_ArgumentBuilder.CreateArgument` | `CALLSHARP "m"[1, ,3]` | `subNames.Required(i)` 取到 null，在解析期即抛 |
-| `Instraction.Child.cs` 的 `PRINT_SPACE_Instruction`、`PRINT_RECT_Instruction` | `PRINT_SPACE ,` / `PRINT_RECT ,,,` | `MixedIntegerExprTerm.num` 为 null，取 `GetIntValue` 时抛 |
+| `Instraction.Child.cs` 的 `PRINT_SPACE_Instruction`、`PRINT_RECT_Instruction` | `PRINT_SPACE ,` / `PRINT_RECT ,,,` | `MixedIntegerExprTerm.num` 为 null，取 `GetIntValue` 时抛。默认 `ReduceArgumentOnLoad=NO` 时在 `DoInstruction` 的 `num.GetIntValue` 处抛；若配为 `YES`，则先在 `SP_PRINT_SHAPE_ArgumentBuilder` 的 `arg!.Restructure(exm)` 处抛 |
 | `Instraction.Child.cs` 的 `VARS_Instruction.DoInstruction` | `VARS FOO`（无初始化器）或 `VARS FOO = ` | `arg.Value!` 把 null 传入非空参数；不抛异常，变量被写入 null（读回为 `""`），属契约错误 |
 
 ### 依据
 
 - 省略位置产出 null 元素：`Expression/ExpressionParser.cs` 的 `ReduceArguments` 在 `isDefine == false` 时直接 `AddLast(ReduceExpressionTerm(...))`，后者遇逗号返回空栈的归约结果即 null。
 - `ArgumentBuilder.cs` 的 `SP_INPUT_ArgumentBuilder.CreateArgument` 不调用 `checkArgumentType`，只对非 null 元素做类型检查，因此 `[null, null, <expr>]` 会被原样装进 `SpInputsArgument`。同文件 `BINPUT_Instruction.DoInstruction` 在按钮计数为 0 的分支显式 `if (arg.Def == null) throw new CodeEE(...)`，说明该构造器允许 `Def` 为 null 是既有事实。
-- `CALLSHARP` 一侧：`Argument.cs` 的 `SpCallSharpArgment.RowArgs` 为 `List<AExpression?>`，且 `SP_CALLSHARP_ArgumentBuilder` 在 `Restructure` 时已显式跳过 null 元素，是作者对省略的已知处理。
+- `CALLSHARP` 一侧：`Argument.cs` 的 `SpCallSharpArgment.RowArgs` 为 `List<AExpression?>`，且 `SP_CALLSHARP_ArgumentBuilder` 在 `Restructure` 时对 `args` 已显式跳过 null 元素（`if (args[i] != null)`），是作者对省略的已知处理；但同一方法对 `subNames` 未跳过——这正是范围表第 3 行的缺陷。
 
 ### 非目标
 

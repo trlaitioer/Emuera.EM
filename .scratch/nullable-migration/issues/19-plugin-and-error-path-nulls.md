@@ -10,12 +10,12 @@ Status: ready-for-agent
 
 | 位置 | 现状 | 可达路径 |
 | --- | --- | --- |
-| `PluginManager` 的 `PluginAPI.ExecuteLine` | 用 `LogicalLineParser.ParseLine` 构造的内存行中 `Position` 与 `ParentLabelLine` 均为 null，且分发指令时不施加 `IsFlowContorol`/`IsPartial`/`IsMethodSafe` 过滤（`EmueraConsole.DebugCommand` 有过滤） | 插件执行 `RESTART` 之类流控指令，命中 `RESTART_Instruction.DoInstruction` 的 `state.JumpTo(func.ParentLabelLine!)` |
+| `PluginManager` 的 `ExecuteLine` | 用 `LogicalLineParser.ParseLine` 构造的内存行中 `ParentLabelLine` 为 null，而 `Position` **非 null**（是 `ScriptPosition` 默认值：`LineNo = -1`、`Filename = ""`，无参构造写死），故插件路径上真正会命中 `!` 的是 `ParentLabelLine`；且分发指令时不施加 `IsFlowContorol`/`IsPartial`/`IsMethodSafe` 过滤（`EmueraConsole.DebugCommand` 有过滤） | 插件执行 `RESTART` 之类流控指令，命中 `RESTART_Instruction.DoInstruction` 的 `state.JumpTo(func.ParentLabelLine!)` |
 | `Process.State.cs` 的 `ProcessState.IntoFunction`（调试回溯） | 只判 `retAddress != null`，未判 `Position`/`ParentLabelLine` | 内存行作为返回地址且处于 `-Debug` |
-| `PluginManager` 的 `PluginAPI.GetStackTrace` | 完全不判空，依次解引用当前行、位置与父标签行 | 插件在 `CALLSHARP` 执行窗口之外（自身线程、脚本已结束）调用 |
-| `Process.cs` 的 `Process.handleException` | 外层只判 `position != null`，未检查 `current`；而 `handleException(e, null, true)` 是合法调用（`Process.Initialize` 就这么调） | 初始化期逃逸的带位置 `CodeEE`（如 `ParserMediator.LoadEraExRenameFile` 包装的 I/O 失败）——报错路径自身抛异常，掩盖原始错误 |
+| `PluginManager` 的 `GetStackTrace` | 首处依次解引用当前行、位置与父标签行且不判空（循环内仅以 `parent.Position != null` 守卫，`ParentLabelLine` 仍为断言） | 插件在 `CALLSHARP` 执行窗口之外（自身线程、脚本已结束）调用 |
+| `Process.cs` 的 `Process.handleException` | 外层只判 `position != null`，未检查 `current`；而 `handleException(e, null, true)` 是合法调用（`Process.Initialize` 就这么调） | 初始化期逃逸的带位置 `CodeEE`——触发条件是 `exc is EmueraException { Position: not null }` 而 `current == null`（如 `ParserMediator.LoadEraExRenameFile` 的逐行处理阶段失败；`pos` 在首个 `new ScriptPosition(filepath, lineNo)` 之前的 `File.ReadAllLines`/编码探测失败时仍为 null，那种失败走 `position == null` 分支、不触发本缺陷）——报错路径自身抛异常，掩盖原始错误 |
 | `IdentifierDictionary` 的 `GetVariableToken`（显式 subKey 分支，`LOCAL@name`/`ARG@name`） | 只以 `isError: false` 告警后即解引用 `line` 与 `ParentLabelLine`；紧邻的无 subKey 分支有正确的 `CodeEE` 处理 | 解析期 `GetScaningLine()` 返回 null 或无父标签的行 |
-| `ConstantData` 的 `GetKeywordDictionary`（潜在缺陷，B 类） | 在 `index >= 0` 时会把 null 转为 `CodeEE`，但配置为 ERD 且传入空 key 时直接返回 null，调用方（`VariableDataWrappers`、`PluginManager` 的包装访问器）随即索引字典 | 插件以空 key 读取一个非关键字支撑的变量码。当前无此类调用方，记录为潜在缺陷 |
+| `ConstantData` 的 `GetKeywordDictionary`（潜在缺陷，B 类） | 只在走到方法末段、`index >= 0` 时才把 null 转为 `CodeEE`；ERD 分支有 4 处早退 `return ret;` 会在 `index >= 0` 时把 null 原样返回——`string.IsNullOrEmpty(varname)` 一处，以及 `erdNameToIntDics` 未命中的 3 处（`VAR`/`VARS`/`CVAR`/`CVARS`、`VAR2D` 族、`VAR3D`/`VARS3D`），调用方（`VariableDataWrappers`、`PluginManager` 的包装访问器）随即索引字典 | 插件以空 key 读取一个非关键字支撑的变量码（空 key 只是最容易命中的一条）。当前无此类调用方，记录为潜在缺陷 |
 
 ### 修法方向
 

@@ -20,6 +20,8 @@ Status: implemented
 
 统计范围 `Emuera/` 与 `Emuera.Tests/`,剔除注释与字符串字面量,匹配后缀 `!`(`[\w\)\]]\s*!(?!=)`):全库 **1839** 处,develop 基线 80 处。
 
+2026-09-21 复测(HEAD `1ed33b5c`,出现次数口径):全库 **1088** 处(`Emuera` 981 / `Emuera.Tests` 107),其中 `null!` 393、`Argument` 可选字段 98、其他 `list[i]!` 78、`(x as T)!` 63、`JumpTo` 族 43、`ArgumentListExtensions` 2、残差 411。匹配式的 `\s*` 会把前缀逻辑非计入(HEAD 12 处误计,`3dd766f1` 时为 0),复测时应收紧为 `[\w\)\]]!(?!=)`;同一匹配式按「行」与按「出现次数」统计结果不同(issues/14 的 1040 与 1075 即这两个口径,见其「口径与清单」)。
+
 | 类别 | 处数 | 根因 |
 | --- | --- | --- |
 | `arguments[i]!` | 466 | issues/05 把 `List<AExpression>` 元素改可空 |
@@ -108,7 +110,7 @@ public Argument BuiltArgument => Argument!;
 
 | 项 | 结果 |
 | --- | --- |
-| `!` 总量 | 1839 → 1040 |
+| `!` 总量 | 1839 → 1040(匹配行数口径) |
 | A 类删除 | 109 处 / 12 个文件 |
 | B1 `Required(...)` | 429 处调用 |
 | B2 `BuiltArgument` | 167 处 |
@@ -116,6 +118,8 @@ public Argument BuiltArgument => Argument!;
 | `Emuera.Tests` | 144 通过 / 0 失败 |
 
 剩余 1040 处的构成:`null!` 字面量 384(多为 SKILL 认可的声明处延后初始化,局部变量部分交 issues/14)、其他成员/局部 `!` 401、`arg.Def!` 等可选字段 83、其他 `list[i]!` 79(BCL 可空返回,以及接收者类型尚未逐一核实的容器)、`(x as T)!` 51、`JumpTo` 族 40,以及 `ArgumentListExtensions.Required` 内承担全部参数槽位断言的 2 处,均在 issues/14 的复核范围。
+
+以上为「匹配行数」口径。2026-09-21 复测(出现次数口径,HEAD `1ed33b5c`):全库 1088 处,`null!` 393、`Argument` 可选字段 98、其他 `list[i]!` 78、`(x as T)!` 63、`JumpTo` 族 43、`ArgumentListExtensions` 2、残差 411;两个「移除冗余的 `!`」提交(`e70ec779`/`cb8661ba`)只删 19 处,`3dd766f1`→HEAD 净 +13(`Emuera.Tests` +25、`Emuera` −12)。
 
 ## 曾考虑的替代方案
 

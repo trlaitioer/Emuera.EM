@@ -84,12 +84,12 @@ Blocked by: 07, 08, 09, 10, 11, 12
 | 默认构建 | 不加 `-p:Nullable=enable` | CS86xx 恒为 0 |
 | `Emuera.Tests` | `dotnet build Emuera.Tests/Emuera.Tests.csproj -c Debug-NAudio -p:Platform=x64 --no-incremental` | 测试工程 CS86xx 0 |
 | 插件示例 | `dotnet build EmueraPluginExample/EmueraPluginExample.csproj -c Debug-NAudio -p:Platform=x64` | CS86xx 0(契约消费者) |
-| 回归 | `dotnet test Emuera.Tests/Emuera.Tests.csproj -c Debug-NAudio -p:Platform=x64` | 144/144 |
+| 回归 | `dotnet test Emuera.Tests/Emuera.Tests.csproj -c Debug-NAudio -p:Platform=x64` | 144/144(本票落地时;2026-09-25 复测 290/290) |
 | 行为 | 真实 era 游戏目录运行核对 | 与迁移前一致 |
 
 「非目标」节列出的既有警告不属清偿目标。
 
-迁移期各文件顶部的 `#nullable enable` 保留,不属于本票的删除项:与 `Program.cs`、`UI/Game/StringStyle.cs` 在 `annotations` 时期的既有做法一致,翻转后冗余但无害,删除反而要为同一批文件再做一次改动。
+迁移期各文件顶部的 `#nullable enable` **未保留**:翻转后 `06560d44`(`clean: 清理 #nullable enable`)统一清除了 131 个文件中的指令(此时已冗余),全库仅 `Runtime/Utils/Sound.WMP.cs` 残留 1 处(该文件只在 WMP 配置编译)。
 
 ## 影响
 
