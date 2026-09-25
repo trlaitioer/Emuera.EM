@@ -1326,7 +1326,15 @@ internal sealed class ErbLoader
 		List<InstructionLine> tempLineList = [];
 		Stack<InstructionLine> nestStack = new();
 		Stack<InstructionLine> SelectcaseStack = new();
-		InstructionLine? pairLine = null;
+		// A construct dropped because its terminator is missing keeps JumpTo null, so execution must
+		// never receive it. The callers report the same defect at the line that exposed it, hence
+		// only the error flag is set here.
+		static void markUnpaired(InstructionLine line, string message)
+		{
+			line.IsError = true;
+			line.ErrMes = message;
+		}
+
 		while (true)
 		{
 			nextLine = nextLine.NextLine;
@@ -1489,6 +1497,11 @@ internal sealed class ErbLoader
 					break;
 				case FunctionCode.BREAK:
 				case FunctionCode.CONTINUE:
+				{
+					//Resolved per instruction rather than through a local shared with the other cases:
+					//a target left over from an earlier line would let a BREAK outside any loop pass
+					//the check below (and silently re-enter a finished loop).
+					InstructionLine? loopLine = null;
 					InstructionLine[] array = [.. nestStack];
 					for (int i = 0; i < array.Length; i++)
 					{
@@ -1497,18 +1510,19 @@ internal sealed class ErbLoader
 						    || array[i].FunctionCode == FunctionCode.WHILE
 						    || array[i].FunctionCode == FunctionCode.DO)
 						{
-							pairLine = array[i];
+							loopLine = array[i];
 							break;
 						}
 					}
 
-					if (pairLine == null)
+					if (loopLine == null)
 					{
 						ParserMediator.Warn(string.Format(trerror.InvalidLoopInstruction.Text, func.Function.Name), func, 2, true, false);
 						break;
 					}
 
-					func.JumpTo = pairLine;
+					func.JumpTo = loopLine;
+				}
 					break;
 
 				case FunctionCode.ELSEIF:
@@ -1560,9 +1574,12 @@ internal sealed class ErbLoader
 					{
 						do
 						{
-							ParserMediator.Warn(
-								string.Format(trerror.InstructionNotClosed.Text, selectLine.Function.Name,
-									FunctionIdentifier.getMatchFunction(selectLine.FunctionCode), func.Function.Name), func, 2, true, false);
+							string errMes = string.Format(trerror.InstructionNotClosed.Text, selectLine.Function.Name,
+								FunctionIdentifier.getMatchFunction(selectLine.FunctionCode), func.Function.Name);
+							ParserMediator.Warn(errMes, func, 2, true, false);
+							//Dropped without its terminator, so it can never be paired: mark it instead
+							//of leaving a line that execution would reach with a null JumpTo.
+							markUnpaired(selectLine, errMes);
 							//これを跨いでIF等が閉じられることがないようにする。
 							nestStack.Pop();
 							//if (nestStack.Count > 0)　//空になってるかは下で判定できるので、これを見る必要がない
@@ -1593,20 +1610,25 @@ internal sealed class ErbLoader
 					{
 						do
 						{
-							ParserMediator.Warn(
-								string.Format(trerror.InstructionNotClosed.Text, selectLine.Function.Name,
-									FunctionIdentifier.getMatchFunction(selectLine.FunctionCode), func.Function.Name), func, 2, true, false);
+							string errMes = string.Format(trerror.InstructionNotClosed.Text, selectLine.Function.Name,
+								FunctionIdentifier.getMatchFunction(selectLine.FunctionCode), func.Function.Name);
+							ParserMediator.Warn(errMes, func, 2, true, false);
+							//Dropped without its terminator, so it can never be paired: mark it instead
+							//of leaving a line that execution would reach with a null JumpTo.
+							markUnpaired(selectLine, errMes);
 							//これを跨いでIF等が閉じられることがないようにする。
 							nestStack.Pop();
 							//if (nestStack.Count > 0)　//空になってるかは下で判定できるので、これを見る必要がない
 							selectLine = nestStack.Count == 0 ? null : nestStack.Peek(); //ちなみにnullになることはない（SELECTCASEがない場合は上で弾けるから）
 						} while (selectLine != null && selectLine.FunctionCode != FunctionCode.SELECTCASE);
 
-						//とりあえず、対応するSELECTCASE跨ぎは閉じる
-						SelectcaseStack.Pop();
-						//こっちでも抜かないとSELECTCASEが2つのENDSELECTに対応してしまう
-						nestStack.Pop();
-						break;
+						//Previously the SELECTCASE/ENDSELECT pairing was discarded here, which left every
+						//CASE line with a null JumpTo; execution reads it (ELSEIF_Instruction) as soon as a
+						//CASE body falls through to the next CASE. Fall through to the pairing below.
+						if (selectLine == null)
+						{
+							break;
+						}
 					}
 
 					nestStack.Pop();
@@ -1657,6 +1679,7 @@ internal sealed class ErbLoader
 				case FunctionCode.NEXT:
 				case FunctionCode.WEND:
 				case FunctionCode.LOOP:
+				{
 					FunctionCode parentFunc = FunctionIdentifier.getParentFunc(func.FunctionCode);
 					//if (parentFunc == FunctionCode.__NULL__)
 					//    throw new ExeEE("何か変？");
@@ -1668,26 +1691,27 @@ internal sealed class ErbLoader
 						break;
 					}
 
-					pairLine = nestStack.Pop(); //REPEAT
-					func.JumpTo = pairLine;
-					pairLine.JumpTo = func;
+					InstructionLine loopLine = nestStack.Pop(); //REPEAT
+					func.JumpTo = loopLine;
+					loopLine.JumpTo = func;
+				}
 					break;
 				case FunctionCode.CATCH:
-					pairLine = nestStack.Count == 0 ? null : nestStack.Peek();
-					if (pairLine == null
-					    || (pairLine.FunctionCode != FunctionCode.TRYCGOTO
-					        && pairLine.FunctionCode != FunctionCode.TRYCCALL
-					        && pairLine.FunctionCode != FunctionCode.TRYCJUMP
-					        && pairLine.FunctionCode != FunctionCode.TRYCGOTOFORM
-					        && pairLine.FunctionCode != FunctionCode.TRYCCALLFORM
-					        && pairLine.FunctionCode != FunctionCode.TRYCJUMPFORM))
+					InstructionLine? trycLine = nestStack.Count == 0 ? null : nestStack.Peek();
+					if (trycLine == null
+					    || (trycLine.FunctionCode != FunctionCode.TRYCGOTO
+					        && trycLine.FunctionCode != FunctionCode.TRYCCALL
+					        && trycLine.FunctionCode != FunctionCode.TRYCJUMP
+					        && trycLine.FunctionCode != FunctionCode.TRYCGOTOFORM
+					        && trycLine.FunctionCode != FunctionCode.TRYCCALLFORM
+					        && trycLine.FunctionCode != FunctionCode.TRYCJUMPFORM))
 					{
 						ParserMediator.Warn(trerror.MissingTryc.Text, func, 2, true, false);
 						break;
 					}
 
-					pairLine = nestStack.Pop(); //TRYC
-					pairLine.JumpToEndCatch = func; //TRYCにCATCHの位置を教える
+					trycLine = nestStack.Pop(); //TRYC
+					trycLine.JumpToEndCatch = func; //TRYCにCATCHの位置を教える
 					nestStack.Push(func);
 					break;
 				case FunctionCode.ENDCATCH:
@@ -1698,8 +1722,8 @@ internal sealed class ErbLoader
 						break;
 					}
 
-					pairLine = nestStack.Pop(); //CATCH
-					pairLine.JumpToEndCatch = func; //CATCHにENDCATCHの位置を教える
+					InstructionLine catchLine = nestStack.Pop(); //CATCH
+					catchLine.JumpToEndCatch = func; //CATCHにENDCATCHの位置を教える
 					break;
 				case FunctionCode.PRINTDATA:
 				case FunctionCode.PRINTDATAL:
