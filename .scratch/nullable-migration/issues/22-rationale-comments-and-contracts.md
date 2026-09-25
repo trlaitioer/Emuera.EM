@@ -8,11 +8,13 @@ issues/14 判定为「不变量成立」的断言将保留 `!`。本票为其补
 
 ## 方案
 
-### 1. `as` 转换的理由注释（约 49 处）
+### 1. 保留断言的理由注释（以 `as` 转换为主，约 49 处）
 
 issues/14 判定 `(x as T)!` 中 49 处有前置类型检查，需逐点注明保证来自何处，例如：`FunctionMethod` 的实参类型表（含 `RefAny1D`/`AllowConstRef` 与 `UniqueRestructure` 的组合）、`Word.Type` 的分派常量、`FunctionCode`→`ArgumentBuilder` 的分派、`VariableCode` 的数组形状判定、委托注册的框架契约。注释写「由哪个检查或分派保证」，不复述代码。
 
 无保护的 3 处不在此列（issues/18）。
+
+另：issues/21 的清单判定出的 A 类组不止 `as` 转换——至少包括 `CaseExpression.LeftTerm`/`RightTerm`（构造点 `ExpressionParser.reduceCaseExpression` 已保证非空，读取处按 `CaseType` 门禁）、`VariableStrArgTerm` 的 `dic`（读取前已判空转 `CodeEE`）等成员与局部断言。这些组同样需要「编译器看不到哪条不变量」的理由注释，归本票，具体分组以 issues/21 的判定表为准。
 
 ### 2. 冗余 `!` 清理
 
@@ -37,6 +39,7 @@ issues/14 判定 `(x as T)!` 中 49 处有前置类型检查，需逐点注明�
 - `Process.CalledFunction.cs` 的 `ConvertArg` 的 `out string errMes`——仅在返回 null 时被读取，应为 `out string?`。
 - `UI/Game/HtmlManager.cs` 中作为换行哨兵的 null 元素（`buttonList.Add(null!)`）——容器元素类型 `List<ConsoleButtonString>` 应改为 `List<ConsoleButtonString?>`；消费方 `PrintStringBuffer.ButtonsToDisplayLines` 的形参与 `m_buttonsToDisplayLine` 字段须同步改，否则该处既有的 `if (buttonList[i] == null)` 判空与新元素类型对不上。
 - `Creator.Method.cs` 的 `XmlGetMethod`/`XmlSetMethod` 中 `nodes` 局部——赋值发生在 `try` 内、唯一 `catch` 抛出，编译器无法据此证明「读取前必已赋值」；提取方法或调整结构让赋值可被证明，而不是用 `= null!`。
+- `HtmlManager.tagAnalyze` 的 `ref height!`/`ref width!`/`ref x!`/`ref y!` 等 15 处与 `ParseParam4IntNum(ref CreateIfNull(ref box!).color!, …)`（issues/21 的 D 类）——`Utils.ParseMixedNum(ref MixedNum num, …)` 的第一步就是 `if (num == null) num = new MixedNum();`，`CreateIfNull<T>(ref T obj)` 同样以 null 为正常入参；`!` 断言的内容为假。把形参改为 `ref MixedNum?`/`ref int[]?`，调用点的 `!` 一并删除（元数据级，零行为变化）。
 
 ### 4. 常量折叠实参的具名入口
 

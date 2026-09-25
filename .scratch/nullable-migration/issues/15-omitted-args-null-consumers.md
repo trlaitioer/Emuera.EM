@@ -18,6 +18,7 @@ issues/05 把方法调用与指令参数的元素类型定为 `List<AExpression?
 | `Instraction.Child.cs` 的 `CALLSHARP_Instruction.DoInstruction` | `CALLSHARP "m", 1, , 3`（中间省略）或 `CALLSHARP "m", , 3`（首个省略），且该插件方法已注册 | `PluginMethodParameterBuilder.ConvertTerm(term!)` 解引用 null，插件方法不会被调用 |
 | `ArgumentBuilder.cs` 的 `SP_CALLSHARP_ArgumentBuilder.CreateArgument` | `CALLSHARP "m"[1, ,3]` | `subNames.Required(i)` 取到 null，在解析期即抛 |
 | `Instraction.Child.cs` 的 `PRINT_SPACE_Instruction`、`PRINT_RECT_Instruction` | `PRINT_SPACE ,` / `PRINT_RECT ,,,` | `MixedIntegerExprTerm.num` 为 null，取 `GetIntValue` 时抛。默认 `ReduceArgumentOnLoad=NO` 时在 `DoInstruction` 的 `num.GetIntValue` 处抛；若配为 `YES`，则先在 `SP_PRINT_SHAPE_ArgumentBuilder` 的 `arg!.Restructure(exm)` 处抛 |
+| `ArgumentBuilder.cs` 的 `SP_PRINT_IMG_ArgumentBuilder.CreateArgument` | `PRINT_IMG "a", `（第二实参省略） | `arg!.IsString` 在**解析期**即解引用 null（与上一行同根因，是 issues/21 清单新发现的漏点） |
 | `Instraction.Child.cs` 的 `VARS_Instruction.DoInstruction` | `VARS FOO`（无初始化器）或 `VARS FOO = ` | `arg.Value!` 把 null 传入非空参数；不抛异常，变量被写入 null（读回为 `""`），属契约错误 |
 
 ### 依据
