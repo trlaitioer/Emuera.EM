@@ -604,7 +604,8 @@ internal static class LogicalLineParser
 							};
 							parentLine!.AddPrivateVariable(varData);
 
-							line.Argument = new StrAsignArgument(varName, varData.Lengths, value);
+							// An omitted initializer means the empty string, as VARI substitutes 0.
+							line.Argument = new StrAsignArgument(varName, varData.Lengths, value ?? "");
 							return line;
 						}
 					}

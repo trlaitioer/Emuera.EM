@@ -65,7 +65,7 @@ internal sealed partial class FunctionIdentifier
 			privateVar.ScopeIn();
 			if (privateVar.GetLength(0) == 1)
 			{
-				privateVar.SetValue(arg.Value!, [0]);
+				privateVar.SetValue(arg.Value, [0]);
 			}
 		}
 
@@ -1536,8 +1536,7 @@ internal sealed partial class FunctionIdentifier
 			SpCallSharpArgment arg = (SpCallSharpArgment)func.BuiltArgument;
 			PluginManager manager = PluginManager.GetInstance();
 
-			// TODO: ConvertTerm rejects null, but an omitted argument reaches this point as null (issues/05);
-			// decide whether the plugin method should receive a default parameter instead.
+			// SP_CALLSHARP_ArgumentBuilder rejects an omitted argument, so every element here is present.
 			PluginMethodParameter[] pluginArgs = [.. arg.RowArgs.Select((term) => PluginMethodParameterBuilder.ConvertTerm(term!, exm))];
 			arg.CallFunc!.Execute(pluginArgs);
 			for (int i = 0; i < pluginArgs.Length; ++i)

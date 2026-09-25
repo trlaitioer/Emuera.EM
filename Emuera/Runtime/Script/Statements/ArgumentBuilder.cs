@@ -344,12 +344,22 @@ internal static partial class ArgumentParser
 				}
 
 				AExpression? arg = ExpressionParser.ReduceExpressionTerm(wc, TermEndWith.Comma | TermEndWith.KeyWordPx);
-				if (Config.NeedReduceArgumentOnLoad && arg != null)
+				if (arg != null && Config.NeedReduceArgumentOnLoad)
 				{
 					arg = arg.Restructure(exm);
 				}
 
-				if (arg!.IsString)
+				// An omitted slot can only be an optional name (Nameb/Namem); a coordinate has no value to
+				// stand in, and skipping it would compress Param and shift the later numbers' roles.
+				if (arg == null)
+				{
+					if (argCount > 3 || param.Count > 0)
+					{
+						warn(string.Format(trerror.CanNotOmitArg.Text, argCount), line, 2, false);
+						return null;
+					}
+				}
+				else if (arg.IsString)
 				{
 					if (param.Count > 0 || argCount > 3)
 					{
@@ -400,12 +410,18 @@ internal static partial class ArgumentParser
 			while (!wc.EOL)
 			{
 				AExpression? arg = ExpressionParser.ReduceExpressionTerm(wc, TermEndWith.Comma | TermEndWith.KeyWordPx);
-				if (Config.NeedReduceArgumentOnLoad)
+				if (arg == null)
 				{
-					arg = arg!.Restructure(exm);
+					warn(string.Format(trerror.CanNotOmitArg.Text, param.Count + 1), line, 2, false);
+					return null;
 				}
 
-				param.Add(new MixedIntegerExprTerm { num = arg!, isPx = wc.Current.Type != '\0' && wc.Current.Type != ',' });
+				if (Config.NeedReduceArgumentOnLoad)
+				{
+					arg = arg.Restructure(exm);
+				}
+
+				param.Add(new MixedIntegerExprTerm { num = arg, isPx = wc.Current.Type != '\0' && wc.Current.Type != ',' });
 				if (wc.Current.Type != '\0' && wc.Current.Type != ',')
 				{
 					wc.ShiftNext();
@@ -473,6 +489,12 @@ internal static partial class ArgumentParser
 					return null;
 				}
 
+				// The optional return-value flag is absent; Opt stays null and its reader treats that as 0.
+				if (i == 1 && args[i] == null)
+				{
+					continue;
+				}
+
 				if (i == 0 && !args.Required(i).IsString)
 				{
 					warn(string.Format(trerror.IncorrectArg.Text, i + 1), line, 2, false);
@@ -497,10 +519,11 @@ internal static partial class ArgumentParser
 				}
 			}
 
-			SpHtmlPrint ret = new(args.Required(0), args.Count > 1 ? args.Required(1) : null);
+			AExpression? opt = args.Count > 1 ? args[1] : null;
+			SpHtmlPrint ret = new(args.Required(0), opt);
 			if (constStr && constInt)
 			{
-				ret.ConstInt = args.Count > 1 ? args.Required(1).GetIntValue(exm) : 0;
+				ret.ConstInt = opt != null ? opt.GetIntValue(exm) : 0;
 				ret.ConstStr = args.Required(0).GetStrValue(exm);
 			}
 
@@ -1257,10 +1280,15 @@ internal static partial class ArgumentParser
 
 			for (int i = 0; i < args.Count; i++)
 			{
-				if (args[i] != null)
+				AExpression? term = args[i];
+				if (term == null)
 				{
-					args[i] = args.Required(i).Restructure(exm);
+					// A plugin method receives positional values only, so an omitted argument has none to pass.
+					warn(string.Format(trerror.CanNotOmitArg.Text, i + 1), line, 2, false);
+					return null;
 				}
+
+				args[i] = term.Restructure(exm);
 			}
 
 			Argument ret = new SpCallSharpArgment(funcname, subNames, args);
@@ -3058,24 +3086,18 @@ internal static partial class ArgumentParser
 				}
 			}
 
-			SpInputsArgument ret;
-			if (terms.Count == 0)
+			AExpression? def = terms.Count > 0 ? terms[0] : null;
+			AExpression? mouse = terms.Count > 1 ? terms[1] : null;
+			AExpression? canSkip = terms.Count > 2 ? terms[2] : null;
+			// The skip branch fills RESULT with the default value and picks RESULT or RESULT:1 by the
+			// mouse flag, so both slots must be given: an omitted default has no value to fill in.
+			if (canSkip != null && (def == null || mouse == null))
 			{
-				ret = new SpInputsArgument(null, null, null);
-				return ret;
+				warn(string.Format(trerror.CanNotOmitArg.Text, def == null ? 1 : 2), line, 2, false);
+				return null;
 			}
-			else if (terms.Count == 1)
-			{
-				ret = new SpInputsArgument(terms[0], null, null);
-			}
-			else if (terms.Count == 2)
-			{
-				ret = new SpInputsArgument(terms[0], terms[1], null);
-			}
-			else
-			{
-				ret = new SpInputsArgument(terms[0], terms[1], terms[2]);
-			}
+
+			SpInputsArgument ret = new(def, mouse, canSkip);
 
 			#endregion
 

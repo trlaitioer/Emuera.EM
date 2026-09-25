@@ -36,6 +36,9 @@ internal static class TestBootstrap
 		// FunctionIdentifier 静态构造读取 JSONConfig.Data;Load() 需要先 SetDirPaths(本夹具不设游戏目录),
 		// 故直接赋默认值——等价于无 setting.json 时的首次启动
 		JSONConfig.Data = new JSONConfigData();
+		// VARI/VARS 只在 UseScopedVariableInstruction 开启时注册,而 FunctionIdentifier 是静态构造、
+		// 首次触碰后无法补注册,故须在任何解析之前打开(测试只覆盖解析器,与游戏内开关无关)
+		JSONConfig.Data.UseScopedVariableInstruction = true;
 
 		var gamebase = new GameBase();
 		gamebase.LoadGameBaseCsv(Path.Combine(csvDir, "GAMEBASE.CSV"));

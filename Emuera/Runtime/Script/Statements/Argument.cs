@@ -15,6 +15,8 @@ namespace MinorShift.Emuera.Runtime.Script.Statements;
 
 internal sealed class SpInputsArgument : Argument
 {
+	// Both input argument builders set CanSkip only together with Def and Mouse, so a non-null CanSkip
+	// implies the other two are non-null.
 	public SpInputsArgument(AExpression? def, AExpression? mouse, AExpression? canskip)
 	{
 		Def = def;
@@ -910,11 +912,6 @@ internal sealed class IntAsignArgument : Argument
 {
 	public int[]? Lengths;
 
-	public IntAsignArgument(string str, int[] lengths)
-	{
-		ConstStr = str;
-	}
-
 	public readonly AExpression? Exp;
 
 	public IntAsignArgument(string name, int[] lengths, AExpression exp)
@@ -929,14 +926,10 @@ internal sealed class StrAsignArgument : Argument
 {
 	public int[]? Lengths;
 
-	public StrAsignArgument(string str)
-	{
-		ConstStr = str;
-	}
+	// An omitted initializer is stored as the empty string by the parser, so every read sees a value.
+	public readonly string Value;
 
-	public readonly string? Value;
-
-	public StrAsignArgument(string str, int[] lengths, string? value)
+	public StrAsignArgument(string str, int[] lengths, string value)
 	{
 		ConstStr = str;
 		Lengths = lengths;
