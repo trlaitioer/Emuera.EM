@@ -144,16 +144,23 @@ internal static partial class FunctionMethodCreator
 
 			if (arguments.Count >= 3)
 			{
-				if (arguments.Required(2).IsInteger && arguments.Required(2).GetIntValue(exm) != 0)
+				AExpression outputArg = arguments.Required(2);
+				if (outputArg.IsInteger)
 				{
-					for (int i = 0; i < Math.Min(nodes.Count, exm.VEvaluator.RESULTS_ARRAY.Length); i++)
+					// Form 1/3 takes doOutput: 0 (or omitted) means the result count only
+					if (outputArg.GetIntValue(exm) != 0)
 					{
-						OutPutNode(nodes[i]!, exm.VEvaluator.RESULTS_ARRAY, i, outputStyle);
+						for (int i = 0; i < Math.Min(nodes.Count, exm.VEvaluator.RESULTS_ARRAY.Length); i++)
+						{
+							OutPutNode(nodes[i]!, exm.VEvaluator.RESULTS_ARRAY, i, outputStyle);
+						}
 					}
 				}
 				else
 				{
-					string[] arr = ((arguments[2] as VariableTerm)!.Identifier.GetArray() as string[])!;
+					// Form 2/4 takes an output array; argument rule 2 (RefString1D) guarantees a
+					// VariableTerm backed by string[]
+					string[] arr = ((outputArg as VariableTerm)!.Identifier.GetArray() as string[])!;
 					for (int i = 0; i < Math.Min(nodes.Count, arr.Length); i++)
 					{
 						OutPutNode(nodes[i]!, arr, i, outputStyle);
@@ -4597,8 +4604,9 @@ internal static partial class FunctionMethodCreator
 			// argumentTypeArray = null;
 			argumentTypeArrayEx =
 			[
-				//new ArgTypeList{ ArgTypes = { ArgType.CharacterData | ArgType.RefAny1D | ArgType.AllowConstRef | ArgType.Any, ArgType.SameAsFirst, ArgType.Int, ArgType.Int }, OmitStart = 2 },
-				new ArgTypeList { ArgTypes = { ArgType.Any, ArgType.SameAsFirst, ArgType.Int, ArgType.Int }, OmitStart = 2 }
+				//CMATCH targets a character array, so rule 1 must be a reference ({ CharacterData } is
+				//checked before the ref branch, and RefAny1D already covers Any)
+				new ArgTypeList { ArgTypes = { ArgType.CharacterData | ArgType.RefAny1D | ArgType.AllowConstRef, ArgType.SameAsFirst, ArgType.Int, ArgType.Int }, OmitStart = 2 }
 			];
 			isCharaRange = isChara;
 			CanRestructure = false;
@@ -4892,6 +4900,7 @@ internal static partial class FunctionMethodCreator
 			isMax = true;
 			funcName = "MAXARRAY";
 			CanRestructure = false;
+			HasUniqueRestructure = true;
 		}
 
 		public MaxArrayMethod(bool isChara)
@@ -4914,6 +4923,7 @@ internal static partial class FunctionMethodCreator
 			}
 
 			CanRestructure = false;
+			HasUniqueRestructure = true;
 		}
 
 		public MaxArrayMethod(bool isChara, bool isMaxFunc)
@@ -4933,6 +4943,7 @@ internal static partial class FunctionMethodCreator
 			isMax = isMaxFunc;
 			funcName = (isMax ? "MAX" : "MIN") + (isCharaRange ? "C" : "") + "ARRAY";
 			CanRestructure = false;
+			HasUniqueRestructure = true;
 		}
 
 		//public override string CheckArgumentType(string name, IOperandTerm[] arguments)
@@ -4982,6 +4993,26 @@ internal static partial class FunctionMethodCreator
 
 				return VariableEvaluator.GetMaxArrayChara(p, start, end, isMax);
 			}
+		}
+
+		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression?> arguments)
+		{
+			// The first argument is a variable slot, not a foldable value: declaring the call unique
+			// keeps FunctionMethodTerm.Restructure from writing a folded SingleTerm back into the real
+			// argument list, which would break the VariableTerm cast in GetIntValue. The list received
+			// here is a copy, so the assignments below only carry the nested restructuring.
+			arguments.Required(0).Restructure(exm);
+			for (int i = 1; i < arguments.Count; i++)
+			{
+				if (arguments[i] == null)
+				{
+					continue;
+				}
+
+				arguments[i] = arguments.Required(i).Restructure(exm);
+			}
+
+			return false;
 		}
 	}
 
@@ -5361,6 +5392,7 @@ internal static partial class FunctionMethodCreator
 				}
 			];
 			CanRestructure = false;
+			HasUniqueRestructure = true;
 		}
 
 		public InRangeArrayMethod(bool isChara)
@@ -5384,6 +5416,7 @@ internal static partial class FunctionMethodCreator
 			];
 			isCharaRange = isChara;
 			CanRestructure = false;
+			HasUniqueRestructure = true;
 		}
 
 		private readonly bool isCharaRange;
@@ -5449,6 +5482,26 @@ internal static partial class FunctionMethodCreator
 
 				return VariableEvaluator.GetInRangeArrayChara(p, min, max, start, end);
 			}
+		}
+
+		public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression?> arguments)
+		{
+			// The first argument is a variable slot, not a foldable value: declaring the call unique
+			// keeps FunctionMethodTerm.Restructure from writing a folded SingleTerm back into the real
+			// argument list, which would break the VariableTerm read in GetIntValue. The list received
+			// here is a copy, so the assignments below only carry the nested restructuring.
+			arguments.Required(0).Restructure(exm);
+			for (int i = 1; i < arguments.Count; i++)
+			{
+				if (arguments[i] == null)
+				{
+					continue;
+				}
+
+				arguments[i] = arguments.Required(i).Restructure(exm);
+			}
+
+			return false;
 		}
 	}
 
