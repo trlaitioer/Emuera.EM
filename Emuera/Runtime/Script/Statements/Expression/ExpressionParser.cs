@@ -121,32 +121,33 @@ internal static class ExpressionParser
 
 				else
 				{
-					terms.AddLast(ReduceExpressionTerm(wc, termEndWith_Assignment));
-					if (terms.Last == null)
+					AExpression? argTerm = ReduceExpressionTerm(wc, termEndWith_Assignment);
+					if (argTerm == null)
 					{
 						throw new CodeEE(trerror.CannotOmitFuncArg.Text);
 					}
 
+					terms.AddLast(argTerm);
 					if (wc.Current is OperatorWord)
 					{
 						//=がある
 						wc.ShiftNext();
-						AExpression? term = reduceTerm(wc, false, termEndWith, VariableCode.__NULL__);
-						if (term == null)
+						AExpression? defaultTerm = reduceTerm(wc, false, termEndWith, VariableCode.__NULL__);
+						if (defaultTerm == null)
 						{
 							throw new CodeEE(trerror.NoExpressionAfterEqual.Text);
 						}
 
-						if (term.GetOperandType() != terms.Last!.Value!.GetOperandType())
+						if (defaultTerm.GetOperandType() != argTerm.GetOperandType())
 						{
 							throw new CodeEE(trerror.DoesNotMatchEqual.Text);
 						}
 
-						terms.AddLast(term);
+						terms.AddLast(defaultTerm);
 					}
 					else
 					{
-						if (terms.Last!.Value!.IsInteger)
+						if (argTerm.IsInteger)
 						{
 							terms.AddLast(new NullTerm(0));
 						}

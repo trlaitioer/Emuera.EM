@@ -1,6 +1,7 @@
 ﻿using MinorShift.Emuera;
 using MinorShift.Emuera.Runtime.Script.Parser;
 using MinorShift.Emuera.Runtime.Script.Statements.Expression;
+using MinorShift.Emuera.Runtime.Script.Statements.Variable;
 using MinorShift.Emuera.Runtime.Utils;
 using Xunit;
 
@@ -101,6 +102,44 @@ public class ExpressionParserTests : IDisposable
 	public void UnknownIdentifier_Throws()
 	{
 		Assert.Throws<IdentifierNotFoundCodeEE>(() => Reduce("__THIS_IS_NOT_DEFINED__"));
+	}
+
+	#endregion
+
+	#region ReduceArguments(isDefine):函数定义的实参表不允许省略
+
+	private static List<AExpression?> ReduceDefineArgs(string text)
+		=> ExpressionParser.ReduceArguments(
+			LexicalAnalyzer.Analyse(new CharStream(text), LexEndWith.EoL, LexAnalyzeFlag.AllowAssignment),
+			ArgsEndWith.EoL,
+			true);
+
+	/// <summary>
+	/// 实参表首位的省略项必须在解析期报 CodeEE。旧实现的守卫写成 terms.Last(节点)而非其值,
+	/// 该判断恒假,于是 null 元素直接落到 terms.Last.Value.IsInteger 上抛 NRE。
+	/// </summary>
+	[Fact]
+	public void DefineArgs_LeadingOmittedArg_ThrowsCodeEE()
+	{
+		Assert.Throws<CodeEE>(() => ReduceDefineArgs(",1"));
+	}
+
+	/// <summary>省略项出现在已有实参之后时同样必须报 CodeEE(不得落到后继的默认值处理上)。</summary>
+	[Fact]
+	public void DefineArgs_OmittedArgAfterAValue_ThrowsCodeEE()
+	{
+		Assert.Throws<CodeEE>(() => ReduceDefineArgs("FLAG:0,,1"));
+	}
+
+	/// <summary>正控制:=给出默认值的实参表必须照常解析为「实参, 默认值」两项。</summary>
+	[Fact]
+	public void DefineArgs_ArgWithDefault_ParsesArgAndDefault()
+	{
+		List<AExpression?> terms = ReduceDefineArgs("FLAG:0=1");
+
+		Assert.Equal(2, terms.Count);
+		Assert.IsType<VariableTerm>(terms[0]);
+		Assert.Equal(1L, terms[1]!.GetIntValue(GlobalStatic.EMediator));
 	}
 
 	#endregion

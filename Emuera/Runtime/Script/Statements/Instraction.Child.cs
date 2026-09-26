@@ -3106,18 +3106,19 @@ internal sealed partial class FunctionIdentifier
 			Dictionary<string, System.Data.DataTable> dict = exm.VEvaluator.VariableData.DataDataTables;
 			string cName = arg.Column.GetStrValue(exm);
 			string key = arg.DT.GetStrValue(exm);
-			if (!dict.ContainsKey(key))
+			if (!dict.TryGetValue(key, out System.Data.DataTable? dt))
 			{
+				// Same convention as the DT_* functions: a missing table reports -1 instead of throwing.
 				exm.VEvaluator.RESULT = -1;
+				return;
 			}
 
-			System.Data.DataTable dt = dict[key];
-			if (!dt.Columns.Contains(cName))
+			if (dt.Columns[cName] is not DataColumn column)
 			{
-				exm.VEvaluator.RESULT = 0;
+				// Nothing can be set without the column, and the DT_* family throws here as well.
+				throw new CodeEE(string.Format(trerror.DTLackOfNamedColumn.Text, "DT_COLUMN_OPTIONS", key, cName));
 			}
 
-			DataColumn column = dt.Columns[cName]!;
 			bool isString = column.DataType == typeof(string);
 			int idx = 0;
 			foreach (SpDtColumnOptions.DTOptions opt in arg.Options)
