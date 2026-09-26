@@ -4,7 +4,7 @@ Status: ready-for-agent
 
 ## 任务
 
-issues/14 判定为「不变量成立」的断言将保留 `!`。本票为其补上说明「编译器看不到哪条不变量」的注释，同时清理经判定确属冗余的断言，并把若干「实际可空却声明非空」的位置改为诚实的可空契约。全部改动为元数据级（注解、注释、只读访问器、局部类型），不改变运行行为。
+issues/14 判定为「不变量成立」的断言将保留 `!`。本票为其补上说明「编译器看不到哪条不变量」的注释，同时清理经判定确属冗余的断言，并把若干「实际可空却声明非空」的位置改为诚实的可空契约。方案第 1~4 节的改动为元数据级（注解、注释、只读访问器、局部类型），不改变运行行为；第 5~6 节是 issues/17 实施后 review 移交的相邻项，属结构性改动，与本票的元数据级前提不同——开工时须先定这两节是并入本票还是另开票。
 
 ## 方案
 
@@ -45,8 +45,21 @@ issues/14 判定 `(x as T)!` 中 49 处有前置类型检查，需逐点注明�
 
 `GetIntValue(null!)`/`GetStrValue(null!)` 共 18 处（`ArgumentBuilder.cs` 14、`VariableEvaluator.cs` 的 `FindChara` 两重载 4），另有 `ExpressionParser.ToStrFormTerm` 的 1 处 `strf.GetString(null!)`（票面原先记的「约 65 处」是 issues/14 对全部「调用实参位 `null!`」的计数，口径不同）。这些调用当前安全，但判据分三类：`ArgumentBuilder` 各处由 `is SingleTerm`/`allConst` 支配，`ToStrFormTerm` 由 `strf.IsConst` 支配，`FindChara` 两重载则没有此类判据——它靠 `FindcharaMethod` 的 `ArgType.CharacterData` 保证实参是 character-data 变量，而该类 token 的取值不读 `exm`。按 issues/13 对 `Required`/`BuiltArgument` 的做法收敛为具名入口，让「此处无求值上下文」只表达一次（例如单值 term 上的无上下文取值成员）。
 
+### 5. issues/17 两轴 review 的相邻重复（本票记录，来自 issues/17 实施后的 review）
+
+三处均为判定级气味，非缺陷；与 issues/17 的改动同址，但那三处已按最小改动落地，收敛留给本票：
+
+- `ArgumentBuilder.cs` 的 `SP_COPY_ARRAY_Arguments`：`terms[0]`/`terms[1]` 两块约 15 行仅差下标、参数序号与局部名（`vars[0]`/`vars[1]`、`term`/`term1`），第一个实参块有 `return null` 而第二个原本没有（issues/17 已补）。抽出一个「按序号检查一个数组实参」的辅助后，两块的差异只剩实参序号，`return null` 也从「要记得写」变成「不可漏写」。
+- `ArgumentBuilder.cs` 的 `SP_COPY_ARRAY_Arguments` × `Process.ScriptProc.cs` 的 `doNormalFunction`（ARRAYCOPY 分支）：字面量实参名 `GetVariableToken(term.Str, null, true)` 的解析存在两处，解析期那处的结果未传给执行期那处。issues/17 已在执行期补注释说明「两处必须同步」，属把耦合写明；若要消除，可让 `SpCopyArrayArgument` 携带解析期已得到的 `VariableToken?`，执行期只在动态分支重解析。
+- `Instraction.Child.cs` 的 `DT_COLUMN_OPTIONS_Instruction.DoInstruction`：表/列解析内联复刻了 DT 函数族（`Creator.Method.cs` 的 `DataTableColumnManagementMethod` 与 `DataTableRowSetMethod.CheckName`）的形状——`TryGetValue` 取表、缺表 `-1`、缺列抛 `DTLackOfNamedColumn`。共享一处解析器可让族内约定只有一份；顺带说明：族内 `id` 列不可改的守卫（`DTCanNotEditIdColumn`）只加在写行的路径上，`DT_COLUMN_OPTIONS` 改的是列默认值，是否需要该守卫属产品判断，需与共享解析一起定。
+
+### 6. `ExpressionArrayArgument.TermList` 的契约诚实化（issues/17 审计移交）
+
+`Argument.cs` 的 `ExpressionArrayArgument` 声明 `AExpression[] TermList`，却由 `List<AExpression?>` 经 `CopyTo` 填充，把元素可空性在类型上洗掉。两条构造路径当前都已拒绝 null 元素（`ArgumentBuilder.cs` 的 `INT_ANY_ArgumentBuilder` 经 `checkArgumentType` 拒绝、`FORM_STR_ANY_ArgumentBuilder` 自建非空 term），故非缺陷；但读取侧（`Process.ScriptProc.cs` 的 `INT_ANY` 消费、`Instraction.Child.cs` 的 `ExpressionArrayArgument` 取值）依赖的是这条不写在类型上的不变量。处置二选一：构造函数改收 `List<AExpression>`（调用点各自收窄），或字段改 `AExpression?[]` 并由消费点处理。
+
 ## 影响
 
-- 全部改动为注解与注释级，IL 除元数据外不变；无运行行为变化
+- 方案第 1~4 节的全部改动为注解与注释级，IL 除元数据外不变；无运行行为变化
+- 第 5~6 节（issues/17 review 移交）是结构性改动，超出「注解与注释级」：抽实参检查辅助会改 `SP_COPY_ARRAY_Arguments` 的发出物、共享 DT 解析器会改 `DT_COLUMN_OPTIONS` 的错误处置与 `id` 列守卫的有无、`TermList` 的元素类型变更会波及全部消费点；这三项须各自给判据与测试，不与第 1~4 节同批
 - 改动后仍须满足两种声音后端 `-p:Nullable=enable` 的 CS86xx 为 0（`WarningsAsErrors>nullable</WarningsAsErrors>` 已开启）与 `Emuera.Tests` 通过
 - 删除冗余 `!` 时须逐处构建确认：`!` 除断言外还参与流分析收窄，删除可能让后续位置的判据失效（issues/13 已实测该现象），必要时以局部回退处理
