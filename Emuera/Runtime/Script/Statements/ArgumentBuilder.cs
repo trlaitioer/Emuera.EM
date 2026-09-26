@@ -3154,6 +3154,7 @@ internal static partial class ArgumentParser
 				if (!vars[1]!.IsArray1D && !vars[1]!.IsArray2D && !vars[1]!.IsArray3D)
 				{
 					warn(string.Format(trerror.ArraycopyArgIsNotArray.Text, "2", term1.Str), line, 2, false);
+					return null;
 				}
 
 				if (vars[1]!.IsCharacterData)

@@ -1017,6 +1017,10 @@ internal sealed partial class Process
 				}
 				else
 				{
+					// Both names were already resolved by SP_COPY_ARRAY_Arguments with this very call while
+					// the argument was built: a failed lookup warns at level 2 and marks the line as an error
+					// there, which runScriptProc turns into a CodeEE before this branch runs. Keep the two
+					// lookups in sync.
 					vars[0] = GlobalStatic.IdentifierDictionary.GetVariableToken(((SingleStrTerm)varName1).Str, null, true);
 					vars[1] = GlobalStatic.IdentifierDictionary.GetVariableToken(((SingleStrTerm)varName2).Str, null, true);
 					if ((vars[0]!.IsInteger && vars[1]!.IsString) || (vars[0]!.IsString && vars[1]!.IsInteger))

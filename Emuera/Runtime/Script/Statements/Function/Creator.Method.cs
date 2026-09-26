@@ -921,7 +921,9 @@ internal static partial class FunctionMethodCreator
 			string?[] output = GlobalStatic.Process.VEvaluator.RESULTS_ARRAY;
 			int outputlength = Math.Min(output.Length, strs.Length);
 			Array.Copy(strs, output, outputlength);
-			return output[0]!;
+			// HtmlManager.HtmlSubString always returns two elements, so strs.Length >= 1 and Array.Copy
+			// fills output[0] with the same non-null string returned here.
+			return strs[0];
 		}
 	}
 
