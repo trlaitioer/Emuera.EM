@@ -130,6 +130,12 @@ BREAK
 
 第二个 `BREAK`（循环外）复用 `REND` 留下的循环行，`iLine = 该行.JumpTo = REND` 非空、`LoopCounter` 也已由 REPEAT 赋值，于是不抛异常而把已结束的循环重新进入。
 
+### 实施结果（2026-09-26）
+
+- `ErbLoader.nestCheck` 的两个恢复分支（`ENDSELECT` 与 `CASE`/`CASEELSE`）在弹出未闭合构造时对被弹出行调用 `markUnpaired` 写 `IsError`/`ErrMes`；`ENDSELECT` 分支随后落回正常配对路径，`SELECTCASE` 与各 `CASE` 行拿到 `ENDSELECT` 作为跳转目标。
+- 扫描循环外共享的 `pairLine` 已删除：`REND`/`NEXT`/`WEND`/`LOOP` 各取本次迭代的局部循环行，`BREAK`/`CONTINUE` 每次从 `nestStack` 现取所属循环构造，跨迭代残留不再存在。
+- 新增 `Emuera.Tests` 的 `ErbLoaderNestCheckTests`（4 例）覆盖两处恢复分支与 `pairLine` 复用。
+
 ## 曾考虑的替代方案
 
 1. 只给被弹出行补 `IsError`、不完成 `ENDSELECT` 的配对：不足以修 `ENDSELECT` 路径，崩溃点在 `CASE` 行而非被弹出行（见「复核更正」）。
@@ -142,4 +148,4 @@ BREAK
 - 涉及 46 处 `JumpTo` 族断言中的 23 处（分布在 `Instraction.Child.cs` 的 `PRINT_DATA_Instruction`、`REPEAT_Instruction`、`WHILE_Instruction`、`ELSEIF_Instruction`、`IF_Instruction`、`SELECTCASE_Instruction`、`CATCH_Instruction`、`BREAK_Instruction`、`CONTINUE_Instruction`、`REND_Instruction`、`WEND_Instruction`、`LOOP_Instruction`，以及 `Process.ScriptProc.cs` 的 `doNormalFunction`/`doFlowControlFunction`）。46 的构成：`JumpTo!` 28 处（`Instraction.Child.cs` 23、`Process.ScriptProc.cs` 5，后者正落在上述两个方法内）+ `JumpToEndCatch!` 1 + `ParentLabelLine!` 17；「23 处可达」的口径来自 issues/14 的复核(10 成立、11 仅靠 `IsError` 门禁、23 可达)，与 `Instraction.Child.cs` 的 `JumpTo!` 数相同属巧合
 - 修复属解析期行为变更：原本静默产生坏跳转目标的脚本会改为在解析期报错或按配对语义正确跳转。诊断文本与位置不变；能正常运行的脚本走到恢复分支时，新写入的 `JumpTo` 不会被读取（或读到 `ENDSELECT`，与原语义一致）
 - 残余缺口（「方案」第 2 节，本票不修）：未闭合块内部行经 `GOTO` 越入时仍为空跳转
-- 需补 `Emuera.Tests` 用例覆盖两处恢复分支与 `pairLine` 复用，作为不变量回归网（当前 `Emuera.Tests` 无任何 `ErbLoader`/`nestCheck` 覆盖，已核对）
+- 本票新增 `Emuera.Tests` 的 `ErbLoaderNestCheckTests`（4 例）覆盖两处恢复分支与 `pairLine` 复用，作为不变量回归网（改动前 `Emuera.Tests` 无任何 `ErbLoader`/`nestCheck` 覆盖，已核对）

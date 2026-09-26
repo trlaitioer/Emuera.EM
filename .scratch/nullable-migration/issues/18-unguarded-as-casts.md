@@ -70,6 +70,13 @@ if (arguments.Count >= 3)
 
 `dotnet build Emuera/Emuera.csproj -c Debug-NAudio -p:Platform=x64 --no-restore` 与 `dotnet test Emuera.Tests/Emuera.Tests.csproj -c Debug-NAudio -p:Platform=x64`。本票改动处保留的 `!` 是否就地补理由注释由 issues/22 承接，本票不重复。
 
+### 实施结果（2026-09-26）
+
+- `XmlGetMethod.GetIntValue` 改为按 `outputArg.IsInteger` 分流：整型书式（`doOutput`）为 0 时只返回合致结果数、非 0 写 `RESULTS`；变量书式保留 `as`+`!`，由实参规则 2（`RefString1D`）保证 `VariableTerm`。
+- `MatchMethod(bool)` 的首项规则恢复为 `CharacterData | RefAny1D | AllowConstRef`：`CMATCH` 的非角色变量实参由运行期 NRE／静默错扫变为解析期 `CodeEE`，角色变量与角色字符串数组不受影响。
+- `InRangeArrayMethod`（2 个 ctor）与 `MaxArrayMethod`（3 个 ctor）设 `HasUniqueRestructure = true` 并覆写 `UniqueRestructure`：第 1 实参只调用 `Restructure` 以整形其内部、其返回值不写回实参列表，其余实参照旧处理，返回 false；常量一维数组实参不再在解析期被折叠。
+- 新增 `Emuera.Tests` 的 `UnguardedAsCastTests`，覆盖 `XML_GET` 的 `doOutput = 0`/非 0/`outputArray` 三种书式、`CMATCH` 的解析期拒绝与角色变量正控制、`INRANGEARRAY`/`MAXARRAY` 传常量数组。
+
 ## 曾考虑的替代方案
 
 1. 把 `XmlGetMethod` 第 3 实参规则收紧为 `RefString1D`（原票方案 1 的首选）：放弃——`doOutput` 为 `0` 或省略是文档化的书式，收紧会把它变成解析错误，方向与缺陷相反，且两条规则只在收紧后才重合、收紧后 `doOutput` 书式不再存在。

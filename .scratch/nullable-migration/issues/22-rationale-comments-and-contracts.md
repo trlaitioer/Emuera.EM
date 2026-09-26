@@ -25,6 +25,7 @@ issues/14 判定 `(x as T)!` 中 49 处有前置类型检查，需逐点注明�
 | `Creator.Method.cs` 的 `ArrayMultiSortExMethod` 中 `is VariableTerm` 分支后再 `as` | 两分支均非空 |
 | `Instraction.Child.cs` 的 `VARI_Instruction` 对 `IntAsignArgument.Exp` | 两条构造路径都提供表达式，无非空构造器在用 |
 | `Instraction.Child.cs` 的 `CALLSHARP_Instruction` 对 `arg.CallFunc` | 该构造器以常量字符串（`SingleStrTerm`）构造函数名，`IsConst` 必为真，`SetJumpTo` 中的非常量分支不可达；`CallFunc` 保持 null 的唯一路径是 `!manager.HasMethod` 分支，该处以 `Warn(..., isError: true)` 阻断执行——`!` 的实际保证来自这一错误标记，而非 `IsConst` |
+| `Instraction.Child.cs` 的 `RETURNF_Instruction` 对 `((ExpressionArgument)…).Term` | `SetJumpTo` 与 `DoInstruction` 两处读取点都紧接 `if (term != null)`，`!` 纯属冗余（issues/14 复核表第 1 项移交） |
 
 `ConstantData` 的 `GetCharacterTemplate*` 无可更正项：该文件（写票时与当前）唯一 TODO 就在 `GetKeywordDictionary`（潜在缺陷，见 issues/19）。该组方法返回 `CharacterTemplate?` 且 6 个调用方全部判空（`VariableEvaluator.cs` 的 1537/1549/1561/1985/1999/2066），确不是问题。
 

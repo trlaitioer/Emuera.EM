@@ -31,7 +31,7 @@ Status: in-progress
 
 ### 只登记、不修改(B 类)
 
-issues/21 的断言审计（批次 1/2/3）另记入以下位置——断言内容不成立，但当前没有可达路径；破坏者已写明，本票只登记，供其进入可达范围时按上文修法收口：
+issues/21 的断言审计（批次 1/2/3）与 issues/14 复核表第 4 项另记入以下位置——断言内容不成立，但当前没有可达路径；破坏者已写明，本票只登记，供其进入可达范围时按上文修法收口：
 
 | 位置 | 现状 | 破坏者（当前不可达的原因） |
 | --- | --- | --- |
@@ -44,6 +44,8 @@ issues/21 的断言审计（批次 1/2/3）另记入以下位置——断言内�
 | `PrintStringBuffer.getDivideIndex` 的 `css.Font!` | `Font == null` 只在 `Error`，本方法不查 `Error`，但 `Error` 部件宽度恒为 0 | `Error` 部件参与宽度累加 |
 | `ErbLoader.nestCheck` 的 `func!`（`Stack<InstructionLine>.Pop()`） | 循环条件 `nestStack.Count != 0` 保证 `Pop()` 非空，故 `if (func != null)` 恒真、含该 `!` 的分支是死代码 | 附带缺陷：null 测试疑似写反（应为 `funcMatch == null`），属潜在缺陷 |
 | `EmueraConsole.GetDebugTraceLog` 的 `line.ParentLabelLine!` | 该行的理由注释「有 Position 就是从文件解析来的行」对内存行失效（默认 `ScriptPosition` 非 null），`Position == null` 的判空挡不住 `ParentLabelLine == null` | 调试窗口打开时 `Process.GetScaningLine()` 指向内存行（插件/调试命令解析过 `VARI` 一类会写 `scaningLine` 的行） |
+| `Creator.Method.cs` 的 `UnicodeMethod.GetStrValue` 对 `getCurrentLine.Position!` | 只判 `getCurrentLine != null`，未判 `Position`；由 issues/14 复核表第 4 项移交（B） | 出现 `Position` 为 null 的当前行（现无该形态的构造点） |
+| `UserDefinedMethodTerm.cs` 的 `UserDefinedRefMethodTerm.Restructure` 对 `srcArgs.Required(i)` | `srcArgs` 的元素可空（省略实参），此处按非空读取；由 issues/14 复核表第 4 项移交（该 `Restructure` 现无调用点，B） | 该 `Restructure` 重新接回调用链 |
 
 ### 相关发现(不在本票)
 
@@ -98,6 +100,7 @@ issues/21 的断言审计（批次 1/2/3）另记入以下位置——断言内�
 - 全量构建（`-c Debug-NAudio -p:Platform=x64 --no-incremental -p:Nullable=enable`）：0 错误、CS86xx 0 条；警告 85 条＝既有 83 条 + 本票两个新增文件各 1 条 CS8981。
 - `Emuera.Tests`：338 条用例，本票新增的 16 条稳定通过；**`CallformCacheTests.MultiInterpolationForm_UsesStrKey` 是既有脆弱用例**——实测全量 3 次中 2 次失败，且排除本票 3 个新测试类（322 条用例）后仍 2/3 失败，故与本票无关；机制是该用例用 `A_{TFLAG}_{RESULT}` 拼键，而 `{RESULT}` 会被其他用例改写（其注释自称只选 TFLAG/SAVESTR 等不被触碰的变量，漏了 `{RESULT}`）。该问题属测试工程，宜记入 `.scratch/test-infrastructure/`，本票不修。
 - 待人工验收：真实游戏目录的启动与 `-DEBUG` 调试窗口（`PRINTL` 仍工作、`RESTART` 被明确拒绝），以及 `VariableSize.CSV` 坏输入下的报错文本。
+- 验收发现（已修）：本票新增的 `LineLocationTextTests.MemoryLine()` 直接用 `LogicalLine` 承接 `LogicalLineParser.ParseLine` 的 `LogicalLine?`，测试工程因此报 CS8603，与完成标准「`Emuera.Tests` 的 CS86xx 为 0」不符；补 `!` 后归零。
 
 ## 曾考虑的替代方案
 

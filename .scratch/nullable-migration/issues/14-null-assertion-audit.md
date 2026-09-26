@@ -44,13 +44,13 @@ issues/13 消掉的是「可以用机制替代」的 `!`；剩下的断言里有
 
 | 复核对象 | 结论 | 去向 |
 | --- | --- | --- |
-| 1 `Argument` 可选字段 | 多数成立；`INPUT`/`ONEINPUT`/`BINPUT`/`ONEBINPUT` 的 `CanSkip` 分支可达 null（C）；`VARS` 的 `arg.Value` 可绑定 null（B）；`RETURNF` 的 `Term!` 是假的断言但紧随判空 | issues/15 |
+| 1 `Argument` 可选字段 | 多数成立；`INPUT`/`ONEINPUT`/`BINPUT`/`ONEBINPUT` 的 `CanSkip` 分支可达 null（C）；`VARS` 的 `arg.Value` 可绑定 null（B）；`RETURNF` 的 `Term!` 是假的断言但紧随判空（`SetJumpTo` 与 `DoInstruction` 两处读取点均紧接判空，属冗余断言） | issues/15（省略参数）、issues/22 §2（冗余断言） |
 | 2 `(x as T)!` | 53 处中 49 处有前置类型检查；`Lang.cs` 那处类型有保证但反射值可空；`XML_GET` 第三实参为 0、`CMATCH` 的 `ArgType.Any`、`IN_RANGE_ARRAY` 的 `Restructure` 三处无保护（C） | issues/18 |
 | 3 `Emuera.Tests` | 豁免（决策见上） | 无 |
-| 4 TODO 注释 | 列了 7 处：`StrConv` 两处（**判定已更正，见下**）；`UnicodeMethod` 的 `Position`（B）；`UserDefinedRefMethodTerm.Restructure` 是死代码（B）；`CharacterData.temp_SortKey`（C）；`CALLSHARP` 的 `ConvertTerm`（C） | issues/15、17、20 |
+| 4 TODO 注释 | 列了 7 处：`StrConv` 两处（**判定已更正，见下**）；`UnicodeMethod` 的 `Position`（B）；`UserDefinedRefMethodTerm.Restructure` 是死代码（B）；`CharacterData.temp_SortKey`（C）；`CALLSHARP` 的 `ConvertTerm`（C） | issues/15（`CALLSHARP` 的 `ConvertTerm`）；issues/22 §2（`StrConv` 两处与 `RETURNF` 的冗余 `!`）；`CharacterData.temp_SortKey`（C）issues/17 未承接、已在本分支就地修复（未另立票）；`UnicodeMethod.Position` 与 `UserDefinedRefMethodTerm.Restructure`（B）登记于 issues/19「只登记、不修改(B 类)」 |
 | 5 `JumpTo` 族 | 46 处断言：10 成立、11 仅靠 `IsError` 门禁成立、23 可达。GOTO 的 `JumpTo = null` 复位路径喂不到任何断言点，原票的担心不成立；真因是 `ErbLoader.nestCheck` 的恢复分支与未复位的 `pairLine` | issues/16 |
-| 6 未覆盖容器 | 85 处断言：`XmlNodeList` 15 处全部有界；`VariableToken?[]` 46 处中 1 处无保护；`DataColumnCollection[name]` 9 处中 1 处无保护；`LinkedList` 的判空写成了节点而非值；`string?[,]`（`temp_SortKey`）1 处无保护 | issues/17 |
-| 7 `null!` | 成员声明类约 187 处出局；局部声明 66、赋值 71、调用实参 65。实参中占多数的常量折叠 `GetIntValue(null!)`/`GetStrValue(null!)`（其中 18 处，另有 `ToStrFormTerm` 的 1 处 `strf.GetString(null!)`）均被 `is SingleTerm`/`IsConst` 支配（`VariableEvaluator.FindChara` 两重载例外，靠 `ArgType.CharacterData` 保证），安全但契约不实；`LogicalLineParser` 的 `#LOCALSIZE` 与 `UserDefinedVariable` 的 `#DIM` 两处真缺陷（C） | issues/15、20、22 |
+| 6 未覆盖容器 | 85 处断言：`XmlNodeList` 15 处全部有界；`VariableToken?[]` 46 处中 1 处无保护；`DataColumnCollection[name]` 9 处中 1 处无保护；`LinkedList` 的判空写成了节点而非值；`string?[,]`（`temp_SortKey`）1 处无保护 | issues/17（`VariableToken?[]` 的 ARRAYCOPY 字面量分支、`DataColumnCollection[name]` 的 `DT_COLUMN_OPTIONS`、`LinkedList` 的 `ReduceArguments`）；`temp_SortKey` 已就地修复 |
+| 7 `null!` | 成员声明类约 187 处出局；局部声明 66、赋值 71、调用实参 65。实参中占多数的常量折叠 `GetIntValue(null!)`/`GetStrValue(null!)`（其中 18 处，另有 `ToStrFormTerm` 的 1 处 `strf.GetString(null!)`）均被 `is SingleTerm`/`IsConst` 支配（`VariableEvaluator.FindChara` 两重载例外，靠 `ArgType.CharacterData` 保证），安全但契约不实；`LogicalLineParser` 的 `#LOCALSIZE` 与 `UserDefinedVariable` 的 `#DIM` 两处真缺陷（C） | issues/20（`#LOCALSIZE`/`#DIM` 两处）、issues/22（`null!` 调用实参的具名入口） |
 | 8 其他成员/局部 `!` | 未判定 | issues/21 |
 
 ### 已删除的判定歧义
@@ -75,6 +75,7 @@ issues/13 消掉的是「可以用机制替代」的 `!`；剩下的断言里有
 
 - 本票不产出机械变换以外的代码改动；结论写入正文，需要改代码的部分按结论另开票（issues/15~20）
 - 保留的断言由 issues/22 补理由注释，冗余断言同票清理
+- 复核表第 4、6 项的 `CharacterData.temp_SortKey`（C，issues/17 未承接）已就地修复：`SetSortKey` 的字符串分支统一为「未赋值按空串参与比较」的 `?? ""`（二维、一维与标量同形），回归网为 `Emuera.Tests/Runtime/Script/Statements/Variable/SortCharaTests.cs`（缝为 `VariableEvaluator.SortChara`）。旧行为只在未赋值键位于角色列表首位时首次比较即崩——`AscCharacterComparison` 只解引用接收者 `x`，键位在别处要后续比较才抛 `NullReferenceException`（`List.Sort` 会包成 `InvalidOperationException`）
 - issues/21 承接第 8 项复核对象；其清单产出前，「剩余断言的每一处都有结论」无法核对
 
 ## 曾考虑的替代方案

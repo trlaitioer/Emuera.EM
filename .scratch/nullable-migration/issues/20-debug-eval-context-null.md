@@ -35,6 +35,12 @@ Status: in-progress
    - `Data/UserDefinedVariableTests`（新增）：直接从 `UserDefinedVariableData.Create` 钉住 ERB/ERH 共用的折叠点（`isPrivate:false` 分支）；不经 `ErhLoader.analyzeSharpDimLines`，该入口「NRE 逃逸而非被吞」的后果差异不在覆盖范围。
    - 已知缺口：`exm.Process` 那一支（调试标识符）在本票内无测试覆盖；本票只保证两处站点不再把 null 当求值上下文传下去。
 
+### 实施结果（2026-09-26）
+
+- `LogicalLineParser.cs` 的 `#LOCALSIZE`/`#LOCALSSIZE` 分支与 `Data/UserDefinedVariable.cs` 的 `UserDefinedVariableData.Create` 的 `#DIM` 元素数两处均改用 `GlobalStatic.EMediator`；理由注释写在 `Create` 一处（其两个调用方覆盖 ERH/ERB，且同函数的初值折叠早已同口径），`ParseSharpLine` 处留指向该处的注释。
+- 新增 `Emuera.Tests`：`LogicalLineParserTests` 2 例（`#LOCALSIZE MAX(EXISTCSV(4), 1)`、`#DIM ARR, MAX(EXISTCSV(4), 1)`）与 `Data/UserDefinedVariableTests` 1 例。
+- 「方案」第 3、4 条的已知残留与缺口保持不变：`exm.Process` 那一支（调试标识符）无测试覆盖。
+
 ## 曾考虑的替代方案
 
 1. 对需要上下文的表达式拒绝折叠，保留 `VariableTerm` 形态留待运行期求值：要在解析期判定「该表达式的取值是否触碰 `exm`」，就得让这一属性在整棵表达式树上完整传播，而 `FunctionMethod` 一侧约 190 个实现里已存在读 `exm.VEvaluator` 的可折叠者（`EXISTCSV`/`GETNUM`/`GETNUMB`）——只标注 token（`__LINE__` 一族）会漏掉它们，缺陷照旧；标注全部函数则要求逐个判定「是否读上下文」，代价与收益不匹配。且这些函数的值解析期可定，拒绝折叠会把本可用的写法（如 `#DIM ARR, EXISTCSV(1)`）一并挡掉。
