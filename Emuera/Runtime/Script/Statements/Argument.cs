@@ -15,8 +15,9 @@ namespace MinorShift.Emuera.Runtime.Script.Statements;
 
 internal sealed class SpInputsArgument : Argument
 {
-	// Both input argument builders set CanSkip only together with Def and Mouse, so a non-null CanSkip
-	// implies the other two are non-null.
+	// A non-null CanSkip implies non-null Def and Mouse - the reasoning lives with the builders
+	// (Runtime/Script/Statements/ArgumentBuilder.cs, SP_INPUT_ArgumentBuilder.CreateArgument and
+	// SP_INPUTS_ArgumentBuilder.CreateArgument).
 	public SpInputsArgument(AExpression? def, AExpression? mouse, AExpression? canskip)
 	{
 		Def = def;
