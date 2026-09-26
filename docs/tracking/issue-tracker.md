@@ -7,6 +7,7 @@
 - 每个功能一个目录：`.scratch/<feature-slug>/`
 - 规格文件为 `.scratch/<feature-slug>/spec.md`
 - 实现议题每个一张文件：`.scratch/<feature-slug>/issues/<NN>-<slug>.md`，从 `01` 开始编号——绝不要合并成单一的 tickets 文件
+- 附属产物（清单、索引、实测数据等篇幅大的支撑材料）：`.scratch/<feature-slug>/<name>.md`，与 `spec.md` 同级、不编号；它不是票据，故不写 `Status:`/`Date:`、不套下方模板，首段说明由哪张票产出、用途为何，并由产出它的票链接过去（例：`.scratch/nullable-migration/bang-sites.md` 由 issues/21 产出）
 - 状态记录在文件头部的 `Status:` 行，只写单个标签；标签全集与状态流转见 `triage-labels.md`
 - spec 文件头部另有一行 `Date: <提出日期>`
 - 正文使用下方模板；`## 曾考虑的替代方案` 无内容则省略

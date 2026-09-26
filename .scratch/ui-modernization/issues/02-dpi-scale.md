@@ -7,15 +7,17 @@ Status: implemented
 两个现象合并处理:
 
 1. **高分屏物理尺寸过小**。manifest 与 csproj 均声明 PerMonitorV2,进程不做系统位图拉伸,配置像素 = 物理像素——4K/高缩放屏上 `WindowX`(默认 760)与 `FontSize`(`GraphicsUnit.Pixel`,默认 18)的物理尺寸约为 96DPI 屏的一半。
-2. **窗口不能横向缩放,字号不跟随**。宽度被钉死,只能拖高;拖高只增加可见行数,字号不变。即使解除宽度锁定,已打印文本也不会重新换行(见「问题/背景」),拉宽后右侧只是多出空白。
+2. **窗口不能横向缩放,字号不跟随**。宽度被钉死,只能拖高;拖高只增加可见行数,字号不变。即使解除宽度锁定,已打印文本也不会重新换行(见「方案 · 问题/背景」),拉宽后右侧只是多出空白。
 
 本票不做流式布局改造(见 issues/01 评估结论),改为引入**运行时窗口缩放**:画布宽度决定缩放比,字号、行高、窗口尺寸一起按该比例缩放,保持每行字符数不变;高度只决定可见行数。高 DPI 过小的问题由用户拖放一次解决,不引入 DPI 缩放因子。
 
-完成标准见「验收标准」。
+完成标准见「方案 · 验收标准」。
 
-## 问题/背景
+## 方案
 
-### 宽度为何拖不动
+### 问题/背景
+
+#### 宽度为何拖不动
 
 `MainWindow.initControlSizeAndLocation` 末尾:
 
@@ -28,7 +30,7 @@ MaximumSize = new Size(Width, maximamY);
 
 全仓库无 `OnResize`/`SizeChanged`/`Move`/`LocationChanged` 处理器;`initControlSizeAndLocation` 的注释记录了设计意图:*「1819 リサイズ時の処理を全廃しAnchor&Dock処理にマルナゲ」*。
 
-### 为何解除锁定也不换行
+#### 为何解除锁定也不换行
 
 换行宽度来自 `Config.DrawableWidth`,由 `Config.SetConfig` 在启动时算一次、全仓库仅此一处赋值:
 
@@ -47,13 +49,13 @@ DrawableWidth = WindowX - DrawingParam_ShapePositionShift;
 
 已打印的文本连同每个节点的 `Width`/`PointX`、每行的 `aligned` 标记、按钮的 `bitmapCache` 一起存入 `displayLineList`,没有失效机制。
 
-### 字号与每行字符数
+#### 字号与每行字符数
 
 不存在「每行多少字符」这个量,列数是实测累积出的结果:每个 `ConsoleStyledString` 首次排版时调 `StringMeasure.GetDisplayLength(text, font)` 实测像素宽并缓存在节点的 `Width` 上,`PrintStringBuffer` 逐个累加 `PointX` 直到超过 `DrawableWidth`,再由 `getDivideIndex` 二分/线性搜索切分位置。半角与全角宽度不同,故每行半角字符数非常数。
 
 唯一的「字符数 ↔ 像素」换算是 `HtmlManager.HtmlSubString` 的 `length * Config.FontSize / 2`(把 `FontSize/2` 当半角宽)与 `Creator.Method.HtmlStringLenMethod` 的反向换算,服务于 ERB 的 `HTML_STRINGLEN`/`HTML_SUBSTRING`/`HTML_STRINGLINES`,与排版换行无关。二者互为逆运算且都随 `FontSize` 线性变化,故 `FontSize` 等比缩放不改变 ERB 语义。
 
-### 字体层
+#### 字体层
 
 `FontFactory.GetFont` 构造 `new Font(name, Config.FontSize, style, GraphicsUnit.Pixel)` 并按 `(fontName, FontSize, style)` 静态缓存,`Config.DefaultFont` 是该缓存的属性封装。`ClearFont()` 全仓库零调用者。下列消费点不随 `Config.FontSize` 变化而自动跟随:
 
@@ -62,11 +64,11 @@ DrawableWidth = WindowX - DrawingParam_ShapePositionShift;
 - `EmueraConsole` 的 `printCWidth*`(惰性计算后不再失效)与 `tooltip_fontsize` 字段初始化;
 - `ConsoleStyledString` 构造时捕获的 `Font` 引用(`DivideAt` 分裂时把旧 `Font` 复制给新节点)。
 
-### 高度方向为何已经是动态的
+#### 高度方向为何已经是动态的
 
 `EmueraConsole.OnPaint` 每次重绘都从 `window.MainPicBox.Height` 重新计算可见行数与起点(`pointY = window.MainPicBox.Height - Config.LineHeight`),`GetLinePointY`、`MoveMouse` 的命中换算同理。这就是「只能拖高、拖高立刻生效」的原因。
 
-### 相关配置现状
+#### 相关配置现状
 
 `ConfigData.setDefault` 默认值:`WindowX` 760、`WindowY` 480、`FontName` `ＭＳ ゴシック`、`FontSize` 18、`LineHeight` 19、`SizableWindow` true、`TextDrawingMode` `TEXTRENDERER`。
 
@@ -75,8 +77,6 @@ DrawableWidth = WindowX - DrawingParam_ShapePositionShift;
 用户配置为 `<ExeDir>emuera.config`(UTF-8 BOM),`ConfigData.saveConfig` 按 `setDefault` 顺序**整文件重写**、**静默丢弃未知键**、无表头与版本号;缺失键取默认值。`fixed.config` 的 `Fixed` 使 `ConfigItem<T>.Value` 的 setter 静默 no-op。仓库内不含 `csv/`,`_default.config`/`fixed.config` 均不存在。
 
 窗口位置与尺寸目前**从不回写**:`MainWindow_FormClosing` 只保存按键宏并释放控制台;`WindowPosX/Y` 仅由配置对话框编辑、经 `SetWindowPos` 开关在启动时生效。
-
-## 方案
 
 ### 缩放模型
 
@@ -183,6 +183,31 @@ s            = 当前有效画布宽 / W₀
 
 `GETCONFIG`/`GETCONFIGS` 读到的仍是配置基准值(不随拖放变化);`CLIENTWIDTH`/`CLIENTHEIGHT` 继续反映实时画布尺寸。不存在 `SETCONFIG`。`HTML_STRINGLEN`/`HTML_SUBSTRING` 的 `FontSize/2` 单位换算在等比缩放下自洽。
 
+### 代码落点
+
+- `Emuera/Runtime/Config/Config.cs`:`recomputeGeometry`(私有)、`ApplyWindowGeometry`、`UpdateClipboardSetting`;
+- `Emuera/UI/Framework/Forms/MainWindow.cs` / `MainWindow.Designer.cs`:起动基准尺寸与 `layoutControls`、`MainWindow_ResizeBegin/ResizeEnd/Resize`、`UpdateZoomPreview`、`CommitZoom`、`SetMaximizedBounds`、`MinWindowWidth`、`SetInputFont`、`SaveWindowGeometry`、`ウィンドウズームをリセットToolStripMenuItem_Click`;删除 `_isWidthLocked` 与宽度钉死、`SC_MAXIMIZE` 分支改调 `SetMaximizedBounds`;
+- `Emuera/UI/Game/EmueraConsole.cs`:`layoutVersion`/`InvalidateLayout`/`ensureLineLayout`、`resizePreviewScale`/`UpdateResizePreview`/`ClearResizePreview`/`LayoutCanvasHeight`、`OnPaint` 的变换与基准尺寸、`MoveMouse` 的坐标还原;
+- `Emuera/UI/Game/ConsoleDisplayLine.cs`:`LineFragment`、`LayoutVersion`、`ReLayout`、`PrependButtons`;
+- `Emuera/UI/Game/ConsoleButtonString.cs`、`AConsoleDisplayNode.cs`、`ConsoleStyledString.cs`、`ConsoleImagePart.cs`、`ConsoleShapePart.cs`:节点级 `ResetLayout` 与按钮级 `ResetLayout`(含 `bitmapCache` 释放与 `PointXisLocked` 重算);`ConsoleImagePart`/`ConsoleShapePart` 另抽出 `computeGeometry`,把标签原始值重新解析为像素;`DrawTo` 增加预览标志;
+- `Emuera/UI/Game/StringMeasure.cs`:`RefreshLayout`;
+- `Emuera/UI/Game/EmueraConsole.Print.cs`:`addDisplayLine` 记录 `LayoutVersion` 并改调 `PrependButtons`、`PrintHTMLIsland` 记录版本、`ConsoleEscapedParts.Add` 改传像素值;
+- `Emuera/Runtime/Utils/EvilMask/ConsoleDivPart.cs`:`computeGeometry`/`ResetLayout`;`ConsoleEscapedParts.cs`:`Add` 存像素、`MarkChanged`、检索时折算行号;
+- `Emuera/Runtime/Utils/EvilMask/Lang.cs` 与 `Emuera/Properties/lang/emuera-{eng,zhs}.xml`:新增 `UI.MainWindow.Tools.ResetZoom`;
+- `Emuera/UI/WindowZoom.cs`:放缩几何的纯函数(`Compute` 由启动尺寸算绝对值,`PreviewScale` 以已确定版面为基准,`MinCanvasWidth` 保证字号下限又不反过来撑大窗口,`MaximizedBounds` 按工作区居中的最大化区域),由 `MainWindow` 与 `EmueraConsole` 共用。
+- 测试:`Emuera.Tests/UI/Game/ConsoleDisplayLineTests.cs`、`Emuera.Tests/UI/WindowZoomTests.cs`、`Emuera.Tests/UI/Game/ConsoleShapePartTests.cs`(共 15 例,覆盖重排不变量、缩放几何与 `<shape>` 尺寸折算)。
+
+### 验收标准
+
+1. 默认配置下与改动前渲染、布局逐像素一致;
+2. 拖宽 ⇒ 字号、行高、画布、滚动条、输入框按 `s` 同步放大,断行位置不变,列数变化在 ±1 字符内;
+3. 拖高 ⇒ 只增加可见行数,字号与列数不变;
+4. 窗口四边均可拖拽;`MinimumSize`/`MaximumSize` 的宽度钉死与 `MaximizedBounds` 宽度钳制已移除;宽度锁定菜单项与 `_isWidthLocked` 已删除;
+5. 最大化按等比放大至工作区或 `maximamY` 约束,保持宽高比;
+6. Tools 菜单的重置项可将 `s` 复位到 1;
+7. 退出后重启,窗口尺寸与字号保持;
+8. 构建通过,点击冒烟:缩放后按钮命中区域与实际绘制位置一致。
+
 ## 曾考虑的替代方案
 
 1. **DPI 作为独立缩放因子**(原 02 方案):`scale = DeviceDpi/96` 乘进 `FontSize`/`LineHeight`/`WindowX`/`WindowY`,并做成「跟随系统/100%/125%」配置项。放弃原因:字号在运行时已由画布宽度派生,再乘一次 DPI 属重复计算;且用户拖放一次即可解决高 DPI 过小问题,不值得为此引入独立机制与配置项。**该目标未放弃,由本文的运行时缩放承接。**
@@ -199,17 +224,6 @@ s            = 当前有效画布宽 / W₀
 12. **每次尺寸变化都真实重排(原方案回退路径)**:放弃,理由同 9。
 13. **惰性重排只覆盖可见行**,历史行滚动到时按需重排:采纳。副作用是缩放后立即滚动到很久以前的行时,该行会在首次绘制时现测一次(单行成本可忽略)。
 
-## 验收标准
-
-1. 默认配置下与改动前渲染、布局逐像素一致;
-2. 拖宽 ⇒ 字号、行高、画布、滚动条、输入框按 `s` 同步放大,断行位置不变,列数变化在 ±1 字符内;
-3. 拖高 ⇒ 只增加可见行数,字号与列数不变;
-4. 窗口四边均可拖拽;`MinimumSize`/`MaximumSize` 的宽度钉死与 `MaximizedBounds` 宽度钳制已移除;宽度锁定菜单项与 `_isWidthLocked` 已删除;
-5. 最大化按等比放大至工作区或 `maximamY` 约束,保持宽高比;
-6. Tools 菜单的重置项可将 `s` 复位到 1;
-7. 退出后重启,窗口尺寸与字号保持;
-8. 构建通过,点击冒烟:缩放后按钮命中区域与实际绘制位置一致。
-
 ## 影响
 
 - 改动范围限于 `Emuera/UI/`、`Emuera/Runtime/Config/Config.cs` 与两处显示节点(`Emuera/Runtime/Utils/EvilMask/ConsoleDivPart.cs`、`ConsoleEscapedParts.cs`),不触及解释器与脚本运行时。
@@ -222,26 +236,3 @@ s            = 当前有效画布宽 / W₀
 - **已知限制**:`GETTOOLTIPFONT`/`SETTOOLTIPFONT` 设定的提示框字号(默认取启动时的 `Config.FontSize`)不随缩放重算;缩放后提示文字会比正文小。
 - **已知限制**:缩放会改变 `Config.WindowX`,而 `ClipBoardDialog` 依 `Config.WindowX` 决定自身宽度,故日志复制窗口会随缩放变宽。
 - 拖动过程中画布由 `Graphics` 变换缩放,文字用 GDI+ 绘制;松手后按新字号惰性重排,文字恢复 GDI 渲染。
-
-## 实现记录
-
-代码落点(按关注点):
-
-- `Emuera/Runtime/Config/Config.cs`:`recomputeGeometry`(私有)、`ApplyWindowGeometry`、`UpdateClipboardSetting`;
-- `Emuera/UI/Framework/Forms/MainWindow.cs` / `MainWindow.Designer.cs`:起动基准尺寸与 `layoutControls`、`MainWindow_ResizeBegin/ResizeEnd/Resize`、`UpdateZoomPreview`、`CommitZoom`、`SetMaximizedBounds`、`MinWindowWidth`、`SetInputFont`、`SaveWindowGeometry`、`ウィンドウズームをリセットToolStripMenuItem_Click`;删除 `_isWidthLocked` 与宽度钉死、`SC_MAXIMIZE` 分支改调 `SetMaximizedBounds`;
-- `Emuera/UI/Game/EmueraConsole.cs`:`layoutVersion`/`InvalidateLayout`/`ensureLineLayout`、`resizePreviewScale`/`UpdateResizePreview`/`ClearResizePreview`/`LayoutCanvasHeight`、`OnPaint` 的变换与基准尺寸、`MoveMouse` 的坐标还原;
-- `Emuera/UI/Game/ConsoleDisplayLine.cs`:`LineFragment`、`LayoutVersion`、`ReLayout`、`PrependButtons`;
-- `Emuera/UI/Game/ConsoleButtonString.cs`、`AConsoleDisplayNode.cs`、`ConsoleStyledString.cs`、`ConsoleImagePart.cs`、`ConsoleShapePart.cs`:节点级 `ResetLayout` 与按钮级 `ResetLayout`(含 `bitmapCache` 释放与 `PointXisLocked` 重算);`ConsoleImagePart`/`ConsoleShapePart` 另抽出 `computeGeometry`,把标签原始值重新解析为像素;`DrawTo` 增加预览标志;
-- `Emuera/UI/Game/StringMeasure.cs`:`RefreshLayout`;
-- `Emuera/UI/Game/EmueraConsole.Print.cs`:`addDisplayLine` 记录 `LayoutVersion` 并改调 `PrependButtons`、`PrintHTMLIsland` 记录版本、`ConsoleEscapedParts.Add` 改传像素值;
-- `Emuera/Runtime/Utils/EvilMask/ConsoleDivPart.cs`:`computeGeometry`/`ResetLayout`;`ConsoleEscapedParts.cs`:`Add` 存像素、`MarkChanged`、检索时折算行号;
-- `Emuera/Runtime/Utils/EvilMask/Lang.cs` 与 `Emuera/Properties/lang/emuera-{eng,zhs}.xml`:新增 `UI.MainWindow.Tools.ResetZoom`;
-- `Emuera/UI/WindowZoom.cs`:放缩几何的纯函数(`Compute` 由启动尺寸算绝对值,`PreviewScale` 以已确定版面为基准,`MinCanvasWidth` 保证字号下限又不反过来撑大窗口,`MaximizedBounds` 按工作区居中的最大化区域),由 `MainWindow` 与 `EmueraConsole` 共用。
-
-验证:
-
-- `dotnet build Emuera/Emuera.csproj -c Debug-NAudio -p:Platform=x64` 通过(0 错误,警告数与改动前一致);
-- `dotnet test Emuera.Tests/Emuera.Tests.csproj -c Debug-NAudio` 通过(101 例),含新增三处:
-  - `Emuera.Tests/UI/Game/ConsoleDisplayLineTests.cs`(4 例):同字号重排逐像素不变、缩放后位置等比、居中按新画布宽重算、`ApplyWindowGeometry` 的派生量与下限钳制;
-  - `Emuera.Tests/UI/WindowZoomTests.cs`(6 例):启动尺寸下几何不变、字号与滚动条同比、字号下限、同一拖放不依赖前序状态、预览倍率以已确定版面为基准、最小画布宽的双向约束;
-  - `Emuera.Tests/UI/Game/ConsoleShapePartTests.cs`(5 例):`<shape>` 的无单位/百分比尺寸随字号重算、`px` 保持绝对、单参数与四参数矩形。

@@ -38,7 +38,7 @@ issues/13 消掉的是「可以用机制替代」的 `!`；剩下的断言里有
 - `(x as T)!` **暂时搁置不改**，保留 `as`+`!` 形态并逐点补理由注释（issues/22）。改 `(T)x` 或 `is T t` 都会改动运行行为（异常类型或新增分支），与迁移期零行为变更的原则冲突，需另立显式标注行为变更的票。
 - 判定为可达缺陷的位置不聚合进本票，按根因拆票（issues/15~20）。
 
-## 复核结论
+### 复核结论
 
 四类判定：**A** 不变量成立（保留 + 理由注释）／**B** 不变量不成立但当前不可达（记录潜在缺陷）／**C** 可达缺陷（另立修复票）。
 
@@ -53,14 +53,14 @@ issues/13 消掉的是「可以用机制替代」的 `!`；剩下的断言里有
 | 7 `null!` | 成员声明类约 187 处出局；局部声明 66、赋值 71、调用实参 65。实参中占多数的常量折叠 `GetIntValue(null!)`/`GetStrValue(null!)`（其中 18 处，另有 `ToStrFormTerm` 的 1 处 `strf.GetString(null!)`）均被 `is SingleTerm`/`IsConst` 支配（`VariableEvaluator.FindChara` 两重载例外，靠 `ArgType.CharacterData` 保证），安全但契约不实；`LogicalLineParser` 的 `#LOCALSIZE` 与 `UserDefinedVariable` 的 `#DIM` 两处真缺陷（C） | issues/20（`#LOCALSIZE`/`#DIM` 两处）、issues/22（`null!` 调用实参的具名入口） |
 | 8 其他成员/局部 `!` | 未判定 | issues/21 |
 
-### 已删除的判定歧义
+#### 已删除的判定歧义
 
 - `GetCharacterTemplate*` 不是问题：其 6 个调用方全部判空。TODO 指向的位置实为 `ConstantData.GetKeywordDictionary`，该函数在 `index >= 0` 时把 null 转成 `CodeEE`，只在插件传空 key 时外泄 null（B，随 issues/19 记录潜在缺陷）。
 - `Strings.StrConv` **前面这条判定已更正**：`Microsoft.VisualBasic.Core` 的该成员是有可空注解的（`string? StrConv(string? str, VbStrConv, int LocaleID = 0)`），调用点的 `!` 抑制的是 CS8603，删掉会报错；issues/08 迁移该文件时已记录「返回 `string?`」并就地补了 TODO。可删的只有「无 null 返回路径」这一半（不支持的转换抛 `ArgumentException`），故两处 `!` 保留、由 issues/22 复核 TODO，不构成可清理的噪音。
 - `INPUTS`/`ONEINPUTS`/`BINPUTS`/`ONEBINPUTS` 不在缺陷范围内：`SP_INPUTS_ArgumentBuilder` 在把第二实参用作 `CanSkip` 之前已要求首实参非空且为整数。
 - `TINPUT`/`TINPUTS` 不在缺陷范围内：`checkArgumentType` 配合 `minArg = 2` 使省略实参在解析期即报错。
 
-## 缺陷票
+### 缺陷票
 
 | 票 | 范围 |
 | --- | --- |
@@ -71,15 +71,15 @@ issues/13 消掉的是「可以用机制替代」的 `!`；剩下的断言里有
 | issues/19 | 插件与错误报告路径的空引用 |
 | issues/20 | `Restructure(null!)` 在调试模式下解引用求值上下文 |
 
+## 曾考虑的替代方案
+
+1. 把 400 处「其他成员/局部 `!`」并入现有家族票：边界模糊且量级不减，判定标准也不好统一，故单列 issues/21
+2. 缺陷票聚合为一张：15 条缺陷分布在不同根因（省略参数契约、解析期配对不变量、断言守卫缺失、无保护转换、插件路径、求值上下文），一张票无法给出统一的修复判据
+3. `Emuera.Tests` 一并逐点判定：测试工程的断言不进入产品契约，判定收益低于成本
+
 ## 影响
 
 - 本票不产出机械变换以外的代码改动；结论写入正文，需要改代码的部分按结论另开票（issues/15~20）
 - 保留的断言由 issues/22 补理由注释，冗余断言同票清理
 - 复核表第 4、6 项的 `CharacterData.temp_SortKey`（C，issues/17 未承接）已就地修复：`SetSortKey` 的字符串分支统一为「未赋值按空串参与比较」的 `?? ""`（二维、一维与标量同形），回归网为 `Emuera.Tests/Runtime/Script/Statements/Variable/SortCharaTests.cs`（缝为 `VariableEvaluator.SortChara`）。旧行为只在未赋值键位于角色列表首位时首次比较即崩——`AscCharacterComparison` 只解引用接收者 `x`，键位在别处要后续比较才抛 `NullReferenceException`（`List.Sort` 会包成 `InvalidOperationException`）
 - issues/21 承接第 8 项复核对象；其清单产出前，「剩余断言的每一处都有结论」无法核对
-
-## 曾考虑的替代方案
-
-1. 把 400 处「其他成员/局部 `!`」并入现有家族票：边界模糊且量级不减，判定标准也不好统一，故单列 issues/21
-2. 缺陷票聚合为一张：15 条缺陷分布在不同根因（省略参数契约、解析期配对不变量、断言守卫缺失、无保护转换、插件路径、求值上下文），一张票无法给出统一的修复判据
-3. `Emuera.Tests` 一并逐点判定：测试工程的断言不进入产品契约，判定收益低于成本

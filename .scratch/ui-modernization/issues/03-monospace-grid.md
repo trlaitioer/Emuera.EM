@@ -23,11 +23,13 @@ RenderFontSizePx = argmin_{1 ≤ n ≤ 2 × max(Config.FontSize, RefCell)}
 3. 记入实测数据与判据;
 4. 记入三处容易遗漏的改动点(启动顺序、输入框字号、度量缓存)。
 
-完成标准见「验收标准」。
+完成标准见「方案 · 验收标准」。
 
-## 问题/背景
+## 方案
 
-### 单元格宽由字体决定,而 em 基准由 `Config.FontSize` 决定
+### 问题/背景
+
+#### 单元格宽由字体决定,而 em 基准由 `Config.FontSize` 决定
 
 版面几何统一写死读 `Config.FontSize`(形如 `num * Config.FontSize / 100`),共 14 个换算点:
 
@@ -42,13 +44,13 @@ RenderFontSizePx = argmin_{1 ≤ n ≤ 2 × max(Config.FontSize, RefCell)}
 
 于是「脚本写死的 em 位置」与「实际单元格」脱节:脚本 `rect='5500, 94, 4312, 2537'` 之类的坐标假定 1 个全角格 = `Config.FontSize` px,而比默认字体宽的字体会让同一个 em 面板装不下同样多的字,断行位置整体前移。
 
-### 全角单元格与默认字体对齐即可消除字体间差异
+#### 全角单元格与默认字体对齐即可消除字体间差异
 
 左菜单(实测用例 `ERB\起床前メニュー関連処理\起床前メニュー.ERB`)每行最多三列,靠全角空格填充到固定列宽;右侧提示面板由 `rect='5500, 94, 4312, 2537'` + `padding='50,25,50'` + `border='31'` 决定,面板左边界 = `5500 em`,即 55 个全角格。
 
 只要目标字体的单元格宽与默认字体相同,左菜单与面板的像素落点就逐格一致,字体带来的额外重叠随之消失。
 
-### 实测数据
+#### 实测数据
 
 度量与排版同源:GDI `TextRenderer.MeasureText` + `TextFormatFlags.NoPadding`(`StringMeasure.GetDisplayLength` 的默认档路径),字体按 `new Font(族名, 字号, FontStyle.Regular, GraphicsUnit.Pixel)` 构造(与 `FontFactory` 同路径),探测字符 U+3042。
 
@@ -70,7 +72,7 @@ RenderFontSizePx = argmin_{1 ≤ n ≤ 2 × max(Config.FontSize, RefCell)}
 3. **全角拉丁 `Ａ` 与 CJK 全角 `あ` 不是同一个量**(实测 Maple `FontSize = 18`:18 px vs 22 px),探测字符必须取 CJK 全角;
 4. 前进宽只取离散值,且具体数值只是度量快照,**不可作为断言**,判据只能用不变量表达。
 
-### 行槽由 `LineHeight` 决定,与字体无关
+#### 行槽由 `LineHeight` 决定,与字体无关
 
 `LineHeight` 在绘制里只有一个作用:**行距**。它不是从字体度量推导出来的,也不随字体变化:
 
@@ -80,8 +82,6 @@ RenderFontSizePx = argmin_{1 ≤ n ≤ 2 × max(Config.FontSize, RefCell)}
 - 高度裁剪只有两处,且都不以"行"为单位:按钮的位图缓存路径(`ConsoleButtonString.DrawTo` 在 `ParentLine.bitmapCacheEnabled && strArray.Length > 1` 时把该按钮渲染到 `new Bitmap(Width + 1, Config.LineHeight)` 并带 `PreserveGraphicsClipping`,按 `LineHeight` 裁)与 `<div>`(`ConsoleDivPart.DrawTo` 用 `graph.SetClip(rect)` 把子节点裁到 div 的 border/padding 之内)。其余路径的墨迹**不会被裁**——行背景刷新(`ConsoleDisplayLine.Clear`)已无调用者,画布只在每帧开头整体清底一次,超出槽底的墨迹会与下一行叠墨;
 - 配置层只在**基准字号**上钳制:`Config.SetConfig` 的 `LineHeight < FontSize → LineHeight = FontSize` 与 `ApplyWindowGeometry` 的 `Math.Max(FontSize, lineHeight)` 都取 `FontSize`,派生字号不受该钳制;
 - 测量盒高(`StringMeasure.RefreshLayout` 的 `layoutSize`)也取 `LineHeight`,单行测量下它只约束换行,宽度结果不受影响。
-
-## 方案
 
 ### 反查规则
 
@@ -152,6 +152,16 @@ RenderFontSizePx = argmin_{1 ≤ n ≤ 2 × max(Config.FontSize, RefCell)}
 
 `Config.FontSize` 同时是「em 基准」(100 单位 = 1 em)与「目标全角格宽」,归一化后实际渲染字号可能与它不同。在字体大小标签(`Emuera/UI/Framework/Forms/ConfigDialog.cs` 的 `label8`,文案取自 `Lang.UI.ConfigDialog.Font.FontSize`)上标注单位 px 即可消除该值同时表达两种含义带来的误解。配置项本身仍是整数,存盘与 `GETCONFIG` 的语义不变。
 
+### 验收标准
+
+1. 默认字体(实测 `ＭＳ ゴシック`)在**任意** `FontSize` 下 `RenderFontSizePx == Config.FontSize`,单元格与现状逐像素一致(构造性质,不靠特判);
+2. 任意目标字体归一化后的全角单元格与默认字体单元格相差不超过 1 px(实测 `Yu Gothic` 取不到 12/24、`MS UI Gothic` 取不到 10,各 2 档差 1 px,其余字体 0 档);两侧等距时取更窄的一侧;
+3. **em 基准不变**:同一 `FontSize` 下,面板左边界、面板尺寸、行槽高度与字体无关;纯 CJK 全角文本的每行全角字符数与默认字体一致(实测 `FontSize` 18、样例面板 `4312 em`:两者同为 43 格);
+4. 反查与绘制用同一字体:反查按 `FontFactory` 的构造路径取字体(先 `GlobalStatic.Pfc` 再族名),`font/` 目录字体在反查时已装载;
+5. 单元测试只断言不变量(第 1、2 条),不断言具体字号——同一字体在同一字号上的前进宽只是度量快照;
+6. 构建通过(警告增量为 0),`dotnet test` 通过;
+7. 端到端冒烟(带游戏数据):换字体后左菜单与右侧面板的相对关系与默认字体一致;`pos` 定位按钮、图片/形状的落点与默认字体一致;窄字体放大方向的墨迹越界按「影响」中的已知限制处理。本仓库不含 `csv/`+`erb/`,该步在带游戏数据的目录执行。
+
 ## 曾考虑的替代方案
 
 1. **归一化渲染字号,并把 em 基准改为派生量**:放弃原因:em 基准随派生字号同比缩小,面板与单元格同比例变小,容字量回到原值(实测 `4312 em` 面板:按配置值 18 计为 776 px/43 格,按渲染字号计为 647 px/36 格),反查的收益被抵消;
@@ -163,16 +173,6 @@ RenderFontSizePx = argmin_{1 ≤ n ≤ 2 × max(Config.FontSize, RefCell)}
 7. **在解释器侧检测「面板左边界 < 已绘制内容右缘」并换行**:放弃原因:需要为 `<div>` 引入「按内容流后推」的语义,影响面超出本票,留作后续单独议题;
 8. **按列数反解 em 基准**(自动适配窗口):放弃原因:保住列语义,但字面尺寸由窗口与列数决定,配置值与渲染字号不再线性对应,面板几何也不再与默认字体一致;
 9. **逐字符下发 `TextRenderer.DrawText` 以强制落笔落在网格上**:放弃原因:落笔前进已是单元格宽的整数倍,逐字符下发不带来对齐收益,而单节点绘制成本按字符数上升。
-
-## 验收标准
-
-1. 默认字体(实测 `ＭＳ ゴシック`)在**任意** `FontSize` 下 `RenderFontSizePx == Config.FontSize`,单元格与现状逐像素一致(构造性质,不靠特判);
-2. 任意目标字体归一化后的全角单元格与默认字体单元格相差不超过 1 px(实测 `Yu Gothic` 取不到 12/24、`MS UI Gothic` 取不到 10,各 2 档差 1 px,其余字体 0 档);两侧等距时取更窄的一侧;
-3. **em 基准不变**:同一 `FontSize` 下,面板左边界、面板尺寸、行槽高度与字体无关;纯 CJK 全角文本的每行全角字符数与默认字体一致(实测 `FontSize` 18、样例面板 `4312 em`:两者同为 43 格);
-4. 反查与绘制用同一字体:反查按 `FontFactory` 的构造路径取字体(先 `GlobalStatic.Pfc` 再族名),`font/` 目录字体在反查时已装载;
-5. 单元测试只断言不变量(第 1、2 条),不断言具体字号——同一字体在同一字号上的前进宽只是度量快照;
-6. 构建通过(警告增量为 0),`dotnet test` 通过;
-7. 端到端冒烟(带游戏数据):换字体后左菜单与右侧面板的相对关系与默认字体一致;`pos` 定位按钮、图片/形状的落点与默认字体一致;窄字体放大方向的墨迹越界按「影响」中的已知限制处理。本仓库不含 `csv/`+`erb/`,该步在带游戏数据的目录执行。
 
 ## 影响
 
@@ -189,5 +189,5 @@ RenderFontSizePx = argmin_{1 ≤ n ≤ 2 × max(Config.FontSize, RefCell)}
   | MS UI Gothic | 15 | 22 | 18 |
 
 - 已知取舍:单元格宽与字面高是两个独立量,对齐单元格后**字形大小仍随字体变化**(实测 `FontSize = 18`:JetBrains Maple Mono 渲染 15、墨迹高 13 px;默认字体渲染 18、墨迹高 16 px),该观感差异无法通过本票消除;
-- 已知限制:窄字体需放大字号才能填满单元格,墨迹随之变高。行槽只由 `LineHeight` 决定,配置层的钳制也只针对基准字号,故派生字号大于 `LineHeight` 时墨迹会越出槽底并与下一行**叠墨**(按槽顶对齐绘制,且行背景刷新路径已无调用者,不会把越界部分裁掉或抹掉,见「问题/背景 · 行槽由 `LineHeight` 决定」);实测 `MS UI Gothic` 在 `FontSize` 18(`LineHeight` 19)下渲染 22、墨迹高 17 px,仍在槽内;`FontSize` 30(`LineHeight` 30)下渲染 37、墨迹高 33 px,越出 3 px。反方向(宽字体缩小字号)没有该风险:字形变小且仍按槽顶对齐,只是行间留白增加。该档位由 `LineHeight` 单独决定行槽高度,故提高 `LineHeight` 即可规避;若要让字形本身不越界,须改用「只允许缩小」(见「曾考虑的替代方案」第 5 条);
+- 已知限制:窄字体需放大字号才能填满单元格,墨迹随之变高。行槽只由 `LineHeight` 决定,配置层的钳制也只针对基准字号,故派生字号大于 `LineHeight` 时墨迹会越出槽底并与下一行**叠墨**(按槽顶对齐绘制,且行背景刷新路径已无调用者,不会把越界部分裁掉或抹掉,见「方案 · 问题/背景 · 行槽由 `LineHeight` 决定」);实测 `MS UI Gothic` 在 `FontSize` 18(`LineHeight` 19)下渲染 22、墨迹高 17 px,仍在槽内;`FontSize` 30(`LineHeight` 30)下渲染 37、墨迹高 33 px,越出 3 px。反方向(宽字体缩小字号)没有该风险:字形变小且仍按槽顶对齐,只是行间留白增加。该档位由 `LineHeight` 单独决定行槽高度,故提高 `LineHeight` 即可规避;若要让字形本身不越界,须改用「只允许缩小」(见「曾考虑的替代方案」第 5 条);
 - 已知限制:参照格宽与该字体的可达格宽不一致时最多差 1 px(实测 `Yu Gothic`、`MS UI Gothic`)。
