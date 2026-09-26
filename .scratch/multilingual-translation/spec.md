@@ -3,7 +3,7 @@
 Date: 2026-08-22
 Status: draft
 
-相关文档：`docs/architecture.md`、`docs/agents/domain.md`
+相关文档：`docs/architecture.md`
 
 ## 问题/背景
 

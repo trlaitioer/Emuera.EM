@@ -7,8 +7,21 @@
 - 根目录 `Emuera.sln` = `Emuera/`(解释器本体)+ `EmueraPluginExample/`(插件 API 示例)。注意 `Emuera/` 目录下还有一份旧的 `Emuera.sln`(仅含 Emuera 项目、`Any CPU`、无 NAudio 配置),构建请用根目录的 `Emuera.sln`
 - `Emuera/` — C# WinForms 主程序,`net10.0-windows`,x64/x86;`Emuera.Tests/` 为 xUnit 单元测试工程(不纳入根 `Emuera.sln`,运行方式见其 README);验证方式是测试 + 编译 + 用真实 era 游戏(含 `csv/`、`erb/` 目录)启动运行
 - `Readme/` — 各版本 readme(`EmueraEE_readme.txt`、`Emuera.EM_readme.txt`)与 changelog
-- `docs/agents/` — agent 操作约定(issue tracker / triage 标签 / 领域文档)
+- `docs/` — 长期参考:[`README.md`](README.md) 为索引(`architecture.md`、`csv-erb-syntax.md`);`docs/tracking/` 为议题跟踪约定(issue tracker / triage 标签)
 - CI:`.github/workflows/dotnet-build.yaml`(tag 触发发布,windows-latest)
+
+## 仓库与历史
+
+- Emuera 更新到 `1.824` 后停止更新([License](../Readme/License/Emuera.LICENSE.txt))；私家改造版接手，仅修正 bug，更新到 `v24`([License](../Readme/私家改造版Emuera_readme.txt))
+- EM 在私家改造版基础上修改，EE 在 EM 基础上修改，随后两者合并为 EM；迭代过程中项目从 `.Net Framework` 基本迁移到 `.Net`，版本至今仍取自 `Emuera/Emuera.csproj` 的 `InformationalVersion`(`1.824+v24+EMv18+EEv56`)，CI 发布的 tag 必须与它一致
+- 本仓库 fork 自 EM(`upstream` remote)：`master` 保持与 `upstream` 同步，个人改动只留在 `develop` 并推送到 `origin`，不推送到 `upstream`
+- 仓库若直接 clone 自 `origin`，会缺少 `upstream` remote，按需执行：
+
+```bash
+git remote add upstream https://gitlab.com/EvilMask/emuera.em.git
+git remote set-url upstream --push no-push
+git remote set-branches upstream master
+```
 
 ## 启动链
 
@@ -22,29 +35,32 @@
 
 - `Parser/LexicalAnalyzer.cs` — `Analyse()` 将 `CharStream` 切成 `WordCollection`(token 流)
 - `Parser/LogicalLineParser.cs` — 生成 `LogicalLine` 子类:`InstructionLine`(带 `FunctionIdentifier`)、`FunctionLabelLine`(@标签)、`GotoLabelLine`($标签)、`NullLine`、`InvalidLine`
-- `Loader/ErbLoader.cs` — 从 erb 目录加载全部 `*.ERB`(先加载 `#` 前缀目录,EE 扩展的加载顺序),随后做全量语法检查(`ParseScript`);`ErhLoader.cs` 读取 CSV 头声明
-- `Process.cs`(1 个主文件 + 4 个 partial,`GameProc` 命名空间)— 解释器引擎:
+- `Loader/ErbLoader.cs` — 从 erb 目录加载全部 `*.ERB`(名称中含 `#` 的目录先加载,EE 扩展的加载顺序),随后做全量语法检查(`ParseScript`);`ErhLoader.cs` 读取 CSV 头声明与 `#define` 宏
+- `Process.cs`(主文件 + 下列 partial,`GameProc` 命名空间)— 解释器引擎:
   - `Process.ScriptProc.cs` — `runScriptProc()` 主循环:按行类型分派(SIF 跳过、流控制、普通函数);`saveCurrentState`/`loadPrevState` 实现 BACK 类功能
   - `Process.State.cs` — `ProcessState`:行指针、历史/返回栈
   - `Process.CalledFunction.cs` — CALL / CALLF 等函数调用
   - `Process.SystemProc.cs` — 系统级处理(BEGIN/END、初始化流程)
-- `Statements/Instruction.cs` + `Instraction.Child.cs` — **所有命令的实现**:`AInstruction` 抽象基类,`Instraction.Child.cs` 内含 ~110 个 `*_Instruction` 指令类(PRINT、INPUT、WAIT、SAVECHARA、PLAYSOUND…)
+- `Statements/Instruction.cs` + `Instraction.Child.cs` — **所有命令的实现**:`AInstruction` 抽象基类,`Instraction.Child.cs` 内含全部 `*_Instruction` 指令类(PRINT、INPUT、WAIT、SAVECHARA、PLAYSOUND…)
 - `Statements/FunctionIdentifier.cs` — 命令注册表:静态构造函数调用 `addFunction(FunctionCode, ...)` 注册全部内置命令,flag 常量(PARTIAL、IS_PRINT、FLOW_CONTROL…)决定运行时分派行为
-- `Statements/Function/Creator.cs` + `Creator.Method.cs`(约 7600 行)— `FunctionMethodCreator` 静态字典注册**所有式中函数/内建函数**(数值/字符串操作、数学、CSV 查询等),每个函数是一个 `FunctionMethod` 子类
+- `Statements/Function/Creator.cs` + `Creator.Method.cs` — `FunctionMethodCreator` 静态字典注册**所有式中函数/内建函数**(数值/字符串操作、数学、CSV 查询等),每个函数是一个 `FunctionMethod` 子类
 - `Statements/Variable/` — 变量系统:`VariableEvaluator`(变量存储与求值)、`VariableParser`(解析 `A[1]:B[2]` 类变量引用)、`VariableCode`/`VariableTerm`
-- `Statements/Expression/` — 表达式:`ExpressionParser` 生成 `AExpression` 树,`Term` 为叶节点,`OperatorMethod.cs`(+`OperatorCode.cs`)实现运算符
+- `Statements/Expression/` — 表达式:`ExpressionParser` 生成 `AExpression` 树,`Term` 为叶节点,`OperatorMethod.cs`(+`OperatorCode.cs`)实现运算符;`ArgumentListExtensions.cs` 提供参数槽位的非空读取(省略实参以 null 承载)
 - `Statements/ArgumentParser.cs` — 参数解析;`CircularBuffer.cs` 实现 `GETCHARAMARK` 等循环缓冲
-- `Data/` — 运行时数据:`ConstantData`(定数)、`GameBase`(角色/CSV 数据)、`LabelDictionary`/`IdentifierDictionary`、`UserDefinedFunction`/`UserDefinedVariable`(用户定义函数与变量)、`StrForm`(FORM 字符串格式化)、`ParserMediator`(静态中介:警告列表、RenameDic)
-- 其他:`KeyMacro.cs`(按键宏);`InputRequest.cs` 位于 `Runtime/` 根
+- `Data/` — 运行时数据:`ConstantData`(定数)、`GameBase`(角色/CSV 数据)、`LabelDictionary`/`IdentifierDictionary`、`UserDefinedFunction`/`UserDefinedVariable`(用户定义函数与变量)、`DefineMacro`(`#define` 宏)、`StrForm`(FORM 字符串格式化)、`ParserMediator`(静态中介:警告列表、RenameDic)
+- `Runtime/Utils/PathUtils/` — 脚本路径的类型化边界:`PurePath`(纯词法路径,折叠 `.`/`..` 而不触碰文件系统)、`GamePath`(只能由工厂产出,实例保证位于游戏目录内)、`NamePattern`/`PathReject`;脚本传入的路径字符串必须经 `GamePath` 才能到达文件系统调用
+- 其他:`KeyMacro.cs`(按键宏);`InputRequest.cs` 位于 `Runtime/` 根;`AssemblyData.cs`(`Runtime/Utils/`,exe 路径与版本文本)
 
 ## UI 层(`UI/`)
 
 - `UI/Game/EmueraConsole.cs` — 核心显示类:屏幕缓冲、按钮生成、样式、滚动画布;`EmueraConsole.Print.cs` 为输出 partial
 - `UI/Game/HtmlManager.cs` — era 的 PRINT HTML 语法解析与渲染
+- `UI/Game/GraphicsTextRenderer.cs` — `TextDrawingMode.GRAPHICS` 的文本量宽与绘制(以 GDI advance 为排布基准,与 TEXTRENDERER 模式一致)
 - `UI/Game/Image/` — 资源图像系统:`AppContents`(resources/ 目录装载)、`AImage` 层级(WebP 支持在 `Runtime/Utils/WebPWrapper.cs`)
 - `UI/Game/Rikaichan.cs` — 辞典弹窗
 - `UI/Framework/Forms/` — 各窗体:`MainWindow`(宿主)、`ConfigDialog`、`DebugConfigDialog`、`DebugDialog`、`RikaiDialog`、`ClipBoardDialog`,以及 `ColorBox`、`EraPictureBox` 控件
-- 散置:`Dialog.cs`、`FontFactory.cs`;`UI/Game/` 附带 `HOTKEY.ERB.example.txt`
+- `UI/` 根:`Dialog.cs`、`FontFactory.cs`、`FontMetrics.cs`(按全宽字步进反查渲染字号,保住 em 基准)、`WindowZoom.cs`(运行时窗口缩放的几何计算)
+- `UI/Game/` 附带 `HOTKEY.ERB.example.txt`
 
 ## 配置与多语言
 
@@ -59,4 +75,3 @@
 
 - 声音后端互斥:默认配置用 `Runtime/Utils/Sound.WMP.cs`(WMP,需 VS 的 MSBuild 构建 COM 引用);`Debug-NAudio` / `Release-NAudio` 用 `Sound.NAudio.cs` + `NAudio_LoopStream.cs`(`dotnet build` 可用)。csproj 按配置排除源文件
 - 原生库:`Libs/Webp/{x86,x86_64}`(WebP 解码)
-- 规模:Emuera 项目约 136 个 `.cs` / 164 个文件;其中 `Runtime/Script/` 56 个(`Statements/` 34 个)、`Runtime/Utils/` 30 个、`UI/` 41 个

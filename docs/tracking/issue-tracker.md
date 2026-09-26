@@ -1,6 +1,6 @@
-# Issue tracker：本地 Markdown
+# Issue tracker：仓库内 Markdown
 
-本仓库的议题与规格（issues and specs）以 markdown 文件形式存放在 `.scratch/` 下。
+本仓库的议题与规格（issues and specs）以入库(git 跟踪)的 markdown 文件存放在 `.scratch/` 下。
 
 ## 约定
 
