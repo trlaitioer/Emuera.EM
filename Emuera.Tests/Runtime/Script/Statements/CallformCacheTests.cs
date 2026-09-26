@@ -12,13 +12,26 @@ namespace Emuera.Tests.Runtime.Script.Statements;
 /// <summary>
 /// CallformCache 测试:per-callsite 动态调用名解析缓存的键模式(long/str)与正/负结果语义。
 /// FuncnameTerm 走生产链 LexicalAnalyzer.AnalyseFormattedString → ExpressionParser.ToStrFormTerm → Restructure。
-/// 变量选用 TFLAG/SAVESTR 等其他测试不触碰的变量,避免并行执行下的共享状态竞争。
+/// 插值只用 TFLAG/SAVESTR:程序集虽已禁用并行,但 TestBootstrap 只初始化一次、系统变量跨用例存活,
+/// 读别的用例写过的全局量(如 RESULT 被 RESULT = MAXARRAY(...) 留下 9)会随发现顺序偶发失败。
 /// </summary>
-public class CallformCacheTests
+public class CallformCacheTests : IDisposable
 {
+	// 系统变量在用例间存活,本类写入后必须还原,否则污染同程序集的其他用例
+	private readonly long previousTflag;
+	private readonly string previousSavestr;
+
 	public CallformCacheTests()
 	{
 		TestBootstrap.Initialize();
+		previousTflag = GetTflag();
+		previousSavestr = GetSavestr();
+	}
+
+	public void Dispose()
+	{
+		SetTflag(previousTflag);
+		SetSavestr(previousSavestr);
 	}
 
 	private static ExpressionMediator Exm => GlobalStatic.EMediator;
@@ -29,6 +42,12 @@ public class CallformCacheTests
 		var sfw = LexicalAnalyzer.AnalyseFormattedString(new CharStream(form), FormStrEndWith.LeftParenthesis_Bracket_Comma_Semicolon, true);
 		return ExpressionParser.ToStrFormTerm(sfw).Restructure(Exm);
 	}
+
+	private static long GetTflag()
+		=> ((long[])GlobalStatic.VariableData.GetSystemVariableToken("TFLAG").GetArray())[0];
+
+	private static string GetSavestr()
+		=> ((string?[])GlobalStatic.VariableData.GetSystemVariableToken("SAVESTR").GetArray())[0] ?? "";
 
 	private static void SetTflag(long value)
 		=> GlobalStatic.VariableData.GetSystemVariableToken("TFLAG").SetValue(value, new long[] { 0 });
@@ -95,18 +114,25 @@ public class CallformCacheTests
 	[Fact]
 	public void MultiInterpolationForm_UsesStrKey()
 	{
+		// 整型 + 字符串两段插值不满足 SingleIntFormTerm 的折叠条件,故走 str 键
 		SetTflag(0);
-		var cache = new CallformCache(ParseFuncname("A_{TFLAG}_{RESULT}"));
+		SetSavestr("B");
+		var cache = new CallformCache(ParseFuncname("A_{TFLAG}_%SAVESTR%"));
 
 		// str 键模式:lookup 即拼出名字,按名字内容缓存
 		Assert.Null(cache.Lookup(Exm, out long longKey, out string? strKey));
 		Assert.Equal(0L, longKey);
-		Assert.Equal("A_0_0", strKey);
+		Assert.Equal("A_0_B", strKey);
 
 		var entry = new CallformEntry { LabelName = strKey! };
 		cache.Store(longKey, strKey, entry);
 		Assert.Same(entry, cache.Lookup(Exm, out _, out _));
 
+		// 两段插值各自参与键:任一段变化都换键
+		SetSavestr("C");
+		Assert.Null(cache.Lookup(Exm, out _, out _));
+
+		SetSavestr("B");
 		SetTflag(3);
 		Assert.Null(cache.Lookup(Exm, out _, out _));
 	}

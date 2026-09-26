@@ -26,3 +26,19 @@ Phase 2 起的用例(变量求值/StrForm/LogicalLineParser)依赖 `TestBootstra
 - `JSONConfig.Data = new JSONConfigData()`:`FunctionIdentifier` 静态构造读取;`Load()` 依赖 `Program.GameRoot`(由 `SetDirPaths` 设定,本夹具不设游戏目录)
 - `LangManager.setEncode(932)`:`GetStrlenLang` 非 ASCII 路径不设必 NRE
 - `GlobalStatic.Process.scaningLine` 置占位行:`GetScaningLine` 在其为 null 时解引用仅 `Initialize` 创建的 `state`
+
+## 共享全局状态(写过的系统变量必须还原)
+
+`TestBootstrap.Initialize()` 只在**首次调用**时生效(进程内单例),`GlobalStatic.VEvaluator`/`VariableData`
+随之在整个程序集的全部用例之间存活;`AssemblyInfo.cs` 的禁用并行只保证串行执行,既不保证发现顺序,
+也不在用例之间重置任何变量。两条硬性约定:
+
+- **写过的系统变量必须还原**:`RESULT`、`RESULTS`、`TFLAG`、`SAVESTR`、`VariableData.DataDataTables` 等
+  都指向同一份单例状态。常规做法是构造函数快照 + `IDisposable.Dispose` 还原,
+  详见 `DtColumnOptionsInstructionTests`、`UnguardedAsCastTests`、`CallformCacheTests`。
+- **只读共享变量同样危险**:用例直接读别的用例可能写过的变量,会让它"有时过、有时挂",
+  失败信息指向本用例而根因在别处。需要读系统变量的用例应先自己写入确定值,或改用本类自控的变量。
+
+实测教训:`CallformCacheTests.MultiInterpolationForm_UsesStrKey` 曾用 `{RESULT}` 拼调用名,
+`UnguardedAsCastTests` 的 `RESULT = MAXARRAY(...)` 退出时留下 9,两者执行顺序一变本用例就报
+`Expected "A_0_0" / Actual "A_0_9"`(全量跑约 1/4 概率复现)。排查顺序依赖时先怀疑跨用例残留的全局量。

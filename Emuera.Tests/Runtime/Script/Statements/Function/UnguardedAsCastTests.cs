@@ -25,15 +25,20 @@ public class UnguardedAsCastTests : IDisposable
 	/// <summary>XML_GET 走 RESULTS 书式时会改写全局 RESULTS,用例结束必须还原。</summary>
 	private readonly string?[] previousResults;
 
+	/// <summary>InRangeArray/MaxArray 用例按脚本语义写全局 RESULT,同样必须还原。</summary>
+	private readonly long previousResult;
+
 	public UnguardedAsCastTests()
 	{
 		TestBootstrap.Initialize();
 		previousResults = [.. GlobalStatic.VEvaluator.RESULTS_ARRAY];
+		previousResult = GlobalStatic.VEvaluator.RESULT;
 	}
 
 	public void Dispose()
 	{
 		previousResults.CopyTo(GlobalStatic.VEvaluator.RESULTS_ARRAY, 0);
+		GlobalStatic.VEvaluator.RESULT = previousResult;
 	}
 
 	private static FunctionMethod Method(string name) => FunctionMethodCreator.GetMethodList()[name];

@@ -7,8 +7,20 @@ namespace Emuera.Tests.Runtime.Script.Statements.Variable;
 /// <summary>
 /// LOADCHARA / LOADVAR 的 RESULT:名字被拒绝与文件不存在一样,都是失败,都要让脚本看到 0。
 /// </summary>
-public class VariableEvaluatorLoadTests
+public class VariableEvaluatorLoadTests : IDisposable
 {
+	private readonly long previousResult;
+
+	public VariableEvaluatorLoadTests()
+	{
+		TestBootstrap.Initialize();
+		previousResult = GlobalStatic.VEvaluator.RESULT;
+	}
+
+	/// <summary>用例把 RESULT 当"上一次残留值"写;TestBootstrap 是单例不重置变量,退出前必须还原。</summary>
+	public void Dispose()
+		=> GlobalStatic.VEvaluator.RESULT = previousResult;
+
 	[Fact]
 	public void LoadChara_RejectedName_ClearsResult()
 	{
