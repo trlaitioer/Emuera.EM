@@ -933,11 +933,8 @@ internal sealed class CharacterData : IDisposable
 					throw new CodeEE(trerror.OoRSortKey.Text);
 				}
 
-				// An unset entry stays null here, as before
-				// TODO: temp_SortKey is declared non-nullable, but this branch stores null into it while
-				// the 1D and scalar branches substitute "". CompareTo then dereferences the field, so the
-				// branches should be made consistent (or CompareTo guarded) instead of asserting here.
-				temp_SortKey = array[elem1, elem2]!;
+				// An unset entry sorts as the empty string, like the 1D and scalar branches below.
+				temp_SortKey = array[elem1, elem2] ?? "";
 			}
 			else if (sortkey.IsArray1D)
 			{
@@ -949,28 +946,12 @@ internal sealed class CharacterData : IDisposable
 					throw new CodeEE(trerror.OoRSortKey.Text);
 				}
 
-				string? key = array[(int)elem64];
-				if (key != null)
-				{
-					temp_SortKey = key;
-				}
-				else
-				{
-					temp_SortKey = "";
-				}
+				temp_SortKey = array[(int)elem64] ?? "";
 			}
 			else
 			{
 				//ユーザー定義キャラ変数は非配列がない
-				string? key = dataString[sortkey.CodeInt];
-				if (key != null)
-				{
-					temp_SortKey = key;
-				}
-				else
-				{
-					temp_SortKey = "";
-				}
+				temp_SortKey = dataString[sortkey.CodeInt] ?? "";
 			}
 		}
 		else
