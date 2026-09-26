@@ -30,7 +30,7 @@ public class LineLocationTextTests
 
 	/// <summary>插件/调试命令构造的内存行。</summary>
 	private static LogicalLine MemoryLine()
-		=> LogicalLineParser.ParseLine("PRINTL x", null);
+		=> LogicalLineParser.ParseLine("PRINTL x", null)!;
 
 	[Fact]
 	public void CurrentFunction_UsesFunctionDefinitionPosition()
