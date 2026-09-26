@@ -47,6 +47,8 @@ git remote set-branches upstream master
 - `Statements/Variable/` — 变量系统:`VariableEvaluator`(变量存储与求值)、`VariableParser`(解析 `A[1]:B[2]` 类变量引用)、`VariableCode`/`VariableTerm`
 - `Statements/Expression/` — 表达式:`ExpressionParser` 生成 `AExpression` 树,`Term` 为叶节点,`OperatorMethod.cs`(+`OperatorCode.cs`)实现运算符;`ArgumentListExtensions.cs` 提供参数槽位的非空读取(省略实参以 null 承载)
 - `Statements/ArgumentParser.cs` — 参数解析;`CircularBuffer.cs` 实现 `GETCHARAMARK` 等循环缓冲
+- `Statements/MemoryLineEntry.cs` — **单行执行入口的共用校验**:调试命令与 `PluginManager.ExecuteLine` 都只跑一行,该类型统一拒绝非指令行、流控制、输入等待、非 `METHOD_SAFE`、`PARTIAL`、实参解析失败以及非 `-Debug` 下的 Debug 系指令,并构建实参(此前两处各写一份,`ExecuteLine` 那份缺失)
+- `Statements/LineLocationText.cs` — 错误报告与调试输出的行位置文本(`file:line@label`、当前函数、调用栈一项、跳转回溯);内存行(调试命令/插件构造的行)没有父标签、`Position` 又是 `ScriptPosition` 的默认值,故按可用部分降级,无法构成时返回 null 由调用方跳过
 - `Data/` — 运行时数据:`ConstantData`(定数)、`GameBase`(角色/CSV 数据)、`LabelDictionary`/`IdentifierDictionary`、`UserDefinedFunction`/`UserDefinedVariable`(用户定义函数与变量)、`DefineMacro`(`#define` 宏)、`StrForm`(FORM 字符串格式化)、`ParserMediator`(静态中介:警告列表、RenameDic)
 - `Runtime/Utils/PathUtils/` — 脚本路径的类型化边界:`PurePath`(纯词法路径,折叠 `.`/`..` 而不触碰文件系统)、`GamePath`(只能由工厂产出,实例保证位于游戏目录内)、`NamePattern`/`PathReject`;脚本传入的路径字符串必须经 `GamePath` 才能到达文件系统调用
 - 其他:`KeyMacro.cs`(按键宏);`InputRequest.cs` 位于 `Runtime/` 根;`AssemblyData.cs`(`Runtime/Utils/`,exe 路径与版本文本)
@@ -70,6 +72,8 @@ git remote set-branches upstream master
 ## 插件系统
 
 `Runtime/Utils/PluginSystem/` — .dll 插件 API(`PluginManager`、`IPluginMethod`、`BasePluginManifest`),脚本侧通过 `CALLSHARP` 调用插件方法。`EmueraPluginExample/Plugin.cs` 是最小示例。
+
+`PluginManager.ExecuteLine` 是**单行执行入口**:只接受 `METHOD_SAFE`、非流控、非输入等待、非 `PARTIAL`、实参可解析的单行指令(Debug 系指令仅 `-Debug` 下可用),其余抛 `CodeEE`;规则与调试命令共用(`Runtime/Script/Statements/MemoryLineEntry.cs`)。`ExecuteLine` 的分派走 `Process.DoDebugNormalFunction`,故 `PRINTPLAIN`/`PRINTBUTTON` 这类由 `ArgumentBuilder` 注册、没有 `AInstruction` 的命令同样可用。
 
 ## 构建杂项
 
