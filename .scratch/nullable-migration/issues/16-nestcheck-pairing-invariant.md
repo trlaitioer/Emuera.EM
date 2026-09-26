@@ -147,5 +147,5 @@ BREAK
 
 - 涉及 46 处 `JumpTo` 族断言中的 23 处（分布在 `Instraction.Child.cs` 的 `PRINT_DATA_Instruction`、`REPEAT_Instruction`、`WHILE_Instruction`、`ELSEIF_Instruction`、`IF_Instruction`、`SELECTCASE_Instruction`、`CATCH_Instruction`、`BREAK_Instruction`、`CONTINUE_Instruction`、`REND_Instruction`、`WEND_Instruction`、`LOOP_Instruction`，以及 `Process.ScriptProc.cs` 的 `doNormalFunction`/`doFlowControlFunction`）。46 的构成：`JumpTo!` 28 处（`Instraction.Child.cs` 23、`Process.ScriptProc.cs` 5，后者正落在上述两个方法内）+ `JumpToEndCatch!` 1 + `ParentLabelLine!` 17；「23 处可达」的口径来自 issues/14 的复核(10 成立、11 仅靠 `IsError` 门禁、23 可达)，与 `Instraction.Child.cs` 的 `JumpTo!` 数相同属巧合
 - 修复属解析期行为变更：原本静默产生坏跳转目标的脚本会改为在解析期报错或按配对语义正确跳转。诊断文本与位置不变；能正常运行的脚本走到恢复分支时，新写入的 `JumpTo` 不会被读取（或读到 `ENDSELECT`，与原语义一致）
-- 残余缺口（「方案」第 2 节，本票不修）：未闭合块内部行经 `GOTO` 越入时仍为空跳转
+- 残余缺口（「方案」第 2 节，本票不修）：未闭合块内部行经 `GOTO` 越入时仍为空跳转；该形态若落在 `BREAK` 上，同一次执行会先撞上 `jumpTo.LoopCounter!`（issues/21 判定 C 类，由 issues/27 承接）
 - 本票新增 `Emuera.Tests` 的 `ErbLoaderNestCheckTests`（4 例）覆盖两处恢复分支与 `pairLine` 复用，作为不变量回归网（改动前 `Emuera.Tests` 无任何 `ErbLoader`/`nestCheck` 覆盖，已核对）

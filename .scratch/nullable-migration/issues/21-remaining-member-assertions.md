@@ -36,9 +36,19 @@ Status: in-progress
 | `default!` | 1 |
 | **合计** | **344** |
 
-与票面的对账：344 = 残差 411 − 12（前缀逻辑非误计）− 55（`Emuera.Tests` 部分）。清单按接收者根标识符的声明类型聚成 84 组，其中 290 处的声明类型已解析（非调用 253 处、`F(...)!` 调用链的根 37 处）；余 54 处未解析，是继承成员（`Text`、`Position`、`CurrentLabel`）、其他类型的成员链与静态成员、强制转换表达式（`(InstructionLine)logicalLine`）等，判定时分担到对应组内核实。
+与票面的对账：344 = 残差 411 − 12（前缀逻辑非误计）− 55（`Emuera.Tests` 部分）。清单的「根声明类型」列去重后为 90 个声明类型（剥去 `(成员)`/`(局部)`/`(参数)` 角色后缀为 70 个；[bang-sites.md](../bang-sites.md) 的分组索引按「声明类型+成员」给出 146 组），其中 290 处的声明类型已解析（非调用 253 处、`F(...)!` 调用链的根 37 处）；余 54 处未解析，是继承成员（`Text`、`Position`、`CurrentLabel`）、其他类型的成员链与静态成员、强制转换表达式（`(InstructionLine)logicalLine`）等，判定时分担到对应组内核实。
 
 清单口径已用**三种实现交叉验证**（2026-09-25）：同一收紧式在 `Emuera/` 内，IDE(Rider) 文本搜索与 PowerShell/.NET 正则各得 **979**（未剥注释/字符串），本脚本剥后得 **969**，差的 10 处位于注释或字符串字面量内；全库剥后 **1076** = 969 + `Emuera.Tests` 107。三种实现一致，说明枚举无遗漏、无重复。
+
+**锚点与后续漂移（2026-09-26 复核）**：清单对应 `1ed33b5c`（2026-09-21）到落地提交 `03292664`（2026-09-25）之间的代码——该区间内 344 条源码片段逐一命中，是判定与验收的唯一基准。首个删除发生在 `e9eaaf32`（2026-09-25），此后实施类提交共删除 **12 条**站点，清单未逐条回填，读表时须以该区间为基准：
+
+| 已消失的站点 | 处数（结论） | 处置提交 |
+| --- | --- | --- |
+| `ArgumentBuilder` 的 `SP_PRINT_IMG#1`、`SP_PRINT_SHAPE#1`/`#2` | 3（C） | `e9eaaf32`（issues/15） |
+| `IdentifierDictionary.GetVariableToken#2`、`Process.handleException#1`/`#2`、`PluginManager.ExecuteLine#1`/`#2`、`PluginManager.GetStackTrace#1`/`#2` | 7（C 4 / B 1 / A 2） | `9fe67fb6`（issues/19，issues/25 由它承接） |
+| `ExpressionParser.local#1`/`#2` | 2（A） | `ab93db4f` |
+
+因此本清单在 HEAD 上只剩 332 条可定位站点（C 9 / B 8 / A 278 / D 37）；全库后缀断言数也随之变化（`1ed33b5c`：Emuera 969 / Tests 107；HEAD `ea66bed1`：Emuera 944 / Tests 125），计数变化不作为判定依据。
 
 ### 判定结论
 
@@ -62,9 +72,9 @@ Status: in-progress
 
 对手册的两点补充（供 issues/22 收录）：A 类的理由注释需求不止 `(x as T)!`（其 §1），本票产出的成员断言组同样需要；D 类是同票 §3「契约诚实化」的新增项。
 
-### 判定结论：批次 1/2/3（并行审计，183 处）
+### 判定结论：批次 1/2/3（并行审计，177 处）
 
-批次按文件区域切分后委派并行审计（三个批次分别 28 / 91 / 64 处）。**逐站点结论已写入 [bang-sites.md](../bang-sites.md) 的「结论」列**（344 行逐点可核对，表尾「判定进度」给出计数），本节只列分组判据与去向。
+批次按文件区域切分后委派并行审计（三个批次合计 177 处）。**逐站点结论已写入 [bang-sites.md](../bang-sites.md) 的「结论」列**（344 行逐点可核对，表尾「判定进度」给出计数），本节只列分组判据与去向。
 
 | 组 | 处数 | 结论 | 依据 → 去向 |
 | --- | --- | --- | --- |
@@ -74,24 +84,26 @@ Status: in-progress
 | `ConsoleStyledString.Font` | 4 A / 1 B | A（4） | `Font == null ⟺ Error`（置 `Error` 只在构造器与 `ResetLayout`），四个读取点都先 `if (Error)` 返回。B（1，`PrintStringBuffer.getDivideIndex`）：该方法不查 `Error`，正常排版下 `Error` 部件宽度为 0 故不可达；破坏者是「Error 部件参与宽度累加」→ issues/19 |
 | `ConsoleStyledString.Text` | 5 | A | 公有构造器 `Text = str` 与 `DivideAt` 的对象初始化器都无条件赋值，与 `Error` 无关 → issues/22 |
 | `Strings.StrConv(...)!` | 5 | D | VB `StrConv` 的可空签名源于「入参为 null 时原样返回 null」，5 处入参类型上非空 → 断言内容为假但运行行为不变；`ExpressionMediator`/`Creator.Method` 已有同义 TODO → issues/22 §3 |
-| `StyledBoxModel? box` / `box.color` / `ButtonValueStr` / `fontname` / `RealBitmap` / `ConsoleButtonString` 构造器 `console` / `CBGSETButtonSprite` 的 `imgN`/`imgB` / `SP_REF` 的 `name!` / `CircularBuffer<T>.Dequeue` 的 `default!` / `parseLabel` 的 `def` / `CALLSHARP` 的 `pluginArgs[i].strValue!` | 18 | D | 断言内容为假但被调方显式容忍：`Utils.CreateIfNull<T>`/`TryParseStyledBoxModel` 以 null 为正常入参、`StringStyle` 构造器对空 `fontname` 回退到配置值、`ImgUtils.LoadImage` 结果紧接着被判空、`CBG_SetButtonImage` 以 null 表示「无名图」、`RefArgument` 把 null 存进可空字段 `SrcTerm`、`_buffer` 为 `T[]` 写入 `default` 而槽位在下次 `Enqueue` 前不被读 → issues/22 §3 |
+| `StyledBoxModel? box` / `box.color` / `ButtonValueStr` / `fontname` / `RealBitmap` / `ConsoleButtonString` 构造器 `console` / `CBGSETButtonSprite` 的 `imgN`/`imgB` / `SP_REF` 的 `name!` / `CircularBuffer<T>.Dequeue` 的 `default!` / `parseLabel` 的 `def` / `CALLSHARP` 的 `pluginArgs[i].strValue!` | 14 | D | 断言内容为假但被调方显式容忍：`Utils.CreateIfNull<T>`/`TryParseStyledBoxModel` 以 null 为正常入参、`StringStyle` 构造器对空 `fontname` 回退到配置值、`ImgUtils.LoadImage` 结果紧接着被判空、`CBG_SetButtonImage` 以 null 表示「无名图」、`RefArgument` 把 null 存进可空字段 `SrcTerm`、`_buffer` 为 `T[]` 写入 `default` 而槽位在下次 `Enqueue` 前不被读 → issues/22 §3 |
 | `WordCollection.Pointer` / `Next` / `Remove` | 5 A / 1 B | A（5） | `Next` 的 `index + 1 >= Collection.Count` 守卫与 `EOL => Pointer == null` 共同保证「未到链尾」；`Remove()` 的调用点都在 `while (!EOL)` 内。B（1）：`LexicalAnalyzer.expandFunctionlikeMacro` 的循环条件 `while (macroEnd == wc.Pointer)` 疑似写反（`macroStart` 与 `macroEnd` 不相等，循环体不执行），若改成 `!=` 则行尾 `)` 会让 `wc.Pointer` 变 null → issues/19 |
 | `Clipboard.GetDataObject()` / `sender as BackgroundWorker` / `ASpriteSingle.Bitmap` / `escapedParts` / `Parent` / `SynchronizationContext.Current` 等 UI 组 | 24 | A | 各有同方法内的前置门禁（`GetDataObject() == null \|\| !ContainsText()`、`DoWork += bwDoWork` 的委托契约、`IsCreated` 判断、`addDisplayLine` 里 `p.Parent = button` 紧接唯一一处 `ConsoleEscapedParts.Add`） → issues/22 |
 | `ConstantData.output` | 2 | B | 唯一赋值点在 `LoadData`，生产调用链的 `console` 恒非空；但同方法内自带 `output != null` 守卫、且 `Emuera.Tests` 的 `TestBootstrap`/`ConstantDataTests` 以 `LoadData(dir, null!, false)` 传 null。破坏者：非空 output 的调用者传 null（当前仅测试）→ issues/19 |
 | `EnumNameMethod.array` / `FunctionLabelLine.CompareTo(other!)` / `YenAtSubWord.Right` / `deleteLine` 的 `BufferToSingleLine` | 4 | B | 均为「当前不可达但存在破坏者」：`EType` 新增值漏改 `switch`；以 null 显式调 `CompareTo`；`SetIsMacro` 链当前无外部调用者；窗口销毁后仍调 `deleteLine` → issues/19 |
 | `AExpression?` 局部（`SP_PRINT_IMG`/`SP_PRINT_SHAPE` 的 `arg`） | 3 | C | `ReduceExpressionTerm` 在空 `TermStack` 上遇 `,`/`\0` 返回 null，而循环只挡 `!wc.EOL`，省略实参照样进循环 → 与 issues/15 同根因，建议补入其范围表 |
 | `CALLSHARP_Instruction.DoInstruction` 的 `term!` | 1 | C | `CALLSHARP "m", 1, , 3` 一类省略实参使 `arg.RowArgs` 含 null → issues/15 范围表第 2 行已记录 |
-| `BREAK_Instruction` 的 `jumpTo.LoopCounter!` | 1 | C | `jumpTo` 由 `nestCheck` 配到最内层循环行（`REPEAT\|FOR\|WHILE\|DO`），而 `LoopCounter` 只由 `REPEAT` 赋值 → `WHILE`/`DO` 中的 `BREAK` 空引用；平行位置的 `CONTINUE_Instruction` 已有判空短路 → issues/27 |
+| `BREAK_Instruction` 的 `jumpTo.LoopCounter!` | 1 | C（判据更正） | 原判据「`WHILE`/`DO` 中的 `BREAK` 空引用」不成立：解引用前有 `if (jumpTo.FunctionCode != FunctionCode.WHILE && jumpTo.FunctionCode != FunctionCode.DO)` 守卫（`Instraction.Child.cs` 的 `BREAK_Instruction.DoInstruction`），`WHILE`/`DO` 直接跳出、不读计数器；且 `LoopCounter` 由 `REPEAT_Instruction` 写入并同时服务于 `REPEAT` 与 `FOR`（`FunctionIdentifier.cs` 把 `FunctionCode.FOR` 映射到 `REPEAT_Instruction(true)`），并非「只由 `REPEAT` 赋值」。真实缺口是：`jumpTo` 由 `nestCheck` 按词法嵌套配对，`GOTO` 跳进 `REPEAT`/`FOR` 体内的 `$标签`（`GOTO_Instruction.SetJumpTo` 只校验标签存在，不禁止跳入循环体）时循环头从未执行，`LoopCounter` 仍为 null，而 `BREAK` 没有判空短路（同文件的 `CONTINUE_Instruction`/`REND_Instruction` 都有） → issues/27（判据与复现路径已同步更正） |
 | `IdentifierDictionary.GetVariableToken` 的 `line!.ParentLabelLine!` | 1 | C | 显式 `@子键` 分支缺少空子键分支的 `line?.ParentLabelLine == null ⇒ CodeEE` 收窄，而 `GetNewLocalVariableToken` 立即读 `func.LocalLength` 等 → issues/25 |
 | `LogicalLineParser.ParseLine` 的 `parentLine!`（VARI/VARS） | 2 | C | 首个 `@函数` 之前 `lastLabelLine` 为 null，`ErbLoader.loadErb` 只警告后继续解析 → issues/24 |
 | `DebugDialog.getValueString` 的 `term!` | 1 | C | `ReduceExpressionTerm` 对空白表达式返回 null，`IsNullOrEmpty` 挡不住；被同函数 `catch (Exception)` 兜住，属低危 → issues/26 |
-| 其余约 60 处 A（`PopAssignmentDestStr`、`SP_REF` 的 `refVar!`、`XmlAttribute.OwnerElement`、`FunctionMethod.CheckArgumentTypeEx`、`ReferenceToken.IsArrayRangeValid`、`VariableIdentifier` 的 `Enum.GetName(...)!`、`GetScaningLine()!`、`SubWord.Words`、`addLine` 的 `lastLine`、`PopRowArgs()!` 等） | 60 | A | 逐站点依据见 [bang-sites.md](../bang-sites.md) 的「结论」列与该行源码；共同点是「构造点/前置门禁/类型分派保证非空，编译器看不到」 → issues/22 |
+| 其余 65 处 A（`PopAssignmentDestStr`、`SP_REF` 的 `refVar!`、`XmlAttribute.OwnerElement`、`FunctionMethod.CheckArgumentTypeEx`、`ReferenceToken.IsArrayRangeValid`、`VariableIdentifier` 的 `Enum.GetName(...)!`、`GetScaningLine()!`、`SubWord.Words`、`addLine` 的 `lastLine`、`PopRowArgs()!` 等） | 65 | A | 逐站点依据见 [bang-sites.md](../bang-sites.md) 的「结论」列与该行源码；共同点是「构造点/前置门禁/类型分派保证非空，编译器看不到」 → issues/22 |
 
-**去向汇总**（批次 1/2/3 共 183 处）：A 130 / B 8 / C 9 / D 36。C 类 9 处中 4 处归既有 issues/15、1 处 issues/24、1 处 issues/25、1 处 issues/26、1 处 issues/27（`SP_PRINT_SHAPE` 的 2 处与 `SP_PRINT_IMG` 的 1 处同根因，计入 issues/15）；B 类 8 处记入 issues/19 的潜在缺陷清单；D 类 36 处归 issues/22 §3。
+**去向汇总**（批次 1/2/3 共 177 处）：A 141 / B 8 / C 9 / D 19。C 类 9 处中 4 处归既有 issues/15、2 处 issues/24、1 处 issues/25、1 处 issues/26、1 处 issues/27（`SP_PRINT_SHAPE` 的 2 处与 `SP_PRINT_IMG` 的 1 处同根因，计入 issues/15）；B 类 8 处记入 issues/19 的潜在缺陷清单；D 类 19 处归 issues/22 §3。
+
+三张表的处数按清单逐站点结论对齐（2026-09-26 复核）：主表 117 处（A 99 / D 18）、批次 1/2/3 177 处（A 141 / B 8 / C 9 / D 19）、批次 4 50 处（A 42 / B 1 / C 7），合计 344 = A 282 / B 9 / C 16 / D 37。
 
 一处**判定更正**：`ArrayMultiSortExMethod.GetConvertedTerm` 的 `term!` 一度被判为 C，取证 `CheckVariableTerm` 的首行 `if (!(arg is VariableTerm varTerm) || …) return …` 后确认它对 null 安全（`is` 模式对 null 为 false，随即 `throw CodeEE`），故改判 **A**。
 
-### 判定结论：批次 4（并行审计，44 处）
+### 判定结论：批次 4（并行审计，50 处）
 
 | 组 | 处数 | 结论 | 依据 → 去向 |
 | --- | --- | --- | --- |
@@ -105,7 +117,7 @@ Status: in-progress
 
 批次 4 与协调者自身的独立取证**相互印证**：`radius`/`innerEllipse`/`GetRequired*`/`SAVEDATA_TEXT`/WebP `bmp` 五组由双方分别读码得出同一结论（`radius` 的 `!` 冗余、`innerEllipse` 受同一局部 bool 门禁、WebP 的 `bmpData != null` 蕴含 `bmp` 非空）。
 
-**最终去向汇总**（344 处）：A 282（保留 + 理由注释 → issues/22）、B 9（潜在缺陷 → issues/19）、C 16（缺陷票：issues/15 4 处、issues/19 3 处、issues/24 2 处、issues/26 1 处、issues/27 1 处、issues/28 4 处、issues/25 1 处已 superseded 给 issues/19）、D 37（契约诚实化 → issues/22 §3）。
+**最终去向汇总**（344 处 = 主表 117 + 批次 1/2/3 177 + 批次 4 50）：A 282（保留 + 理由注释 → issues/22）、B 9（潜在缺陷 → issues/19）、C 16（缺陷票：issues/15 4 处、issues/19 3 处、issues/24 2 处、issues/26 1 处、issues/27 1 处、issues/28 4 处、issues/25 1 处已 superseded 给 issues/19）、D 37（契约诚实化 → issues/22 §3）。
 
 **A 类的载荷性抽样验证**（2026-09-25）：从 10 个 A 组各取 1 处（`MainWindow.console`、`ParserMediator.console`、`lineBuffer`、`minTimer`、`this.sizes`、`CaseExpression.LeftTerm`、`called.CurrentLabel`、`getCurrentLine`、`line.Position`、`VariableStrArgTerm.dic`），临时删掉该处 `!` 后全量构建——10 处全部报出 CS86xx（共 12 条，`VariableToken.cs` 与 `Process.State.cs` 各有 1 处连带 2 条），随后回退、构建恢复为 0。说明这些断言确实承担编译期职责（编译器看不到跨方法的不变量），「保留 + 理由注释」的处理正确，没有出现「删掉也不报错」的冗余断言。
 
@@ -116,3 +128,4 @@ Status: in-progress
 - 本票是 issues/14 完成标准的必要条件：清单产出前，剩余断言无法声称已逐点复核
 - 预计产出若干缺陷票；`Dictionary`/`List` 成员断言如果集中在少数构造点，可能像 issues/13 那样收敛为单点入口，届时在同一票内评估
 - 本票不改动 issues/14 已判定的六类断言
+- 截至 2026-09-26，方案第 4 步的「冗余断言同票清理」尚未执行：标为可删冗余的 6 处 `!`（`radius` 4 处、`ConfigItem<T>.val` 2 处）仍在树上；A 类理由注释、D 类契约诚实化由 issues/22 承接。这是本票保持 `in-progress` 的原因
