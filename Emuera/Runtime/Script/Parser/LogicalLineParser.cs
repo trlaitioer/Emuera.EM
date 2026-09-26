@@ -243,7 +243,10 @@ internal static class LogicalLineParser
 					}
 
 					AExpression arg = ExpressionParser.ReduceIntegerTerm(wc, TermEndWith.EoL);
-					if (arg.Restructure(null!) is not SingleLongTerm { IsInteger: true } sizeTerm)
+					//This fold runs at ERB load/reload time, when GlobalStatic.EMediator already
+					//exists; the fold and its context requirement are the same as for #DIM element
+					//counts (Data/UserDefinedVariable.cs, UserDefinedVariableData.Create).
+					if (arg.Restructure(GlobalStatic.EMediator) is not SingleLongTerm { IsInteger: true } sizeTerm)
 					{
 						ParserMediator.Warn(string.Format(trerror.SharpHasNotValidValue.Text, token), position, 2);
 						break;

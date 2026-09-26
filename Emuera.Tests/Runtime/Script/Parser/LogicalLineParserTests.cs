@@ -106,6 +106,31 @@ public class LogicalLineParserTests
 	}
 
 	/// <summary>
+	/// #LOCALSIZE 的元素数折叠需要求值上下文(EXISTCSV 的取值读 exm.VEvaluator)。
+	/// 折叠期传 null 时该处 NRE 会被 ParseSharpLine 的 catch 吞成警告并返回 false,
+	/// 故以「解析成功 + 尺寸生效」为判据,而非是否抛异常。
+	/// </summary>
+	[Fact]
+	public void SharpLine_Localsize_ExpressionNeedingMediator_UsesParseContext()
+	{
+		var label = Assert.IsType<FunctionLabelLine>(ParseLabelLine("@FUNC_LOCALSIZE_CTX"));
+		Assert.True(LogicalLineParser.ParseSharpLine(label, new CharStream("#LOCALSIZE MAX(EXISTCSV(4), 1)"), Pos, []));
+		Assert.Equal(1, label.LocalLength);
+	}
+
+	/// <summary>
+	/// #DIM 的元素数与 #LOCALSIZE 同因不同址(前者经 ParseSharpLine 进 UserDefinedVariableData.Create,
+	/// 后者就在 ParseSharpLine):两处折叠都需要真实求值上下文,传 null 时 NRE 被各自的解析路径吞成警告。
+	/// </summary>
+	[Fact]
+	public void SharpLine_Dim_ExpressionNeedingMediator_UsesParseContext()
+	{
+		var label = Assert.IsType<FunctionLabelLine>(ParseLabelLine("@FUNC_DIM_CTX"));
+		Assert.True(LogicalLineParser.ParseSharpLine(label, new CharStream("#DIM ARR, MAX(EXISTCSV(4), 1)"), Pos, []));
+		Assert.NotNull(label.GetPrivateVariable("ARR"));
+	}
+
+	/// <summary>
 	/// 脚本级冒烟:一段覆盖标签/属性/赋值/分支/FORM/调用/跳转的脚本片段,
 	/// 按 ErbLoader 的路由规则(@/$→ParseLabelLine、#→ParseSharpLine、其余→ParseLine)逐行解析,
 	/// 断言无解析错误行。

@@ -365,7 +365,11 @@ internal sealed class UserDefinedVariableData
 				}
 
 				AExpression arg = ExpressionParser.ReduceIntegerTerm(wc, TermEndWith.Comma_Assignment);
-				if (arg.Restructure(null!) is not SingleLongTerm sizeTerm)
+				//This fold needs the live evaluation context: a foldable term may read it for its
+				//value (EXISTCSV/GETNUM read the csv/constant data, __LINE__ the current line). Both
+				//callers of Create run after Process.Initialize assigned GlobalStatic.EMediator, and
+				//the initial-value path below folds the same way.
+				if (arg.Restructure(GlobalStatic.EMediator) is not SingleLongTerm sizeTerm)
 				{
 					throw new CodeEE(trerror.HasNotExpressionAfterComma.Text, sc);
 				}
