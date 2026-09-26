@@ -501,24 +501,28 @@ internal partial class IdentifierDictionary
 			}
 
 			LogicalLine? line = GlobalStatic.Process.GetScaningLine();
+			// The parent label is the key a local variable is stored under, and its sizes come from that
+			// label: without one there is nothing to create a token for. Absent for a debug command or a
+			// plugin line run outside a running function (scaningLine itself may be null), and while the
+			// first @function of a file is parsed - ErbLoader only hands each line its parent label once
+			// it has seen one.
+			FunctionLabelLine? parentLabel = line?.ParentLabelLine;
+			if (parentLabel == null)
+			{
+				throw new CodeEE(string.Format(treer.CannotGetKeyNotExistRunningFunction.Text, key));
+			}
+
 			if (string.IsNullOrEmpty(subKey))
 			{
-				//システムの入力待ち中にデバッグコマンドからLOCALを呼んだとき。
-				if (line?.ParentLabelLine == null)
-				{
-					throw new CodeEE(string.Format(treer.CannotGetKeyNotExistRunningFunction.Text, key));
-				}
-
-				subKey = line.ParentLabelLine.LabelName;
+				subKey = parentLabel.LabelName;
 			}
 			else
 			{
+				// parentLabel is derived from line, so line is non-null here
 				ParserMediator.Warn(treer.CannotRecommendCallLocalVar.Text, line!, 1, false, false);
 			}
 
-			// Only the subKey-less path above proves a parent label exists; with an explicit subKey the
-			// dereference inside keeps its previous behavior
-			LocalVariableToken retLocal = value.GetNewVariableTokenIfAbsent(subKey, line!.ParentLabelLine!);
+			LocalVariableToken retLocal = value.GetNewVariableTokenIfAbsent(subKey, parentLabel);
 			return retLocal;
 		}
 

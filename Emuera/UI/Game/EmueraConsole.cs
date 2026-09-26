@@ -2827,59 +2827,10 @@ internal sealed partial class EmueraConsole : IDisposable
 				line = LogicalLineParser.ParseLine(com, null);
 			}
 
-			if (line == null)
+			// The rules a single line has to satisfy are shared with PluginManager.ExecuteLine
+			if (!MemoryLineEntry.TryBuild(line, out InstructionLine? func, out string errMes))
 			{
-				throw new CodeEE(trerror.CanNotInterpretedLine.Text);
-			}
-
-			if (line is InvalidLine)
-			{
-				throw new CodeEE(line.ErrMes);
-			}
-
-			if (!(line is InstructionLine func))
-			{
-				throw new CodeEE(trerror.InvalidDebugCommand.Text);
-			}
-
-			if (func.Function.IsFlowContorol())
-			{
-				throw new CodeEE(trerror.CanNotUseFlowInstruction.Text);
-			}
-
-			//__METHOD_SAFE__をみるならいらないかも
-			if (func.Function.IsWaitInput())
-			{
-				throw new CodeEE(string.Format(trerror.CanNotUseInstruction.Text, func.Function.Name));
-			}
-
-			//1750 __METHOD_SAFE__とほぼ条件同じだよねってことで
-			if (!func.Function.IsMethodSafe())
-			{
-				throw new CodeEE(string.Format(trerror.CanNotUseInstruction.Text, func.Function.Name));
-			}
-
-			//1756 SIFの次に来てはいけないものはここでも不可。
-			if (func.Function.IsPartial())
-			{
-				throw new CodeEE(string.Format(trerror.CanNotUseInstruction.Text, func.Function.Name));
-			}
-
-			switch (func.FunctionCode)
-			{
-				//取りこぼし
-				//逆にOUTPUTLOG、QUITはDebugCommandの前に捕まえる
-				case FunctionCode.PUTFORM:
-				case FunctionCode.UPCHECK:
-				case FunctionCode.CUPCHECK:
-				case FunctionCode.SAVEDATA:
-					throw new CodeEE(string.Format(trerror.CanNotUseInstruction.Text, func.Function.Name));
-			}
-
-			ArgumentParser.SetArgumentTo(func);
-			if (func.IsError)
-			{
-				throw new CodeEE(func.ErrMes);
+				throw new CodeEE(errMes);
 			}
 
 			process.DoDebugNormalFunction(func, munchkin);

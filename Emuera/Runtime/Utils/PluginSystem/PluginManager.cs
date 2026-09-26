@@ -1,5 +1,4 @@
 ﻿using MinorShift.Emuera.GameProc;
-using MinorShift.Emuera.GameProc.Function;
 using MinorShift.Emuera.Runtime.Script;
 using MinorShift.Emuera.Runtime.Script.Parser;
 using MinorShift.Emuera.Runtime.Script.Statements;
@@ -39,12 +38,22 @@ public class PluginManager
 	/// Instead of using this method better implement direct API call that works directly with game state, bypassing ERB interpreter
 	/// </summary>
 	/// <param name="line">Line of code to execute</param>
+	/// <remarks>
+	/// One line only, and only what one line can run on its own: the instruction must be METHOD_SAFE, must
+	/// not be flow control, wait for input or be part of a multi-line construct, and its arguments must
+	/// parse. Debug instructions are accepted only under -Debug.
+	/// </remarks>
+	/// <exception cref="CodeEE">The line cannot be run this way: an empty or unparsable line, a line that is
+	/// not an instruction, a flow control or input instruction, an argument that fails to parse, or a debug
+	/// instruction outside -Debug.</exception>
 	public void ExecuteLine(string line)
 	{
-		LogicalLine? logicalLine = LogicalLineParser.ParseLine(line, null);
-		InstructionLine func = (InstructionLine)logicalLine!;
-		ArgumentParser.SetArgumentTo(func);
-		func.Function.Instruction!.DoInstruction(expressionMediator, func, processState);
+		if (!MemoryLineEntry.TryBuild(LogicalLineParser.ParseLine(line, null), out InstructionLine? func, out string errMes))
+		{
+			throw new CodeEE(errMes);
+		}
+
+		process.DoDebugNormalFunction(func, false);
 	}
 
 	public void Print(string text)
@@ -263,15 +272,19 @@ public class PluginManager
 		int depth = 0;
 
 		// add initial caller
-		stackTraceCollecter.Add(processState.CurrentLine!.Position!.Value.Filename + ":" + processState.CurrentLine.Position.Value.LineNo +
-		                        "@" + processState.CurrentLine.ParentLabelLine!.LabelName);
+		// Frames without a usable position or parent label (a plugin line run while no ERB is executing,
+		// or a memory line) are skipped instead of dereferencing null
+		if (LineLocationText.StackFrame(processState.CurrentLine) is { } initial)
+		{
+			stackTraceCollecter.Add(initial);
+		}
+
 		// loop call stack
 		while (processState.GetReturnAddressSequensial(depth++) is { } parent)
 		{
-			if (parent.Position != null)
+			if (LineLocationText.StackFrame(parent) is { } frame)
 			{
-				stackTraceCollecter.Add(parent.Position.Value.Filename + ":" + parent.Position.Value.LineNo + "@" +
-				                        parent.ParentLabelLine!.LabelName);
+				stackTraceCollecter.Add(frame);
 			}
 		}
 

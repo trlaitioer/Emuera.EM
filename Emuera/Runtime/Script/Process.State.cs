@@ -560,11 +560,9 @@ internal sealed class ProcessState
 				else
 				{
 					string trace = $"CALL @{label.LabelName}:{label.Position!.Value.Filename}:{label.Position.Value.LineNo}";
-					LogicalLine? retAddress = call.ReturnAddress;
-					if (retAddress != null)
+					if (LineLocationText.JumpTrace(call.ReturnAddress) is { } jumpTrace)
 					{
-						trace +=
-							$" at @{retAddress.ParentLabelLine!.LabelName}:{retAddress.ParentLabelLine!.Position!.Value.Filename}:{retAddress.Position!.Value.LineNo}";
+						trace += jumpTrace;
 					}
 
 					console.DebugAddTraceLog(trace);

@@ -1102,9 +1102,9 @@ internal sealed class ConstantData
 	#region EE_ERD
 
 	//public Dictionary<string, int> GetKeywordDictionary(out string errPos, VariableCode code, int index)
-	// TODO: returns null for any VariableCode not listed below, yet every caller dereferences the
-	// result with '!' (see PluginSystem/VariableDataWrappers.cs Get/Set). Narrow the return type or
-	// make the callers handle the null case instead of asserting it away.
+	// Null means "no keyword dictionary for this code": the code is not keyword-backed, or the caller
+	// passed index < 0 to ask whether one exists. Callers with index >= 0 either pass a keyword-backed
+	// code or turn the null into CodeEE; the ERD early returns below can still yield null at index >= 0.
 	public Dictionary<string, int>? GetKeywordDictionary(out string? errPos, VariableCode code, int index, string? varname)
 
 		#endregion

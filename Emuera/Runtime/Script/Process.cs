@@ -632,7 +632,9 @@ internal sealed partial class Process(EmueraConsole view)
 		}
 
 		string posString = "";
-		if (position != null)
+		// A memory line carries ScriptPosition's default value, which names no file: only a usable
+		// position becomes part of the message
+		if (LineLocationText.IsUsablePosition(position))
 		{
 			if (position.Value.LineNo >= 0)
 			{
@@ -661,17 +663,20 @@ internal sealed partial class Process(EmueraConsole view)
 					console.PrintError(string.Format(trerror.ErrorMessage.Text, exc.Message));
 				}
 
-				console.PrintError(string.Format(trerror.ErrorInFunc.Text, current!.ParentLabelLine!.LabelName,
-					current.ParentLabelLine.Position!.Value.Filename, current.ParentLabelLine.Position.Value.LineNo.ToString()));
+				// The current function cannot always be named (a line without a parent label, a plugin or
+				// debug line), but the call stack below is still worth printing when it has entries
+				if (LineLocationText.CurrentFunction(current) is { } currentFunction)
+				{
+					console.PrintError(currentFunction);
+				}
+
 				console.PrintError(trerror.FuncCallStack.Text);
 				int depth = 0;
 				while (state.GetReturnAddressSequensial(depth++) is { } parent)
 				{
-					if (parent.Position != null)
+					if (LineLocationText.CallStackEntry(parent) is { } entry)
 					{
-						console.PrintErrorButton(
-							string.Format(trerror.ErrorFuncStack.Text, parent.Position.Value.Filename, parent.Position.Value.LineNo.ToString(),
-								parent.ParentLabelLine!.LabelName), parent.Position);
+						console.PrintErrorButton(entry, parent.Position);
 					}
 				}
 			}
