@@ -75,7 +75,7 @@ internal abstract class FunctionMethod
 		public bool Array => (type & ArgType.Array) != 0;
 		public bool Array1D => (type & ArgType.Array1D) != 0;
 		public bool Array2D => (type & ArgType.Array2D) != 0;
-		public bool Array3D => (type & ArgType.Array2D) != 0;
+		public bool Array3D => (type & ArgType.Array3D) != 0;
 		public bool String => (type & ArgType.String) != 0;
 		public bool Variadic => (type & ArgType.Variadic) != 0;
 		public bool SameAsFirst => (type & ArgType.SameAsFirst) != 0;
@@ -165,7 +165,9 @@ internal abstract class FunctionMethod
 					_ArgType rule = variadic && i >= list.ArgTypes.Count ? vs![(i - list.ArgTypes.Count) % vs.Length] : list.ArgTypes[i];
 					if (arguments[i] == null)
 					{
-						if (i < list.OmitStart || (list.OmitStart > -1 && i >= list.OmitStart && rule.DisallowVoid))
+						// OmitStart stays -1 when a rule block omits it, and argsNotLessThanRule above then demands
+						// exactly ArgTypes.Count arguments: no slot may be omitted, so an empty slot is an error.
+						if (list.OmitStart < 0 || i < list.OmitStart || rule.DisallowVoid)
 						{
 							errMsg[idx] = string.Format(trerror.ArgCanNotBeNull.Text, name, i + 1);
 							break;
