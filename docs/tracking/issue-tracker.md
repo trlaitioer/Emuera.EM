@@ -11,7 +11,7 @@
 - 状态记录在文件头部的 `Status:` 行，只写单个标签；标签全集与状态流转见 `triage-labels.md`
 - spec 文件头部另有一行 `Date: <提出日期>`
 - 正文使用下方模板；`## 曾考虑的替代方案` 无内容则省略
-- 头部可选行：`Type: research|prototype|grilling|task`（task 票默认，可省略）、`Blocked by: NN, NN`（被其他票阻塞时标注）
+- 头部可选行：`Type: research|prototype|grilling|task|bug`（`task` 为默认、可省略；`bug` 用于缺陷，供「未处理 bug」这类查询筛选）、`Blocked by: NN, NN`（被其他票阻塞时标注）
 - 内容规则：**结论进正文，过程靠 git**。方案修订、决策、实施结论与验收发现的问题写入正文对应节（就地改写或补小节，写结论不写经过）；被否决的方案连同放弃原因写进 `## 曾考虑的替代方案`；验收通过只把 `Status:` 改为 `implemented`，不另行记录验收过程。不按提交逐个追加变更摘要，修改历史由 git 提供
 
 ### 议题（issue）模板
@@ -62,6 +62,32 @@ spec 不罗列各 issue 的状态；issue 与 spec 同目录分层，无需互�
 ## 当技能要求“获取相关 ticket”
 
 直接读取所引用路径的文件。用户通常会直接传入路径或议题编号。
+
+## 未处理票据视图
+
+未处理 = 头部 `Status:` 不属于终态（`implemented` / `wontfix` / `superseded`）。视图由查询得到，不维护清单：
+
+```powershell
+Get-ChildItem .scratch -Recurse -File -Filter *.md | Where-Object { $_.FullName -match "\\issues\\" } | ForEach-Object {
+  $s = (Select-String -Path $_.FullName -Pattern "^Status:\s*(\S+)" | Select-Object -First 1).Matches.Groups[1].Value
+  if ($s -notin @("implemented","wontfix","superseded")) { "{0,-46} {1}" -f $_.Name, $s }
+}
+```
+
+口径：只扫 `*/issues/`；`*/closed/` 是已结票的归档区，只在检索历史时纳入。
+
+## 延后项的归属
+
+| 发现的东西 | 去向 |
+| --- | --- |
+| 与当前 effort 同源、当场能修 | 就地修，并在当前票正文记一句 |
+| 与当前 effort 同源、需另立票 | 该 effort 的 slug 新票 |
+| 与当前工作无关 / 需单独排期 / effort 收尾时遗留 | `.scratch/backlog/` 的 `Status: needs-triage` 最小票 |
+
+- 决定延后时立即落票；未入库的延后项不进入任何视图
+- 落票前按现象关键词查重，命中则补进已有票正文，不新建
+- backlog 票的出口只有两个：就地开做，或转出（目标 effort 立新票 + 本票标 `superseded` 并注明承接方）——文件不移动
+- slug 内可设 `closed/`（与 `issues/` 同级）存放已结票；未处理视图只扫 `issues/`
 
 ## 导航（Wayfinding）操作
 
