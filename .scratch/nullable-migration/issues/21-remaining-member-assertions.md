@@ -40,15 +40,17 @@ Status: in-progress
 
 清单口径已用**三种实现交叉验证**（2026-09-25）：同一收紧式在 `Emuera/` 内，IDE(Rider) 文本搜索与 PowerShell/.NET 正则各得 **979**（未剥注释/字符串），本脚本剥后得 **969**，差的 10 处位于注释或字符串字面量内；全库剥后 **1076** = 969 + `Emuera.Tests` 107。三种实现一致，说明枚举无遗漏、无重复。
 
-**锚点与后续漂移（2026-09-26 复核）**：清单对应 `1ed33b5c`（2026-09-21）到落地提交 `03292664`（2026-09-25）之间的代码——该区间内 344 条源码片段逐一命中，是判定与验收的唯一基准。首个删除发生在 `e9eaaf32`（2026-09-25），此后实施类提交共删除 **12 条**站点，清单未逐条回填，读表时须以该区间为基准：
+**锚点与后续漂移（2026-09-26 复核）**：清单对应 `1ed33b5c`（2026-09-21）到落地提交 `03292664`（2026-09-25）之间的代码——该区间内 344 条源码片段逐一命中，是判定与验收的唯一基准。首个删除发生在 `e9eaaf32`（2026-09-25），此后实施类提交共删除 **34 条**站点，清单未逐条回填，读表时须以该区间为基准：
 
 | 已消失的站点 | 处数（结论） | 处置提交 |
 | --- | --- | --- |
 | `ArgumentBuilder` 的 `SP_PRINT_IMG#1`、`SP_PRINT_SHAPE#1`/`#2` | 3（C） | `e9eaaf32`（issues/15） |
 | `IdentifierDictionary.GetVariableToken#2`、`Process.handleException#1`/`#2`、`PluginManager.ExecuteLine#1`/`#2`、`PluginManager.GetStackTrace#1`/`#2` | 7（C 4 / B 1 / A 2） | `9fe67fb6`（issues/19，issues/25 由它承接） |
 | `ExpressionParser.local#1`/`#2` | 2（A） | `ab93db4f` |
+| `Dictionary<string, int>?` 局部的 `dict![key]` 21 处（清单「`X![i]`」桶，见下方判定表） | 21（A） | issues/29（`GetKeywordDictionary` 拆分） |
+| `VariableStrArgTerm.GetIntValue` 的 `dic!`（已判空组，见下方判定表） | 1（A） | issues/29（同上） |
 
-因此本清单在 HEAD 上只剩 332 条可定位站点（C 9 / B 8 / A 278 / D 37）；全库后缀断言数也随之变化（`1ed33b5c`：Emuera 969 / Tests 107；HEAD `ea66bed1`：Emuera 944 / Tests 125），计数变化不作为判定依据。
+因此本清单在 HEAD 上只剩 **310 条**可定位站点（C 9 / B 8 / A 256 / D 37）；全库后缀断言数也随之变化（`1ed33b5c`：Emuera 969 / Tests 107；`ea66bed1`：Emuera 944 / Tests 125；`c82aa022`：943；issues/29 拆分后：Emuera 921 / Tests 125），计数变化不作为判定依据。
 
 ### 判定结论
 
@@ -59,9 +61,9 @@ Status: in-progress
 | 组（接收者声明类型） | 处数 | 结论 | 依据 → 去向 |
 | --- | --- | --- | --- |
 | `MixedNum?` 局部（`ref height!` 一类 `ref` 实参） | 15 | **D** | `HtmlManager.tagAnalyze` 的 `img`/`div` 分支把 `MixedNum? height = null` 等局部按 `ref` 传给 `Utils.ParseMixedNum`；该函数第一步就是 `if (num == null) num = new MixedNum(); else throw CodeEE(DuplicateAttribute)`——`ref` 参数正是为观察初始 null 而设，故这 15 处 `!` 的内容为假。被调方显式容忍 null，运行行为不变；参数声明应由 `ref MixedNum` 改为 `ref MixedNum?`，15 处 `!` 随之删除。同组 `ParseParam4IntNum(ref CreateIfNull(ref box!).color!, …)` 与 `CreateIfNull<T>(ref T obj) where T : new()` 同型。→ issues/22 §3 |
-| `Dictionary<string, int>?` 局部（`dict![key]`） | 21 | **A**×21 | `ConstantData.GetKeywordDictionary` 在 `index >= 0` 且 `ret == null` 时抛 `CodeEE`，故断言在「函数为所查变量码返回字典」时成立：18 处 `VariableDataWrappers` 与 2 处 `PluginManager` 的 `variableCode` 全部命中主 switch（`CSTR`/`CFLAG`/`ABL`/`GLOBAL`/`DAY`…，构造点见 `PluginAPICharContext`/`PluginManager.CacheVariables`），`ret` 必非空，属 **A**。余 1 处 `ConstantData.KeywordToInteger` 曾判为 C 类（它把 `varname` 硬编码为 `null`，对 ERD-only 码必然拿到 null），**复核后更正为 A**：该函数的两个调用点都以 `ConstantData.isDefined(code, key)` 为前置门禁，而 `isDefined` 自身也以 `varname = null` 调 `GetKeywordDictionary`，故对 ERD-only 码返回 false、门禁先抛 `CodeEE` —— ERD-only 码到不了该处；能到达的码必在主 switch 内，`ret` 非空。`UseERD` 默认为 `true`（`ConfigData.cs`）不改变结论。原票 issues/23 已按 `wontfix` 关闭 |
+| `Dictionary<string, int>?` 局部（`dict![key]`） | 21 | **A**×21 | `ConstantData.GetKeywordDictionary` 在 `index >= 0` 且 `ret == null` 时抛 `CodeEE`，故断言在「函数为所查变量码返回字典」时成立：18 处 `VariableDataWrappers` 与 2 处 `PluginManager` 的 `variableCode` 全部命中主 switch（`CSTR`/`CFLAG`/`ABL`/`GLOBAL`/`DAY`…，构造点见 `PluginAPICharContext`/`PluginManager.CacheVariables`），`ret` 必非空，属 **A**。余 1 处 `ConstantData.KeywordToInteger` 曾判为 C 类（它把 `varname` 硬编码为 `null`，对 ERD-only 码必然拿到 null），**复核后更正为 A**：该函数的两个调用点都以 `ConstantData.isDefined(code, key)` 为前置门禁，而 `isDefined` 自身也以 `varname = null` 调 `GetKeywordDictionary`，故对 ERD-only 码返回 false、门禁先抛 `CodeEE` —— ERD-only 码到不了该处；能到达的码必在主 switch 内，`ret` 非空。`UseERD` 默认为 `true`（`ConfigData.cs`）不改变结论。原票 issues/23 已按 `wontfix` 关闭。该组 21 处已由 issues/29 拆出 `TryGetKeywordDictionary` 与非空入口而全部删除（2026-09-27），归属从「保留 + 理由注释」改为「契约改造消除」 |
 | `AExpression?` 成员（`CaseExpression.LeftTerm`/`RightTerm`） | 14 | **A** | 唯一构造点 `ExpressionParser.reduceCaseExpression` 在 `LeftTerm == null` 时抛 `CodeEE`（NothingAfterIs / CanNotOmitCaseArg），`RightTerm` 仅在 `CaseType == To` 时赋值且 null 时抛 `CodeEE`（NoExpressionAfterTo）；各读取处自带 `CaseType` 门禁（`Reduce` 仅 `To` 读 `RightTerm`；`ToString` 与两个 `GetBool` 都先判 `To`/`Is`）。保留 `!` 并注明「构造点已保证」。→ issues/22 |
-| `VariableStrArgTerm.GetIntValue` 的 `dic!` | 1 | **A** | 同族函数但**已判空**：先以 `IsNullOrEmpty(key)` 抛 `CodeEE`，再以 `dic == null && key != ""` 抛 `CodeEE(NotDefinedErdKey)`，故断言处 `dic` 必非空（代码内注释即此意）。保留 `!`，理由注释已存在。→ 无需改动 |
+| `VariableStrArgTerm.GetIntValue` 的 `dic!` | 1 | **A** | 同族函数但**已判空**：先以 `IsNullOrEmpty(key)` 抛 `CodeEE`，再以 `dic == null && key != ""` 抛 `CodeEE(NotDefinedErdKey)`，故断言处 `dic` 必非空。该处已由 issues/29 删除（2026-09-27）：守卫收窄为 `dic == null`（`key` 在上方 `IsNullOrEmpty` 处已抛，`&& key != ""` 恒真），`dic!` 随非空入口消失，断言与理由注释都不再需要，归属改为「契约改造消除」 |
 | `EmueraConsole?` 成员（`console!`） | 15 | **A** | 两个来源。① `MainWindow` 13 处：`console` 只在构造器赋值一次（`console = new EmueraConsole(this)` 位于构造器直线代码内），全库无 `console = null`（其余出现全是 `console == null` 判空），故实例方法内恒非空。② `ParserMediator` 2 处：`Warn` 仅在 `console is { RunERBFromMemory: false }` 时才把警告加入 `warningList`，故 `FlushWarningList` 的循环体只在 console 非空时执行；`Initialize` 只在进程初始化（`Process.cs`）与分析模式启动（`Program.cs`，该模式不产生警告）各调一次。保留 `!`。**收敛机会**：`MainWindow.console` 构造后恒非空，字段应声明为 `private readonly EmueraConsole console;`，一次删掉 13 处 `!`，并使 20 余处 `if (console == null)` 成为可证死代码 → issues/22 §3 |
 | `CircularBuffer<string>?` 成员（`lineBuffer!`）+ `System.Timers.Timer?` 成员（`minTimer!`） | 10 | **A** | 类级不变量「`Config.CBUseClipboard` 为真 ⇔ `Init()` 已执行（两字段非空）」由三个入口共同保证：构造器 `if (!CBUseClipboard) return;` 之后才 `Init()`（`ClipboardProcessor` 构造器）、菜单开关先 `Init()`/`Reset()` 再写配置（`MainWindow` 的菜单处理）、配置对话框**不含** `CBUseClipboard`（`ConfigDialog.SaveConfig` 只写其余 `CB*` 项），故 `Reset()` 只在功能开启时到达，`minTimer!.Dispose()` 的前提成立。各读取点另有 `if (!Config.Config.CBUseClipboard) return;` 或 `if (!Initialized) return;` 守卫。保留 `!` + 理由注释 → issues/22 |
 | `int[]` 局部（`this.sizes!`） | 6 | **A** | `sizes` 由基类构造器依 `CharacterData.CharacterVarLength` 取得：该函数只对 `i >= 0xF0` 的用户定义码返回 null，普通码返回非空数组、标量码返回空数组（`sizes.Length == 0` 的 `CodeEE` 分支正对应后者）；用户定义码由派生构造器以 `data.Lengths` 替换。6 处都在构造完成后的方法内，恒非空。保留 `!` + 理由注释 → issues/22 |

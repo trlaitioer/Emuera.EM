@@ -29,9 +29,8 @@ public class GlobalInt1dWrapper
 
 	public long Get(string key)
 	{
-		string? errPos = "";
-		Dictionary<string, int>? dict = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, key);
-		return Get(dict![key]);
+		Dictionary<string, int> dict = exm.VEvaluator.Constant.GetKeywordDictionary(out _, variableCode, 1, key);
+		return Get(dict[key]);
 	}
 
 	public long Get(long key)
@@ -41,9 +40,8 @@ public class GlobalInt1dWrapper
 
 	public void Set(string key, long value)
 	{
-		string? errPos = "";
-		Dictionary<string, int>? dict = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, key);
-		Set(dict![key], value);
+		Dictionary<string, int> dict = exm.VEvaluator.Constant.GetKeywordDictionary(out _, variableCode, 1, key);
+		Set(dict[key], value);
 	}
 
 	public void Set(long key, long value)
@@ -81,9 +79,8 @@ public class GlobalString1dWrapper
 
 	public string? Get(string key)
 	{
-		string? errPos = "";
-		Dictionary<string, int>? dict = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, key);
-		return Get(dict![key]);
+		Dictionary<string, int> dict = exm.VEvaluator.Constant.GetKeywordDictionary(out _, variableCode, 1, key);
+		return Get(dict[key]);
 	}
 
 	public string? Get(long key)
@@ -93,9 +90,8 @@ public class GlobalString1dWrapper
 
 	public void Set(string key, string value)
 	{
-		string? errPos = "";
-		Dictionary<string, int>? dict = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, key);
-		Set(dict![key], value);
+		Dictionary<string, int> dict = exm.VEvaluator.Constant.GetKeywordDictionary(out _, variableCode, 1, key);
+		Set(dict[key], value);
 	}
 
 	public void Set(long key, string value)
@@ -123,9 +119,8 @@ public class GlobalConstString1dWrapper
 
 	public string? Get(string key)
 	{
-		string? errPos = "";
-		Dictionary<string, int>? dict = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, key);
-		return Get(dict![key]);
+		Dictionary<string, int> dict = exm.VEvaluator.Constant.GetKeywordDictionary(out _, variableCode, 1, key);
+		return Get(dict[key]);
 	}
 
 	public string? Get(long key)
@@ -153,9 +148,8 @@ public class GlobalConstInt1dWrapper
 
 	public long Get(string key)
 	{
-		string? errPos = "";
-		Dictionary<string, int>? dict = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, key);
-		return Get(dict![key]);
+		Dictionary<string, int> dict = exm.VEvaluator.Constant.GetKeywordDictionary(out _, variableCode, 1, key);
+		return Get(dict[key]);
 	}
 
 	public long Get(long key)
@@ -192,9 +186,8 @@ public class CharInt1dWrapper
 
 	public long Get(string key)
 	{
-		string? errPos = "";
-		Dictionary<string, int>? dict = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, key);
-		return Get(dict![key]);
+		Dictionary<string, int> dict = exm.VEvaluator.Constant.GetKeywordDictionary(out _, variableCode, 1, key);
+		return Get(dict[key]);
 	}
 
 	public long Get(long key)
@@ -204,9 +197,8 @@ public class CharInt1dWrapper
 
 	public void Set(string key, long value)
 	{
-		string? errPos = "";
-		Dictionary<string, int>? dict = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, key);
-		Set(dict![key], value);
+		Dictionary<string, int> dict = exm.VEvaluator.Constant.GetKeywordDictionary(out _, variableCode, 1, key);
+		Set(dict[key], value);
 	}
 
 	public void Set(long key, long value)
@@ -256,24 +248,21 @@ public class CharInt2dWrapper
 
 	public long Get(string keyA, string keyB)
 	{
-		string? errPos = "";
-		Dictionary<string, int>? dictA = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, keyA);
-		Dictionary<string, int>? dictB = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, keyB);
-		return Get(dictA![keyA], dictB![keyB]);
+		Dictionary<string, int> dictA = exm.VEvaluator.Constant.GetKeywordDictionary(out _, variableCode, 1, keyA);
+		Dictionary<string, int> dictB = exm.VEvaluator.Constant.GetKeywordDictionary(out _, variableCode, 1, keyB);
+		return Get(dictA[keyA], dictB[keyB]);
 	}
 
 	public long Get(long keyA, string keyB)
 	{
-		string? errPos = "";
-		Dictionary<string, int>? dictB = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, keyB);
-		return Get(keyA, dictB![keyB]);
+		Dictionary<string, int> dictB = exm.VEvaluator.Constant.GetKeywordDictionary(out _, variableCode, 1, keyB);
+		return Get(keyA, dictB[keyB]);
 	}
 
 	public long Get(string keyA, long keyB)
 	{
-		string? errPos = "";
-		Dictionary<string, int>? dictA = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, keyA);
-		return Get(dictA![keyA], keyB);
+		Dictionary<string, int> dictA = exm.VEvaluator.Constant.GetKeywordDictionary(out _, variableCode, 1, keyA);
+		return Get(dictA[keyA], keyB);
 	}
 
 	public long Get(long keyA, long keyB)
@@ -283,24 +272,21 @@ public class CharInt2dWrapper
 
 	public void Set(string keyA, string keyB, long value)
 	{
-		string? errPos = "";
-		Dictionary<string, int>? dictA = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, keyA);
-		Dictionary<string, int>? dictB = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, keyB);
-		Set(dictA![keyA], dictB![keyB], value);
+		Dictionary<string, int> dictA = exm.VEvaluator.Constant.GetKeywordDictionary(out _, variableCode, 1, keyA);
+		Dictionary<string, int> dictB = exm.VEvaluator.Constant.GetKeywordDictionary(out _, variableCode, 1, keyB);
+		Set(dictA[keyA], dictB[keyB], value);
 	}
 
 	public void Set(long keyA, string keyB, long value)
 	{
-		string? errPos = "";
-		Dictionary<string, int>? dictB = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, keyB);
-		Set(keyA, dictB![keyB], value);
+		Dictionary<string, int> dictB = exm.VEvaluator.Constant.GetKeywordDictionary(out _, variableCode, 1, keyB);
+		Set(keyA, dictB[keyB], value);
 	}
 
 	public void Set(string keyA, long keyB, long value)
 	{
-		string? errPos = "";
-		Dictionary<string, int>? dictA = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, keyA);
-		Set(dictA![keyA], keyB, value);
+		Dictionary<string, int> dictA = exm.VEvaluator.Constant.GetKeywordDictionary(out _, variableCode, 1, keyA);
+		Set(dictA[keyA], keyB, value);
 	}
 
 	public void Set(long keyA, long keyB, long value)
@@ -414,9 +400,8 @@ public class CharString1dWrapper
 
 	public string? Get(string key)
 	{
-		string? errPos = "";
-		Dictionary<string, int>? dict = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, key);
-		return Get(dict![key]);
+		Dictionary<string, int> dict = exm.VEvaluator.Constant.GetKeywordDictionary(out _, variableCode, 1, key);
+		return Get(dict[key]);
 	}
 
 	public string? Get(long key)
@@ -426,9 +411,8 @@ public class CharString1dWrapper
 
 	public void Set(string key, string value)
 	{
-		string? errPos = "";
-		Dictionary<string, int>? dict = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, variableCode, 1, key);
-		Set(dict![key], value);
+		Dictionary<string, int> dict = exm.VEvaluator.Constant.GetKeywordDictionary(out _, variableCode, 1, key);
+		Set(dict[key], value);
 	}
 
 	public void Set(long key, string value)

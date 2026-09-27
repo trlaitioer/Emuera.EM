@@ -18,10 +18,10 @@ issues/21 的清单判定曾把 `ConstantData.KeywordToInteger`（`Runtime/Scrip
 - 因此 ERD-only 码**到不了** `KeywordToInteger`；能到达的变量码必然在主 switch 内（`ret != null`），再经 `GetKeywordDictionary` 在 `index >= 0` 时的 `if (ret == null) throw CodeEE` 与 `index == allowIndex` 判定，要么返回非空字典、要么抛 `CodeEE`。
 - `Config.UseERD` 默认为 `true`（`ConfigData.cs` 的 `ConfigItem<bool>(ConfigCode.UseERD, "ERD機能を利用する", "Use ERD", true)`），不改变上述结论——决定因素是 `isDefined` 传的 `varname = null`，与配置无关。
 
-保留 `!`；其理由注释（不变量来自调用方门禁 + 被调方 null→CodeEE 的转换）归 issues/22。
+保留 `!`；其理由注释（不变量来自调用方门禁 + 被调方 null→CodeEE 的转换）归 issues/22。该 `!` 已由 issues/29 删除（2026-09-27）：求值点改走非空入口 `GetKeywordDictionary`，断言与理由注释都不再需要。
 
 ## 影响
 
 - 无代码改动
-- 该 `!` 的不变量是跨模块的（调用方 `isDefined` 门禁 + 被调方把 null 转成 `CodeEE`），属 issues/22 需要注明理由的 A 类
+- 该 `!` 的不变量是跨模块的（调用方 `isDefined` 门禁 + 被调方把 null 转成 `CodeEE`），属 issues/22 需要注明理由的 A 类；该 `!` 已由 issues/29 删除，理由注释不再需要（2026-09-27）
 - 附带记录一个与本票无关的既有行为（不在本迁移范围）：`CVARS:キー` 这类「字符用户定义变量 + 字符串键索引」在**赋值路径**（`SetValueAllEachChara`）会因 `isDefined` 返回 false 而报 `NotDefinedKey`；**读取路径**（`VariableStrArgTerm`，会传真实变量名）不受影响。是否为预期行为由 ERD 功能的负责人判断

@@ -47,9 +47,8 @@ internal sealed class VariableStrArgTerm : AExpression
 
 			#region EE_ERD
 
-			// dic = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, parentCode, index);
 		{
-			dic = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, parentCode, index, varname);
+			exm.VEvaluator.Constant.TryGetKeywordDictionary(out dic, out errPos, parentCode, index, varname);
 		}
 
 		#endregion
@@ -62,15 +61,14 @@ internal sealed class VariableStrArgTerm : AExpression
 
 		#region EE_ERD
 
-		if (dic == null && key != "")
+		if (dic == null)
 		{
 			throw new CodeEE(string.Format(trerror.NotDefinedErdKey.Text, parentCode.ToString(), key));
 		}
 
 		#endregion
 
-		// key is non-empty past the check above, so dic is non-null past the guard below
-		if (!dic!.TryGetValue(key, out int i))
+		if (!dic.TryGetValue(key, out int i))
 		{
 			if (errPos == null)
 			{
@@ -91,9 +89,8 @@ internal sealed class VariableStrArgTerm : AExpression
 
 			#region EE_ERD
 
-			// dic = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, parentCode, index);
 		{
-			dic = exm.VEvaluator.Constant.GetKeywordDictionary(out errPos, parentCode, index, null);
+			exm.VEvaluator.Constant.TryGetKeywordDictionary(out dic, out errPos, parentCode, index, null);
 		}
 
 		#endregion

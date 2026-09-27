@@ -83,7 +83,7 @@
 
 ## 8. csv/ 数据文件
 
-装载入口 `ConstantData.LoadData`(名字表/角色)与 `Process.Initialize`(GAMEBASE);**文件缺失一律跳过、非致命**;`;` 注释规则与 ERB 相同。
+装载入口 `ConstantData` 的构造函数(名字表/角色,内部调用私有的 `LoadData`)与 `Process.Initialize`(GAMEBASE);**文件缺失一律跳过、非致命**;`;` 注释规则与 ERB 相同。
 
 - `VariableSize.CSV`:`变量名,尺寸`,覆盖变量默认数组长度(`loadVariableSizeData`)
 - 名字表 CSV(行格式 `索引,名称`):`ABL` `EXP` `TALENT` `PALAM` `TRAIN` `MARK` `ITEM` `BASE` `SOURCE` `EX` `STR` `EQUIP` `TEQUIP` `FLAG` `TFLAG` `CFLAG` `TCVAR` `CSTR` `STAIN` `CDFLAG1` `CDFLAG2`,及 `STRNAME` `TSTR` `SAVESTR` `GLOBAL` `GLOBALS`(字符串表名)、`DAY` `TIME` `MONEY`(EE 扩展);`ITEM.CSV` 第三列为价格(`ItemPrice`)

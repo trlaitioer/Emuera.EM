@@ -49,7 +49,7 @@ token 基类与变量侧:
 | `VariableData`/`CharacterData` 的 `Data*Array`/`Data*Array2D` 槽位 | 保持非空声明 | 置 null 只发生在 `Dispose`(对象已死),按 SKILL 的 post-Dispose 规则不为它放宽注解 |
 | `VariableParser.ReduceVariable(VariableToken, AExpression?, AExpression?, AExpression?)` | `p1`~`p3` 改可空 | 方法体全程以 `== null` 表达省略参数,入参来自 issues/05 贯通后的 `List<AExpression?>`(经 `ExpressionParser.ReduceVariableArgument`) |
 | `VariableTerm.Identifier`/`arguments`/`transporter` | 保持非空,声明处 `= null!` | `protected VariableTerm(VariableToken)` 路径不赋值,由 `FixedVariableTerm`/`VariableNoArgTerm` 的构造路径补齐 |
-| `VariableStrArgTerm.dic`/`errPos` | `Dictionary<string, int>?`/`string?` | `dic` 由 `GetKeywordDictionary` 赋值并在方法体内判空;`errPos` 为 `out` 参数,调用后判断 `errPos == null` |
+| `VariableStrArgTerm.dic`/`errPos` | `Dictionary<string, int>?`/`string?` | `dic` 由 `TryGetKeywordDictionary` 赋值并在方法体内判空收窄；`errPos` 是同一次探测的 `out` 参数，二者的配对关系（命中才有字典、命中才填 `errPos`）由 issues/29 的拆分承担，`GetIntValue` 末尾仍按 `errPos == null` 兜底（该处丢弃了探测返回值，编译器无从收窄） |
 | `VariableIdentifier.GetVariableId(string, string?)` | 返回 `VariableIdentifier?`,`subStr` 改可空 | 方法体以 `return null` 表达未命中;无 `subStr` 的重载自身传 `null` |
 | `UserDefinedVariable`/`UserDefinedFunction`/`DefineMacro` 的装载期字段 | 保持非空,声明处 `= null!` | 由 ErhLoader 装载期赋值,构造后访问 |
 | `CharaVariableToken.sizes` | 改 `int[]?`,四个查询方法内以 `this.sizes!` 取局部 | 用户定义字符变量先经基类构造(`CharacterData.CharacterVarLength` 返回 null)再由派生构造器赋值,构造期确实为 null,故字段可空;取用点都在派生构造器之后 |
@@ -67,7 +67,7 @@ token 基类与变量侧:
 | `IdentifierDictionary.GetVariableToken(string key, string? subKey, bool allowPrivate)` | 返回 `VariableToken?`,`subKey` 改可空 | 方法体多处以 `return null` 表达未命中;消费方(`Process.ScriptProc`、`ArgumentBuilder`、`VariableParser`、`VariableData`、`CharacterData`)已在判空;`Emuera.Tests` 的 `VariableParserTests.GetToken` 已按 `VariableToken?` 书写,`subKey` 实参传 null |
 | `IdentifierDictionary.GetFunctionMethod(LabelDictionary?, string, List<AExpression?>, bool)` | 返回 `AExpression?`,`labelDic` 改可空 | 方法体多处 `return null`;方法体前半段已判 `labelDic != null` |
 | `IdentifierDictionary.GetMacro`/`GetFunctionIdentifier`/`GetRefMethod` | 分别返回 `DefineMacro?`/`FunctionIdentifier?`/`UserDefinedRefMethod?` | 方法体均以 `return null` 表达未命中 |
-| `ConstantData.GetKeywordDictionary(out string? errPos, VariableCode, int, string? varname)` | 返回 `Dictionary<string, int>?`,`errPos` 与 `varname` 改可空 | 方法体以 `ret = null`/`errPos = null` 表达未命中;既有调用点传 null 的 varname,`VariableStrArgTerm` 两处消费均判空 |
+| `ConstantData.GetKeywordDictionary` | 拆为 `TryGetKeywordDictionary([NotNullWhen(true)] out Dictionary<string, int>? dic, [NotNullWhen(true)] out string? errPos, VariableCode, int, string? varname)`（探测）与 `GetKeywordDictionary([NotNull] out string? errPos, VariableCode, int, string? varname)`（求值，返回非空、缺字典抛 `CodeEE`）；`varname` 仍可空 | 原方法用一个可空返回同时表达「`index < 0` 的存在性探测」「ERD 表缺失」「非关键字支撑的码」三种情形，21 个求值点只能写 `!`；拆分见 issues/29 |
 | `ConstantData.GetCharacterTemplate`/`GetCharacterTemplate_UseSp`/`GetCharacterTemplateFromCsvNo` | 返回 `CharacterTemplate?` | `TryGetValue` 未命中返回 null;消费点在 `VariableEvaluator`(本票)与 `ConstantDataTests`(已用 `Assert.Null`/`!`) |
 | `ParserMediator.console` 字段与 `Initialize(EmueraConsole?)` | 字段与参数改可空;`FlushWarningList`/`SingleLine` 的解引用保持现状(用 `!`) | 告警路径已判 `console != null`;EmueraConsole/PluginManager 与 `Emuera.Tests` 的 `TestBootstrap` 实传 null,`!` 精确保留现有行为 |
 | `ConstantData.names` 与 `GetCsvNameList` | `string?[]?[]`;`GetCsvNameList` 返回 `string?[]`(取用时 `!`) | 槽位在 `LoadData` 前为 null、元素在 CSV 未填处为 null(既有 `if (names[i] == null)` 与调用点的 `paramName == null` 判断);方法只被名表 code 调用,槽位必已填充 |

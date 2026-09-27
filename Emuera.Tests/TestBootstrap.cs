@@ -44,8 +44,7 @@ internal static class TestBootstrap
 		gamebase.LoadGameBaseCsv(Path.Combine(csvDir, "GAMEBASE.CSV"));
 		GlobalStatic.GameBaseData = gamebase;
 
-		var constant = new ConstantData();
-		constant.LoadData(csvDir, null!, false);
+		var constant = new ConstantData(csvDir, null!, false);
 		GlobalStatic.ConstantData = constant;
 
 		var vEvaluator = new VariableEvaluator(gamebase, constant);

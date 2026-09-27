@@ -10,7 +10,7 @@
 - 分类与 issues/13 一致:全库后缀断言扣除 `null!`、`Argument` 可选字段、其他 `list[i]!`、`(x as T)!`、`JumpTo` 族五类,再扣除 `ArgumentListExtensions` 内承担全部参数槽位断言的 2 处,得残差类;本文件即该残差类在 `Emuera/` 内的部分
 - 站点 ID 形如 `<文件>#<类型>.<成员>#<序号>`,序号在同一 `文件#成员` 内按源码顺序从 1 计,不含行号
 - 交叉验证(2026-09-25):同一收紧式在 `Emuera/` 上用三种实现独立计数一致——IDE(Rider)文本搜索 979、PowerShell/.NET 正则 979、本脚本剥注释与字符串后 969(差的 10 处位于注释或字符串字面量内)。全库剥后为 **1076** = 969 + `Emuera.Tests` 107
-- 锚点:清单对应 `1ed33b5c`(2026-09-21)到落地提交 `03292664`(2026-09-25)之间的代码,该区间内 344 条源码片段逐一命中;首个删除发生在 `e9eaaf32`(2026-09-25),此后共删 12 条站点,清单未逐条回填,见文末「已失效站点」;验收一律以该区间为基准
+- 锚点:清单对应 `1ed33b5c`(2026-09-21)到落地提交 `03292664`(2026-09-25)之间的代码,该区间内 344 条源码片段逐一命中;首个删除发生在 `e9eaaf32`(2026-09-25),此后共删 34 条站点,清单未逐条回填,见文末「已失效站点」;验收一律以该区间为基准
 
 ## 构成
 
@@ -568,10 +568,11 @@
 | ConsoleStyledString? (局部) .Font | 1 | bare/member | `Emuera/UI/Game/PrintStringBuffer.cs#PrintStringBuffer.getDivideIndex#4` |
 | byte[] (成员) | 1 | X![i] | `Emuera/UI/Game/Rikaichan.cs#Rikaichan.OnPaint#1` |
 
-## 已失效站点(锚点区间之后被实施删除,2026-09-26 复核)
+## 已失效站点(锚点区间之后被实施删除,2026-09-27 复核)
 
-锚点区间(`1ed33b5c`…`03292664`)之后有 **12 条**站点的 `!` 已随实施提交消失,上面各表的行仍保留(它们是锚点上的事实),但核对当前代码时不再命中;余下 **332 条**仍可在 HEAD 上定位(结论分布 C 9 / B 8 / A 278 / D 37)。本节只列 ID,不进入上面的站点表与分组索引:
+锚点区间(`1ed33b5c`…`03292664`)之后有 **34 条**站点的 `!` 已随实施提交消失,上面各表的行仍保留(它们是锚点上的事实),但核对当前代码时不再命中;余下 **310 条**仍可在 HEAD 上定位(结论分布 C 9 / B 8 / A 256 / D 37)。本节只列 ID,不进入上面的站点表与分组索引:
 
 - `e9eaaf32`(issues/15,3 处 C):`Emuera/Runtime/Script/Statements/ArgumentBuilder.cs#SP_PRINT_IMG_ArgumentBuilder.CreateArgument#1`、`Emuera/Runtime/Script/Statements/ArgumentBuilder.cs#SP_PRINT_SHAPE_ArgumentBuilder.CreateArgument#1`、`Emuera/Runtime/Script/Statements/ArgumentBuilder.cs#SP_PRINT_SHAPE_ArgumentBuilder.CreateArgument#2`
 - `9fe67fb6`(issues/19;其中 `IdentifierDictionary.GetVariableToken#2` 原挂 issues/25,7 处:C 4 / B 1 / A 2):`Emuera/Runtime/Script/Data/IdentifierDictionary.cs#IdentifierDictionary.GetVariableToken#2`(C)、`Emuera/Runtime/Script/Process.cs#Process.handleException#1`(C)、`Emuera/Runtime/Utils/PluginSystem/PluginManager.cs#PluginManager.ExecuteLine#1`(C)、`Emuera/Runtime/Utils/PluginSystem/PluginManager.cs#PluginManager.ExecuteLine#2`(C)、`Emuera/Runtime/Utils/PluginSystem/PluginManager.cs#PluginManager.GetStackTrace#1`(B)、`Emuera/Runtime/Script/Process.cs#Process.handleException#2`(A)、`Emuera/Runtime/Utils/PluginSystem/PluginManager.cs#PluginManager.GetStackTrace#2`(A)
 - `ab93db4f`(2 处 A):`Emuera/Runtime/Script/Statements/Expression/ExpressionParser.cs#ExpressionParser.local#1`、`Emuera/Runtime/Script/Statements/Expression/ExpressionParser.cs#ExpressionParser.local#2`
+- issues/29(22 处 A;`GetKeywordDictionary` 拆 Try 与非空入口,提交哈希随该提交回填):`Emuera/Runtime/Script/Data/ConstantData.cs#ConstantData.KeywordToInteger#1`、`Emuera/Runtime/Utils/PluginSystem/PluginManager.cs#PluginManager.SetCharVar#1`、`Emuera/Runtime/Utils/PluginSystem/PluginManager.cs#PluginManager.GetCharVar#1`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#GlobalInt1dWrapper.Get#1`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#GlobalInt1dWrapper.Set#1`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#GlobalString1dWrapper.Get#1`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#GlobalString1dWrapper.Set#1`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#GlobalConstString1dWrapper.Get#1`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#GlobalConstInt1dWrapper.Get#1`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#CharInt1dWrapper.Get#1`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#CharInt1dWrapper.Set#1`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#CharInt2dWrapper.Get#1`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#CharInt2dWrapper.Get#2`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#CharInt2dWrapper.Get#3`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#CharInt2dWrapper.Get#4`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#CharInt2dWrapper.Set#1`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#CharInt2dWrapper.Set#2`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#CharInt2dWrapper.Set#3`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#CharInt2dWrapper.Set#4`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#CharString1dWrapper.Get#1`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#CharString1dWrapper.Set#1`、`Emuera/Runtime/Script/Statements/Variable/VariableStrArgTerm.cs#VariableStrArgTerm.GetIntValue#1`

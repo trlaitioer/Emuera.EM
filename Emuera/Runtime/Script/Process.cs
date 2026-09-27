@@ -188,8 +188,7 @@ internal sealed partial class Process(EmueraConsole view)
 			logWriter?.WriteLine($"Proc:Init:MainCSV:End {stopWatch.ElapsedMilliseconds}ms");
 
 			//前記以外のcsvを全て読み込み
-			ConstantData constant = new();
-			constant.LoadData(Program.CsvRoot.FullName, console, Config.DisplayReport);
+			ConstantData constant = new(Program.CsvRoot.FullName, console, Config.DisplayReport);
 			logWriter?.WriteLine($"Proc:Init:EtcCSV:End {stopWatch.ElapsedMilliseconds}ms");
 
 			GlobalStatic.ConstantData = constant;

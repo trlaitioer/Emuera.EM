@@ -227,9 +227,8 @@ public class PluginManager
 	public void SetCharVar(string name, long charId, string key, long value)
 	{
 		VariableToken variable = expressionMediator.VEvaluator.VariableData.GetVarTokenDic()[name];
-		string? errPos = "";
-		Dictionary<string, int>? dict = expressionMediator.VEvaluator.Constant.GetKeywordDictionary(out errPos, VariableCode.CFLAG, 1, key);
-		variable.SetValue(value, [charId, dict![key]]);
+		Dictionary<string, int> dict = expressionMediator.VEvaluator.Constant.GetKeywordDictionary(out _, VariableCode.CFLAG, 1, key);
+		variable.SetValue(value, [charId, dict[key]]);
 	}
 
 	public void SetCharVar(string name, long charId, long key, long value)
@@ -247,9 +246,8 @@ public class PluginManager
 	public long GetCharVar(string name, long charId, string key)
 	{
 		VariableToken variable = expressionMediator.VEvaluator.VariableData.GetVarTokenDic()[name];
-		string? errPos = "";
-		Dictionary<string, int>? dict = expressionMediator.VEvaluator.Constant.GetKeywordDictionary(out errPos, VariableCode.CFLAG, 1, key);
-		return variable.GetIntValue(expressionMediator, [charId, dict![key]]);
+		Dictionary<string, int> dict = expressionMediator.VEvaluator.Constant.GetKeywordDictionary(out _, VariableCode.CFLAG, 1, key);
+		return variable.GetIntValue(expressionMediator, [charId, dict[key]]);
 	}
 
 	public System.Data.DataTable GetDataTable(string name)

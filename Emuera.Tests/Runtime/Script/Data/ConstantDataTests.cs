@@ -25,9 +25,7 @@ public class ConstantDataTests
 				File.WriteAllText(Path.Combine(dir, file), content);
 			// 等价启动流程: Preload.Load(CsvDir) 先于 ConstantData.LoadData, OpenOnCache 依赖该缓存
 			await Preload.Load(dir);
-			var constant = new ConstantData();
-			constant.LoadData(dir, null!, false);
-			return constant;
+			return new ConstantData(dir, null!, false);
 		}
 		finally
 		{

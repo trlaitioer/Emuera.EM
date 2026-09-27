@@ -112,16 +112,16 @@ internal sealed class ConstantData
 
 	#region EE_ERD
 
-	private const int ERD_NAMES_INDEX = (int)VariableCode.__COUNT_CSV_STRING_ARRAY_1D__;
+	private const int ERD_NAMES_INDEX = countNameCsv;
 
 	// Slots stay null until LoadData fills them; elements stay null where the CSV has no entry
-	private readonly string?[]?[] names = new string?[(int)VariableCode.__COUNT_CSV_STRING_ARRAY_1D__ + 1][]; // 元より1増やす
-	private readonly Dictionary<string, int>[] aliases = new Dictionary<string, int>[(int)VariableCode.__COUNT_CSV_STRING_ARRAY_1D__ + 1];
+	private readonly string?[]?[] names = new string?[countNameCsv + 1][]; // 元より1増やす
+	private readonly Dictionary<string, int>[] aliases = new Dictionary<string, int>[countNameCsv + 1];
 	private readonly Dictionary<string, Dictionary<string, int>> erdNameToIntDics = [];
 
 	#endregion
 
-	private readonly Dictionary<string, int>[] nameToIntDics = new Dictionary<string, int>[(int)VariableCode.__COUNT_CSV_STRING_ARRAY_1D__];
+	private readonly Dictionary<string, int>[] nameToIntDics = new Dictionary<string, int>[countNameCsv];
 	private readonly Dictionary<string, int> relationDic = [];
 
 	public string?[] GetCsvNameList(VariableCode code)
@@ -136,18 +136,21 @@ internal sealed class ConstantData
 	private readonly Dictionary<long, CharacterTemplate> charaTmplByCsvNo = [];
 	private EmueraConsole output = null!;
 
-	public ConstantData()
+	public ConstantData(string csvDir, EmueraConsole console, bool disp)
 	{
 		//this.gamebase = gamebase;
 		setDefaultArrayLength();
 
 		CharacterTmplList = [];
 		useCompatiName = Config.Config.CompatiCALLNAME;
+		// Eager load: nameToIntDics/names/output are only ever filled by LoadData, and the keyword-dictionary
+		// contract relies on them being populated, so LoadData stays private and is called only from here.
+		LoadData(csvDir, console, disp);
 	}
 
 	private readonly bool useCompatiName;
 
-	// Initialized by LoadData through this method before any use
+	// Set by setDefaultArrayLength, called from the constructor before any use
 	[MemberNotNull(nameof(VariableIntArrayLength))]
 	[MemberNotNull(nameof(VariableStrArrayLength))]
 	[MemberNotNull(nameof(VariableIntArray2DLength))]
@@ -754,7 +757,7 @@ internal sealed class ConstantData
 	}
 
 
-	public void LoadData(string csvDir, EmueraConsole console, bool disp)
+	private void LoadData(string csvDir, EmueraConsole console, bool disp)
 	{
 		output = console;
 		loadVariableSizeData(Path.Combine(csvDir, "VariableSize.CSV"), disp);
@@ -961,12 +964,10 @@ internal sealed class ConstantData
 		Dictionary<string, int>? dic;
 		if (varCode == VariableCode.CDFLAG)
 		{
-			// dic = GetKeywordDictionary(out _, VariableCode.CDFLAGNAME1, -1);
-			dic = GetKeywordDictionary(out _, VariableCode.CDFLAGNAME1, -1, null);
+			TryGetKeywordDictionary(out dic, out _, VariableCode.CDFLAGNAME1, -1, null);
 			if (dic == null || !dic.ContainsKey(str))
-				// dic = GetKeywordDictionary(out _, VariableCode.CDFLAGNAME2, -1);
 			{
-				dic = GetKeywordDictionary(out _, VariableCode.CDFLAGNAME2, -1, null);
+				TryGetKeywordDictionary(out dic, out _, VariableCode.CDFLAGNAME2, -1, null);
 			}
 
 			if (dic == null)
@@ -977,8 +978,7 @@ internal sealed class ConstantData
 			return dic.ContainsKey(str);
 		}
 
-		// dic = GetKeywordDictionary(out _, varCode, -1);
-		dic = GetKeywordDictionary(out _, varCode, -1, null);
+		TryGetKeywordDictionary(out dic, out _, varCode, -1, null);
 		return dic != null && dic.ContainsKey(str);
 	}
 
@@ -1019,7 +1019,7 @@ internal sealed class ConstantData
 
 		{
 			//ここで見つからなかったら下の処理でも通す
-			Dictionary<string, int>? dic = GetKeywordDictionary(out string? errPos, code, index, null);
+			TryGetKeywordDictionary(out Dictionary<string, int>? dic, out _, code, index, null);
 			if (dic != null && dic.TryGetValue(key, out ret))
 			{
 				return true;
@@ -1080,20 +1080,13 @@ internal sealed class ConstantData
 
 		#region EE_ERD
 
-		// Dictionary<string, int> dic = GetKeywordDictionary(out string errPos, code, index);
-		Dictionary<string, int>? dic = GetKeywordDictionary(out string? errPos, code, index, null);
+		Dictionary<string, int> dic = GetKeywordDictionary(out string? errPos, code, index, null);
 
 		#endregion
 
-		// Callers pass keyword-backed codes, for which GetKeywordDictionary returns a dictionary
-		if (dic!.TryGetValue(key, out int ret))
+		if (dic.TryGetValue(key, out int ret))
 		{
 			return ret;
-		}
-
-		if (errPos == null)
-		{
-			throw new CodeEE(string.Format(trerror.CanNotSpecifiedByString.Text, code.ToString()));
 		}
 
 		throw new CodeEE(string.Format(trerror.NotDefinedKey.Text, errPos, key));
@@ -1101,38 +1094,39 @@ internal sealed class ConstantData
 
 	#region EE_ERD
 
-	//public Dictionary<string, int> GetKeywordDictionary(out string errPos, VariableCode code, int index)
-	// Null means "no keyword dictionary for this code": the code is not keyword-backed, or the caller
-	// passed index < 0 to ask whether one exists. Callers with index >= 0 either pass a keyword-backed
-	// code or turn the null into CodeEE; the ERD early returns below can still yield null at index >= 0.
-	public Dictionary<string, int>? GetKeywordDictionary(out string? errPos, VariableCode code, int index, string? varname)
-
-		#endregion
-
+	/// <summary>
+	/// Probes for the keyword dictionary of <paramref name="code"/>. False answers the two questions that may
+	/// legitimately be "no" - does this code have a keyword dictionary (<paramref name="index"/> &lt; 0), and
+	/// does the ERD table for <paramref name="varname"/> exist - and leaves <paramref name="dic"/> null;
+	/// <paramref name="errPos"/> is non-null exactly when a dictionary was found - an empty dictionary still
+	/// counts as found (construction creates it, LoadData fills its contents). Misuse still throws CodeEE:
+	/// a code that cannot be specified by a string, or an index the code does not allow.
+	/// </summary>
+	public bool TryGetKeywordDictionary([NotNullWhen(true)] out Dictionary<string, int>? dic, [NotNullWhen(true)] out string? errPos, VariableCode code, int index, string? varname)
 	{
+		dic = null;
 		errPos = null;
 		int allowIndex = -1;
-		Dictionary<string, int>? ret = null;
 		switch (code)
 		{
 			case VariableCode.ABL:
-				ret = nameToIntDics[ablIndex]; //AblName;
+				dic = nameToIntDics[ablIndex]; //AblName;
 				errPos = "abl.csv";
 				allowIndex = 1;
 				break;
 			case VariableCode.EXP:
-				ret = nameToIntDics[expIndex]; //ExpName;
+				dic = nameToIntDics[expIndex]; //ExpName;
 				errPos = "exp.csv";
 				allowIndex = 1;
 				break;
 			case VariableCode.TALENT:
-				ret = nameToIntDics[talentIndex]; //TalentName;
+				dic = nameToIntDics[talentIndex]; //TalentName;
 				errPos = "talent.csv";
 				allowIndex = 1;
 				break;
 			case VariableCode.UP:
 			case VariableCode.DOWN:
-				ret = nameToIntDics[paramIndex]; //ParamName　１;
+				dic = nameToIntDics[paramIndex]; //ParamName　１;
 				errPos = "palam.csv";
 				allowIndex = 0;
 				break;
@@ -1141,101 +1135,101 @@ internal sealed class ConstantData
 			case VariableCode.GOTJUEL:
 			case VariableCode.CUP:
 			case VariableCode.CDOWN:
-				ret = nameToIntDics[paramIndex]; //ParamName　２;
+				dic = nameToIntDics[paramIndex]; //ParamName　２;
 				errPos = "palam.csv";
 				allowIndex = 1;
 				break;
 
 			case VariableCode.TRAINNAME:
-				ret = nameToIntDics[trainIndex]; //TrainName;
+				dic = nameToIntDics[trainIndex]; //TrainName;
 				errPos = "train.csv";
 				allowIndex = 0;
 				break;
 			case VariableCode.MARK:
-				ret = nameToIntDics[markIndex]; //MarkName;
+				dic = nameToIntDics[markIndex]; //MarkName;
 				errPos = "mark.csv";
 				allowIndex = 1;
 				break;
 			case VariableCode.ITEM:
 			case VariableCode.ITEMSALES:
 			case VariableCode.ITEMPRICE:
-				ret = nameToIntDics[itemIndex]; //ItemName;
+				dic = nameToIntDics[itemIndex]; //ItemName;
 				errPos = "Item.csv";
 				allowIndex = 0;
 				break;
 			case VariableCode.LOSEBASE:
-				ret = nameToIntDics[baseIndex]; //BaseName;
+				dic = nameToIntDics[baseIndex]; //BaseName;
 				errPos = "base.csv";
 				allowIndex = 0;
 				break;
 			case VariableCode.BASE:
 			case VariableCode.MAXBASE:
 			case VariableCode.DOWNBASE:
-				ret = nameToIntDics[baseIndex]; //BaseName;
+				dic = nameToIntDics[baseIndex]; //BaseName;
 				errPos = "base.csv";
 				allowIndex = 1;
 				break;
 			case VariableCode.SOURCE:
-				ret = nameToIntDics[sourceIndex]; //SourceName;
+				dic = nameToIntDics[sourceIndex]; //SourceName;
 				errPos = "source.csv";
 				allowIndex = 1;
 				break;
 			case VariableCode.EX:
 			case VariableCode.NOWEX:
-				ret = nameToIntDics[exIndex]; //ExName;
+				dic = nameToIntDics[exIndex]; //ExName;
 				errPos = "ex.csv";
 				allowIndex = 1;
 				break;
 
 
 			case VariableCode.EQUIP:
-				ret = nameToIntDics[equipIndex]; //EquipName;
+				dic = nameToIntDics[equipIndex]; //EquipName;
 				errPos = "equip.csv";
 				allowIndex = 1;
 				break;
 			case VariableCode.TEQUIP:
-				ret = nameToIntDics[tequipIndex]; //TequipName;
+				dic = nameToIntDics[tequipIndex]; //TequipName;
 				errPos = "tequip.csv";
 				allowIndex = 1;
 				break;
 			case VariableCode.FLAG:
-				ret = nameToIntDics[flagIndex]; //FlagName;
+				dic = nameToIntDics[flagIndex]; //FlagName;
 				errPos = "flag.csv";
 				allowIndex = 0;
 				break;
 			case VariableCode.TFLAG:
-				ret = nameToIntDics[tflagIndex]; //TFlagName;
+				dic = nameToIntDics[tflagIndex]; //TFlagName;
 				errPos = "tflag.csv";
 				allowIndex = 0;
 				break;
 			case VariableCode.CFLAG:
-				ret = nameToIntDics[cflagIndex]; //CFlagName;
+				dic = nameToIntDics[cflagIndex]; //CFlagName;
 				errPos = "cflag.csv";
 				allowIndex = 1;
 				break;
 			case VariableCode.TCVAR:
-				ret = nameToIntDics[tcvarIndex]; //TCVarName;
+				dic = nameToIntDics[tcvarIndex]; //TCVarName;
 				errPos = "tcvar.csv";
 				allowIndex = 1;
 				break;
 			case VariableCode.CSTR:
-				ret = nameToIntDics[cstrIndex]; //CStrName;
+				dic = nameToIntDics[cstrIndex]; //CStrName;
 				errPos = "cstr.csv";
 				allowIndex = 1;
 				break;
 
 			case VariableCode.STAIN:
-				ret = nameToIntDics[stainIndex]; //StainName;
+				dic = nameToIntDics[stainIndex]; //StainName;
 				errPos = "stain.csv";
 				allowIndex = 1;
 				break;
 			case VariableCode.CDFLAGNAME1:
-				ret = nameToIntDics[cdflag1Index];
+				dic = nameToIntDics[cdflag1Index];
 				errPos = "cdflag1.csv";
 				allowIndex = 0;
 				break;
 			case VariableCode.CDFLAGNAME2:
-				ret = nameToIntDics[cdflag2Index];
+				dic = nameToIntDics[cdflag2Index];
 				errPos = "cdflag2.csv";
 				allowIndex = 0;
 				break;
@@ -1244,11 +1238,11 @@ internal sealed class ConstantData
 				switch (index)
 				{
 					case 1:
-						ret = nameToIntDics[cdflag1Index]; //CDFlagName1
+						dic = nameToIntDics[cdflag1Index]; //CDFlagName1
 						errPos = "cdflag1.csv";
 						break;
 					case 2:
-						ret = nameToIntDics[cdflag2Index]; //CDFlagName2
+						dic = nameToIntDics[cdflag2Index]; //CDFlagName2
 						errPos = "cdflag2.csv";
 						break;
 					case >= 0:
@@ -1257,41 +1251,41 @@ internal sealed class ConstantData
 						throw new CodeEE(trerror.UseCdflagname.Text);
 				}
 
-				return ret;
+				return true;
 			}
 			case VariableCode.STR:
-				ret = nameToIntDics[strnameIndex];
+				dic = nameToIntDics[strnameIndex];
 				errPos = "strname.csv";
 				allowIndex = 0;
 				break;
 			case VariableCode.TSTR:
-				ret = nameToIntDics[tstrnameIndex];
+				dic = nameToIntDics[tstrnameIndex];
 				errPos = "tstr.csv";
 				allowIndex = 0;
 				break;
 			case VariableCode.SAVESTR:
-				ret = nameToIntDics[savestrnameIndex];
+				dic = nameToIntDics[savestrnameIndex];
 				errPos = "savestr.csv";
 				allowIndex = 0;
 				break;
 			case VariableCode.GLOBAL:
-				ret = nameToIntDics[globalIndex];
+				dic = nameToIntDics[globalIndex];
 				errPos = "global.csv";
 				allowIndex = 0;
 				break;
 			case VariableCode.GLOBALS:
-				ret = nameToIntDics[globalsIndex];
+				dic = nameToIntDics[globalsIndex];
 				errPos = "globals.csv";
 				allowIndex = 0;
 				break;
 			case VariableCode.RELATION:
-				ret = relationDic;
+				dic = relationDic;
 				errPos = "chara*.csv";
 				allowIndex = 1;
 				break;
 			case VariableCode.NAME:
 			case VariableCode.CALLNAME:
-				ret = relationDic;
+				dic = relationDic;
 				errPos = "chara*.csv";
 				allowIndex = -1;
 				break;
@@ -1299,17 +1293,17 @@ internal sealed class ConstantData
 			#region EE_CSV機能拡張
 
 			case VariableCode.DAY:
-				ret = nameToIntDics[dayIndex];
+				dic = nameToIntDics[dayIndex];
 				errPos = "day.csv";
 				allowIndex = 0;
 				break;
 			case VariableCode.TIME:
-				ret = nameToIntDics[timeIndex];
+				dic = nameToIntDics[timeIndex];
 				errPos = "time.csv";
 				allowIndex = 0;
 				break;
 			case VariableCode.MONEY:
-				ret = nameToIntDics[moneyIndex];
+				dic = nameToIntDics[moneyIndex];
 				errPos = "money.csv";
 				allowIndex = 0;
 				break;
@@ -1317,13 +1311,11 @@ internal sealed class ConstantData
 			#endregion
 		}
 
-		#region EE_ERD
-
-		if (ret == null && Config.Config.UseERD)
+		if (dic == null && Config.Config.UseERD)
 		{
 			if (string.IsNullOrEmpty(varname))
 			{
-				return ret;
+				return dic != null;
 			}
 
 			switch (code)
@@ -1334,11 +1326,11 @@ internal sealed class ConstantData
 				case VariableCode.CVARS:
 					if (erdNameToIntDics.TryGetValue(varname, out Dictionary<string, int>? value))
 					{
-						ret = value;
+						dic = value;
 					}
 					else
 					{
-						return ret;
+						return dic != null;
 					}
 
 					errPos = varname + ".csv";
@@ -1359,11 +1351,11 @@ internal sealed class ConstantData
 						string varnamed = varname + "@1";
 						if (erdNameToIntDics.TryGetValue(varnamed, out Dictionary<string, int>? value1))
 						{
-							ret = value1;
+							dic = value1;
 						}
 						else
 						{
-							return ret;
+							return dic != null;
 						}
 
 						errPos = varnamed + ".csv";
@@ -1379,11 +1371,11 @@ internal sealed class ConstantData
 						string varnamed = varname + "@2";
 						if (erdNameToIntDics.TryGetValue(varnamed, out Dictionary<string, int>? value1))
 						{
-							ret = value1;
+							dic = value1;
 						}
 						else
 						{
-							return ret;
+							return dic != null;
 						}
 
 						errPos = varnamed + ".csv";
@@ -1401,11 +1393,11 @@ internal sealed class ConstantData
 					string varname3d = varname + "@" + (index + 1);
 					if (erdNameToIntDics.TryGetValue(varname3d, out Dictionary<string, int>? value2))
 					{
-						ret = value2;
+						dic = value2;
 					}
 					else
 					{
-						return ret;
+						return dic != null;
 					}
 
 					errPos = varname3d + ".csv";
@@ -1414,21 +1406,19 @@ internal sealed class ConstantData
 			}
 		}
 
-		#endregion
-
 		if (index < 0)
 		{
-			return ret;
+			return dic != null;
 		}
 
-		if (ret == null)
+		if (dic == null)
 		{
 			throw new CodeEE(string.Format(trerror.CanNotSpecifiedByString.Text, code.ToString()));
 		}
 
 		if (index == allowIndex)
 		{
-			return ret;
+			return dic != null;
 		}
 
 		if (allowIndex < 0) //GETNUM専用
@@ -1438,6 +1428,23 @@ internal sealed class ConstantData
 
 		throw new CodeEE(string.Format(trerror.CannotIndexSpecifiedByString.Text, code.ToString(), (index + 1).ToString()));
 	}
+
+	/// <summary>
+	/// Resolves the keyword dictionary of a keyword-backed <paramref name="code"/> at index &gt;= 0. A missing
+	/// dictionary is an error here rather than a probe result - probe with <see cref="TryGetKeywordDictionary"/>
+	/// (or ask with index &lt; 0) instead.
+	/// </summary>
+	public Dictionary<string, int> GetKeywordDictionary([NotNull] out string? errPos, VariableCode code, int index, string? varname)
+	{
+		if (!TryGetKeywordDictionary(out Dictionary<string, int>? dic, out errPos, code, index, varname))
+		{
+			throw new CodeEE(string.Format(trerror.CanNotSpecifiedByString.Text, code.ToString()));
+		}
+
+		return dic;
+	}
+
+	#endregion
 
 	#region EE_重複定義の確認
 

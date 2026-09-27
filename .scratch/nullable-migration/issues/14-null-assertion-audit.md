@@ -55,7 +55,7 @@ issues/13 消掉的是「可以用机制替代」的 `!`；剩下的断言里有
 
 #### 已删除的判定歧义
 
-- `GetCharacterTemplate*` 不是问题：其 6 个调用方全部判空。TODO 指向的位置实为 `ConstantData.GetKeywordDictionary`，该函数在 `index >= 0` 时把 null 转成 `CodeEE`，只在插件传空 key 时外泄 null（B，随 issues/19 记录潜在缺陷）。
+- `GetCharacterTemplate*` 不是问题：其 6 个调用方全部判空。TODO 指向的位置实为 `ConstantData.GetKeywordDictionary`，该函数在 `index >= 0` 时把 null 转成 `CodeEE`，只在插件传空 key 时外泄 null（B，随 issues/19 记录潜在缺陷）；issues/29 已把该外泄结构性关闭——探测版 `TryGetKeywordDictionary` 如实返回 false，求值版遇缺字典即抛 `CodeEE`。
 - `Strings.StrConv` **前面这条判定已更正**：`Microsoft.VisualBasic.Core` 的该成员是有可空注解的（`string? StrConv(string? str, VbStrConv, int LocaleID = 0)`），调用点的 `!` 抑制的是 CS8603，删掉会报错；issues/08 迁移该文件时已记录「返回 `string?`」并就地补了 TODO。可删的只有「无 null 返回路径」这一半（不支持的转换抛 `ArgumentException`），故两处 `!` 保留、由 issues/22 复核 TODO，不构成可清理的噪音。
 - `INPUTS`/`ONEINPUTS`/`BINPUTS`/`ONEBINPUTS` 不在缺陷范围内：`SP_INPUTS_ArgumentBuilder` 在把第二实参用作 `CanSkip` 之前已要求首实参非空且为整数。
 - `TINPUT`/`TINPUTS` 不在缺陷范围内：`checkArgumentType` 配合 `minArg = 2` 使省略实参在解析期即报错。

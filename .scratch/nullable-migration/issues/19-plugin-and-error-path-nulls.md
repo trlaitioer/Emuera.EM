@@ -27,7 +27,7 @@ Status: in-progress
 | 5 | `PluginManager` 的 `GetStackTrace` | 首处依次解引用当前行、位置与父标签行且不判空（循环内仅以 `parent.Position != null` 守卫，`ParentLabelLine` 仍为断言）；内存行的 `Position` 是默认结构（非 null）故 `Position!.Value` 不抛，真正的命中点是 `CurrentLine` 为 null 与 `ParentLabelLine` 为 null | 插件在 `CALLSHARP` 执行窗口之外（自身线程、脚本已结束）调用 |
 | 6 | `Process.cs` 的 `Process.handleException` | `position != null` 分支的位置取的是 `exc is EmueraException { Position: not null }` 或 `current`，而 `handleException(e, null, true)` 是合法调用（`Process.Initialize` 的 catch 就这么调），块内无条件解引用 `current!` 与 `current.ParentLabelLine!`；调用栈循环里另有 `parent.ParentLabelLine!`，而 `parent.Position != null` 对内存行恒真，任何以内存行为返回地址的条目都会让后续报错停在打印栈处 | **无需插件、无需 `-Debug`**：`VariableSize.CSV` 的 CDFLAG 不变量失败时 `ConstantData.decideActualArraySize` 抛带位置的 `CodeEE`（CDFLAGNAME1/2 与 CDFLAG 长度不一致，或两维乘积 > 1000000），该 throw 在 `loadVariableSizeData` 的 try 之外，而 `LoadData` 又在 `Process.Initialize` 的 try 内，于是报错路径自身抛异常、`Initialize` 不再 `return false`。原票举的 `ParserMediator.LoadEraExRenameFile` 是同型路径之一，不是唯一入口 |
 | 7 | `IdentifierDictionary` 的 `GetVariableToken`（显式 subKey 分支，`LOCAL@name`/`ARG@name`） | 只以 `isError: false` 告警后即解引用 `line` 与 `ParentLabelLine`；紧邻的无 subKey 分支有正确的 `CodeEE` 处理。收窄必须放在 `ParserMediator.Warn` **之前**：`Warn` 在真正记录告警时会读 `line.Position`，否则 NRE 先发生在 `Warn` 内 | 解析期 `GetScaningLine()` 返回 null 或无父标签的行（issues/25 记了 `ErbLoader.setLabelsArg` 的入口；issues/24 是同族的行位置变体） |
-| 8 | `ConstantData` 的 `GetKeywordDictionary`（潜在缺陷,B 类） | ERD 分支有 5 条早退 `return ret;`（按 case 组算 4 组）：`string.IsNullOrEmpty(varname)` 一处、`erdNameToIntDics` 未命中三组（`VAR`/`VARS`/`CVAR`/`CVARS`、`VAR2D` 族两处、`VAR3D`/`VARS3D`），在 `index >= 0` 时把 null 原样返回；方法末段才把 null 转 `CodeEE` | 当前**无可达调用方**：`VariableDataWrappers` 的 18 处与 `PluginManager` 的 2 处传的变量码全部命中主 switch，ERD 分支不可达；唯一以 `VariableCode.VAR` 构造的 `CharUserdefinedInt1dWrapper` 不调本方法（其 `variableCode` 字段还是死字段）；真正走 ERD 早退的 `KeywordToInteger`/`TryKeywordToInteger` 由 `isDefined` 门禁或自身判空保护（issues/23），`VariableStrArgTerm` 已把 null 转 `CodeEE`。故本行只登记并改写方法上方的 TODO——现文案「every caller dereferences the result with '!'」与实测不符，issues/22 §2 已把该 TODO 划归本票 |
+| 8 | `ConstantData` 的 `GetKeywordDictionary`（潜在缺陷,B 类） | **已由 issues/29 关闭（2026-09-27）**：方法拆为 `TryGetKeywordDictionary`（`index < 0` 的探测与 ERD 表缺失如实返回 false）与抛 `CodeEE` 的非空入口 `GetKeywordDictionary`。原文登记的「ERD 分支 5 条早退在 `index >= 0` 时把 null 原样返回」不再可能到达消费点——求值点在缺字典时得到 `CodeEE`，探测点得到 false | — |
 
 ### 只登记、不修改(B 类)
 
@@ -68,7 +68,7 @@ issues/21 的断言审计（批次 1/2/3）与 issues/14 复核表第 4 项另�
    - 校验：null/纯空白、非 `InstructionLine`、`IsFlowContorol()`、`IsWaitInput()`、`!IsMethodSafe()`、`IsPartial()`、`PUTFORM`/`UPCHECK`/`CUPCHECK`/`SAVEDATA`、非 `-Debug` 下的 Debug 系指令 → 返回错误文案，由调用方抛 `CodeEE`；`SetArgumentTo` 的返回值必须检查。文案复用既有键（`CanNotInterpretedLine`/`InvalidDebugCommand`/`CanNotUseInstruction`/`CanNotUseFlowInstruction`/`ArgParsingError`），不新增 `Lang` 条目。
    - 分派改为 `process.DoDebugNormalFunction(func, false)`：它已是内存行的入口（`Instruction != null` → 否则 `doNormalFunction`），`PRINTPLAIN`/`PRINTBUTTON` 等 `METHOD_SAFE` 命令继续可用，而 `QUIT`/`SAVEDATA` 等被 `IsMethodSafe`/白名单拦下。
    - `ExecuteLine` 的 XML 注释写明接受的指令子集与抛出的异常；流控过滤落地后，行 3 的 `RESTART`/`CALL` 与行 4 的 `CALLEVENT` 一并失去可达路径。
-4. **行 8**：改写 `GetKeywordDictionary` 上方的 TODO，说明真实契约——`index < 0` 或非关键字支撑的变量码才可能返回 null，`index >= 0` 时 ERD 分支的 5 条早退仍会外泄 null 但当前无可达调用方。
+4. **行 8**：改写 `GetKeywordDictionary` 上方的 TODO，说明真实契约——`index < 0` 或非关键字支撑的变量码才可能返回 null，`index >= 0` 时 ERD 分支的 5 条早退仍会外泄 null 但当前无可达调用方（已于 issues/29 收口：早退不再可能外泄 null）。
 
 ### 验证
 
@@ -91,7 +91,7 @@ issues/21 的断言审计（批次 1/2/3）与 issues/14 复核表第 4 项另�
 - 行 1~3：新增 `Runtime/Script/Statements/MemoryLineEntry.cs`（`TryBuild`），`EmueraConsole.DebugCommand` 与 `PluginManager.ExecuteLine` 共用，`DebugCommand` 原有的同型检查段删除。校验顺序为「非指令行 → 流控 → 输入等待/非 `METHOD_SAFE`/`PARTIAL` → `PUTFORM`/`UPCHECK`/`CUPCHECK`/`SAVEDATA` → 非 `-Debug` 的 Debug 系指令 → `SetArgumentTo` 与其 `IsError`」。放在独立类型而非 `Process` 上：它不读任何 `Process` 状态，且要处理 null/`InvalidLine` 这类并非 `InstructionLine` 的输入；顺带免掉了 `EmueraConsole` 里因 `System.Diagnostics.Process` 同名而必需的 `GameProc.Process.` 限定。`ExecuteLine` 改用 `process.DoDebugNormalFunction(func, false)` 分派：`PRINTPLAIN`/`PRINTBUTTON` 等 `METHOD_SAFE` 命令仍可用，`QUIT`/`PRINTW`/`RESTART`/`CALLEVENT` 被拒；XML 注释列出可执行子集与非 `-Debug` 下 Debug 系指令同样被拒。
 - 关闭的两处同族缺口（原票未列，同属「输入未校验即执行」）：`SetArgumentTo` 的 false 返回值此前被忽略，实参解析失败（如 `ADDCHARA` 缺参）会带着空 `BuiltArgument` 进 `DoInstruction`；非 `-Debug` 模式下 `DEBUGPRINT` 族由 `SetArgumentTo` 跳过实参解析、随后同样读空 `BuiltArgument`。两者现在都得到 `CodeEE`。后者落在共用入口上，故 `DebugCommand` 在非 Debug 模式下的同类输入也随之由空引用改为明确文案（方向合理，属票外行为变更，已在此记录）。
 - 行为记录：`ExecuteLine` 的分派改用 `Process` 的实时 `state`/`exm`（此前是 `SetParent` 时捕获的 `processState`/`expressionMediator`），「相关发现」里记的陈旧 state 问题随之消失；`PluginManager.processState` 仍由 `GetStackTrace` 使用。签名保持 `void ExecuteLine(string)`。
-- 行 8：`GetKeywordDictionary` 上方的 TODO 改写为真实契约（3 行，只写契约与 ERD 早退的现状，不再断言「无调用方可达」）。
+- 行 8：`GetKeywordDictionary` 上方的 TODO 改写为真实契约（3 行，只写契约与 ERD 早退的现状，不再断言「无调用方可达」）；该 TODO 与整方法契约随后由 issues/29 收口为 Try + 非空入口。
 - 文档：`docs/architecture.md` 补 `MemoryLineEntry`/`LineLocationText` 两个条目与 `ExecuteLine` 的可执行子集；`docs/tracking/issue-tracker.md` 的内容规则改为「实施结论与验收发现写入正文（写结论不写经过）」，与近期提交的回填实践一致。
 
 验证结果：
@@ -108,7 +108,7 @@ issues/21 的断言审计（批次 1/2/3）与 issues/14 复核表第 4 项另�
 2. `ExecuteLine` 只补入参校验、不施加指令过滤：放弃——`RESTART`/`CALL`/`CALLEVENT` 的可达性保留，行 3/4 需各自再补守卫，同一不变量要写两遍。
 3. `ExecuteLine` 改返回 `bool`：放弃——已编译插件 DLL 的调用点是 `callvirt void ExecuteLine(string)`，改签名破坏二进制兼容；需要非异常错误面时另立 `TryExecuteLine`。
 4. 行 4~6 各处就地判空：放弃——同一段「位置 + 父标签」文本散在五处，且这些调用点需要 `EmueraConsole` 因而无法进 `Emuera.Tests`。
-5. 行 8 的 ERD 早退改为抛 `CodeEE`：放弃——当前无可达调用方，属 B 类，只改写 TODO。
+5. 行 8 的 ERD 早退改为抛 `CodeEE`：放弃——当前无可达调用方，属 B 类，只改写 TODO；后续 issues/29 以「Try + 非空入口」实现了同一收口（当时未考虑拆分，故未采纳就地改抛）。
 6. 用 `EmueraPluginExample` 写最小插件复现（本票原方案第 1 步）：放弃——AGENTS.md 规定用户未显式说明时不改动该项目，且插件 DLL 路径也无法进 `Emuera.Tests`。
 
 ## 影响

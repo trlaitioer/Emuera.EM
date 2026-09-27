@@ -37,7 +37,8 @@ issues/14 判定 `(x as T)!` 中 49 处有前置类型检查，需逐点注明�
 - `UI/Game/Image/GraphicsImage.cs` 的 `brush`/`pen`/`font`——`Dispose` 路径置 null，读取处均判空，公开访问器却在传播非空签名。
 - `Process.State.cs` 的 `IntoFunction` 的 `exm` 参数、`Process.cs` 的 `SetScaningLineForThread` 的 `line` 参数——调用方传 null 是既定语义，参数应可空。
 - `VariableToken` 构造函数中未使用的 `VariableData` 参数。
-- `Process.CalledFunction.cs` 的 `ConvertArg` 的 `out string errMes`——仅在返回 null 时被读取，应为 `out string?`。
+- `Process.CalledFunction.cs` 的 `ConvertArg` 的 `out string errMes`——仅在返回 null 时被读取，应为 `out string?`。**已完成**（`c82aa022`）：改为 `TryConvertArg(…, [NotNullWhen(false)] out string? errMes, [NotNullWhen(true)] out UserDefinedFunctionArgument? argument)`，6 个调用点由「判 null」改为「判 `bool`」。
+- `ConstantData.GetKeywordDictionary` 的可空返回 + `out string? errPos`——同型：21 个求值点只能写 `!`，而「该变量码必命中主 switch」的不变量不写在类型里。**已完成**（issues/29）：拆出 `TryGetKeywordDictionary` 与非空入口 `GetKeywordDictionary([NotNull] out string? errPos, …)`，22 处 `!` 删除。
 - `UI/Game/HtmlManager.cs` 中作为换行哨兵的 null 元素（`buttonList.Add(null!)`）——容器元素类型 `List<ConsoleButtonString>` 应改为 `List<ConsoleButtonString?>`；消费方 `PrintStringBuffer.ButtonsToDisplayLines` 的形参与 `m_buttonsToDisplayLine` 字段须同步改，否则该处既有的 `if (buttonList[i] == null)` 判空与新元素类型对不上。
 - `Creator.Method.cs` 的 `XmlGetMethod`/`XmlSetMethod` 中 `nodes` 局部——赋值发生在 `try` 内、唯一 `catch` 抛出，编译器无法据此证明「读取前必已赋值」；提取方法或调整结构让赋值可被证明，而不是用 `= null!`。
 - `HtmlManager.tagAnalyze` 的 `ref height!`/`ref width!`/`ref x!`/`ref y!` 等 15 处与 `ParseParam4IntNum(ref CreateIfNull(ref box!).color!, …)`（issues/21 的 D 类）——`Utils.ParseMixedNum(ref MixedNum num, …)` 的第一步就是 `if (num == null) num = new MixedNum();`，`CreateIfNull<T>(ref T obj)` 同样以 null 为正常入参；`!` 断言的内容为假。把形参改为 `ref MixedNum?`/`ref int[]?`，调用点的 `!` 一并删除（元数据级，零行为变化）。
