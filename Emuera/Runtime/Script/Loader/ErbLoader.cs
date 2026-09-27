@@ -931,12 +931,13 @@ internal sealed class ErbLoader
 			//callee had already been parsed in its enumeration order.
 			if (edge.Arg.UDFArgument == null)
 			{
-				edge.Arg.UDFArgument = edge.Callee.ConvertArg(edge.Arg.RowArgs, out string errMes);
-				if (edge.Arg.UDFArgument == null)
+				if (!edge.Callee.TryConvertArg(edge.Arg.RowArgs, out string? errMes, out UserDefinedFunctionArgument? argument))
 				{
 					ParserMediator.Warn(errMes, edge.Line, 2, true, false);
 					return;
 				}
+
+				edge.Arg.UDFArgument = argument;
 			}
 
 			edge.Line.IsError = true;

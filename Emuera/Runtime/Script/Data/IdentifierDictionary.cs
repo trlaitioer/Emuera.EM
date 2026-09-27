@@ -599,7 +599,7 @@ internal partial class IdentifierDictionary
 
 				if (func.IsMethod)
 				{
-					return UserDefinedMethodTerm.Create(func, arguments, out string errMes) ?? throw new CodeEE(errMes);
+					return UserDefinedMethodTerm.TryCreate(func, arguments, out string? errMes, out UserDefinedMethodTerm? term) ? term : throw new CodeEE(errMes);
 				}
 
 				//1.721 #FUNCTIONが定義されていない関数は組み込み関数を上書きしない方向に。 PANCTION.ERBのRANDとか。

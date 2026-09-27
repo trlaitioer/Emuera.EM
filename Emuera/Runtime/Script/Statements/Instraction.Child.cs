@@ -4376,12 +4376,13 @@ internal sealed partial class FunctionIdentifier
 					return;
 				}
 
-				callArg.UDFArgument = call.ConvertArg(callArg.RowArgs, out string errMes);
-				if (callArg.UDFArgument == null)
+				if (!call.TryConvertArg(callArg.RowArgs, out string? errMes, out UserDefinedFunctionArgument? argument))
 				{
 					ParserMediator.Warn(errMes, func, 2, true, false);
 					return;
 				}
+
+				callArg.UDFArgument = argument;
 			}
 
 			callArg.CallFunc = call;
@@ -4422,8 +4423,7 @@ internal sealed partial class FunctionIdentifier
 			call.IsJump = isJump;
 			if (arg == null)
 			{
-				arg = call.ConvertArg(spCallArg.RowArgs, out string errMes);
-				if (arg == null)
+				if (!call.TryConvertArg(spCallArg.RowArgs, out string? errMes, out arg))
 				{
 					throw new CodeEE(errMes);
 				}

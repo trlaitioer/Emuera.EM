@@ -9,6 +9,7 @@ using MinorShift.Emuera.Runtime.Script.Statements.Variable;
 using MinorShift.Emuera.Runtime.Utils;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 
 namespace MinorShift.Emuera.Runtime.Script;
@@ -174,13 +175,14 @@ internal sealed class CalledFunction
 	/// 1806+v6.99 式中関数の引数に無効な#DIM変数を与えている場合に例外になるのを修正
 	/// 1808beta009 REF型に対応
 	/// </summary>
-	public UserDefinedFunctionArgument? ConvertArg(List<AExpression?> srcArgs, out string errMes)
+	public bool TryConvertArg(List<AExpression?> srcArgs, [NotNullWhen(false)] out string? errMes, [NotNullWhen(true)] out UserDefinedFunctionArgument? argument)
 	{
-		errMes = null!;
+		errMes = null;
+		argument = null;
 		if (TopLabel.IsError)
 		{
 			errMes = TopLabel.ErrMes;
-			return null;
+			return false;
 		}
 
 		FunctionLabelLine func = TopLabel;
@@ -188,29 +190,27 @@ internal sealed class CalledFunction
 		if (convertedArg.Length < srcArgs.Count)
 		{
 			errMes = string.Format(trerror.TooManyFuncArgs.Text, func.LabelName);
-			return null;
+			return false;
 		}
 
-		AExpression? term;
-		VariableTerm destArg;
 		//bool isString = false;
 		for (int i = 0; i < func.Arg.Length; i++)
 		{
-			term = i < srcArgs.Count ? srcArgs[i] : null;
-			destArg = func.Arg[i];
+			AExpression? term = i < srcArgs.Count ? srcArgs[i] : null;
+			VariableTerm destArg = func.Arg[i];
 			//isString = destArg.IsString;
 			if (destArg.Identifier.IsReference) //参照渡しの場合
 			{
 				if (term == null)
 				{
 					errMes = string.Format(trerror.CanNotOmitRefArg.Text, func.LabelName, (i + 1).ToString());
-					return null;
+					return false;
 				}
 
 				if (term is not VariableTerm vTerm || vTerm.Identifier.Dimension == 0)
 				{
 					errMes = string.Format(trerror.RequireArrayBecauseRefArg.Text, func.LabelName, (i + 1).ToString());
-					return null;
+					return false;
 				}
 
 				//TODO 1810alpha007 キャラ型を認めるかどうかはっきりしたい 今のところ認めない方向
@@ -218,7 +218,7 @@ internal sealed class CalledFunction
 				if (!((ReferenceToken)destArg.Identifier).MatchType(vTerm.Identifier, false, out errMes))
 				{
 					errMes = string.Format(trerror.NumberOfArg.Text, func.LabelName, (i + 1).ToString(), errMes);
-					return null;
+					return false;
 				}
 			}
 			else if (term == null) //引数が省略されたとき
@@ -230,7 +230,7 @@ internal sealed class CalledFunction
 				{
 					errMes = string.Format(trerror.CanNotOmitArgWithMessage.Text, func.LabelName, (i + 1).ToString(),
 						Config.Config.GetConfigName(ConfigCode.CompatiFuncArgOptional));
-					return null;
+					return false;
 				}
 			}
 			else if (term.GetOperandType() != destArg.GetOperandType())
@@ -238,7 +238,7 @@ internal sealed class CalledFunction
 				if (term.IsString)
 				{
 					errMes = string.Format(trerror.CanNotConvertStrToInt.Text, func.LabelName, (i + 1).ToString());
-					return null;
+					return false;
 				}
 				else
 				{
@@ -246,13 +246,10 @@ internal sealed class CalledFunction
 					{
 						errMes = string.Format(trerror.CanNotConvertIntToStr.Text, func.LabelName, (i + 1).ToString(),
 							Config.Config.GetConfigName(ConfigCode.CompatiFuncArgAutoConvert));
-						return null;
+						return false;
 					}
 
-					if (tostrMethod == null)
-					{
-						tostrMethod = FunctionMethodCreator.GetMethodList()["TOSTR"];
-					}
+					tostrMethod ??= FunctionMethodCreator.GetMethodList()["TOSTR"];
 
 					term = new FunctionMethodTerm(tostrMethod, [term]);
 				}
@@ -261,7 +258,8 @@ internal sealed class CalledFunction
 			convertedArg[i] = term;
 		}
 
-		return new UserDefinedFunctionArgument(convertedArg, func.Arg);
+		argument = new UserDefinedFunctionArgument(convertedArg, func.Arg);
+		return true;
 	}
 
 	public GotoLabelLine? CallLabel(Process parent, string label)

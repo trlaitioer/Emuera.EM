@@ -3,6 +3,7 @@ using MinorShift.Emuera.Runtime.Script.Statements.Expression;
 using MinorShift.Emuera.Runtime.Utils;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 
 namespace MinorShift.Emuera.Runtime.Script.Statements.Function;
@@ -57,19 +58,22 @@ internal abstract class SuperUserDefinedMethodTerm : AExpression
 
 internal sealed class UserDefinedMethodTerm : SuperUserDefinedMethodTerm
 {
-	/// <summary>
-	/// エラーならnullを返す。
-	/// </summary>
-	public static UserDefinedMethodTerm? Create(FunctionLabelLine targetLabel, List<AExpression?> srcArgs, out string errMes)
+	public static bool TryCreate(
+		FunctionLabelLine targetLabel,
+		List<AExpression?> srcArgs,
+		[NotNullWhen(false)] out string? errMes,
+		[NotNullWhen(true)] out UserDefinedMethodTerm? term
+	)
 	{
+		term = null;
 		CalledFunction call = CalledFunction.CreateCalledFunctionMethod(targetLabel, targetLabel.LabelName);
-		UserDefinedFunctionArgument? arg = call.ConvertArg(srcArgs, out errMes);
-		if (arg == null)
+		if (!call.TryConvertArg(srcArgs, out errMes, out UserDefinedFunctionArgument? argument))
 		{
-			return null;
+			return false;
 		}
 
-		return new UserDefinedMethodTerm(arg, call.TopLabel.MethodType, call);
+		term = new UserDefinedMethodTerm(argument, call.TopLabel.MethodType, call);
+		return true;
 	}
 
 	private UserDefinedMethodTerm(UserDefinedFunctionArgument arg, Type returnType, CalledFunction call)
@@ -111,13 +115,12 @@ internal sealed class UserDefinedRefMethodTerm : SuperUserDefinedMethodTerm
 				throw new CodeEE(string.Format(trerror.EmptyRefFunc.Text, reffunc.Name));
 			}
 
-			UserDefinedFunctionArgument? arg = reffunc.CalledFunction.ConvertArg(srcArgs, out string errMes);
-			if (arg == null)
+			if (!reffunc.CalledFunction.TryConvertArg(srcArgs, out string? errMes, out UserDefinedFunctionArgument? argument))
 			{
 				throw new CodeEE(errMes);
 			}
 
-			return arg;
+			return argument;
 		}
 	}
 
