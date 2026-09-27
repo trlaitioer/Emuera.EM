@@ -480,10 +480,7 @@ internal sealed class CallformCache
 		CalledFunction? call = CalledFunction.CallFunction(process, labelName, retAddress);
 		if (call != null)
 		{
-			if (!call.TryConvertArg(spCallArg.RowArgs, out string? errMes, out arg))
-			{
-				throw new CodeEE(errMes);
-			}
+			arg = call.ConvertArg(spCallArg.RowArgs);
 		}
 
 		cache.Store(longKey, strKey, new CallformEntry { LabelName = labelName, Call = call, Arg = arg });

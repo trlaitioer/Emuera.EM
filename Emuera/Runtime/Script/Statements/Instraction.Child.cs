@@ -637,7 +637,7 @@ internal sealed partial class FunctionIdentifier
 
 		public override Argument CreateArgument(InstructionLine line, ExpressionMediator exm)
 		{
-			CharStream st = line.PopArgumentPrimitive()!;
+			CharStream st = line.PopArgumentPrimitive();
 			string rowStr;
 			if (st.EOS)
 			{
@@ -1497,7 +1497,7 @@ internal sealed partial class FunctionIdentifier
 			//Unreachable: the constructor assigns ArgBuilder, so ArgumentParser.SetArgumentTo routes
 			//through SP_CALLSHARP_ArgumentBuilder. Kept in sync with CUSTOMDRAWLINE by not measuring
 			//text here, in case the builder is ever removed.
-			CharStream st = line.PopArgumentPrimitive()!;
+			CharStream st = line.PopArgumentPrimitive();
 			string rowStr;
 			if (st.EOS)
 			{
@@ -4423,10 +4423,7 @@ internal sealed partial class FunctionIdentifier
 			call.IsJump = isJump;
 			if (arg == null)
 			{
-				if (!call.TryConvertArg(spCallArg.RowArgs, out string? errMes, out arg))
-				{
-					throw new CodeEE(errMes);
-				}
+				arg = call.ConvertArg(spCallArg.RowArgs);
 			}
 
 			state.IntoFunction(call, arg, exm);

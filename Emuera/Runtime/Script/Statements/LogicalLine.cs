@@ -8,6 +8,7 @@ using MinorShift.Emuera.Runtime.Script.Statements.Variable;
 using MinorShift.Emuera.Runtime.Utils;
 using System;
 using System.Collections.Generic;
+using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 
 namespace MinorShift.Emuera.Runtime.Script.Statements;
 
@@ -127,11 +128,16 @@ internal sealed class InstructionLine : LogicalLine
 	// in this one place.
 	public Argument BuiltArgument => Argument!;
 
-	public CharStream? PopArgumentPrimitive()
+	/// <summary>
+	/// Takes the argument primitive. The field is written once by the InstructionLine constructor and taken by
+	/// exactly one consumer - ArgumentParser.SetArgumentTo at most once per line, or the VARI/VARS branch of
+	/// LogicalLineParser - so a second call means that invariant is broken.
+	/// </summary>
+	public CharStream PopArgumentPrimitive()
 	{
 		CharStream? ret = argprimitive;
 		argprimitive = null;
-		return ret;
+		return ret ?? throw new ExeEE(trerror.MissingArg.Text);
 	}
 
 	public WordCollection? PopAssignmentDestStr()

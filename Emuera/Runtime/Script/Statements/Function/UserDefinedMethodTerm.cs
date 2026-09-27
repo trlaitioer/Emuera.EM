@@ -76,6 +76,20 @@ internal sealed class UserDefinedMethodTerm : SuperUserDefinedMethodTerm
 		return true;
 	}
 
+	/// <summary>
+	/// <see cref="TryCreate"/> for callers that have nothing to do with the refusal reason: a target label that
+	/// cannot take the argument list is refused, as the <see cref="CodeEE"/> that caller used to raise.
+	/// </summary>
+	public static UserDefinedMethodTerm Create(FunctionLabelLine targetLabel, List<AExpression?> srcArgs)
+	{
+		if (!TryCreate(targetLabel, srcArgs, out string? errMes, out UserDefinedMethodTerm? term))
+		{
+			throw new CodeEE(errMes);
+		}
+
+		return term;
+	}
+
 	private UserDefinedMethodTerm(UserDefinedFunctionArgument arg, Type returnType, CalledFunction call)
 		: base(returnType)
 	{

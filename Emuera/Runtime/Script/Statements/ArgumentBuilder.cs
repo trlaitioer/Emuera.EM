@@ -147,13 +147,13 @@ internal abstract class ArgumentBuilder
 
 	protected static WordCollection popWords(InstructionLine line)
 	{
-		CharStream st = line.PopArgumentPrimitive()!;
+		CharStream st = line.PopArgumentPrimitive();
 		return LexicalAnalyzer.Analyse(st, LexEndWith.EoL, LexAnalyzeFlag.None);
 	}
 
 	protected static List<AExpression?> popTerms(InstructionLine line)
 	{
-		CharStream st = line.PopArgumentPrimitive()!;
+		CharStream st = line.PopArgumentPrimitive();
 		WordCollection wc = LexicalAnalyzer.Analyse(st, LexEndWith.EoL, LexAnalyzeFlag.None);
 		return ExpressionParser.ReduceArguments(wc, ArgsEndWith.EoL, false);
 	}
@@ -465,7 +465,7 @@ internal static partial class ArgumentParser
 
 		public override Argument? CreateArgument(InstructionLine line, ExpressionMediator exm)
 		{
-			CharStream st = line.PopArgumentPrimitive()!;
+			CharStream st = line.PopArgumentPrimitive();
 			WordCollection wc = LexicalAnalyzer.Analyse(st, LexEndWith.EoL, LexAnalyzeFlag.AnalyzePrintV);
 			List<AExpression?> args = ExpressionParser.ReduceArguments(wc, ArgsEndWith.EoL, false);
 			if (args.Count < 1)
@@ -660,7 +660,7 @@ internal static partial class ArgumentParser
 	{
 		public override Argument? CreateArgument(InstructionLine line, ExpressionMediator exm)
 		{
-			CharStream st = line.PopArgumentPrimitive()!;
+			CharStream st = line.PopArgumentPrimitive();
 			WordCollection wc = LexicalAnalyzer.Analyse(st, LexEndWith.EoL, LexAnalyzeFlag.AnalyzePrintV);
 			List<AExpression?> args = ExpressionParser.ReduceArguments(wc, ArgsEndWith.EoL, false);
 			for (int i = 0; i < args.Count; i++)
@@ -684,7 +684,7 @@ internal static partial class ArgumentParser
 	{
 		public override Argument? CreateArgument(InstructionLine line, ExpressionMediator exm)
 		{
-			CharStream st = line.PopArgumentPrimitive()!;
+			CharStream st = line.PopArgumentPrimitive();
 			WordCollection wc = LexicalAnalyzer.Analyse(st, LexEndWith.Comma, LexAnalyzeFlag.None);
 			st.ShiftNext();
 			if (st.EOS)
@@ -742,7 +742,7 @@ internal static partial class ArgumentParser
 		public override Argument? CreateArgument(InstructionLine line, ExpressionMediator exm)
 		{
 			Argument ret;
-			CharStream st = line.PopArgumentPrimitive()!;
+			CharStream st = line.PopArgumentPrimitive();
 			List<AExpression?> termList = [];
 			LexicalAnalyzer.SkipHalfSpace(st);
 			if (st.EOS)
@@ -786,7 +786,7 @@ internal static partial class ArgumentParser
 	{
 		public override Argument CreateArgument(InstructionLine line, ExpressionMediator exm)
 		{
-			CharStream st = line.PopArgumentPrimitive()!;
+			CharStream st = line.PopArgumentPrimitive();
 			LexicalAnalyzer.SkipWhiteSpace(st);
 			if (!st.EOS)
 			{
@@ -808,7 +808,7 @@ internal static partial class ArgumentParser
 
 		public override Argument? CreateArgument(InstructionLine line, ExpressionMediator exm)
 		{
-			CharStream st = line.PopArgumentPrimitive()!;
+			CharStream st = line.PopArgumentPrimitive();
 			string rowStr;
 			if (st.EOS)
 			{
@@ -858,7 +858,7 @@ internal static partial class ArgumentParser
 
 		public override Argument? CreateArgument(InstructionLine line, ExpressionMediator exm)
 		{
-			CharStream st = line.PopArgumentPrimitive()!;
+			CharStream st = line.PopArgumentPrimitive();
 			Argument ret;
 			if (st.EOS)
 			{
@@ -892,7 +892,7 @@ internal static partial class ArgumentParser
 	{
 		public override Argument? CreateArgument(InstructionLine line, ExpressionMediator exm)
 		{
-			CharStream st = line.PopArgumentPrimitive()!;
+			CharStream st = line.PopArgumentPrimitive();
 			IdentifierWord? iw = LexicalAnalyzer.ReadSingleIdentifierWord(st);
 			if (iw == null)
 			{
@@ -1116,7 +1116,7 @@ internal static partial class ArgumentParser
 
 		public override Argument? CreateArgument(InstructionLine line, ExpressionMediator exm)
 		{
-			CharStream st = line.PopArgumentPrimitive()!;
+			CharStream st = line.PopArgumentPrimitive();
 			AExpression funcname;
 			if (form)
 			{
@@ -1221,7 +1221,7 @@ internal static partial class ArgumentParser
 	{
 		public override Argument? CreateArgument(InstructionLine line, ExpressionMediator exm)
 		{
-			CharStream st = line.PopArgumentPrimitive()!;
+			CharStream st = line.PopArgumentPrimitive();
 			string str = LexicalAnalyzer.ReadString(st, StrEndWith.LeftParenthesis_Bracket_Comma_Semicolon);
 			str = str.Trim([' ', '\t']);
 			SingleStrTerm funcname = new(str);
@@ -1359,7 +1359,7 @@ internal static partial class ArgumentParser
 			}
 
 			varTerm.Restructure(exm);
-			CharStream st = line.PopArgumentPrimitive()!;
+			CharStream st = line.PopArgumentPrimitive();
 			if (st == null)
 			{
 				st = new CharStream("");
@@ -1612,7 +1612,7 @@ internal static partial class ArgumentParser
 
 		public override Argument? CreateArgument(InstructionLine line, ExpressionMediator exm)
 		{
-			CharStream st = line.PopArgumentPrimitive()!;
+			CharStream st = line.PopArgumentPrimitive();
 
 			#region EM_私家版_INPUT系機能拡張＆ONEINPUT系制限解除
 
@@ -3228,7 +3228,7 @@ internal static partial class ArgumentParser
 		public override Argument? CreateArgument(InstructionLine line, ExpressionMediator exm)
 		{
 			//TIMES_Argからの引用 きたない
-			CharStream st = line.PopArgumentPrimitive()!;
+			CharStream st = line.PopArgumentPrimitive();
 			WordCollection wc = LexicalAnalyzer.Analyse(st, LexEndWith.Comma, LexAnalyzeFlag.None);
 			st.ShiftNext();
 

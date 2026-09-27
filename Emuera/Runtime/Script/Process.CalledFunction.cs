@@ -262,6 +262,20 @@ internal sealed class CalledFunction
 		return true;
 	}
 
+	/// <summary>
+	/// <see cref="TryConvertArg"/> for callers that have nothing to do with the refusal reason: an argument
+	/// list the label cannot take is refused, as the <see cref="CodeEE"/> those callers used to raise themselves.
+	/// </summary>
+	public UserDefinedFunctionArgument ConvertArg(List<AExpression?> srcArgs)
+	{
+		if (!TryConvertArg(srcArgs, out string? errMes, out UserDefinedFunctionArgument? argument))
+		{
+			throw new CodeEE(errMes);
+		}
+
+		return argument;
+	}
+
 	public GotoLabelLine? CallLabel(Process parent, string label)
 	{
 		return parent.LabelDictionary.GetLabelDollar(label, CurrentLabel!);

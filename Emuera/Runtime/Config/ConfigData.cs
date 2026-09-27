@@ -4,6 +4,7 @@ using MinorShift.Emuera.Runtime.Utils.PathUtils;
 using MinorShift.Emuera.Sub;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -558,13 +559,20 @@ internal sealed class ConfigData
 		return (ConfigItem<T>)GetDebugItem(code)!;
 	}
 
-	public static SingleTerm? GetConfigValueInERB(string text, ref string? errMes)
+	/// <summary>
+	/// Resolves a config name to its value in the form ERB sees it. The two failures - an unknown name and a
+	/// name whose value cannot be read this way - are reported through <paramref name="errMes"/>, so a caller
+	/// that has nothing to do with the reason uses <see cref="GetConfigValueInERB"/> instead.
+	/// </summary>
+	public static bool TryGetConfigValueInERB(string text, [NotNullWhen(true)] out SingleTerm? value, [NotNullWhen(false)] out string? errMes)
 	{
+		errMes = null;
 		AConfigItem? item = Instance.GetItem(text);
 		if (item == null)
 		{
+			value = null;
 			errMes = string.Format(trerror.InvalidConfigName.Text, text);
-			return null;
+			return false;
 		}
 
 		SingleTerm term;
@@ -627,8 +635,9 @@ internal sealed class ConfigData
 			{
 				if (!Enum.IsDefined(item.Code))
 				{
+					value = null;
 					errMes = string.Format(trerror.NotAllowGetConfigValue.Text, text);
-					return null;
+					return false;
 				}
 
 				string val = item.ValueToString();
@@ -681,6 +690,21 @@ internal sealed class ConfigData
 				break;
 				**/
 			}
+		}
+
+		value = term;
+		return true;
+	}
+
+	/// <summary>
+	/// <see cref="TryGetConfigValueInERB"/> for callers that have nothing to do with the refusal reason: an
+	/// unresolvable name is refused, as the <see cref="CodeEE"/> the ERB function used to raise itself.
+	/// </summary>
+	public static SingleTerm GetConfigValueInERB(string text)
+	{
+		if (!TryGetConfigValueInERB(text, out SingleTerm? term, out string? errMes))
+		{
+			throw new CodeEE(errMes);
 		}
 
 		return term;

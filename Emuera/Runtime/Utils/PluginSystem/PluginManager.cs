@@ -48,10 +48,7 @@ public class PluginManager
 	/// instruction outside -Debug.</exception>
 	public void ExecuteLine(string line)
 	{
-		if (!MemoryLineEntry.TryBuild(LogicalLineParser.ParseLine(line, null), out InstructionLine? func, out string errMes))
-		{
-			throw new CodeEE(errMes);
-		}
+		InstructionLine func = MemoryLineEntry.Build(LogicalLineParser.ParseLine(line, null));
 
 		process.DoDebugNormalFunction(func, false);
 	}

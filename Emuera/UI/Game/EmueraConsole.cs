@@ -2828,10 +2828,7 @@ internal sealed partial class EmueraConsole : IDisposable
 			}
 
 			// The rules a single line has to satisfy are shared with PluginManager.ExecuteLine
-			if (!MemoryLineEntry.TryBuild(line, out InstructionLine? func, out string errMes))
-			{
-				throw new CodeEE(errMes);
-			}
+			InstructionLine func = MemoryLineEntry.Build(line);
 
 			process.DoDebugNormalFunction(func, munchkin);
 			if (func.FunctionCode == FunctionCode.SET)

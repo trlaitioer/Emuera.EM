@@ -6700,16 +6700,7 @@ internal static partial class FunctionMethodCreator
 				throw new CodeEE(string.Format(trerror.ArgIsEmptyString.Text, Name, 1));
 			}
 
-			string? errMes = null;
-			SingleTerm? term = ConfigData.GetConfigValueInERB(str, ref errMes);
-			if (errMes != null)
-				// throw new CodeEE(funcname + "関数:" + errMes);
-			{
-				throw new CodeEE(errMes);
-			}
-
-			// errMes stays null only when GetConfigValueInERB resolved the item.
-			return term!;
+			return ConfigData.GetConfigValueInERB(str);
 		}
 
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)

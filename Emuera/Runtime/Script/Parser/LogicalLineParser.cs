@@ -506,7 +506,7 @@ internal static class LogicalLineParser
 					if (func.Code is FunctionCode.VARI or FunctionCode.VARS)
 					{
 						InstructionLine line = new(position, func, stream) { ParentLabelLine = parentLine };
-						ReadOnlySpan<char> statementsSpan = line.PopArgumentPrimitive()!.SubstringROS();
+						ReadOnlySpan<char> statementsSpan = line.PopArgumentPrimitive().SubstringROS();
 						int commentIndex = statementsSpan.IndexOf(';');
 						if (commentIndex != -1)
 						{

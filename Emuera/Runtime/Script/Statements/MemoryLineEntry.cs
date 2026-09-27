@@ -1,4 +1,5 @@
 ﻿using MinorShift.Emuera.GameProc.Function;
+using MinorShift.Emuera.Runtime.Utils;
 using System.Diagnostics.CodeAnalysis;
 using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 
@@ -19,7 +20,7 @@ internal static class MemoryLineEntry
 	/// argument that fails to parse. Debug instructions are refused outside -Debug, where SetArgumentTo
 	/// leaves their argument unbuilt.
 	/// </summary>
-	public static bool TryBuild(LogicalLine? line, [NotNullWhen(true)] out InstructionLine? func, out string errMes)
+	public static bool TryBuild(LogicalLine? line, [NotNullWhen(true)] out InstructionLine? func, [NotNullWhen(false)] out string? errMes)
 	{
 		func = null;
 		errMes = "";
@@ -81,5 +82,19 @@ internal static class MemoryLineEntry
 
 		func = instruction;
 		return true;
+	}
+
+	/// <summary>
+	/// <see cref="TryBuild"/> for callers that have nothing to do with the refusal reason: the same lines
+	/// are refused, as the <see cref="CodeEE"/> those callers used to raise themselves.
+	/// </summary>
+	public static InstructionLine Build(LogicalLine? line)
+	{
+		if (!TryBuild(line, out InstructionLine? func, out string? errMes))
+		{
+			throw new CodeEE(errMes);
+		}
+
+		return func;
 	}
 }
