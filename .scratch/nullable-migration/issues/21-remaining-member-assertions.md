@@ -40,7 +40,7 @@ Status: in-progress
 
 清单口径已用**三种实现交叉验证**（2026-09-25）：同一收紧式在 `Emuera/` 内，IDE(Rider) 文本搜索与 PowerShell/.NET 正则各得 **979**（未剥注释/字符串），本脚本剥后得 **969**，差的 10 处位于注释或字符串字面量内；全库剥后 **1076** = 969 + `Emuera.Tests` 107。三种实现一致，说明枚举无遗漏、无重复。
 
-**锚点与后续漂移（2026-09-26 复核）**：清单对应 `1ed33b5c`（2026-09-21）到落地提交 `03292664`（2026-09-25）之间的代码——该区间内 344 条源码片段逐一命中，是判定与验收的唯一基准。首个删除发生在 `e9eaaf32`（2026-09-25），此后实施类提交共删除 **34 条**站点，清单未逐条回填，读表时须以该区间为基准：
+**锚点与后续漂移（2026-09-26 复核）**：清单对应 `1ed33b5c`（2026-09-21）到落地提交 `03292664`（2026-09-25）之间的代码——该区间内 344 条源码片段逐一命中，是判定与验收的唯一基准。首个删除发生在 `e9eaaf32`（2026-09-25），此后实施类提交共删除 **53 条**站点，清单未逐条回填，读表时须以该区间为基准：
 
 | 已消失的站点 | 处数（结论） | 处置提交 |
 | --- | --- | --- |
@@ -49,8 +49,9 @@ Status: in-progress
 | `ExpressionParser.local#1`/`#2` | 2（A） | `ab93db4f` |
 | `Dictionary<string, int>?` 局部的 `dict![key]` 21 处（清单「`X![i]`」桶，见下方判定表） | 21（A） | issues/29（`GetKeywordDictionary` 拆分） |
 | `VariableStrArgTerm.GetIntValue` 的 `dic!`（已判空组，见下方判定表） | 1（A） | issues/29（同上） |
+| `InstructionLine.PopArgumentPrimitive()!` 18 处（清单「`F(...)!`」桶）+ `GetConfigMethod.GetSingleTerm` 的 `term!`（「`bare/local`」桶） | 19（A） | `59cd307e`（Try 方法补抛异常入口） |
 
-因此本清单在 HEAD 上只剩 **310 条**可定位站点（C 9 / B 8 / A 256 / D 37）；全库后缀断言数也随之变化（`1ed33b5c`：Emuera 969 / Tests 107；`ea66bed1`：Emuera 944 / Tests 125；`c82aa022`：943；issues/29 拆分后：Emuera 921 / Tests 125），计数变化不作为判定依据。
+因此本清单在 HEAD 上只剩 **291 条**可定位站点（C 9 / B 8 / A 237 / D 37）；全库后缀断言数也随之变化（`1ed33b5c`：Emuera 969 / Tests 107；`ea66bed1`：Emuera 944 / Tests 125；`c82aa022`：943；issues/29 拆分后：Emuera 921 / Tests 125），计数变化不作为判定依据。该序列只记到 issues/29：`59cd307e` 起未续测绝对值（复刻计数脚本与 2026-09-25 实现的绝对值不对齐），该批只按站点级核对记为 `Emuera` −19 / `Emuera.Tests` +1。
 
 ### 判定结论
 
@@ -80,7 +81,7 @@ Status: in-progress
 
 | 组 | 处数 | 结论 | 依据 → 去向 |
 | --- | --- | --- | --- |
-| `InstructionLine.PopArgumentPrimitive()!` | 18 | A | `argprimitive` 全库只在 `InstructionLine` 构造器赋值（由 `LogicalLineParser.ParseLine` 喂入非空 `CharStream`），`PopArgumentPrimitive()` 首次取走后置 null；`ArgumentParser.SetArgumentTo` 以 `line.Argument != null` 早退，保证每个 `CreateArgument` 至多执行一次 → issues/22 |
+| `InstructionLine.PopArgumentPrimitive()!` | 18 | A | `argprimitive` 全库只在 `InstructionLine` 构造器赋值（由 `LogicalLineParser.ParseLine` 喂入非空 `CharStream`），`PopArgumentPrimitive()` 首次取走后置 null；`ArgumentParser.SetArgumentTo` 以 `line.Argument != null` 早退，保证每个 `CreateArgument` 至多执行一次 → issues/22。该组 18 处已由 `59cd307e` 改为非可空返回、重复取用抛 `ExeEE(MissingArg)` 而全部删除（2026-09-27），归属从「保留 + 理由注释」改为「契约改造消除」 |
 | `XmlDocument/XmlNode.SelectNodes(path)!` | 6 | A | .NET 契约：`SelectNodes` 只在 XPath 为空串或文档无根元素时返回 null；6 处传字面量或脚本实参（空串的 XPath 语义是「上下文节点的全部子节点」，不是空表达式），且 `doc` 均已 `LoadXml` 成功 → issues/22 |
 | `AConsoleDisplayNode.Text` 家族（`ConsoleStyledString`/`ConsoleImagePart`/`ConsoleDivPart`/`ConsoleShapePart`） | 14 | A | 声明为 `string?`，但 5 个具体子类的构造器都无条件赋非空值（`Text = str` / `""` / `AltText` / `errMes`）→ issues/22 |
 | `ConsoleStyledString.Font` | 4 A / 1 B | A（4） | `Font == null ⟺ Error`（置 `Error` 只在构造器与 `ResetLayout`），四个读取点都先 `if (Error)` 返回。B（1，`PrintStringBuffer.getDivideIndex`）：该方法不查 `Error`，正常排版下 `Error` 部件宽度为 0 故不可达；破坏者是「Error 部件参与宽度累加」→ issues/19 |
@@ -131,3 +132,4 @@ Status: in-progress
 - 预计产出若干缺陷票；`Dictionary`/`List` 成员断言如果集中在少数构造点，可能像 issues/13 那样收敛为单点入口，届时在同一票内评估
 - 本票不改动 issues/14 已判定的六类断言
 - 截至 2026-09-26，方案第 4 步的「冗余断言同票清理」尚未执行：标为可删冗余的 6 处 `!`（`radius` 4 处、`ConfigItem<T>.val` 2 处）仍在树上；A 类理由注释、D 类契约诚实化由 issues/22 承接。这是本票保持 `in-progress` 的原因
+- 2026-09-27：`59cd307e` 按「Try 方法补抛异常入口」删除 19 处 A 类站点——18 处 `PopArgumentPrimitive()!`（改为非可空返回、重复取用抛 `ExeEE`）与 `GetConfigMethod.GetSingleTerm` 的 `term!`（`GetConfigValueInERB` 拆 Try/非空入口），清单可定位 310 → 291；同批新增 5 个测试文件 15 例，`Debug-NAudio` 全量 357 通过、两种声音后端配置 CS86xx 均为 0
