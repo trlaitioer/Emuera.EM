@@ -1,6 +1,6 @@
 # 函数体在「设计上可省略」的实参槽上解引用 null
 
-Status: needs-triage
+Status: superseded
 Type: bug
 
 ## 任务
@@ -102,3 +102,4 @@ for (int i = 0; i < srcArgs.Count; i++)
 - 失败模式同 issues/04：装载期 NRE 由 `ErbLoader.ParseFunctionWithCatch` 兜成「函数分析失败」；执行期冒泡到 `Process.DoScript` → `handleException`
 - 改动量估计：中（135 处逐点裁定 + 用例）。**裁定工作可独立于 02 的深化先行开展**，且裁定结果正是 02 设计槽位类型时需要的输入
 - 相关票：issues/02（实参契约表兑现）、issues/04（检查器侧的省略判据）、issues/03（维度标志位）
+- **已转出（2026-09-27）**：承接方 `.scratch/arg-contract/issues/03-required-on-omittable-slot.md`。本票作为审查记录保留（文件不移动）

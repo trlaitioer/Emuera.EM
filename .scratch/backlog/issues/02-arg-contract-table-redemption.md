@@ -1,6 +1,6 @@
 # 实参契约表只在解析期声明、到运行期靠 cast 兑现
 
-Status: needs-triage
+Status: superseded
 
 ## 任务
 
@@ -56,3 +56,4 @@ Status: needs-triage
 - **性能结论（已核实，纠正原先的「可能变快」）**：`Restructure` **不在稳态每调用热路径上**（每求值 0 次——折叠只在 Argument 构造时发生，而 Argument 被记忆）。当前每调用成本 = 1 次虚派发 + N×(索引器 + 虚派发)，无装箱，`Required` 是 3 条指令级静态方法。⇒ 本重构**在 per-call 上拿不到可测收益**，理由必须是**契约安全**（未证站点 + 33 处转型），不是速度。真实可省的成本在**构造/折叠期**（17 个 unique 方法每次折叠分配一次 `[.. Arguments]`、`VariableTerm.Restructure` 的重复 `CheckElement`）。且仓库**没有基准设施**（`BenchmarkDotNet`/`[Benchmark]` 零命中，50 个测试文件无一为性能测试，perf/04 的埋点是临时且未交付）——**任何性能主张必须先补基准**
 - 改动量估计：大（`FunctionMethod.cs` + `Creator.Method.cs` 的 114 个规则块 + 消费端）。建议按票拆：先 03/04 止血，再动槽位形状
 - 相关票：issues/03（维度标志位）、issues/04（省略判据）、issues/15（`Argument` 的三字段折叠协议，同一 seam 的另一侧）
+- **已转出（2026-09-27）**：承接方 `.scratch/arg-contract/issues/04-argument-slots.md`，方案裁定见 `.scratch/arg-contract/spec.md`。本票作为审查记录保留（文件不移动）
