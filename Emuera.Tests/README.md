@@ -1,16 +1,35 @@
 # Emuera.Tests
 
-Emuera 解释器核心的单元测试工程(xUnit)。对应 `.scratch/` 中"测试基础设施"方向。
+Emuera 解释器核心的单元测试工程(xUnit v3 + Microsoft.Testing.Platform)。对应 `.scratch/` 中"测试基础设施"方向。
 
 ## 运行
 
 ```bash
-dotnet test Emuera.Tests/Emuera.Tests.csproj -c Debug-NAudio
+# 主命令:直接执行测试应用(MTP),构建 + 运行
+dotnet run --project Emuera.Tests/Emuera.Tests.csproj -c Debug-NAudio -p:Platform=x64
+```
+
+测试工程是可执行文件,已构建后也可直接跑产物(最快,不经 dotnet 命令):
+
+```bash
+Emuera.Tests/bin/x64/Debug-NAudio/net10.0-windows/Emuera.Tests.exe
+```
+
+需要 `dotnet test` 的场合(CI、脚本),等价命令是(依赖仓库根 `global.json`,见下):
+
+```bash
+dotnet test --project Emuera.Tests/Emuera.Tests.csproj -c Debug-NAudio -p:Platform=x64
 ```
 
 **必须带 `-c Debug-NAudio`**(与仓库构建约定一致)。原因:`Emuera/Emuera.csproj` 的 NAudio 包引用是按配置条件声明的——只有 NAudio 配置才引入 `NAudio.*` 包并排除 `Sound.WMP.cs`;默认配置引用 WMPLib COM,`dotnet build`/`dotnet test` 无法解析。`-c Debug-NAudio` 使还原与构建全局一致,避免"还原出无 NAudio 的 assets、构建却要求 NAudio"的错配。
 
 不要用 ProjectReference 的 `SetConfiguration`/`AdditionalProperties` 元数据代替:`SetConfiguration` 与 `dotnet test` 存在冲突(MSB3100),`AdditionalProperties` 不作用于还原阶段。
+
+MTP 相关注意:
+
+- `dotnet run`/直接跑 exe 不需要额外配置;`dotnet test` 依赖仓库根 `global.json` 的 `test.runner`(.NET 10 原生 MTP 模式),缺了它 .NET 10 会拒绝 VSTest 目标而直接报错
+- 不要给测试应用传未识别参数:在 `dotnet test` 下会被转发给测试应用,`--nologo` 实测退出码 5
+- 与 VSTest 的行为差异:跑了 0 个用例时 MTP 返回退出码 8(VSTest 视为成功),过滤条件改用 `--filter-class`/`--filter-method` 等
 
 ## 组织方式
 
@@ -30,7 +49,8 @@ Phase 2 起的用例(变量求值/StrForm/LogicalLineParser)依赖 `TestBootstra
 ## 共享全局状态(写过的系统变量必须还原)
 
 `TestBootstrap.Initialize()` 只在**首次调用**时生效(进程内单例),`GlobalStatic.VEvaluator`/`VariableData`
-随之在整个程序集的全部用例之间存活;`AssemblyInfo.cs` 的禁用并行只保证串行执行,既不保证发现顺序,
+随之在整个程序集的全部用例之间存活;`AssemblyInfo.cs` 的禁用并行(`[assembly: Parallelization(Mode = ParallelMode.None)]`,
+xUnit v3 4.0 起取代 `CollectionBehavior(DisableTestParallelization)`)只保证串行执行,既不保证发现顺序,
 也不在用例之间重置任何变量。两条硬性约定:
 
 - **写过的系统变量必须还原**:`RESULT`、`RESULTS`、`TFLAG`、`SAVESTR`、`VariableData.DataDataTables` 等
