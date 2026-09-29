@@ -94,16 +94,16 @@ internal sealed class ConstantData
 
 	#region EM_私家版_セーブ拡張
 
-	public HashSet<string> GlobalSaveMaps { get; private set; } = [];
-	public HashSet<string> SaveMaps { get; private set; } = [];
-	public HashSet<string> GlobalSaveXmls { get; private set; } = [];
-	public HashSet<string> SaveXmls { get; private set; } = [];
-	public HashSet<string> GlobalSaveDTs { get; private set; } = [];
-	public HashSet<string> SaveDTs { get; private set; } = [];
+	public HashSet<string> GlobalSaveMaps { get; } = [];
+	public HashSet<string> SaveMaps { get; } = [];
+	public HashSet<string> GlobalSaveXmls { get; } = [];
+	public HashSet<string> SaveXmls { get; } = [];
+	public HashSet<string> GlobalSaveDTs { get; } = [];
+	public HashSet<string> SaveDTs { get; } = [];
 
-	public HashSet<string> StaticMaps { get; private set; } = [];
-	public HashSet<string> StaticXmls { get; private set; } = [];
-	public HashSet<string> StaticDTs { get; private set; } = [];
+	public HashSet<string> StaticMaps { get; } = [];
+	public HashSet<string> StaticXmls { get; } = [];
+	public HashSet<string> StaticDTs { get; } = [];
 
 	#endregion
 

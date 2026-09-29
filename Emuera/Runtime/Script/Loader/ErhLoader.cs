@@ -13,33 +13,20 @@ using trsl = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.SystemLine;
 
 namespace MinorShift.Emuera.Runtime.Script.Loader;
 
-internal sealed class ErhLoader
+internal sealed class ErhLoader(EmueraConsole output, IdentifierDictionary idDic, Process parentProcess)
 {
-	public ErhLoader(EmueraConsole main, IdentifierDictionary idDic, Process proc)
-	{
-		output = main;
-		parentProcess = proc;
-		this.idDic = idDic;
-	}
-
-	private readonly Process parentProcess;
-	private readonly EmueraConsole output;
-	private readonly IdentifierDictionary idDic;
-
 	private bool noError = true;
 	private Queue<DimLineWC> dimlines = null!;
 
 	/// <summary>
 	/// 
 	/// </summary>
-	/// <param name="erbDir"></param>
 	/// <param name="displayReport"></param>
 	/// <returns></returns>
 	public bool LoadHeaderFiles(string headerDir, bool displayReport)
 	{
 		List<KeyValuePair<string, string>> headerFiles = Config.Config.GetFiles(headerDir, "*.ERH");
-		bool noError = true;
-
+		bool noLoadError = true;
 
 		dimlines = new Queue<DimLineWC>();
 
@@ -62,8 +49,8 @@ internal sealed class ErhLoader
 					output.PrintSystemLine(string.Format(trsl.LoadingFile.Text, filename));
 				}
 
-				noError = loadHeaderFile(file, filename);
-				if (!noError)
+				noLoadError = loadHeaderFile(file, filename);
+				if (!noLoadError)
 				{
 					break;
 				}
@@ -73,7 +60,7 @@ internal sealed class ErhLoader
 			if (dimlines.Count > 0)
 			{
 				//&=でないと、ここで起きたエラーをキャッチできない
-				noError &= analyzeSharpDimLines();
+				noLoadError &= analyzeSharpDimLines();
 			}
 
 			dimlines.Clear();
@@ -89,7 +76,7 @@ internal sealed class ErhLoader
 			#endregion
 		}
 
-		return noError;
+		return noLoadError;
 	}
 
 
@@ -134,22 +121,22 @@ internal sealed class ErhLoader
 				LexicalAnalyzer.SkipWhiteSpace(st);
 				switch (sharpID)
 				{
-					case var s when s.Equals("DEFINE", Config.Config.StringComparison):
+					case var _ when sharpID.Equals("DEFINE", Config.Config.StringComparison):
 						analyzeSharpDefine(st, position);
 						break;
-					case var s when s.Equals("FUNCTION", Config.Config.StringComparison) ||
-					                s.Equals("FUNCTIONS", Config.Config.StringComparison):
-						analyzeSharpFunction(st, position, sharpID == "FUNCTIONS");
+					case var _ when sharpID.Equals("FUNCTION", Config.Config.StringComparison) ||
+					                sharpID.Equals("FUNCTIONS", Config.Config.StringComparison):
+						analyzeSharpFunction(st, position, sharpID is "FUNCTIONS");
 						break;
-					case var s when s.Equals("DIM", Config.Config.StringComparison) ||
-					                s.Equals("DIMS", Config.Config.StringComparison):
+					case var _ when sharpID.Equals("DIM", Config.Config.StringComparison) ||
+					                sharpID.Equals("DIMS", Config.Config.StringComparison):
 						//1822 #DIMは保留しておいて後でまとめてやる
 					{
 						WordCollection wc = LexicalAnalyzer.Analyse(st, LexEndWith.EoL, LexAnalyzeFlag.AllowAssignment);
 						dimlines.Enqueue(new DimLineWC(wc, sharpID is "DIMS", false, position));
-					}
 						//analyzeSharpDim(st, position, sharpID == "DIMS");
 						break;
+					}
 					default:
 						throw new CodeEE(string.Format(trerror.UnknownPreprocessorInSharpLine.Text, sharpID.ToString()), position);
 				}
@@ -326,7 +313,7 @@ internal sealed class ErhLoader
 	//1822 #DIMだけまとめておいて後で処理
 	private bool analyzeSharpDimLines()
 	{
-		bool noError = true;
+		bool noAnalyzeError = true;
 		bool tryAgain = true;
 		while (dimlines.Count > 0)
 		{
@@ -358,44 +345,35 @@ internal sealed class ErhLoader
 
 					if (Config.Config.UseERD)
 					{
-						string key;
-						if (data.Dimension == 1)
+						switch (data.Dimension)
 						{
-							key = data.Name.ToUpper();
-							if (erdFileNames.TryGetValue(key, out List<string>? info))
+							case 1:
 							{
-								GlobalStatic.ConstantData.UserDefineLoadData(info, data.Name, data.Lengths[0], Config.Config.DisplayReport,
-									dimline.SC);
-							}
-
-							System.Windows.Forms.Application.DoEvents();
-						}
-						else if (data.Dimension == 2)
-						{
-							for (int dim = 1; dim < 3; dim++)
-							{
-								key = data.Name.ToUpper() + "@" + dim;
+								string key = data.Name.ToUpper();
 								if (erdFileNames.TryGetValue(key, out List<string>? info))
 								{
-									GlobalStatic.ConstantData.UserDefineLoadData(info, data.Name + "@" + dim, data.Lengths[dim - 1],
-										Config.Config.DisplayReport, dimline.SC);
+									GlobalStatic.ConstantData.UserDefineLoadData(info, data.Name, data.Lengths[0], Config.Config.DisplayReport,
+										dimline.SC);
 								}
 
 								System.Windows.Forms.Application.DoEvents();
+								break;
 							}
-						}
-						else if (data.Dimension == 3)
-						{
-							for (int dim = 1; dim < 4; dim++)
+							case 2 or 3:
 							{
-								key = data.Name.ToUpper() + "@" + dim;
-								if (erdFileNames.TryGetValue(key, out List<string>? info))
+								for (int dim = 1; dim <= data.Dimension; dim++)
 								{
-									GlobalStatic.ConstantData.UserDefineLoadData(info, data.Name + "@" + dim, data.Lengths[dim - 1],
-										Config.Config.DisplayReport, dimline.SC);
+									string key = data.Name.ToUpper() + "@" + dim;
+									if (erdFileNames.TryGetValue(key, out List<string>? info))
+									{
+										GlobalStatic.ConstantData.UserDefineLoadData(info, data.Name + "@" + dim, data.Lengths[dim - 1],
+											Config.Config.DisplayReport, dimline.SC);
+									}
+
+									System.Windows.Forms.Application.DoEvents();
 								}
 
-								System.Windows.Forms.Application.DoEvents();
+								break;
 							}
 						}
 					}
@@ -413,13 +391,13 @@ internal sealed class ErhLoader
 					else
 					{
 						ParserMediator.Warn(e.Message, dimline.SC, 2);
-						noError = false;
+						noAnalyzeError = false;
 					}
 				}
 				catch (CodeEE e)
 				{
 					ParserMediator.Warn(e.Message, dimline.SC, 2);
-					noError = false;
+					noAnalyzeError = false;
 				}
 			}
 
@@ -429,7 +407,7 @@ internal sealed class ErhLoader
 			}
 		}
 
-		return noError;
+		return noAnalyzeError;
 	}
 
 	#region EE_ERD
@@ -438,10 +416,7 @@ internal sealed class ErhLoader
 
 	private void PrepareERDFileNames()
 	{
-		if (erdFileNames == null)
-		{
-			erdFileNames = [];
-		}
+		erdFileNames ??= [];
 
 		foreach (string path in Directory.GetFiles(Program.ErbRoot.FullName, "*.erd", SearchOption.AllDirectories))
 		{
