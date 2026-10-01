@@ -34,7 +34,9 @@ internal abstract class FunctionMethod
 		SameAsFirst = 1 << 9,
 		CharacterData = Ref | (1 << 10),
 		AllowConstRef = 1 << 11,
-		DisallowVoid = 1 << 12,
+		// Marks a slot inside the omittable region (i >= OmitStart) that the implementation still
+		// requires: omitting it by count stays legal, but leaving it empty is an error.
+		NotNull = 1 << 12,
 
 		RefInt = Ref | Int,
 		RefAny = Ref | Any,
@@ -68,7 +70,7 @@ internal abstract class FunctionMethod
 		public Type Type => Int ? typeof(long) : typeof(string);
 		public readonly ArgType type = ArgType.Invalid;
 		public bool AllowConstRef => (type & ArgType.AllowConstRef) != 0;
-		public bool DisallowVoid => (type & ArgType.DisallowVoid) != 0;
+		public bool NotNull => (type & ArgType.NotNull) != 0;
 		public bool Ref => (type & ArgType.Ref) != 0;
 		public bool Any => (type & ArgType.Any) != 0;
 		public bool Int => (type & ArgType.Int) != 0;
@@ -128,6 +130,25 @@ internal abstract class FunctionMethod
 				return ret;
 			}
 		}
+
+		// True when any slot of the block carries ArgType.SameAsFirst, i.e. when CheckArgumentTypeEx has
+		// to read slot 0 to learn the expected operand type. LastVariadics only reprises the trailing
+		// ArgTypes entries, so scanning ArgTypes covers a variadic tail as well.
+		public bool UsesSameAsFirst
+		{
+			get
+			{
+				foreach (_ArgType t in ArgTypes)
+				{
+					if (t.SameAsFirst)
+					{
+						return true;
+					}
+				}
+
+				return false;
+			}
+		}
 	}
 
 	protected ArgTypeList[]? argumentTypeArrayEx;
@@ -159,6 +180,10 @@ internal abstract class FunctionMethod
 					}
 				}
 
+				// A SameAsFirst rule reads slot 0 below to learn the expected operand type, so slot 0 must be
+				// filled. OmitStart == 0 is the only shape that would let an explicitly empty slot 0 through
+				// the loop and dereference it there, so that case requires the slot instead of crashing.
+				bool slot0Required = list.OmitStart == 0 && list.UsesSameAsFirst;
 				// 引数の数が有効
 				for (int i = 0; i < (variadic ? arguments.Count : Math.Min(arguments.Count, list.ArgTypes.Count)); i++)
 				{
@@ -167,7 +192,9 @@ internal abstract class FunctionMethod
 					{
 						// OmitStart stays -1 when a rule block omits it, and argsNotLessThanRule above then demands
 						// exactly ArgTypes.Count arguments: no slot may be omitted, so an empty slot is an error.
-						if (list.OmitStart < 0 || i < list.OmitStart || rule.DisallowVoid)
+						// Past OmitStart a slot is omittable by count only; ArgType.NotNull is what rejects an
+						// explicitly empty one, because the implementation reads the slot anyway.
+						if (list.OmitStart < 0 || i < list.OmitStart || rule.NotNull || (i == 0 && slot0Required))
 						{
 							errMsg[idx] = string.Format(trerror.ArgCanNotBeNull.Text, name, i + 1);
 							break;

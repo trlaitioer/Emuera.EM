@@ -36,7 +36,7 @@ internal static partial class FunctionMethodCreator
 			ReturnType = typeof(long);
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.Int }, OmitStart = 1 }
+				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.Int | ArgType.NotNull }, OmitStart = 1 }
 			];
 			CanRestructure = true;
 		}
@@ -67,8 +67,8 @@ internal static partial class FunctionMethodCreator
 			ReturnType = typeof(long);
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.Any, ArgType.String, ArgType.Int, ArgType.Int }, OmitStart = 2 },
-				new ArgTypeList { ArgTypes = { ArgType.Any, ArgType.String, ArgType.RefString1D, ArgType.Int }, OmitStart = 3 }
+				new ArgTypeList { ArgTypes = { ArgType.Any, ArgType.String, ArgType.Int | ArgType.NotNull, ArgType.Int | ArgType.NotNull }, OmitStart = 2 },
+				new ArgTypeList { ArgTypes = { ArgType.Any, ArgType.String, ArgType.RefString1D, ArgType.Int | ArgType.NotNull }, OmitStart = 3 }
 			];
 			CanRestructure = false;
 		}
@@ -78,8 +78,8 @@ internal static partial class FunctionMethodCreator
 			byName = byname;
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.Any, ArgType.String, ArgType.Int, ArgType.Int }, OmitStart = 2 },
-				new ArgTypeList { ArgTypes = { ArgType.Any, ArgType.String, ArgType.RefString1D, ArgType.Int }, OmitStart = 3 }
+				new ArgTypeList { ArgTypes = { ArgType.Any, ArgType.String, ArgType.Int | ArgType.NotNull, ArgType.Int | ArgType.NotNull }, OmitStart = 2 },
+				new ArgTypeList { ArgTypes = { ArgType.Any, ArgType.String, ArgType.RefString1D, ArgType.Int | ArgType.NotNull }, OmitStart = 3 }
 			];
 		}
 
@@ -297,7 +297,7 @@ internal static partial class FunctionMethodCreator
 			ReturnType = typeof(long);
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.String, ArgType.Int, ArgType.RefString1D }, OmitStart = 1 }
+				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.String | ArgType.NotNull, ArgType.Int | ArgType.NotNull, ArgType.RefString1D }, OmitStart = 1 }
 			];
 			CanRestructure = false;
 		}
@@ -473,10 +473,11 @@ internal static partial class FunctionMethodCreator
 		public ArrayMultiSortExMethod()
 		{
 			ReturnType = typeof(long);
+			// An empty slot 2 means ascending (the body reads it only when non-null).
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.RefString1D, ArgType.Int, ArgType.Int | ArgType.DisallowVoid }, OmitStart = 2 },
-				new ArgTypeList { ArgTypes = { ArgType.RefInt1D, ArgType.RefString1D, ArgType.Int, ArgType.Int | ArgType.DisallowVoid }, OmitStart = 2 }
+				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.RefString1D, ArgType.Int, ArgType.Int | ArgType.NotNull }, OmitStart = 2 },
+				new ArgTypeList { ArgTypes = { ArgType.RefInt1D, ArgType.RefString1D, ArgType.Int, ArgType.Int | ArgType.NotNull }, OmitStart = 2 }
 			];
 			CanRestructure = false;
 		}
@@ -770,9 +771,9 @@ internal static partial class FunctionMethodCreator
 					{
 						ArgType.String,
 						ArgType.Any,
-						ArgType.Int,
-						ArgType.Int,
-						ArgType.Int
+						ArgType.Int | ArgType.NotNull,
+						ArgType.Int | ArgType.NotNull,
+						ArgType.Int | ArgType.NotNull
 					},
 					OmitStart = 2
 				}
@@ -970,7 +971,7 @@ internal static partial class FunctionMethodCreator
 			ReturnType = typeof(long);
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.String, ArgType.Int }, OmitStart = 2 },
+				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.String, ArgType.Int | ArgType.NotNull }, OmitStart = 2 },
 				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.String, ArgType.RefInt, ArgType.RefString1D } }
 			];
 			CanRestructure = false;
@@ -1123,8 +1124,8 @@ internal static partial class FunctionMethodCreator
 						ArgType.Int,
 						ArgType.String,
 						ArgType.String,
-						ArgType.Int,
-						ArgType.Int
+						ArgType.Int | ArgType.NotNull,
+						ArgType.Int | ArgType.NotNull
 					},
 					OmitStart = 3
 				},
@@ -1135,8 +1136,8 @@ internal static partial class FunctionMethodCreator
 						ArgType.RefString,
 						ArgType.String,
 						ArgType.String,
-						ArgType.Int,
-						ArgType.Int
+						ArgType.Int | ArgType.NotNull,
+						ArgType.Int | ArgType.NotNull
 					},
 					OmitStart = 3
 				}
@@ -1156,8 +1157,8 @@ internal static partial class FunctionMethodCreator
 						ArgType.String,
 						ArgType.String,
 						ArgType.String,
-						ArgType.Int,
-						ArgType.Int
+						ArgType.Int | ArgType.NotNull,
+						ArgType.Int | ArgType.NotNull
 					},
 					OmitStart = 3
 				}
@@ -1305,8 +1306,8 @@ internal static partial class FunctionMethodCreator
 							ArgType.Int,
 							ArgType.String,
 							ArgType.String,
-							ArgType.Int,
-							ArgType.Int
+							ArgType.Int | ArgType.NotNull,
+							ArgType.Int | ArgType.NotNull
 						},
 						OmitStart = 3
 					},
@@ -1317,8 +1318,8 @@ internal static partial class FunctionMethodCreator
 							ArgType.RefString,
 							ArgType.String,
 							ArgType.String,
-							ArgType.Int,
-							ArgType.Int
+							ArgType.Int | ArgType.NotNull,
+							ArgType.Int | ArgType.NotNull
 						},
 						OmitStart = 3
 					}
@@ -1335,9 +1336,9 @@ internal static partial class FunctionMethodCreator
 							ArgType.Int,
 							ArgType.String,
 							ArgType.String,
-							ArgType.String,
-							ArgType.Int,
-							ArgType.Int
+							ArgType.String | ArgType.NotNull,
+							ArgType.Int | ArgType.NotNull,
+							ArgType.Int | ArgType.NotNull
 						},
 						OmitStart = 3
 					},
@@ -1348,9 +1349,9 @@ internal static partial class FunctionMethodCreator
 							ArgType.RefString,
 							ArgType.String,
 							ArgType.String,
-							ArgType.String,
-							ArgType.Int,
-							ArgType.Int
+							ArgType.String | ArgType.NotNull,
+							ArgType.Int | ArgType.NotNull,
+							ArgType.Int | ArgType.NotNull
 						},
 						OmitStart = 3
 					}
@@ -1375,8 +1376,8 @@ internal static partial class FunctionMethodCreator
 							ArgType.String,
 							ArgType.String,
 							ArgType.String,
-							ArgType.Int,
-							ArgType.Int
+							ArgType.Int | ArgType.NotNull,
+							ArgType.Int | ArgType.NotNull
 						},
 						OmitStart = 3
 					}
@@ -1393,9 +1394,9 @@ internal static partial class FunctionMethodCreator
 							ArgType.String,
 							ArgType.String,
 							ArgType.String,
-							ArgType.String,
-							ArgType.Int,
-							ArgType.Int
+							ArgType.String | ArgType.NotNull,
+							ArgType.Int | ArgType.NotNull,
+							ArgType.Int | ArgType.NotNull
 						},
 						OmitStart = 3
 					}
@@ -1586,8 +1587,8 @@ internal static partial class FunctionMethodCreator
 			ReturnType = typeof(long);
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.String, ArgType.Int }, OmitStart = 2 },
-				new ArgTypeList { ArgTypes = { ArgType.RefString, ArgType.String, ArgType.Int }, OmitStart = 2 }
+				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.String, ArgType.Int | ArgType.NotNull }, OmitStart = 2 },
+				new ArgTypeList { ArgTypes = { ArgType.RefString, ArgType.String, ArgType.Int | ArgType.NotNull }, OmitStart = 2 }
 			];
 			CanRestructure = false;
 			this.op = op;
@@ -1598,7 +1599,7 @@ internal static partial class FunctionMethodCreator
 			byName = byname;
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.String, ArgType.Int }, OmitStart = 2 }
+				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.String, ArgType.Int | ArgType.NotNull }, OmitStart = 2 }
 			];
 		}
 
@@ -1715,8 +1716,8 @@ internal static partial class FunctionMethodCreator
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList { ArgTypes = { ArgType.Any, ArgType.String } },
-				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.String, ArgType.String, ArgType.Int }, OmitStart = 3 },
-				new ArgTypeList { ArgTypes = { ArgType.RefString, ArgType.String, ArgType.String, ArgType.Int }, OmitStart = 3 }
+				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.String, ArgType.String, ArgType.Int | ArgType.NotNull }, OmitStart = 3 },
+				new ArgTypeList { ArgTypes = { ArgType.RefString, ArgType.String, ArgType.String, ArgType.Int | ArgType.NotNull }, OmitStart = 3 }
 			];
 			CanRestructure = false;
 		}
@@ -1726,7 +1727,7 @@ internal static partial class FunctionMethodCreator
 			byName = byname;
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.String, ArgType.String, ArgType.Int }, OmitStart = 3 }
+				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.String, ArgType.String, ArgType.Int | ArgType.NotNull }, OmitStart = 3 }
 			];
 		}
 
@@ -1965,13 +1966,15 @@ internal static partial class FunctionMethodCreator
 			ReturnType = typeof(long);
 			if (type == Operation.Create)
 			{
+				// DT_COLUMN_ADD slots 2/3 are NotNull: the body reads them once its count guard passes.
 				argumentTypeArrayEx =
 				[
-					new ArgTypeList { ArgTypes = { ArgType.String, ArgType.String, ArgType.Any, ArgType.Int }, OmitStart = 2 }
+					new ArgTypeList { ArgTypes = { ArgType.String, ArgType.String, ArgType.Any | ArgType.NotNull, ArgType.Int | ArgType.NotNull }, OmitStart = 2 }
 				];
 			}
 			else if (type == Operation.Names)
 			{
+				// Empty slot 1 of DT_COLUMN_NAMES means "write the column names to the RESULTS array" (null is not a VariableTerm).
 				argumentTypeArrayEx =
 				[
 					new ArgTypeList { ArgTypes = { ArgType.String, ArgType.RefString1D }, OmitStart = 1 }
@@ -2089,9 +2092,13 @@ internal static partial class FunctionMethodCreator
 			ReturnType = typeof(long);
 			if (type == Operation.Add)
 			{
+				// An empty slot 2 means "no value" in the variadic name/value pair form: SetValue turns a null
+				// value into DBNull. The 4-argument array form shares the slot, but the second segment below
+				// (no OmitStart) rejects every empty slot, so the body never reads a null as an array. The slot
+				// therefore stays nullable - ArgType.NotNull would reject the DBNull form.
 				argumentTypeArrayEx =
 				[
-					new ArgTypeList { ArgTypes = { ArgType.String, ArgType.VariadicString, ArgType.VariadicAny }, MatchVariadicGroup = true, OmitStart = 1 },
+					new ArgTypeList { ArgTypes = { ArgType.String, ArgType.VariadicString | ArgType.NotNull, ArgType.VariadicAny }, MatchVariadicGroup = true, OmitStart = 1 },
 					new ArgTypeList { ArgTypes = { ArgType.String, ArgType.RefString1D, ArgType.RefAny1D, ArgType.Int } }
 				];
 			}
@@ -2366,7 +2373,7 @@ internal static partial class FunctionMethodCreator
 			ReturnType = type == Operation.Gets ? typeof(string) : typeof(long);
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.Int, ArgType.String, ArgType.Int }, OmitStart = 3 }
+				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.Int, ArgType.String, ArgType.Int | ArgType.NotNull }, OmitStart = 3 }
 			];
 			CanRestructure = false;
 			op = type;
@@ -2450,6 +2457,8 @@ internal static partial class FunctionMethodCreator
 		public DataTableCellSetMethod()
 		{
 			ReturnType = typeof(long);
+			// An empty slot 3 means "write DBNull": GetIntValue keeps it as a null value and the DBNull branch
+			// stores it, so the rule table must not reject it.
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList
@@ -2460,7 +2469,7 @@ internal static partial class FunctionMethodCreator
 						ArgType.Int,
 						ArgType.String,
 						ArgType.Any,
-						ArgType.Int
+						ArgType.Int | ArgType.NotNull
 					},
 					OmitStart = 3
 				}
@@ -2530,6 +2539,8 @@ internal static partial class FunctionMethodCreator
 		public DataTableSelectMethod()
 		{
 			ReturnType = typeof(long);
+			// Empty slots 1/2 mean "no filter" and "no sort": GetIntValue reads them through arguments[i]?
+			// and falls back to the unfiltered dt.Select().
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.String, ArgType.String, ArgType.RefInt1D }, OmitStart = 1 }
@@ -2805,7 +2816,7 @@ internal static partial class FunctionMethodCreator
 				case Operation.GetKeys:
 					argumentTypeArrayEx =
 					[
-						new ArgTypeList { ArgTypes = { ArgType.String, ArgType.Int }, OmitStart = 1 },
+						new ArgTypeList { ArgTypes = { ArgType.String, ArgType.Int | ArgType.NotNull }, OmitStart = 1 },
 						new ArgTypeList { ArgTypes = { ArgType.String, ArgType.RefString1D, ArgType.Int } }
 					]; break;
 			}
@@ -2993,6 +3004,7 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(long);
 			// argumentTypeArray = null;
+			// An empty slot 1 means CheckSp = false.
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.Int }, OmitStart = 1 }
@@ -3083,6 +3095,7 @@ internal static partial class FunctionMethodCreator
 			ReturnType = typeof(string);
 			argumentTypeArray = null;
 			charaStr = CharacterStrData.NAME;
+			// An empty slot 1 means "not an SP character" (y = 0).
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.Int }, OmitStart = 1 }
@@ -3094,6 +3107,7 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(string);
 			// argumentTypeArray = null;
+			// An empty slot 1 means "not an SP character" (y = 0).
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.Int }, OmitStart = 1 }
@@ -3138,6 +3152,7 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(string);
 			// argumentTypeArray = null;
+			// An empty slot 2 means "not an SP character" (z = 0).
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.Int, ArgType.Int }, OmitStart = 2 }
@@ -3188,6 +3203,7 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(long);
 			// argumentTypeArray = null;
+			// An empty slot 2 means "not an SP character" (z = 0): the body reads it only via the list pattern.
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.Int, ArgType.Int }, OmitStart = 2 }
@@ -3200,6 +3216,7 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(long);
 			// argumentTypeArray = null;
+			// An empty slot 2 means "not an SP character" (z = 0): the body reads it only via the list pattern.
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.Int, ArgType.Int }, OmitStart = 2 }
@@ -3249,6 +3266,7 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(long);
 			// argumentTypeArray = null;
+			// Empty slots 2/3 mean startindex = 0 and lastindex = CHARANUM.
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList { ArgTypes = { ArgType.CharacterData | ArgType.Any, ArgType.SameAsFirst, ArgType.Int, ArgType.Int }, OmitStart = 2 }
@@ -3346,6 +3364,7 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(long);
 			// argumentTypeArray = null;
+			// An empty slot 1 means isSp = false.
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.Int }, OmitStart = 1 }
@@ -3393,6 +3412,7 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(long);
 			// argumentTypeArray = null;
+			// An empty slot 1 means dim = 0.
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.Int }, OmitStart = 1 }
@@ -3578,6 +3598,7 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(long);
 			// argumentTypeArray = null;
+			// An empty slot 0 means the "*" pattern.
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList { ArgTypes = { ArgType.String }, OmitStart = 0 }
@@ -3948,6 +3969,7 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(string);
 			// argumentTypeArray = null;
+			// An empty slot 1 means the Config money format.
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.String }, OmitStart = 1 }
@@ -4121,7 +4143,7 @@ internal static partial class FunctionMethodCreator
 			// argumentTypeArray = null;
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.Int }, OmitStart = 1 }
+				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.Int | ArgType.NotNull }, OmitStart = 1 }
 			];
 			CanRestructure = false;
 		}
@@ -4192,9 +4214,12 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(long);
 			// argumentTypeArray = null;
+			// The variadic tail is a consumed one: GetIntValue reads every slot in a loop and has no default
+			// for an empty one, so the tail carries ArgType.NotNull (omitting trailing values by count stays
+			// legal). Slot 0 needs no flag - i < OmitStart already rejects its empty form.
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.VariadicInt }, OmitStart = 1 }
+				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.VariadicInt | ArgType.NotNull }, OmitStart = 1 }
 			];
 			isMax = true;
 			CanRestructure = true;
@@ -4204,9 +4229,12 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(long);
 			// argumentTypeArray = null;
+			// The variadic tail is a consumed one: GetIntValue reads every slot in a loop and has no default
+			// for an empty one, so the tail carries ArgType.NotNull (omitting trailing values by count stays
+			// legal). Slot 0 needs no flag - i < OmitStart already rejects its empty form.
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.VariadicInt }, OmitStart = 1 }
+				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.VariadicInt | ArgType.NotNull }, OmitStart = 1 }
 			];
 			isMax = max;
 			CanRestructure = true;
@@ -4507,6 +4535,7 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(long);
 			// argumentTypeArray = null;
+			// Empty slots 1/2 mean index1 = 0 and index2 = the array length (or CHARANUM).
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList { ArgTypes = { ArgType.RefIntArray, ArgType.Int, ArgType.Int }, OmitStart = 1 }
@@ -4519,6 +4548,7 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(long);
 			// argumentTypeArray = null;
+			// Empty slots 1/2 mean index1 = 0 and index2 = the array length (or CHARANUM).
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList { ArgTypes = { ArgType.CharacterData | ArgType.RefIntArray | ArgType.AllowConstRef, ArgType.Int, ArgType.Int }, OmitStart = 1 }
@@ -4589,6 +4619,7 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(long);
 			// argumentTypeArray = null;
+			// Empty slots 2/3 mean start = 0 and end = the array length (or CHARANUM).
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList { ArgTypes = { ArgType.RefAny1D | ArgType.AllowConstRef, ArgType.SameAsFirst, ArgType.Int, ArgType.Int }, OmitStart = 2 }
@@ -4602,6 +4633,7 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(long);
 			// argumentTypeArray = null;
+			// Empty slots 2/3 mean start = 0 and end = the array length (or CHARANUM).
 			argumentTypeArrayEx =
 			[
 				//CMATCH targets a character array, so rule 1 must be a reference ({ CharacterData } is
@@ -4892,6 +4924,7 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(long);
 			// argumentTypeArray = null;
+			// Empty slots 1/2 mean start = 0 and end = the array length (or CHARANUM).
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList { ArgTypes = { ArgType.RefInt1D | ArgType.AllowConstRef, ArgType.Int, ArgType.Int }, OmitStart = 1 }
@@ -4907,6 +4940,7 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(long);
 			// argumentTypeArray = null;
+			// Empty slots 1/2 mean start = 0 and end = the array length (or CHARANUM).
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList { ArgTypes = { ArgType.CharacterData | ArgType.RefInt1D | ArgType.AllowConstRef, ArgType.Int, ArgType.Int }, OmitStart = 1 }
@@ -4929,7 +4963,7 @@ internal static partial class FunctionMethodCreator
 		public MaxArrayMethod(bool isChara, bool isMaxFunc)
 		{
 			ReturnType = typeof(long);
-			// argumentTypeArray = null;
+			// Empty slots 1/2 mean start = 0 and end = the array length (or CHARANUM).
 			argumentTypeArrayEx = isChara
 				?
 				[
@@ -5061,7 +5095,7 @@ internal static partial class FunctionMethodCreator
 			// argumentTypeArray = null;
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.RefAny | ArgType.AllowConstRef, ArgType.String, ArgType.Int }, OmitStart = 2 }
+				new ArgTypeList { ArgTypes = { ArgType.RefAny | ArgType.AllowConstRef, ArgType.String, ArgType.Int | ArgType.NotNull }, OmitStart = 2 }
 			];
 			CanRestructure = true;
 			HasUniqueRestructure = true;
@@ -5239,6 +5273,7 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(long);
 			// argumentTypeArray = null;
+			// Empty slots 2/3/4 mean start = 0, end = the array length and isExact = false.
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList
@@ -5376,6 +5411,7 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(long);
 			// argumentTypeArray = null;
+			// Empty slots 3/4 mean start = 0 and end = the array length (or CHARANUM).
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList
@@ -5399,6 +5435,7 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(long);
 			// argumentTypeArray = null;
+			// Empty slots 3/4 mean start = 0 and end = the array length (or CHARANUM).
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList
@@ -5511,9 +5548,12 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(long);
 			// argumentTypeArray = null;
+			// GetIntValue consumes the whole list (arguments[0] plus a foreach over every argument) and has no
+			// default for an empty slot, so the variadic tail carries ArgType.NotNull.
+			// Slot 0 needs no flag - i < OmitStart already rejects its empty form.
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.RefAny1D, ArgType.RefAnyArray | ArgType.Variadic }, OmitStart = 1 }
+				new ArgTypeList { ArgTypes = { ArgType.RefAny1D, ArgType.RefAnyArray | ArgType.Variadic | ArgType.NotNull }, OmitStart = 1 }
 			];
 			CanRestructure = false;
 			HasUniqueRestructure = true;
@@ -5764,6 +5804,7 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(string);
 			// argumentTypeArray = null;
+			// Empty slots 1/2 mean start = 0 and length = -1 (to the end).
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.Int, ArgType.Int }, OmitStart = 1 }
@@ -5815,6 +5856,7 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(string);
 			// argumentTypeArray = null;
+			// Empty slots 1/2 mean start = 0 and length = -1 (to the end).
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.Int, ArgType.Int }, OmitStart = 1 }
@@ -5894,6 +5936,7 @@ internal static partial class FunctionMethodCreator
 			ReturnType = typeof(long);
 			argumentTypeArray = null;
 			// argumentTypeArray = null;
+			// An empty slot 2 means start = 0.
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.String, ArgType.Int }, OmitStart = 2 }
@@ -5989,6 +6032,7 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(string);
 			// argumentTypeArray = null;
+			// An empty slot 1 means the default integer format (ToString()).
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.String }, OmitStart = 1 }
@@ -6173,7 +6217,7 @@ internal static partial class FunctionMethodCreator
 			// argumentTypeArray = new Type[] { typeof(string), typeof(string), typeof(string) };
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.String, ArgType.String, ArgType.Int }, OmitStart = 3 },
+				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.String, ArgType.String, ArgType.Int | ArgType.NotNull }, OmitStart = 3 },
 				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.String, ArgType.RefString1D | ArgType.AllowConstRef, ArgType.Int } }
 			];
 			HasUniqueRestructure = true;
@@ -6426,6 +6470,7 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(long);
 			// argumentTypeArray = new Type[] { null };
+			// An empty slot 1 means position = 0.
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.Int }, OmitStart = 1 }
@@ -6596,6 +6641,7 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(string);
 			// argumentTypeArray = null;
+			// Empty slots 1/2/3 mean separator = ",", index1 = 0 and index2 = the remainder.
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList { ArgTypes = { ArgType.RefAnyArray | ArgType.AllowConstRef, ArgType.String, ArgType.Int, ArgType.Int }, OmitStart = 1 }
@@ -6750,7 +6796,7 @@ internal static partial class FunctionMethodCreator
 			// argumentTypeArray = null;
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.Int }, OmitStart = 0 }
+				new ArgTypeList { ArgTypes = { ArgType.Int | ArgType.NotNull }, OmitStart = 0 }
 			];
 			CanRestructure = false;
 		}
@@ -7238,9 +7284,11 @@ internal static partial class FunctionMethodCreator
 			ReturnType = typeof(long);
 			// argumentTypeArray = new Type[] { typeof(Int64), typeof(string), typeof(Int64) };
 			// argumentTypeArray = new Type[] { typeof(Int64), typeof(string), typeof(Int64), typeof(Int64) };
+			// GetIntValue reads fontsize unconditionally, so a two-argument call would index past the list:
+			// only fontStyle may be omitted, which makes the minimum three.
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.String, ArgType.Int, ArgType.Int }, OmitStart = 2 }
+				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.String, ArgType.Int, ArgType.Int | ArgType.NotNull }, OmitStart = 3 }
 			];
 			CanRestructure = false;
 		}
@@ -7401,7 +7449,7 @@ internal static partial class FunctionMethodCreator
 			// argumentTypeArray = new Type[] { typeof(Int64), typeof(string), typeof(Int64), typeof(Int64) };
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.String, ArgType.Int, ArgType.Int }, OmitStart = 2 }
+				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.String, ArgType.Int | ArgType.NotNull, ArgType.Int | ArgType.NotNull }, OmitStart = 2 }
 			];
 			CanRestructure = false;
 		}
@@ -7488,7 +7536,7 @@ internal static partial class FunctionMethodCreator
 			// argumentTypeArray = new Type[] { typeof(string), typeof(string), typeof(Int64), typeof(Int64) };
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.String, ArgType.Int, ArgType.Int }, OmitStart = 3 }
+				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.String, ArgType.Int, ArgType.Int | ArgType.NotNull }, OmitStart = 3 }
 			];
 			CanRestructure = false;
 		}
@@ -7612,8 +7660,8 @@ internal static partial class FunctionMethodCreator
 						ArgType.Int,
 						ArgType.Int,
 						ArgType.Int,
-						ArgType.Int,
-						ArgType.Int
+						ArgType.Int | ArgType.NotNull,
+						ArgType.Int | ArgType.NotNull
 					},
 					OmitStart = 3
 				}
@@ -7915,7 +7963,7 @@ internal static partial class FunctionMethodCreator
 			ReturnType = typeof(long);
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.String, ArgType.Int }, OmitStart = 2 }
+				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.String, ArgType.Int | ArgType.NotNull }, OmitStart = 2 }
 			];
 			CanRestructure = false;
 		}
@@ -8286,6 +8334,8 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(long);
 			// argumentTypeArray = null;
+			// An empty slot 10 means "no color matrix" in both segments below: GetIntValue takes the
+			// 10-argument form when arguments.Count == 10 or arguments[10] == null.
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList
@@ -8486,7 +8536,7 @@ internal static partial class FunctionMethodCreator
 						ArgType.Int,
 						ArgType.Int,
 						ArgType.Int,
-						ArgType.RefInt2D | ArgType.AllowConstRef
+						ArgType.RefInt2D | ArgType.AllowConstRef | ArgType.NotNull
 					},
 					OmitStart = 6
 				},
@@ -8500,7 +8550,7 @@ internal static partial class FunctionMethodCreator
 						ArgType.Int,
 						ArgType.Int,
 						ArgType.Int,
-						ArgType.RefInt3D | ArgType.AllowConstRef
+						ArgType.RefInt3D | ArgType.AllowConstRef | ArgType.NotNull
 					},
 					OmitStart = 6
 				}
@@ -8954,7 +9004,7 @@ internal static partial class FunctionMethodCreator
 						ArgType.Int,
 						ArgType.Int,
 						ArgType.Int,
-						ArgType.String
+						ArgType.String | ArgType.NotNull
 					},
 					OmitStart = 6
 				}
@@ -9177,7 +9227,7 @@ internal static partial class FunctionMethodCreator
 			// argumentTypeArray = new Type[] { typeof(string) ,typeof(Int64), typeof(Int64), typeof(Int64) };
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.Any, ArgType.Int, ArgType.Int }, OmitStart = 2 }
+				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.Any, ArgType.Int | ArgType.NotNull, ArgType.Int | ArgType.NotNull }, OmitStart = 2 }
 			];
 			CanRestructure = false;
 		}
@@ -9316,7 +9366,7 @@ internal static partial class FunctionMethodCreator
 			// argumentTypeArray = new Type[] { typeof(Int64), typeof(Int64), typeof(Int64) };
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.Any, ArgType.Int, ArgType.Int }, OmitStart = 1 }
+				new ArgTypeList { ArgTypes = { ArgType.Any, ArgType.Int | ArgType.NotNull, ArgType.Int | ArgType.NotNull }, OmitStart = 1 }
 			];
 			CanRestructure = false;
 		}
@@ -9590,7 +9640,7 @@ internal static partial class FunctionMethodCreator
 			ReturnType = typeof(long);
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.Int }, OmitStart = 1 }
+				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.Int | ArgType.NotNull }, OmitStart = 1 }
 			];
 			CanRestructure = false;
 		}
@@ -9748,7 +9798,7 @@ internal static partial class FunctionMethodCreator
 			// argumentTypeArray = null;
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.RefAny | ArgType.AllowConstRef, ArgType.Int, ArgType.Int }, OmitStart = 2 }
+				new ArgTypeList { ArgTypes = { ArgType.RefAny | ArgType.AllowConstRef, ArgType.Int, ArgType.Int | ArgType.NotNull }, OmitStart = 2 }
 			];
 			CanRestructure = true;
 			HasUniqueRestructure = true;
@@ -9854,7 +9904,7 @@ internal static partial class FunctionMethodCreator
 			ReturnType = typeof(long);
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.Int, ArgType.Int, ArgType.Int }, OmitStart = 1 }
+				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.Int | ArgType.NotNull, ArgType.Int | ArgType.NotNull, ArgType.Int | ArgType.NotNull }, OmitStart = 1 }
 			];
 			CanRestructure = false;
 		}
@@ -9888,7 +9938,7 @@ internal static partial class FunctionMethodCreator
 			ReturnType = typeof(long);
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.String }, OmitStart = 1 }
+				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.String | ArgType.NotNull }, OmitStart = 1 }
 			];
 			CanRestructure = false;
 		}
@@ -9915,6 +9965,10 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(long);
 			// argumentTypeArray = null;
+			// An empty slot 1 means "no fallback": an undefined target raises CodeEE instead of a default.
+			// The trailing VariadicAny is forwarded as written: a null element is interpreted downstream
+			// (a UDF target substitutes that parameter's declared default, a missing target never reads
+			// the slot), so it must stay nullable instead of taking ArgType.NotNull.
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.Int, ArgType.VariadicAny }, OmitStart = 1 }
@@ -9956,6 +10010,10 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(string);
 			// argumentTypeArray = null;
+			// An empty slot 1 means "no fallback": an undefined target raises CodeEE instead of a default.
+			// The trailing VariadicAny is forwarded as written: a null element is interpreted downstream
+			// (a UDF target substitutes that parameter's declared default, a missing target never reads
+			// the slot), so it must stay nullable instead of taking ArgType.NotNull.
 			argumentTypeArrayEx =
 			[
 				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.String, ArgType.VariadicAny }, OmitStart = 1 }
@@ -10071,9 +10129,12 @@ internal static partial class FunctionMethodCreator
 		{
 			ReturnType = typeof(long);
 			// argumentTypeArray = null;
+			// GetIntValue writes both parameters to the hotkey state, so neither can be omitted: OmitStart is
+			// set equal to the slot count (the shape HotkeyStateInitMethod already uses), which keeps both
+			// slots required by count and also rejects an explicitly empty one through i < OmitStart.
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.Int }, OmitStart = 1 }
+				new ArgTypeList { ArgTypes = { ArgType.Int, ArgType.Int }, OmitStart = 2 }
 			];
 			CanRestructure = false;
 		}
@@ -10118,7 +10179,7 @@ internal static partial class FunctionMethodCreator
 			// argumentTypeArray = null;
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.Int }, OmitStart = 0 }
+				new ArgTypeList { ArgTypes = { ArgType.String | ArgType.NotNull, ArgType.Int | ArgType.NotNull }, OmitStart = 0 }
 			];
 			CanRestructure = false;
 		}
