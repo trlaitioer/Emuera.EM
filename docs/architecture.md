@@ -45,7 +45,7 @@ git remote set-branches upstream master
 - `Statements/FunctionIdentifier.cs` — 命令注册表:静态构造函数调用 `addFunction(FunctionCode, ...)` 注册全部内置命令,flag 常量(PARTIAL、IS_PRINT、FLOW_CONTROL…)决定运行时分派行为
 - `Statements/Function/Creator.cs` + `Creator.Method.cs` — `FunctionMethodCreator` 静态字典注册**所有式中函数/内建函数**(数值/字符串操作、数学、CSV 查询等),每个函数是一个 `FunctionMethod` 子类
 - `Statements/Variable/` — 变量系统:`VariableEvaluator`(变量存储与求值)、`VariableParser`(解析 `A[1]:B[2]` 类变量引用)、`VariableCode`/`VariableTerm`
-- `Statements/Expression/` — 表达式:`ExpressionParser` 生成 `AExpression` 树,`Term` 为叶节点,`OperatorMethod.cs`(+`OperatorCode.cs`)实现运算符;`ArgumentListExtensions.cs` 提供参数槽位的非空读取(省略实参以 null 承载)
+- `Statements/Expression/` — 表达式:`ExpressionParser` 生成 `AExpression` 树,`Term` 为叶节点,`OperatorMethod.cs`(+`OperatorCode.cs`)实现运算符;`ArgumentListExtensions.cs` 提供参数槽位的具名非空读取 `Required(i)`(担保只对该槽被规则表标为必填时成立:无 `OmitStart` 的块、`i < OmitStart`、`ArgType.NotNull`,以及 `SameAsFirst` 块里 `OmitStart == 0` 时被要求必填的 0 号槽;数量省略只让实参表更短、不产生 null,而显式空槽以 null 元素进入函数体,`i >= OmitStart` 的槽须由函数体自行判空)
 - `Statements/ArgumentParser.cs` — 参数解析;`CircularBuffer.cs` 实现 `GETCHARAMARK` 等循环缓冲
 - `Statements/MemoryLineEntry.cs` — **单行执行入口的共用校验**:调试命令与 `PluginManager.ExecuteLine` 都只跑一行,该类型统一拒绝非指令行、流控制、输入等待、非 `METHOD_SAFE`、`PARTIAL`、`PUTFORM`/`UPCHECK`/`CUPCHECK`/`SAVEDATA`、实参解析失败以及非 `-Debug` 下的 Debug 系指令,并构建实参(此前两处各写一份,`ExecuteLine` 那份缺失)
 - `Statements/LineLocationText.cs` — 错误报告与调试输出的行位置文本(`file:line@label`、当前函数、调用栈一项、跳转回溯);内存行(调试命令/插件构造的行)没有父标签、`Position` 又是 `ScriptPosition` 的默认值,故按可用部分降级,无法构成时返回 null 由调用方跳过

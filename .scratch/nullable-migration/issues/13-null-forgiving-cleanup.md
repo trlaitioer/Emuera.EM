@@ -72,6 +72,8 @@ internal static class ArgumentListExtensions
 }
 ```
 
+> **`arg-contract/issues/03` 回填（措辞更正）**：上面这段提案注释的第 1 句（「The parser rejects an omitted slot before an implementation reads it」）**不成立**，落地版没有采用它。检查器只拒绝**规则表标记为必填**的位置（`OmitStart == -1` 的块、`i < OmitStart`，以及 `arg-contract/issues/03` 片 3 铺开的 `ArgType.NotNull`）；`i >= OmitStart` 的槽是设计上可省略的，`f(a,b,,)` 这类显式空槽在那里**会**带着 null 进入函数体（`RAND(1,,)`、`HTML_STRINGLEN("x",,)`、`REGEXPMATCH("a","b",,)` 三处已举证为可达 NRE）。故「调用方担保」只对前一类槽成立，落地注释已按此改写（`ArgumentListExtensions.cs`），`arg-contract/issues/03` 也据此逐槽铺开 `ArgType.NotNull`。
+
 调用点由 `arguments[0]!.GetStrValue(exm)` 改为 `arguments.Required(0).GetStrValue(exm)`。同一入口覆盖 `terms`/`args`/`srcTerms`/`termList`/`Arguments` 等元素可空的容器;接收者类型不是 `AExpression?` 的(如 `VariableTerm?[]` 的 `vars`、`XmlNodeList` 的 `nodes`)保持原断言,由编译错误逐个回退区分。
 
 不采用 SKILL 里 `[MemberNotNull]`/`Debug.Assert` 一类提示手段:可空性在**元素**上而非成员上,流分析的提示无处附着。

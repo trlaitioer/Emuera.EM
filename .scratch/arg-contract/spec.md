@@ -7,24 +7,24 @@ Status: in-progress
 
 来源：2026-09-27 的只读架构审查（五处热点并行），结论落在 `.scratch/backlog/issues/02`（深化）与 `.scratch/backlog/issues/03/04/16`（缺陷）。本 effort 承接它们。
 
-式中関数（`FunctionMethod`，`Creator.Method.cs` 内 184 个**活的**子类 / 270 个注册名）用**数据**声明实参形状：114 个 `ArgTypeList` 规则块（91 个设了 `OmitStart`），另有类只用旧的 `argumentTypeArray`（`Type[]`）。声明方向是对的——184 个类里只有 `MesSkipMethod` override 了检查（`Creator.Method.cs:3652`）——但**一份声明有三个独立解释者**：
+式中関数（`FunctionMethod`，`Creator.Method.cs` 内 184 个**活的**子类 / 266 个活注册名——口径为 `Creator.cs` 内行首 `["NAME"] = `，另有 4 条注册被注释，其中 3 条写字面量 `//methodList[...]`）用**数据**声明实参形状：114 个 `ArgTypeList` 规则块（91 个设了 `OmitStart`），另有类只用旧的 `argumentTypeArray`（`Type[]`）。声明方向是对的——184 个类里只有 `MesSkipMethod` override 了检查（`Creator.Method.cs`）——但**一份声明有三个独立解释者**：
 
-1. **检查器**：`FunctionMethod.CheckArgumentTypeEx`（`FunctionMethod.cs:138-307`），另有 4 个实现分散在 `OperatorMethod.cs:22`、`StrForm.cs:296`、`MesSkipMethod:3652` 与指令侧的 `ArgumentBuilder`
-2. **折叠**：`FunctionMethodTerm.Restructure`（`FunctionMethodTerm.cs:33-63`）会**就地改写**实参表（`:53`），并用 `SingleTerm` 替换整个 term
+1. **检查器**：`FunctionMethod.CheckArgumentTypeEx`（`FunctionMethod.cs`），另有 4 个实现分散在 `OperatorMethod.cs` 的 `CheckArgumentType`、`StrForm.cs` 的 `FormattedStringMethod.CheckArgumentType`、`Creator.Method.cs` 的 `MesSkipMethod.CheckArgumentType` 与指令侧 `ArgumentBuilder.cs` 的 `CreateArgument`
+2. **折叠**：`FunctionMethodTerm.Restructure`（`FunctionMethodTerm.cs`）会**就地改写**实参表，并用 `SingleTerm` 替换整个 term
 3. **函数体**：每个 `GetIntValue`/`GetStrValue` 自己重新回答规则表已经回答过的 5 个问题——有没有值 / 是值还是变量 / 哪个变量 / 几维 / 是否已被折叠
 
-三者之间没有任何机制保持同步，而编译器无法介入，因为形状是**数据不是类型**：184 个子类的 C# 签名完全相同（`GetIntValue(ExpressionMediator, List<AExpression?>)`，`FunctionMethod.cs:360`）。
+三者之间没有任何机制保持同步，而编译器无法介入，因为形状是**数据不是类型**：184 个子类的 C# 签名完全相同（`GetIntValue(ExpressionMediator, List<AExpression?>)`，基类默认实现见 `FunctionMethod.GetIntValue`）。
 
 ### 代价（均已核实）
 
 - 函数体侧消费面约 **682 处取值 + 264 处计数**：`arguments.Required(` 405、`arguments[<字面量>]` 227、`arguments[i]` 47、`arguments[b…]` 3、`arguments.Count` 264；另有 `as VariableTerm` 24、`(VariableTerm)` 16、`is VariableTerm` 21（其中 6 处位于注释 ⇒ 33 处活 cast）
 - 33 处活 cast 逐点判决：23 处类型可证且 null 安全、**10 处可达 null**、0 处可达 InvalidCastException
-- **可能为 null 的槽约 116–135 处**（两种口径，见 issues/03）的「本槽位必已填充」无从证明
-- 检查器里两处已核实的判据缺陷（issues/01、issues/02）
+- **可能为 null 的槽约 132–134 处**（口径见 arg-contract/issues/03）的「本槽位必已填充」无从证明
+- 检查器里两处已核实的判据缺陷（arg-contract/issues/01、arg-contract/issues/02）
 
 ### 关键前提（已核实，决定方案形状）
 
-- **默认配置下不存在「解析期」折叠**：`ReduceArgumentOnLoad` 默认 `NO`，只有 `YES`/`AnalysisMode`/`FORCE_SETARG` 才在装载期折叠（`ErbLoader.cs:1314`）；普通指令行是**首次执行时**构造（`Process.ScriptProc.cs:62-69`），结果由 `ArgumentParser.cs:65` 记忆
+- **默认配置下不存在「解析期」折叠**：`ReduceArgumentOnLoad` 默认 `NO`，只有 `YES`/`AnalysisMode`/`FORCE_SETARG` 才在装载期折叠（`ErbLoader.cs` 里那个 `NeedReduceArgumentOnLoad || AnalysisMode || IsForceSetArg` 的条件）；普通指令行是**首次执行时**构造（`Process.ScriptProc.cs` 里 `ArgumentParser.SetArgumentTo` 的调用点），结果由 `ArgumentParser.SetArgumentTo`（`ArgumentParser.cs`）记忆
 - **折叠不在稳态每调用热路径上**（每求值 0 次）。每调用成本 = 1 次虚派发 + N×(索引器 + 虚派发)，无装箱
 - **仓库没有基准设施**（`BenchmarkDotNet`/`[Benchmark]` 零命中，50 个测试文件无一为性能测试）
 
@@ -34,11 +34,14 @@ Status: in-progress
 
 - **内建函数：逐槽可空性，由规则表声明**（2026-09-27 精化——原推荐「空槽一律按错误处理」被代码证据推翻）
   - **两个正交的问题压在同一字段上**：`OmitStart` 只回答「最少传几个」（**数量**省略 → 列表更短、不产生 null——`f(a,b,)` 得 `[a,b]`）；`null` 元素回答「这一槽被显式留空」（仅由显式空槽产生——`f(a,b,,)` 得 `[a,b,null]`、`f(a,,b)` 得 `[a,null,b]`）
-  - **证据 1**：`DisallowVoid` 的用途正是「在可省略区间内单独标注某槽不可省略」（全库仅 `Creator.Method.cs:478-479` 一处）⇒ `i >= OmitStart` 的槽**默认允许为空**是既有设计意图
-  - **证据 2**：约 34 处函数体**有意**把 null 当作「显式留空」处理：`GraphicsDrawGMethod:8373` 的 `arguments.Count == 10 || arguments[10] == null` 即「不带颜色矩阵」，同类还有 `GetcharaMethod:3031`、`CsvStrDataMethod:3124`、`MatchMethod:4646`、`FindElementMethod:5301`、`MoneyStrMethod:3976`、`ToStrMethod:6017`、`GetMethMethod:9933`
+  - **证据 1**：`DisallowVoid`（该标志今名 `ArgType.NotNull`，见下条）的用途正是「在可省略区间内单独标注某槽不可省略」（arg-contract/issues/03 片 1 前全库仅 `ArrayMultiSortExMethod` 的两段，片 1 又补了 `HtmlStringLenMethod`、`RegexpMatchMethod`、`RandMethod` 各一处）⇒ `i >= OmitStart` 的槽**默认允许为空**是既有设计意图
+  - **证据 2**：函数体**有意**把 null 当作「显式留空」处理的槽，按 (类,槽) 去重有 34 个（工作表口径，见 arg-contract/issues/03 的 B 表；把未被 `Required` 读取的同类槽计入为 39——片 2-D 又补判 `DataTableRowSetMethod[2]`、`DataTableCellSetMethod[3]`——可省略 (类,槽) 全集 96）：`GraphicsDrawGMethod.GetIntValue` 的 `arguments.Count == 10 || arguments[10] == null` 即「不带颜色矩阵」，同类还有 `GetcharaMethod.GetIntValue`、`CsvStrDataMethod.GetStrValue`、`MatchMethod.GetIntValue`、`FindElementMethod.GetIntValue`、`MoneyStrMethod.GetStrValue`、`ToStrMethod.GetStrValue`、`GetMethMethod.GetIntValue`
   - **反例**：`RAND(1,,)` 的 null 无意义——slot 1 的 `OmitStart = 1` 表达的是「可以只写 `RAND(5)`」（数量省略），而 max 没有默认值可代，故不能一律放行
-  - **裁定**：函数体已处理 null 的槽在规则表**显式声明为可空**；其余可省略槽拒绝 null（`DisallowVoid` 一般化）。`DisallowVoid` 是这条路的半成品（只用了 1 次）
-- **UDF 的空槽取已声明的默认值**：`@FOO(A = 1)` → `FunctionLabelLine.Def`，这是现有设计意图
+  - **第三类：转发槽**：函数体既不读也不解释，把实参原样交给下游（`GetMethMethod.GetIntValue` 的 `arguments.Skip(2)` → `GetFunctionMethod(…, methArgs, true)`）。这类槽的 null 由**被调方**解释——目标是 `#FUNCTION` 方法时取该 UDF 形参默认值，目标不存在时该槽不被读取——故规则表必须让它保持可空，不能用「本槽必已填充」的访问器
+  - **第四类：消费型变长尾（arg-contract/issues/03 片 2-C 定案）**：函数体把尾部整条读完，没有默认值可代——`MaxMethod.GetIntValue` 的 `for (int i = 1; i < arguments.Count; i++) arguments.Required(i)`（`MAX`/`MIN`）、`ArrayMultiSortMethod.GetIntValue` 的 `foreach (VariableTerm term in arguments.Cast<VariableTerm>())`（`ARRAYMSORT`）——故整条标 `ArgType.NotNull`（`MAX(1,,2)`、`ARRAYMSORT(DA:0,,DA:1)` 由 NRE 变为 `CodeEE`）。与转发型的分别正是「谁解释这个 null」：转发型有下游，消费型没有；两型的数量省略（少写尾实参）都继续合法
+  - **裁定**：函数体已处理 null 的槽在规则表**显式声明为可空**；其余可省略槽拒绝 null（`DisallowVoid` 一般化，今名 `ArgType.NotNull`）。该标志是这条路的半成品（片 1 前只用了 1 个类的 2 个段；片 3 已改名并在 A 表逐槽铺开）。**落地期不引入 `Nullable` 标志位**——放行本就是默认，故「显式声明为可空」由裁定表 + 规则段注释承载，只有拒绝侧逐槽标标志（见下条）
+  - **落地顺序（arg-contract/issues/03 片 3，已落地）**：取 **B**——保持默认放行、把旧名 `DisallowVoid` 改名 `ArgType.NotNull` 并在 A 表逐槽铺开，理由是每次改动都可证明不回退（今天 NRE → `CodeEE`，被执行到的调用取值语义不变），而 A 要求先把 96 个可省略槽枚举完整、否则误拒现存写法。A（默认翻转、显式 `Nullable` 才放行）留作收尾条件：待 **96 个 (类,槽)** 的 `Nullable` 集合枚举完整后二者等价，届时可机械翻转；主流语言翻默认极性（TS `strictNullChecks`、C# NRT）都带非致命诊断作过渡，而 `CodeEE` 是硬错误（默认在首次执行该行时抛出，见 arg-contract/issues/03 风险 6），故不在枚举完整前翻。**枚举已于 arg-contract/issues/03 片 2-D（2026-09-30）补齐**：补车道 20 项逐项过尺子并裁定（有意可空 5 / 转发 2 / 消费型变长尾 2 / 无意且可达 7 已标 `NotNull` / 硬转型 4 归 issues/04 片②），96 项全部有裁定；翻转动作仍留在 issues/04——它要用槽位类型承载「显式声明为可空」，且那 4 个 cast 槽的处置也在 04
+- **UDF 的空槽取已声明的默认值**：默认值来自函数标签 `@NAME(ARG, ARG:1 = 5)` 的形参默认表达式（`ErbLoader.parseLabel` 建立 `FunctionLabelLine.Def`；未写 `=` 的 ARG/ARGS/私有形参填 0/空串），代入点是 `CalledFunction.TryConvertArg`（`Process.CalledFunction.cs`）。这是现有设计意图
 - **两族语义不统一**：UDF 走完全另一套机制（`UserDefinedRefMethod.ArgTypeList` + `CalledFunction.TryConvertArg` + `UserDefinedFunctionArgument`），把任一族语义套到另一族都会破坏既有脚本
 
 ### 形状：新槽位类型 + 基类新入口 + 切片迁移（选项 (c)）
@@ -46,9 +49,9 @@ Status: in-progress
 - 规则表在检查期产出**已解析槽位集合**（每槽确定为：值 or 变量实体），只有检查器能构造
 - 基类提供**角色化访问器**（`Int(i)`/`Str(i)`/`IsInt(i)`/`IsStr(i)`/`Var(i)`…），函数体不判空、不 cast
 - 旧签名保留为**转发适配器**，184 个类按切片迁移
-- **决策 1（顺序）**：`check → fold → 建集合`。但实现上不是「把两个相邻调用换序」——检查在 `ExpressionParser.cs:320` 的嵌套构造里跑，折叠在同一 `CreateArgument` 里**稍后由 builder** 执行，所以必须把**折叠并入或前移到检查之内**
-- **决策 2（别名）**：`IdentifierDictionary.cs:624` 不复制直接构造；CALLF/CALLFORMF 传 `SpCallArgment.RowArgs` 并被 `CallformCache` 跨调用复用。不可变集合会迫使 `Restructure` 返回**新 term**——须显式确认这些共享语义的新形态
-- **决策 3（可机械核对）**：C# 对「参数列表不同的同名方法」只当重载、对不再被调用的私有方法默认不报警，故漏迁的函数体会**静默**走基类 `GetIntValue`（`FunctionMethod.cs:360-363` 抛 `ExeEE`），失败暴露在运行期。必须三选一：旧虚方法挂 `[Obsolete(error: true)]` / 引入分析器 / 以调用计数为门禁（`arguments.Required(` 从 405 核到 0）
+- **决策 1（顺序）**：`check → fold → 建集合`。但实现上不是「把两个相邻调用换序」——检查在 `ExpressionParser.CreateArgument` 的嵌套构造里跑，折叠在同一 `CreateArgument` 里**稍后由 builder** 执行，所以必须把**折叠并入或前移到检查之内**
+- **决策 2（别名）**：`IdentifierDictionary.GetFunctionMethod` 直接构造而不复制实参表；CALLF/CALLFORMF 传 `SpCallArgment.RowArgs` 并被 `CallformCache` 跨调用复用。不可变集合会迫使 `Restructure` 返回**新 term**——须显式确认这些共享语义的新形态
+- **决策 3（可机械核对）**：C# 对「参数列表不同的同名方法」只当重载、对不再被调用的私有方法默认不报警，故漏迁的函数体会**静默**走基类 `GetIntValue`（`FunctionMethod.GetIntValue` 抛 `ExeEE`），失败暴露在运行期。必须三选一：旧虚方法挂 `[Obsolete(error: true)]` / 引入分析器 / 以调用计数为门禁（`arguments.Required(` 从 405 核到 0）
 - **决策 4（理由必须是契约安全，不是速度）**：本重构在 per-call 上拿不到可测收益；可省的成本在构造/折叠期（17 个 unique 方法每次折叠分配一次 `[.. Arguments]`、`VariableTerm.Restructure` 的重复 `CheckElement`）。任何性能主张**必须先补基准**
 - **决策 5（槽位三态）**：槽位类型必须表达**缺失**（数量省略、列表更短）/ **显式留空**（null 元素）/ **有值**三态；「可空性」是与 `OmitStart` 正交的逐槽声明。这直接来自上面的精化——若只做「有值 / 无值」两态，`GraphicsDrawG` 的「不带颜色矩阵」就没有表达方式
 
@@ -61,7 +64,8 @@ Status: in-progress
 3. `VariableTerm` 实体槽（405 中 11 处 + 索引器路径约 34 处）→ 独立 `Var(i)`；读写语义不同（`SetValue` 7、`GetFixedVariableTerm` 7）
 4. 54 处类型询问（`SameAsFirst` 规则）→ 访问器必须暴露 operand type
 5. 3 处把 `Required(i)` 原样传给别的 helper → 需要「原始 term」逃生口
-6. `Int(i)`/`Str(i)` 必须对 `Ref` 槽继续返回变量当前值（今天成立，`VariableTerm` 本身是 `AExpression`）
+6. **转发槽**（`GetMethMethod.GetIntValue` 的 `arguments.Skip(2)` 交给下游函数调用约定）→ 不属于本集合的访问器，需要「整段原样转交」语义
+7. `Int(i)`/`Str(i)` 必须对 `Ref` 槽继续返回变量当前值（今天成立，`VariableTerm` 本身是 `AExpression`）
 
 ## 曾考虑的替代方案
 
@@ -70,12 +74,12 @@ Status: in-progress
 3. **统一内建与 UDF 的空槽语义**：放弃——UDF 有逐参数默认值、内建没有，统一会破坏其中一族
 4. **保持 682 处消费面不动，只加运行期真检查**：放弃——把 NRE 变成有文案的脚本错误是改善但非深化，作为 03 号票的一部分另做
 5. **退回手写校验（给每个函数 override `CheckArgumentType`）**：放弃——`argumentTypeArrayEx` 的声明式方向是对的（184 个类只有 1 个 override），要兑现不要退回
-6. **内建函数「任何 null 都报错」**：放弃——会破坏 `GraphicsDrawG` 的「不带颜色矩阵」等既有写法，并需删掉约 34 处**有意**的 null 分支；且与 `DisallowVoid` 的存在相矛盾（见「语义裁定」的精化）
+6. **内建函数「任何 null 都报错」**：放弃——会破坏 `GraphicsDrawG` 的「不带颜色矩阵」等既有写法，并需删掉约 34 处**有意**的 null 分支；且与 `DisallowVoid`（今 `ArgType.NotNull`）的存在相矛盾（见「语义裁定」的精化）
 
 ## 影响
 
-- 改动面：`FunctionMethod.cs`（规则表与检查器）、`Creator.Method.cs`（114 个规则块 + 约 682 处消费点）、`FunctionMethodTerm.cs`、`ArgumentBuilder.cs`、`IdentifierDictionary.cs`、`ArgumentListExtensions.cs`；`UserDefinedMethodTerm.cs`（UDF 侧同型缺陷）
-- 交付顺序：01（Array3D 标志位）→ 02（OmitStart 判据）→ 03（可省略槽上的 `Required`，含 UDF）→ 04（深化）。01/02 是高优先、低风险的止血
-- 测试：今天 `CheckArgumentType`/`ArgTypeList`/`argumentTypeArrayEx` **零命中**——114 个规则块是仓库里最大的一块未测行为。本 effort 的表驱动用例是该面的首个覆盖
-- 与既有票的关系：`.scratch/nullable-migration/issues/08:49`（把「数量上可省略」写成「槽可以为 null」的出处）、`issues/13`（`Required` 的引入）、`issues/05`（省略实参以 null 承载的契约）——03 号票落地时须回填 issues/08
+- 改动面：`FunctionMethod.cs`（规则表与检查器）、`Creator.Method.cs`（114 个规则块 + 约 682 处消费点）、`FunctionMethodTerm.cs`、`ArgumentBuilder.cs`、`IdentifierDictionary.cs`、`ArgumentListExtensions.cs`；`UserDefinedMethodTerm.cs`（UDF 侧同型站点在 ref 分支上，已核实为死代码，见 arg-contract/issues/03）
+- 交付顺序：01（Array3D 标志位）→ 02（OmitStart 判据）→ 03（可省略槽上的 `Required`；UDF 侧已核实为死代码，不在其中）→ 04（深化）。01/02 已落地；03 的片 1 是高优先、低风险的止血，片 2/3/4（A 表 41 槽铺 `NotNull`、B 表 34 槽裁定为「有意可空」、A/B 用例网 76 槽 + UDF 默认值 1 条）也已落地，片 2-C 把变长尾部按转发型/消费型逐块定案（`MAX`/`MIN`、`ARRAYMSORT` 标 `NotNull`），片 2-D（2026-09-30）把工作表从 76 补到全集 96：补车道 20 项逐项过「数量省略越界」尺子并裁定（7 处「无意且可达」补标 `NotNull` + 用例、2 处「有意可空」补注释、4 处硬转型归 04 片②），变量下标 `Required(i)` 与 helper 传参路径随之并入。03 仍余：B 表执行期语义抽查（活 `arguments[i]` 车道归 04），另加 2026-09-29 复核补记的两条：指令侧 `ArgumentBuilder` 的两轴模型定案（arg-contract/issues/03 余项 6）、`docs/` 侧的内建函数契约表（同票余项 7）；同批复核发现的另两条（未被 `Required` 读取的 3 个有意可空槽补注释、两处代码注释不再指向票据）已就地落地
+- 测试：`CheckArgumentType`/`ArgTypeList`/`argumentTypeArrayEx` 原先**零命中**——114 个规则块是仓库里最大的一块未测行为。本 effort 的表驱动用例是该面的首个覆盖，落在 `Emuera.Tests/Runtime/Script/Statements/Function/CheckArgumentTypeEx.cs`
+- 与既有票的关系：`.scratch/nullable-migration/issues/08-expression-method-chain.md`（把「数量上可省略」写成「槽可以为 null」的出处）、`nullable-migration/issues/13`（`Required` 的引入）、`nullable-migration/issues/05`（省略实参以 null 承载的契约）——`nullable-migration/issues/08` 与 `nullable-migration/issues/13` 已随 `arg-contract/issues/03` 回填
 - 本 effort **不改**：`argumentTypeArrayEx` 的声明式方向、184 个子类的扁平结构、`ArgumentListExtensions.Required` 的存在理由（其注释的「调用方担保」措辞在 03 号票里更正）

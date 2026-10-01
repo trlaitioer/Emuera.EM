@@ -121,3 +121,4 @@
 5. CP932 不可映射字符(如简体专用字)宽度按 1 计,做对齐类断言时选假名等可映射字符
 6. `IdentifierDictionary` 构造依赖 `VariableData`(→ `GameBase` + `ConstantData`),而 `FunctionIdentifier` 静态构造读取 `JSONConfig.Data`——单元测试的最小初始化序列见 `Emuera.Tests/TestBootstrap.cs` 及 `Emuera.Tests/README.md`
 7. `#DEFINE` 与全局 `#DIM` 只能写在 ERH;同名不同义:`#FUNCTION`(ERB,使函数可作式中调用)与 ERH 的 `#FUNCTION`/`#FUNCTIONS`(引用方法声明,**未实现**,写了就报错)不要混淆
+8. 内建函数实参的「少写尾实参」与「显式空槽」是两件事:`f(a,b,)` 只吞掉一个尾逗号(列表更短、不含 null),而 `f(a,b,,)`/`f(a,,b)` 会在列表里留下 null 元素;规则表的 `OmitStart` 只表达前者。约 50 个内建槽另标了 `ArgType.NotNull`,这些槽收到显式空槽即 `CodeEE(ArgCanNotBeNull)`(默认在首次执行该行时才抛,见 `Process.ScriptProc.cs` 的 `ArgumentParser.SetArgumentTo`),例如 `GDRAWTEXT(id, text, x, y)` 的 x/y、`GDRAWGWITHROTATE(id, src, angle, x, y)` 的 x/y、`GDRAWSPRITE(..., colormatrix)` 的颜色矩阵、`XML_ADDNODE`/`XML_ADDATTRIBUTE` 的 method/全节点标志;其余可省略槽的 null 由函数体自己解释——`ArgumentListExtensions.Required(i)` 的「非空」担保只对规则表标为必填的槽成立(无 `OmitStart` 的块、`i < OmitStart`、`ArgType.NotNull`;变长尾部的必填标志由下标落到的那个变长规则决定)
