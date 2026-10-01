@@ -212,7 +212,7 @@ internal static partial class FunctionMethodCreator
 			CanRestructure = false;
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.RefString1D }, OmitStart = 1 }
+				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.RefString1D | ArgType.NotNull }, OmitStart = 1 }
 			];
 			this.type = type;
 			action = act;
@@ -297,7 +297,7 @@ internal static partial class FunctionMethodCreator
 			ReturnType = typeof(long);
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.String | ArgType.NotNull, ArgType.Int | ArgType.NotNull, ArgType.RefString1D }, OmitStart = 1 }
+				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.String | ArgType.NotNull, ArgType.Int | ArgType.NotNull, ArgType.RefString1D | ArgType.NotNull }, OmitStart = 1 }
 			];
 			CanRestructure = false;
 		}
@@ -2543,7 +2543,7 @@ internal static partial class FunctionMethodCreator
 			// and falls back to the unfiltered dt.Select().
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.String, ArgType.String, ArgType.RefInt1D }, OmitStart = 1 }
+				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.String, ArgType.String, ArgType.RefInt1D | ArgType.NotNull }, OmitStart = 1 }
 			];
 			CanRestructure = false;
 		}
@@ -2607,7 +2607,7 @@ internal static partial class FunctionMethodCreator
 			ReturnType = typeof(string);
 			argumentTypeArrayEx =
 			[
-				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.RefString }, OmitStart = 1 }
+				new ArgTypeList { ArgTypes = { ArgType.String, ArgType.RefString | ArgType.NotNull }, OmitStart = 1 }
 			];
 			CanRestructure = false;
 		}

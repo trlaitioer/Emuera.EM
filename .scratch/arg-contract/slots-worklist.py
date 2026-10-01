@@ -25,134 +25,40 @@
 """
 
 import re
+import sys
+
+from _rulings import DISPOSITION as HARDCAST_DISPOSITION, worklist_rulings
+from _scan import (class_spans, line_of, method_of, methods_of, not_null_counts,
+                   null_handling_points, parse_blocks, strip_keep_lines)
 
 SRC = r"Emuera/Runtime/Script/Statements/Function/Creator.Method.cs"
 DST = r".scratch/arg-contract/slots-worklist.md"
+# 片 5 的用例数从测试文件机械数出（不把数字硬编码进产物：用例增删要跟着变；数不到即报警并以非零码退出）。
+TEST_SRC = r"Emuera.Tests/Runtime/Script/Statements/Function/IntentionalEmptySlotExecutionTests.cs"
+problems = []
+try:
+    test_src = open(TEST_SRC, encoding="utf-8-sig").read()
+except FileNotFoundError:
+    test_src = None
+    problems.append(f"{TEST_SRC} 缺失，片 5 的用例数无法核对")
+case_n = None if test_src is None else (len(re.findall(r"\[Fact\]", test_src))
+                                       + len(re.findall(r"\[InlineData\(", test_src)))
+if test_src is not None and not case_n:
+    problems.append(f"{TEST_SRC} 里数不到用例（[Fact]/[InlineData] 形态变了？）")
+    case_n = None
+# 成文：核到就写数字，否则写明未核（problems 非空时脚本末尾以非零码退出）
+case_txt = f"{case_n} 条用例" if case_n else "用例数未核"
 
 src = open(SRC, encoding="utf-8-sig").read()
 lines = src.split("\n")
 
-
-def strip_keep_lines(text):
-    out = list(text)
-    i, n = 0, len(text)
-    while i < n:
-        if text.startswith("//", i):
-            j = text.find("\n", i)
-            j = n if j == -1 else j
-            for k in range(i, j):
-                out[k] = " "
-            i = j
-        elif text.startswith("/*", i):
-            j = text.find("*/", i + 2)
-            j = n if j == -1 else j + 2
-            for k in range(i, j):
-                if out[k] != "\n":
-                    out[k] = " "
-            i = j
-        else:
-            i += 1
-    return "".join(out)
-
-
 code = strip_keep_lines(src)
-
-cls_re = re.compile(r"^\t(?:public |private |internal )?sealed class (\w+)\s*:", re.M)
-marks = [(m.start(), m.group(1)) for m in cls_re.finditer(src)]
-classes = []
-for idx, (pos, name) in enumerate(marks):
-    end = marks[idx + 1][0] if idx + 1 < len(marks) else len(src)
-    classes.append((name, pos, end))
-
-line_of = lambda pos: src.count("\n", 0, pos) + 1
+# 与 arg-slots.py 同函数同口径（issues/04 的自校验项之一）
+nn = not_null_counts(src)
 
 # 产物里的定位一律写「类内方法名」，不写行号：行号会随任何插入而整体失效（AGENTS.md 要求
 # 「引用代码位置用文件路径 + 函数名」）。同一方法里有多处时用 ×N 保留「几处」这一事实。
-# 只认「<\t\t> [attribute] 访问修饰符 [其他修饰符] [返回类型] 名字 (」形态——否则
-# `throw new CodeEE(`、`arguments.Required(` 这类语句也会被当成方法声明。
-_method_sig = re.compile(
-    r"^\t\t(?:\[[^\]]*\]\s*)?(?:public|private|protected|internal)\s+"
-    r"(?:(?:static|override|virtual|sealed|async|partial|new|unsafe|extern)\s+)*"
-    r"(?:[\w<>\[\],?.]+\s+)?(\w+)\s*\("
-)
-_method_kw = {"if", "for", "while", "switch", "return", "throw", "catch", "using", "lock",
-              "foreach", "else", "new", "get", "set"}
-
-
-def method_of(pos):
-    """pos 所属的类内方法名（本文件所有类成员均为两个 Tab 缩进）。"""
-    for k in range(line_of(pos) - 1, -1, -1):
-        m = _method_sig.match(lines[k])
-        if m and m.group(1) not in _method_kw:
-            return m.group(1)
-    return "—"
-
-
-def methods_of(positions):
-    """把若干位置折成「方法名(×N)」，按首次出现排序。"""
-    names = [method_of(p) for p in positions]
-    return "、".join(
-        "%s×%d" % (nm, names.count(nm)) if names.count(nm) > 1 else nm
-        for nm in dict.fromkeys(names)
-    ) or "—"
-
-
-
-def null_handling_points(text, base_pos, i):
-    """text 内针对槽 i 的 null 处理点（文件内绝对字符位置）；口径见文件头。"""
-    hits = []
-    for pat in (
-        rf"arguments\[{i}\]\s*(?:==|!=)\s*null",
-        rf"arguments\[{i}\]\s+is\s+(?:not\s+)?null",
-        rf"arguments\[{i}\]\s*\?\.",
-    ):
-        hits += [base_pos + m.start() for m in re.finditer(pat, text)]
-
-    for m in re.finditer(r"arguments is \[([^\]]*)\]", text):
-        parts = [p.strip() for p in m.group(1).split(",")]
-        if i < len(parts) and parts[i] == "not null":
-            hits.append(base_pos + m.start())
-
-    return sorted(set(hits))
-
-
-def parse_blocks(pos, end):
-    text = src[pos:end]
-    out = []
-    for m in re.finditer(r"new ArgTypeList\s*\{", text):
-        i = m.end() - 1
-        d = 0
-        while i < len(text):
-            if text[i] == "{":
-                d += 1
-            elif text[i] == "}":
-                d -= 1
-                if d == 0:
-                    break
-            i += 1
-        body = text[m.end():i]
-        om = re.search(r"OmitStart\s*=\s*(-?\d+)", body)
-        om = int(om.group(1)) if om else -1
-        am = re.search(r"ArgTypes\s*=\s*\{", body)
-        argc = 0
-        entries = []
-        if am:
-            j = am.end() - 1
-            dd = 0
-            while j < len(body):
-                if body[j] == "{":
-                    dd += 1
-                elif body[j] == "}":
-                    dd -= 1
-                    if dd == 0:
-                        break
-                j += 1
-            entries = [x.strip() for x in body[am.end():j].split(",") if x.strip()]
-            argc = len(entries)
-        # entries 是逐槽位的 ArgType 表达式；NotNull 只对写出了它的那个槽位生效，
-        # 故必须逐槽位判定（整块级的 "任何一处有" 会把同块其他槽一起算成已标）。
-        out.append({"om": om, "argc": argc, "entries": entries, "line": line_of(pos + m.start())})
-    return out
+classes = class_spans(src)
 
 
 rows = []
@@ -162,7 +68,7 @@ all_omittable = set()
 blocks_by_class = {}
 span_of_class = {}
 for name, pos, end in classes:
-    blocks = parse_blocks(pos, end)
+    blocks = parse_blocks(src, pos, end)
     blocks_by_class[name] = blocks
     span_of_class[name] = (pos, end)
     total_blocks += len(blocks)
@@ -182,7 +88,7 @@ for name, pos, end in classes:
         # 另有段要求该槽必填（i < OmitStart）时不能就此认为检查器已挡住：
         # 检查器「任一段通过即通过」，可省略段仍会放行 null（见票内机制事实 1）。
         mandatory = [b for b in blocks if b["om"] >= 0 and i < b["om"]]
-        ln = line_of(pos + m.start())
+        ln = line_of(src, pos + m.start())
         null_hits = null_handling_points(cls_code, pos, i)
         raw_hits = null_handling_points(src[pos:end], pos, i)
         helpers = sorted(set(re.findall(r"(\w+)\(Name,\s*exm,\s*arguments,\s*\d+", cls_code)))
@@ -217,16 +123,13 @@ supplement = sorted(all_omittable - covered)
 # 裁定表（票内片 2-D 的结论）：键 (类, 槽) → (类别, 处置, 数量省略尺子, 是否须在全部可省略段带 NotNull)。
 # 机械扫描给不出「这一槽空着是什么意思」，故逐槽人工核查函数体读取路径后填入；缺项/多余项/与代码现状
 # 不符时脚本报警（与 A 表的 RULED_NULLABLE 校验同一思路）。
+# 4 个硬转型槽的裁定取自跨脚本单一来源 `_rulings.py`（arg-slots.py 的 A 段引用同一条），故不在此重复。
 SUPPLEMENT_RULINGS = {
     ("DataTableSelectMethod", 1): ("有意可空", "规则段注释已写（空槽 = 不筛）", "过（Count > 1）", False),
     ("DataTableSelectMethod", 2): ("有意可空", "规则段注释已写（空槽 = 不排序）", "过（Count > 2）", False),
-    ("DataTableSelectMethod", 3): ("硬转型解引用", "归 arg-contract/issues/04 片②（输出数组）", "过（Count != 4 的否支）", False),
     ("GraphicsDrawGMethod", 10): ("有意可空", "规则段注释已写（空槽 = 不带颜色矩阵）", "过（Count != 10 时判空短路）", False),
     ("GetMethMethod", 2): ("转发槽", "规则段注释已写（交给下游解释）", "过（Skip(2) 原样转发）", False),
     ("GetMethsMethod", 2): ("转发槽", "规则段注释已写（交给下游解释）", "过（Skip(2) 原样转发）", False),
-    ("EnumNameMethod", 1): ("硬转型解引用", "归 arg-contract/issues/04 片②（输出数组）", "过（Count == 2）", False),
-    ("EnumFilesMethod", 3): ("硬转型解引用", "归 arg-contract/issues/04 片②（输出数组）", "过（Count == 4）", False),
-    ("DataTableToXmlMethod", 1): ("硬转型解引用", "归 arg-contract/issues/04 片②（输出数组）", "过（Count > 1）", False),
     ("MaxMethod", 1): ("消费型变长尾", "片 2-C 已标 NotNull", "过（循环 i < Count）", True),
     ("ArrayMultiSortMethod", 1): ("消费型变长尾", "片 2-C 已标 NotNull", "过（Cast 整表）", True),
     ("XmlAddNodeMethod", 4): ("无意且可达", "本次标 NotNull + 用例（Node 段 setAllPos、Attribute 段 methodPos 都读它）", "过（Count == 5 / Count >= 5）", True),
@@ -238,6 +141,7 @@ SUPPLEMENT_RULINGS = {
     ("GraphicsDrawGWithRotateMethod", 3): ("无意且可达", "本次标 NotNull + 用例（ReadPoint 无判空）", "过（Count != 3 的否支）", True),
     ("GraphicsDrawGWithRotateMethod", 4): ("无意且可达", "本次标 NotNull + 用例（ReadPoint 无判空）", "过（Count != 3 的否支）", True),
     ("GraphicsDrawSpriteMethod", 6): ("无意且可达", "本次标 NotNull + 用例（ReadColormatrix 无判空）", "过（2/4/6 分支返回后即 Count == 7）", True),
+    **worklist_rulings(),
 }
 SUPPLEMENT_CATEGORIES = ["有意可空", "转发槽", "消费型变长尾", "无意且可达", "硬转型解引用"]
 
@@ -256,7 +160,7 @@ def supplement_evidence(cls, slot):
     cls_code = code[pos:end]
     ev = []
     for m in re.finditer(rf"arguments\[{slot}\]", cls_code):
-        ev.append(f"arguments[{slot}] @ {method_of(pos + m.start())}")
+        ev.append(f"arguments[{slot}] @ {method_of(src, lines, pos + m.start())}")
     if re.search(r"arguments\.Required\((?![0-9])", cls_code):
         ev.append("Required(非字面量)")
     if "arguments.Skip(" in cls_code:
@@ -318,8 +222,8 @@ out.append("")
 out.append("| 量 | 数 |")
 out.append("| --- | --- |")
 out.append(f"| 规则块 / 含可省略槽的块 / 可省略槽总数 | {total_blocks} / {len(block_rows)} / {sum(b['argc'] - b['om'] for _, b in block_rows)} |")
-out.append(f"| `ArgType.NotNull` 处数（含注释 / 剥注释） | {src.count('ArgType.NotNull')} / {code.count('ArgType.NotNull')} |")
-out.append(f"| └ 含 `ArgType.NotNull` 的行数（含注释 / 剥注释） | {sum('ArgType.NotNull' in ln for ln in src.split(chr(10)))} / {sum('ArgType.NotNull' in ln for ln in code.split(chr(10)))} |")
+out.append(f"| `ArgType.NotNull` 处数（含注释 / 剥注释） | {nn['raw_occ']} / {nn['live_occ']} |")
+out.append(f"| └ 含 `ArgType.NotNull` 的行数（含注释 / 剥注释） | {nn['raw_lines']} / {nn['live_lines']} |")
 out.append(f"| 规则段旁的空槽语义注释行数（`empty slot`/`omitted slot`，大小写不敏感） | {sum(1 for ln in src.split(chr(10)) if re.search(r'(?i)(?:empty|omitted) slots?', ln))} |")
 out.append(f"| `arguments.Required(` 总处数（含注释） | {len(re.findall(r'arguments[.]Required[(]', src))} |")
 out.append(f"| 可省略 (类,槽) 全集（不论是否被读取） | {len(all_omittable)} |")
@@ -350,7 +254,7 @@ for r in need:
     must = "、".join(f"{b['om']}/{b['argc']}" for b in r["must"]) or "—"
     flag = "是" if r["raw"] else "—"
     flag2 = "是" if r["flagged"] else "—"
-    sites = methods_of(r["abs"])
+    sites = methods_of(src, lines, r["abs"])
     out.append(f"| `{r['cls']}[{r['slot']}]` | {sites} | {segs} | {must} | {', '.join(r['helpers']) or '—'} | {flag} | {flag2} |")
 out.append("")
 out.append("## B. 有意候选（片 2-B 裁定：34 项全部为「显式留空」）")
@@ -364,8 +268,8 @@ out.append("| --- | --- | --- | --- | --- |")
 for r in intent:
     segs = "、".join(f"{b['om']}/{b['argc']}" for b in r["segs"])
     must = "、".join(f"{b['om']}/{b['argc']}" for b in r["must"]) or "—"
-    sites = methods_of(r["abs"])
-    out.append(f"| `{r['cls']}[{r['slot']}]` | {sites} | {segs} | {must} | {methods_of(r['null'])} |")
+    sites = methods_of(src, lines, r["abs"])
+    out.append(f"| `{r['cls']}[{r['slot']}]` | {sites} | {segs} | {must} | {methods_of(src, lines, r['null'])} |")
 if flagged_intent:
     out.append("")
     out.append("**冲突**：以下 B 表槽的可省略段已带 `ArgType.NotNull`，与「有意放行 null」相反，须先撤标志或改裁定："
@@ -408,11 +312,17 @@ out.append(f"- [x] **另一把尺子（数量省略越界）**已对 A 表逐点
 out.append(f"- [x] **同一把尺子对 E 段 {len(supplement)} 项也逐项核过**：无一处「数量省略即越界」，故没有第三处 `OmitStart` 附修；逐项结论见 E 段「尺子」列")
 out.append("- [x] 片 2 的三处更正（票面「片 2-A」有记）：① `ReplaceMethod[3]` 被预筛漏在批次外——它同样可达（`REPLACE(\"a\",\"b\",\"c\",,)` 由段 1 的 `OmitStart = 3` 放行 null），已补标 + 补用例；② `DataTableRowSetMethod[1]`（脚本按类内可省略段与站点做笛卡尔匹配时多出的那条）的站点确属 Set 分支（跨构造器假阳性），但 `DT_ROW_ADD` 的槽 1 经 `arguments.Required(pos)`（变量下标，不在本表车道）可达、修前 NRE，已标 `NotNull`；③ `MapGetStrMethod[1]` 只有 `MAP_GETKEYS` 那一段可省略（`MAP_GET`/`MAP_TOXML` 走定长 `argumentTypeArray`），已按名绑定标注。`DataTableColumnManagementMethod[1]` 裁定为可空")
 out.append("- [x] **变长尾部按转发型 / 消费型定案（片 2-C，已落地）**：`MaxMethod`（`MAX`/`MIN`）的 `VariadicInt` 与 `ArrayMultiSortMethod`（`ARRAYMSORT`）的变长尾标 `ArgType.NotNull`（函数体逐个循环 / 整表 `Cast` 消费，空槽无默认值可代）；`GetMethMethod`/`GetMethsMethod` 保持可空（`arguments.Skip(2)` 转发给下游）。两型的首槽都由 `i < OmitStart` 拒空，故标志只铺尾部。这三处在「字面量 `Required(`」车道之外，故不影响本表的行数与计数")
-out.append(f"- [x] **本表已从 {len(rows)} 扩到 {len(all_omittable)}**（可省略 (类,槽) 全集）：补车道的 {len(supplement)} 项见 E 段——其中「有意可空」的 {supplement_counts['有意可空']} 项已按完成标准第 1 类在规则段旁写明空槽语义（`DataTableRowSetMethod[2]`、`DataTableCellSetMethod[3]` 为本次补写），转发槽保持可空不标 `NotNull`，「无意且可达」的 {supplement_counts['无意且可达']} 项已标 `NotNull` 并补用例，「硬转型解引用」的 {supplement_counts['硬转型解引用']} 项归 arg-contract/issues/04 片②")
+out.append(f"- [x] **本表已从 {len(rows)} 扩到 {len(all_omittable)}**（可省略 (类,槽) 全集）：补车道的 {len(supplement)} 项见 E 段——其中「有意可空」的 {supplement_counts['有意可空']} 项已按完成标准第 1 类在规则段旁写明空槽语义（`DataTableRowSetMethod[2]`、`DataTableCellSetMethod[3]` 为本次补写），转发槽保持可空不标 `NotNull`，「无意且可达」的 {supplement_counts['无意且可达']} 项已标 `NotNull` 并补用例，「硬转型解引用」的 {supplement_counts['硬转型解引用']} 项{HARDCAST_DISPOSITION}")
 out.append("- [x] UDF 侧 `UserDefinedRefMethodTerm` 已确认为死代码（见票内「UDF 族」），**不是**本表工作面；活路径的「省略实参 → 取 `FunctionLabelLine.Def` 默认值」已由 `CalledFunctionTests` 一条用例钉住")
-out.append("- [ ] 仍未纳入本表：活 `arguments[i]` 站点里落在**非可省略槽**上的那些（硬转型解引用共 24 处，落在可省略槽上的 4 项已见 E 段，其余归 arg-contract/issues/04 片②）。变量下标 `Required(i)` 与 helper 传参路径已随 E 段核过")
-out.append("- [ ] 本票仍未做的三件（见票内「余项」4/6/7）：B 表执行期语义抽查、指令侧 `ArgumentBuilder` 的两轴模型定案、`docs/` 侧的内建函数契约表")
+out.append("- [ ] 仍未纳入本表：活 `arguments[i]` 站点里落在**非可省略槽**上的那些（硬转型解引用共 24 处，落在可省略槽上的 4 项已见 E 段，其余归 arg-contract/issues/05（cast 的类型化移除））。变量下标 `Required(i)` 与 helper 传参路径已随 E 段核过")
+out.append(f"- [x] **片 5（B 表执行期语义）与片 6（指令侧两轴模型定案）已落地**：片 5 的用例在 `{TEST_SRC}`（{case_txt}；覆盖了 B 表哪些槽、各项钉住的默认值、未覆盖槽的理由均见 issues/03 片 5，逐槽证据留在票内而不在此处硬编码）；片 6 的工件是 [instruction-args.py](instruction-args.py) → [instruction-args.md](instruction-args.md)（不并入本表——它扫的是 `ArgumentBuilder.cs`，口径与本站点清单不同）")
+out.append("- [ ] 本票仍未做的一件（见票内「余项」7）：`docs/` 侧的内建函数契约表")
 
 open(DST, "w", encoding="utf-8-sig", newline="\n").write("\n".join(out) + "\n")
 print("rows", len(rows), "need", len(need), "flagged_need", len(flagged_need),
       "intent", len(intent), "misreport", len(misreport))
+# 自校验失败：产物照写（人工仍可看），但脚本以非零码退出，别让复跑看起来"通过"
+for p in problems:
+    print("warning:", p, file=sys.stderr)
+if problems:
+    sys.exit(1)

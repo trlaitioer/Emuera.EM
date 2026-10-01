@@ -1,5 +1,4 @@
 ﻿using MinorShift.Emuera;
-using MinorShift.Emuera.GameData.Function;
 using MinorShift.Emuera.Runtime.Script.Parser;
 using MinorShift.Emuera.Runtime.Script.Statements;
 using MinorShift.Emuera.Runtime.Script.Statements.Expression;
@@ -8,6 +7,7 @@ using MinorShift.Emuera.Runtime.Script.Statements.Variable;
 using MinorShift.Emuera.Runtime.Utils;
 using MinorShift.Emuera.Runtime.Utils.EvilMask;
 using Xunit;
+using static Emuera.Tests.Runtime.Script.Statements.Function.BuiltinFunctionTestKit;
 using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 
 namespace Emuera.Tests.Runtime.Script.Statements.Function;
@@ -32,7 +32,7 @@ public class CheckArgumentTypeEx
 	[Fact]
 	public void Shape_WithoutTrailingComma_HasNoNull()
 	{
-		List<AExpression?> args = Shape("1,2");
+		List<AExpression?> args = Args("1,2");
 		Assert.Equal(2, args.Count);
 		Assert.All(args, a => Assert.NotNull(a));
 	}
@@ -41,7 +41,7 @@ public class CheckArgumentTypeEx
 	[Fact]
 	public void Shape_WithSingleTrailingComma_IsEaten()
 	{
-		List<AExpression?> args = Shape("1,2,");
+		List<AExpression?> args = Args("1,2,");
 		Assert.Equal(2, args.Count);
 		Assert.All(args, a => Assert.NotNull(a));
 	}
@@ -50,7 +50,7 @@ public class CheckArgumentTypeEx
 	[Fact]
 	public void Shape_WithDoubleTrailingComma_HasTrailingNull()
 	{
-		List<AExpression?> args = Shape("1,2,,");
+		List<AExpression?> args = Args("1,2,,");
 		Assert.Equal(3, args.Count);
 		Assert.Null(args[2]);
 	}
@@ -58,7 +58,7 @@ public class CheckArgumentTypeEx
 	[Fact]
 	public void Shape_WithMiddleEmptySlot_HasMiddleNull()
 	{
-		List<AExpression?> args = Shape("1,,2");
+		List<AExpression?> args = Args("1,,2");
 		Assert.Equal(3, args.Count);
 		Assert.Null(args[1]);
 	}
@@ -66,7 +66,7 @@ public class CheckArgumentTypeEx
 	[Fact]
 	public void Shape_WithLeadingEmptySlot_HasLeadingNull()
 	{
-		List<AExpression?> args = Shape(",2");
+		List<AExpression?> args = Args(",2");
 		Assert.Equal(2, args.Count);
 		Assert.Null(args[0]);
 	}
@@ -216,8 +216,16 @@ public class CheckArgumentTypeEx
 	[InlineData("XML_ADDATTRIBUTE_BYNAME", "\"a\",\"b\",\"c\",\"d\",,1", 5)]
 	[InlineData("XML_ADDATTRIBUTE", "1,\"a\",\"b\",\"c\",1,,", 6)] // setAllPos 读槽 5(Attribute 段)
 	[InlineData("XML_ADDATTRIBUTE_BYNAME", "\"a\",\"b\",\"c\",\"d\",1,,", 6)]
+	// —— arg-contract/issues/04 阶段 A 片 1:四条「读输出数组」的硬转型槽。它们落在可省略区间里
+	//(数量省略合法),而函数体在该槽非空时用 `(arguments[i] as VariableTerm)!` 直接取数组变量;
+	// 修前 `f(a,,)` 形态由规则表放行 null ⇒ 运行期 NRE。标志只拒显式空槽,数量省略照旧(见下面的用例表)。
+	// ENUMNAME 族的 9 个注册名共用同一规则形状,此处只列一个名。
+	[InlineData("ENUMFUNCBEGINSWITH", "\"a\",,", 2)]
+	[InlineData("ENUMFILES", "\"a\",\"b\",0,,", 4)]
+	[InlineData("DT_SELECT", "\"t\",\"f\",\"s\",,", 4)]
+	[InlineData("DT_TOXML", "\"t\",,", 2)]
 	public void OmittableSlot_WithExplicitEmptySlot_IsRejected(string name, string inner, int slot)
-		=> AssertRejectedWith(name, trerror.ArgCanNotBeNull, slot, [.. Shape(inner)]);
+		=> AssertRejectedWith(name, trerror.ArgCanNotBeNull, slot, [.. Args(inner)]);
 
 	/// <summary>
 	/// DT_ROW_ADD 的槽 1 是 <see cref="ArgTypeList.MatchVariadicGroup"/> 的变长对(name/value)首项,故它的
@@ -227,7 +235,7 @@ public class CheckArgumentTypeEx
 	[Fact]
 	public void DataTableRowAdd_WithTailEmptySlot_IsRejectedByVariadicGroup()
 	{
-		CodeEE ex = Assert.Throws<CodeEE>(() => Get("DT_ROW_ADD", [.. Shape("\"t\",,")]));
+		CodeEE ex = Assert.Throws<CodeEE>(() => Get("DT_ROW_ADD", [.. Args("\"t\",,")]));
 		Assert.Contains(string.Format(trerror.ArgsNotFitExpr.Text, "DT_ROW_ADD", 2, 1, 2), ex.Message);
 	}
 
@@ -352,7 +360,7 @@ public class CheckArgumentTypeEx
 	[InlineData("DT_CELL_SET", "\"t\",1,\"c\",,")] // [3] 空槽 = 写 DBNull(DataTableCellSetMethod)
 	[InlineData("DT_ROW_ADD", "\"t\",\"c\",,\"c2\",1")] // [2] 变长对的 value 位,空槽 = DBNull
 	public void IntentionalEmptySlot_IsAccepted(string name, string inner)
-		=> AssertAccepted(name, [.. Shape(inner)]);
+		=> AssertAccepted(name, [.. Args(inner)]);
 
 	/// <summary>正控制:本批被收紧的槽填满后仍通过,且数量省略(列表更短)不受影响。</summary>
 	[Fact]
@@ -363,6 +371,24 @@ public class CheckArgumentTypeEx
 			new SingleLongTerm(0));
 		AssertAccepted("ENUMFILES", new SingleStrTerm("a"));
 		AssertAccepted("ENUMFILES", new SingleStrTerm("a"), new SingleStrTerm("b"));
+	}
+
+	/// <summary>
+	/// 正控制:arg-contract/issues/04 阶段 A 片 1 收紧的四个槽填满后仍通过(数量省略由
+	/// <see cref="CountOmittedArgument_IsAccepted_AndYieldsNoEmptySlot"/> 逐名钉住)。
+	/// Ref 槽按生产路径解析变量书式:`STR:0` 是字符串一维数组、`CFLAG:0` 是整数一维数组、
+	/// `RESULTS:0` 是字符串标量变量。
+	/// </summary>
+	[Fact]
+	public void HardCastOutputSlots_WithFilledArgs_AreAccepted()
+	{
+		AssertAccepted("ENUMFUNCBEGINSWITH", new SingleStrTerm("a"), Variable("STR:0"));
+		AssertAccepted("ENUMFILES", new SingleStrTerm("a"), new SingleStrTerm("b"), new SingleLongTerm(0),
+			Variable("STR:0"));
+		AssertAccepted("DT_SELECT", new SingleStrTerm("t"), new SingleStrTerm("f"), new SingleStrTerm("s"),
+			Variable("CFLAG:0"));
+		AssertAccepted("DT_SELECT", new SingleStrTerm("t"), new SingleStrTerm("f"), new SingleStrTerm("s"));
+		AssertAccepted("DT_TOXML", new SingleStrTerm("t"), Variable("RESULTS:0"));
 	}
 
 	/// <summary>正控制:同上,批次 2 / 2b 的各注册名。</summary>
@@ -467,9 +493,13 @@ public class CheckArgumentTypeEx
 	[InlineData("GDRAWTEXT", "0,\"t\",", 2)]
 	[InlineData("GDRAWGWITHROTATE", "0,1,90,", 3)]
 	[InlineData("GDRAWSPRITE", "0,\"i\",", 2)]
+	// —— arg-contract/issues/04 片 1 新收紧的三处(ENUMFILES 已在上面)。
+	[InlineData("ENUMFUNCBEGINSWITH", "\"a\",", 1)]
+	[InlineData("DT_SELECT", "\"t\",", 1)]
+	[InlineData("DT_TOXML", "\"t\",", 1)]
 	public void CountOmittedArgument_IsAccepted_AndYieldsNoEmptySlot(string name, string inner, int count)
 	{
-		List<AExpression?> args = Shape(inner);
+		List<AExpression?> args = Args(inner);
 		Assert.Equal(count, args.Count);
 		Assert.All(args, a => Assert.NotNull(a));
 		AssertAccepted(name, [.. args]);
@@ -560,7 +590,7 @@ public class CheckArgumentTypeEx
 	[InlineData("MAX", "1,2,,", 3)]
 	[InlineData("MIN", "1,2,,", 3)]
 	public void MaxMin_WithExplicitEmptySlotInVariadicTail_IsRejected(string name, string inner, int slot)
-		=> AssertRejectedWith(name, trerror.ArgCanNotBeNull, slot, [.. Shape(inner)]);
+		=> AssertRejectedWith(name, trerror.ArgCanNotBeNull, slot, [.. Args(inner)]);
 
 	/// <summary>正控制:填满尾部与数量省略(只写一个实参)都必须继续通过。</summary>
 	[Fact]
@@ -582,7 +612,7 @@ public class CheckArgumentTypeEx
 	[InlineData("ARRAYMSORT", "CFLAG:0,,STR:0", 2)]
 	[InlineData("ARRAYMSORT", "CFLAG:0,STR:0,,", 3)]
 	public void ArrayMsort_WithExplicitEmptySlotInVariadicTail_IsRejected(string name, string inner, int slot)
-		=> AssertRejectedWith(name, trerror.ArgCanNotBeNull, slot, [.. Shape(inner)]);
+		=> AssertRejectedWith(name, trerror.ArgCanNotBeNull, slot, [.. Args(inner)]);
 
 	/// <summary>
 	/// 首槽的空槽由 `i &lt; OmitStart`(而非 NotNull)拒掉——这是修前即成立的形态,作为回归钉子,
@@ -592,7 +622,7 @@ public class CheckArgumentTypeEx
 	[InlineData("ARRAYMSORT", ",CFLAG:0", 1)]
 	[InlineData("MAX", ",2", 1)]
 	public void ConsumedVariadic_WithEmptyLeadingSlot_IsRejected(string name, string inner, int slot)
-		=> AssertRejectedWith(name, trerror.ArgCanNotBeNull, slot, [.. Shape(inner)]);
+		=> AssertRejectedWith(name, trerror.ArgCanNotBeNull, slot, [.. Args(inner)]);
 
 	/// <summary>正控制:ARRAYMSORT 的填满形态与数量省略(只排序一个数组)都继续通过。</summary>
 	[Fact]
@@ -644,19 +674,6 @@ public class CheckArgumentTypeEx
 
 	// ── 夹具 ────────────────────────────────────────────────────────────────
 
-	/// <summary>
-	/// 解析一段调用实参(传括号内的文本)。词法器要求括号配平,故这里补上外层括号,
-	/// 再按生产路径(ExpressionParser.reduceIdentifier)跳过 '(' 后调 ReduceArguments。
-	/// </summary>
-	private static List<AExpression?> Shape(string inner)
-	{
-		WordCollection wc = LexicalAnalyzer.Analyse(
-			new CharStream("(" + inner + ")"), LexEndWith.EoL, LexAnalyzeFlag.None);
-		Assert.Equal('(', Assert.IsType<SymbolWord>(wc.Current).Type);
-		wc.ShiftNext();
-		return ExpressionParser.ReduceArguments(wc, ArgsEndWith.RightParenthesis, false);
-	}
-
 	/// <summary>GDRAWG 的槽 0..9 全是 ArgType.Int,槽 10 才是颜色矩阵。</summary>
 	private static AExpression?[] GraphicsDrawGArgs(AExpression? colormatrix = null)
 	{
@@ -687,13 +704,9 @@ public class CheckArgumentTypeEx
 		return variable;
 	}
 
-	/// <summary>名字写错会让 GetFunctionMethod 返回 null 而非抛错,故先断言方法确实注册。</summary>
-	private static void AssertMethodExists(string name)
-		=> Assert.True(FunctionMethodCreator.GetMethodList().ContainsKey(name), $"内建函数 {name} 未注册");
-
 	private static AExpression? Get(string name, AExpression?[] args)
 	{
-		AssertMethodExists(name);
+		_ = Method(name);
 		return GlobalStatic.IdentifierDictionary.GetFunctionMethod(null, name, [.. args], false);
 	}
 

@@ -7,8 +7,8 @@
 | 量 | 数 |
 | --- | --- |
 | 规则块 / 含可省略槽的块 / 可省略槽总数 | 114 / 88 / 139 |
-| `ArgType.NotNull` 处数（含注释 / 剥注释） | 83 / 77 |
-| └ 含 `ArgType.NotNull` 的行数（含注释 / 剥注释） | 73 / 67 |
+| `ArgType.NotNull` 处数（含注释 / 剥注释） | 87 / 81 |
+| └ 含 `ArgType.NotNull` 的行数（含注释 / 剥注释） | 76 / 70 |
 | 规则段旁的空槽语义注释行数（`empty slot`/`omitted slot`，大小写不敏感） | 37 |
 | `arguments.Required(` 总处数（含注释） | 405 |
 | 可省略 (类,槽) 全集（不论是否被读取） | 96 |
@@ -159,10 +159,10 @@ A/B 两段的 76 项 + E 段的 20 项 = 可省略 (类,槽) 全集 96 项。E �
 | `DataTableRowSetMethod[2]` | 1/3 | Required(非字面量) | — | 有意可空 | 本次补注释 + 用例（变长对 value 位 = DBNull；4 实参数组形态共用该槽，但由第二段 OmitStart == -1 拒空） | 过（Count == b + 4 / 变长对） |
 | `DataTableSelectMethod[1]` | 1/4 | arguments[1] @ GetIntValue | — | 有意可空 | 规则段注释已写（空槽 = 不筛） | 过（Count > 1） |
 | `DataTableSelectMethod[2]` | 1/4 | arguments[2] @ GetIntValue | — | 有意可空 | 规则段注释已写（空槽 = 不排序） | 过（Count > 2） |
-| `DataTableSelectMethod[3]` | 1/4 | arguments[3] @ GetIntValue | — | 硬转型解引用 | 归 arg-contract/issues/04 片②（输出数组） | 过（Count != 4 的否支） |
-| `DataTableToXmlMethod[1]` | 1/2 | arguments[1] @ GetStrValue | — | 硬转型解引用 | 归 arg-contract/issues/04 片②（输出数组） | 过（Count > 1） |
-| `EnumFilesMethod[3]` | 1/4 | arguments[3] @ GetIntValue | — | 硬转型解引用 | 归 arg-contract/issues/04 片②（输出数组） | 过（Count == 4） |
-| `EnumNameMethod[1]` | 1/2 | arguments[1] @ GetIntValue | — | 硬转型解引用 | 归 arg-contract/issues/04 片②（输出数组） | 过（Count == 2） |
+| `DataTableSelectMethod[3]` | 1/4 | arguments[3] @ GetIntValue | 是 | 硬转型解引用 | 已由 arg-contract/issues/04 阶段 A 标 `ArgType.NotNull`（输出数组；显式空槽应拒绝；cast 的类型化移除归 issues/05） | 过（Count == 4） |
+| `DataTableToXmlMethod[1]` | 1/2 | arguments[1] @ GetStrValue | 是 | 硬转型解引用 | 已由 arg-contract/issues/04 阶段 A 标 `ArgType.NotNull`（输出数组；显式空槽应拒绝；cast 的类型化移除归 issues/05） | 过（Count > 1） |
+| `EnumFilesMethod[3]` | 1/4 | arguments[3] @ GetIntValue | 是 | 硬转型解引用 | 已由 arg-contract/issues/04 阶段 A 标 `ArgType.NotNull`（输出数组；显式空槽应拒绝；cast 的类型化移除归 issues/05） | 过（Count == 4） |
+| `EnumNameMethod[1]` | 1/2 | arguments[1] @ GetIntValue | 是 | 硬转型解引用 | 已由 arg-contract/issues/04 阶段 A 标 `ArgType.NotNull`（输出数组；显式空槽应拒绝；cast 的类型化移除归 issues/05） | 过（Count == 2） |
 | `GetMethMethod[2]` | 1/3 | arguments.Skip(...) | — | 转发槽 | 规则段注释已写（交给下游解释） | 过（Skip(2) 原样转发） |
 | `GetMethsMethod[2]` | 1/3 | arguments.Skip(...) | — | 转发槽 | 规则段注释已写（交给下游解释） | 过（Skip(2) 原样转发） |
 | `GraphicsDrawGMethod[10]` | 10/11、10/11 | arguments[10] @ GetIntValue、Required(非字面量)、ReadColormatrix(argNo=10) | — | 有意可空 | 规则段注释已写（空槽 = 不带颜色矩阵） | 过（Count != 10 时判空短路） |
@@ -184,7 +184,8 @@ A/B 两段的 76 项 + E 段的 20 项 = 可省略 (类,槽) 全集 96 项。E �
 - [x] **同一把尺子对 E 段 20 项也逐项核过**：无一处「数量省略即越界」，故没有第三处 `OmitStart` 附修；逐项结论见 E 段「尺子」列
 - [x] 片 2 的三处更正（票面「片 2-A」有记）：① `ReplaceMethod[3]` 被预筛漏在批次外——它同样可达（`REPLACE("a","b","c",,)` 由段 1 的 `OmitStart = 3` 放行 null），已补标 + 补用例；② `DataTableRowSetMethod[1]`（脚本按类内可省略段与站点做笛卡尔匹配时多出的那条）的站点确属 Set 分支（跨构造器假阳性），但 `DT_ROW_ADD` 的槽 1 经 `arguments.Required(pos)`（变量下标，不在本表车道）可达、修前 NRE，已标 `NotNull`；③ `MapGetStrMethod[1]` 只有 `MAP_GETKEYS` 那一段可省略（`MAP_GET`/`MAP_TOXML` 走定长 `argumentTypeArray`），已按名绑定标注。`DataTableColumnManagementMethod[1]` 裁定为可空
 - [x] **变长尾部按转发型 / 消费型定案（片 2-C，已落地）**：`MaxMethod`（`MAX`/`MIN`）的 `VariadicInt` 与 `ArrayMultiSortMethod`（`ARRAYMSORT`）的变长尾标 `ArgType.NotNull`（函数体逐个循环 / 整表 `Cast` 消费，空槽无默认值可代）；`GetMethMethod`/`GetMethsMethod` 保持可空（`arguments.Skip(2)` 转发给下游）。两型的首槽都由 `i < OmitStart` 拒空，故标志只铺尾部。这三处在「字面量 `Required(`」车道之外，故不影响本表的行数与计数
-- [x] **本表已从 76 扩到 96**（可省略 (类,槽) 全集）：补车道的 20 项见 E 段——其中「有意可空」的 5 项已按完成标准第 1 类在规则段旁写明空槽语义（`DataTableRowSetMethod[2]`、`DataTableCellSetMethod[3]` 为本次补写），转发槽保持可空不标 `NotNull`，「无意且可达」的 7 项已标 `NotNull` 并补用例，「硬转型解引用」的 4 项归 arg-contract/issues/04 片②
+- [x] **本表已从 76 扩到 96**（可省略 (类,槽) 全集）：补车道的 20 项见 E 段——其中「有意可空」的 5 项已按完成标准第 1 类在规则段旁写明空槽语义（`DataTableRowSetMethod[2]`、`DataTableCellSetMethod[3]` 为本次补写），转发槽保持可空不标 `NotNull`，「无意且可达」的 7 项已标 `NotNull` 并补用例，「硬转型解引用」的 4 项已由 arg-contract/issues/04 阶段 A 标 `ArgType.NotNull`（输出数组；显式空槽应拒绝；cast 的类型化移除归 issues/05）
 - [x] UDF 侧 `UserDefinedRefMethodTerm` 已确认为死代码（见票内「UDF 族」），**不是**本表工作面；活路径的「省略实参 → 取 `FunctionLabelLine.Def` 默认值」已由 `CalledFunctionTests` 一条用例钉住
-- [ ] 仍未纳入本表：活 `arguments[i]` 站点里落在**非可省略槽**上的那些（硬转型解引用共 24 处，落在可省略槽上的 4 项已见 E 段，其余归 arg-contract/issues/04 片②）。变量下标 `Required(i)` 与 helper 传参路径已随 E 段核过
-- [ ] 本票仍未做的三件（见票内「余项」4/6/7）：B 表执行期语义抽查、指令侧 `ArgumentBuilder` 的两轴模型定案、`docs/` 侧的内建函数契约表
+- [ ] 仍未纳入本表：活 `arguments[i]` 站点里落在**非可省略槽**上的那些（硬转型解引用共 24 处，落在可省略槽上的 4 项已见 E 段，其余归 arg-contract/issues/05（cast 的类型化移除））。变量下标 `Required(i)` 与 helper 传参路径已随 E 段核过
+- [x] **片 5（B 表执行期语义）与片 6（指令侧两轴模型定案）已落地**：片 5 的用例在 `Emuera.Tests/Runtime/Script/Statements/Function/IntentionalEmptySlotExecutionTests.cs`（46 条用例；覆盖了 B 表哪些槽、各项钉住的默认值、未覆盖槽的理由均见 issues/03 片 5，逐槽证据留在票内而不在此处硬编码）；片 6 的工件是 [instruction-args.py](instruction-args.py) → [instruction-args.md](instruction-args.md)（不并入本表——它扫的是 `ArgumentBuilder.cs`，口径与本站点清单不同）
+- [ ] 本票仍未做的一件（见票内「余项」7）：`docs/` 侧的内建函数契约表

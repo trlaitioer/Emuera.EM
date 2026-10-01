@@ -21,3 +21,5 @@ bin/
 obj/
 *.user
 .temp
+__pycache__/
+*.pyc
