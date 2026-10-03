@@ -19,10 +19,40 @@ internal abstract class OperatorMethod : FunctionMethod
 		argumentTypeArray = null;
 	}
 
-	public override string CheckArgumentType(string name, List<AExpression?> arguments)
+	// The caller owns the type check for operators, so the checking overload is the one to refuse: overriding the
+	// list-based facade instead would let CheckAndResolveSlots' virtual dispatch slip past this refusal.
+	internal override string CheckArgumentType(string name, List<AExpression?> arguments, out int matchedIdx)
 	{
 		throw new ExeEE(trerror.TypeCheckIsCallersResponsibility.Text);
 	}
+
+	// Says the same thing to the facade, which must not ask a checker that only refuses. Needed as its own flag
+	// because "has a rule table" is not the same question: `PlusStrStr` carries an argumentTypeArray as well.
+	internal override bool CallerOwnsCheck => true;
+
+	/// <summary>
+	/// Caller-declared slot roles for the operand list an operator term is built with: every slot is filled, the
+	/// operand type comes from the term itself, and <see cref="WritesThroughFirstArgument"/> adds REF to slot 0.
+	/// </summary>
+	internal SlotRole[] TrustedRoles(params AExpression[] operands)
+	{
+		SlotRole[] roles = new SlotRole[operands.Length];
+		for (int i = 0; i < operands.Length; i++)
+		{
+			SlotRole role = SlotRole.Required | (operands[i].IsInteger ? SlotRole.Int : SlotRole.String);
+			if (i == 0 && WritesThroughFirstArgument)
+			{
+				role |= SlotRole.Ref;
+			}
+
+			roles[i] = role;
+		}
+
+		return roles;
+	}
+
+	/// <summary>True when the operator writes through slot 0 (`++`/`--`): its declared role then carries REF.</summary>
+	internal virtual bool WritesThroughFirstArgument => false;
 }
 
 internal static class OperatorMethodManager
@@ -114,7 +144,7 @@ internal static class OperatorMethodManager
 
 		if (method != null)
 		{
-			return new FunctionMethodTerm(method, [o1]);
+			return new FunctionMethodTerm(method, FunctionMethod.ArgumentSlots.Trusted([o1], method.TrustedRoles(o1)));
 		}
 
 		string errMes;
@@ -161,7 +191,7 @@ internal static class OperatorMethodManager
 
 		if (method != null)
 		{
-			return new FunctionMethodTerm(method, [o1]);
+			return new FunctionMethodTerm(method, FunctionMethod.ArgumentSlots.Trusted([o1], method.TrustedRoles(o1)));
 		}
 
 		string errMes;
@@ -230,7 +260,8 @@ internal static class OperatorMethodManager
 
 		if (method != null)
 		{
-			return new FunctionMethodTerm(method, [left, right]);
+			return new FunctionMethodTerm(method,
+				FunctionMethod.ArgumentSlots.Trusted([left, right], method.TrustedRoles(left, right)));
 		}
 
 		throw CreateBinaryOpTypeError(left.GetOperandType(), right.GetOperandType(), op);
@@ -446,7 +477,8 @@ internal static class OperatorMethodManager
 
 		if (method != null)
 		{
-			return new FunctionMethodTerm(method, [o1, o2, o3]);
+			return new FunctionMethodTerm(method,
+				FunctionMethod.ArgumentSlots.Trusted([o1, o2, o3], method.TrustedRoles(o1, o2, o3)));
 		}
 
 		throw new CodeEE(trerror.InvalidTernaryOp.Text);
@@ -462,9 +494,9 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			return arguments.Required(0).GetIntValue(exm) + arguments.Required(1).GetIntValue(exm);
+			return slots.Int(exm, 0) + slots.Int(exm, 1);
 		}
 	}
 
@@ -477,9 +509,9 @@ internal static class OperatorMethodManager
 			argumentTypeArray = [typeof(string), typeof(string)];
 		}
 
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override string GetStrValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			return arguments.Required(0).GetStrValue(exm) + arguments.Required(1).GetStrValue(exm);
+			return slots.Str(exm, 0) + slots.Str(exm, 1);
 		}
 	}
 
@@ -491,9 +523,9 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			return arguments.Required(0).GetIntValue(exm) - arguments.Required(1).GetIntValue(exm);
+			return slots.Int(exm, 0) - slots.Int(exm, 1);
 		}
 	}
 
@@ -505,9 +537,9 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			return arguments.Required(0).GetIntValue(exm) * arguments.Required(1).GetIntValue(exm);
+			return slots.Int(exm, 0) * slots.Int(exm, 1);
 		}
 	}
 
@@ -519,19 +551,19 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(string);
 		}
 
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override string GetStrValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
 			string str;
 			long value;
-			if (arguments.Required(0).IsInteger)
+			if (slots.IsInteger(0))
 			{
-				value = arguments.Required(0).GetIntValue(exm);
-				str = arguments.Required(1).GetStrValue(exm);
+				value = slots.Int(exm, 0);
+				str = slots.Str(exm, 1);
 			}
 			else
 			{
-				str = arguments.Required(0).GetStrValue(exm);
-				value = arguments.Required(1).GetIntValue(exm);
+				str = slots.Str(exm, 0);
+				value = slots.Int(exm, 1);
 			}
 
 			if (value < 0)
@@ -567,15 +599,15 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			long right = arguments.Required(1).GetIntValue(exm);
+			long right = slots.Int(exm, 1);
 			if (right == 0)
 			{
 				throw new CodeEE(trerror.DivideByZero.Text);
 			}
 
-			return arguments.Required(0).GetIntValue(exm) / right;
+			return slots.Int(exm, 0) / right;
 		}
 	}
 
@@ -587,15 +619,15 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			long right = arguments.Required(1).GetIntValue(exm);
+			long right = slots.Int(exm, 1);
 			if (right == 0)
 			{
 				throw new CodeEE(trerror.DivideByZero.Text);
 			}
 
-			return arguments.Required(0).GetIntValue(exm) % right;
+			return slots.Int(exm, 0) % right;
 		}
 	}
 
@@ -608,9 +640,9 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			if (arguments.Required(0).GetIntValue(exm) == arguments.Required(1).GetIntValue(exm))
+			if (slots.Int(exm, 0) == slots.Int(exm, 1))
 			{
 				return 1L;
 			}
@@ -627,9 +659,9 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			if (arguments.Required(0).GetStrValue(exm) == arguments.Required(1).GetStrValue(exm))
+			if (slots.Str(exm, 0) == slots.Str(exm, 1))
 			{
 				return 1L;
 			}
@@ -646,9 +678,9 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			if (arguments.Required(0).GetIntValue(exm) != arguments.Required(1).GetIntValue(exm))
+			if (slots.Int(exm, 0) != slots.Int(exm, 1))
 			{
 				return 1L;
 			}
@@ -665,9 +697,9 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			if (arguments.Required(0).GetStrValue(exm) != arguments.Required(1).GetStrValue(exm))
+			if (slots.Str(exm, 0) != slots.Str(exm, 1))
 			{
 				return 1L;
 			}
@@ -684,9 +716,9 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			if (arguments.Required(0).GetIntValue(exm) > arguments.Required(1).GetIntValue(exm))
+			if (slots.Int(exm, 0) > slots.Int(exm, 1))
 			{
 				return 1L;
 			}
@@ -703,9 +735,9 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			int c = string.Compare(arguments.Required(0).GetStrValue(exm), arguments.Required(1).GetStrValue(exm), Config.Config.SCExpression);
+			int c = string.Compare(slots.Str(exm, 0), slots.Str(exm, 1), Config.Config.SCExpression);
 			if (c > 0)
 			{
 				return 1L;
@@ -723,9 +755,9 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			if (arguments.Required(0).GetIntValue(exm) < arguments.Required(1).GetIntValue(exm))
+			if (slots.Int(exm, 0) < slots.Int(exm, 1))
 			{
 				return 1L;
 			}
@@ -742,9 +774,9 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			int c = string.Compare(arguments.Required(0).GetStrValue(exm), arguments.Required(1).GetStrValue(exm), Config.Config.SCExpression);
+			int c = string.Compare(slots.Str(exm, 0), slots.Str(exm, 1), Config.Config.SCExpression);
 			if (c < 0)
 			{
 				return 1L;
@@ -762,9 +794,9 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			if (arguments.Required(0).GetIntValue(exm) >= arguments.Required(1).GetIntValue(exm))
+			if (slots.Int(exm, 0) >= slots.Int(exm, 1))
 			{
 				return 1L;
 			}
@@ -781,9 +813,9 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			int c = string.Compare(arguments.Required(0).GetStrValue(exm), arguments.Required(1).GetStrValue(exm), Config.Config.SCExpression);
+			int c = string.Compare(slots.Str(exm, 0), slots.Str(exm, 1), Config.Config.SCExpression);
 			if (c >= 0)
 			{
 				return 1L;
@@ -801,9 +833,9 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			if (arguments.Required(0).GetIntValue(exm) <= arguments.Required(1).GetIntValue(exm))
+			if (slots.Int(exm, 0) <= slots.Int(exm, 1))
 			{
 				return 1L;
 			}
@@ -820,9 +852,9 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			int c = string.Compare(arguments.Required(0).GetStrValue(exm), arguments.Required(1).GetStrValue(exm), Config.Config.SCExpression);
+			int c = string.Compare(slots.Str(exm, 0), slots.Str(exm, 1), Config.Config.SCExpression);
 			if (c <= 0)
 			{
 				return 1L;
@@ -840,9 +872,9 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			if (arguments.Required(0).GetIntValue(exm) != 0 && arguments.Required(1).GetIntValue(exm) != 0)
+			if (slots.Int(exm, 0) != 0 && slots.Int(exm, 1) != 0)
 			{
 				return 1L;
 			}
@@ -859,9 +891,9 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			if (arguments.Required(0).GetIntValue(exm) != 0 || arguments.Required(1).GetIntValue(exm) != 0)
+			if (slots.Int(exm, 0) != 0 || slots.Int(exm, 1) != 0)
 			{
 				return 1L;
 			}
@@ -878,10 +910,10 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			long i1 = arguments.Required(0).GetIntValue(exm);
-			long i2 = arguments.Required(1).GetIntValue(exm);
+			long i1 = slots.Int(exm, 0);
+			long i2 = slots.Int(exm, 1);
 			if ((i1 == 0 && i2 != 0) || (i1 != 0 && i2 == 0))
 			{
 				return 1L;
@@ -899,9 +931,9 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			if (arguments.Required(0).GetIntValue(exm) == 0 || arguments.Required(1).GetIntValue(exm) == 0)
+			if (slots.Int(exm, 0) == 0 || slots.Int(exm, 1) == 0)
 			{
 				return 1L;
 			}
@@ -918,9 +950,9 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			if (arguments.Required(0).GetIntValue(exm) == 0 && arguments.Required(1).GetIntValue(exm) == 0)
+			if (slots.Int(exm, 0) == 0 && slots.Int(exm, 1) == 0)
 			{
 				return 1L;
 			}
@@ -937,9 +969,9 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			return arguments.Required(0).GetIntValue(exm) & arguments.Required(1).GetIntValue(exm);
+			return slots.Int(exm, 0) & slots.Int(exm, 1);
 		}
 	}
 
@@ -951,9 +983,9 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			return arguments.Required(0).GetIntValue(exm) | arguments.Required(1).GetIntValue(exm);
+			return slots.Int(exm, 0) | slots.Int(exm, 1);
 		}
 	}
 
@@ -965,9 +997,9 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			return arguments.Required(0).GetIntValue(exm) ^ arguments.Required(1).GetIntValue(exm);
+			return slots.Int(exm, 0) ^ slots.Int(exm, 1);
 		}
 	}
 
@@ -979,9 +1011,9 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			return arguments.Required(0).GetIntValue(exm) >> (int)arguments.Required(1).GetIntValue(exm);
+			return slots.Int(exm, 0) >> (int)slots.Int(exm, 1);
 		}
 	}
 
@@ -993,9 +1025,9 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			return arguments.Required(0).GetIntValue(exm) << (int)arguments.Required(1).GetIntValue(exm);
+			return slots.Int(exm, 0) << (int)slots.Int(exm, 1);
 		}
 	}
 
@@ -1007,9 +1039,9 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			return arguments.Required(0).GetIntValue(exm);
+			return slots.Int(exm, 0);
 		}
 	}
 
@@ -1021,9 +1053,9 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			long ret = arguments.Required(0).GetIntValue(exm);
+			long ret = slots.Int(exm, 0);
 			if (ret == long.MinValue)
 			{
 				exm.Console.PrintSystemLine(string.Format(Lang.SystemLine.MinusWontWork.Text, long.MinValue));
@@ -1041,9 +1073,9 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			if (arguments.Required(0).GetIntValue(exm) == 0)
+			if (slots.Int(exm, 0) == 0)
 			{
 				return 1L;
 			}
@@ -1060,9 +1092,9 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			return ~arguments.Required(0).GetIntValue(exm);
+			return ~slots.Int(exm, 0);
 		}
 	}
 
@@ -1074,9 +1106,11 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		internal override bool WritesThroughFirstArgument => true;
+
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			VariableTerm var = (VariableTerm)arguments.Required(0);
+			VariableTerm var = slots.Var(0);
 			return var.ChangeValue(1L, exm);
 		}
 	}
@@ -1089,9 +1123,11 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		internal override bool WritesThroughFirstArgument => true;
+
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			VariableTerm var = (VariableTerm)arguments.Required(0);
+			VariableTerm var = slots.Var(0);
 			return var.ChangeValue(-1L, exm);
 		}
 	}
@@ -1104,9 +1140,11 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		internal override bool WritesThroughFirstArgument => true;
+
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			VariableTerm var = (VariableTerm)arguments.Required(0);
+			VariableTerm var = slots.Var(0);
 			return var.ChangeValue(1L, exm) - 1;
 		}
 	}
@@ -1119,9 +1157,11 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		internal override bool WritesThroughFirstArgument => true;
+
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			VariableTerm var = (VariableTerm)arguments.Required(0);
+			VariableTerm var = slots.Var(0);
 			return var.ChangeValue(-1L, exm) + 1;
 		}
 	}
@@ -1135,9 +1175,9 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(long);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			return arguments.Required(0).GetIntValue(exm) != 0 ? arguments.Required(1).GetIntValue(exm) : arguments.Required(2).GetIntValue(exm);
+			return slots.Int(exm, 0) != 0 ? slots.Int(exm, 1) : slots.Int(exm, 2);
 		}
 	}
 
@@ -1149,9 +1189,9 @@ internal static class OperatorMethodManager
 			ReturnType = typeof(string);
 		}
 
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override string GetStrValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			return arguments.Required(0).GetIntValue(exm) != 0 ? arguments.Required(1).GetStrValue(exm) : arguments.Required(2).GetStrValue(exm);
+			return slots.Int(exm, 0) != 0 ? slots.Str(exm, 1) : slots.Str(exm, 2);
 		}
 	}
 

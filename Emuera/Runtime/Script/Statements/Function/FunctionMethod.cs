@@ -60,6 +60,40 @@ internal abstract class FunctionMethod
 		VariadicSameAsFirst = Variadic | SameAsFirst
 	}
 
+	/// <summary>
+	/// Per-slot contract resolved at check time: what the <see cref="ArgumentSlots"/> accessors may claim about a
+	/// slot. <see cref="Loose"/> is the absence of a provable claim (an unchecked variadic slot, a class without a
+	/// rule table, or a caller-declared slot that guarantees nothing). Only <see cref="Required"/> carries a
+	/// filled-ness claim; the type flags describe the operand type the checker matched (also for an omittable slot,
+	/// where they read conditionally: "if filled, numeric"). The accessors do not assert on a role - the claim is the
+	/// caller's - and <see cref="ArgumentSlots.Term"/> names the role in its failure message when a read breaks it.
+	/// </summary>
+	[Flags]
+	internal enum SlotRole
+	{
+		Loose = 0,
+
+		// The checker rejects an explicitly empty slot here (i < OmitStart, ArgType.NotNull, the SameAsFirst slot0
+		// case, or a fixed-count table), so the slot is non-null whenever it is present. Presence is a separate
+		// guarantee the flag does not carry: an omittable slot past the block's minimum count needs a Count guard.
+		Required = 1 << 0,
+		Int = 1 << 1,
+		String = 1 << 2,
+		Any = 1 << 3,
+
+		// Reference slot: the argument is a variable entity rather than a value.
+		Ref = 1 << 4,
+
+		// Reference slot that admits a constant array. .scratch/nullable-migration/issues/18 then requires the class
+		// to set HasUniqueRestructure, otherwise the constant array is folded into a SingleTerm and the cast fails.
+		// Exempt: SumArrayMethod's character-data slot, where CONST and CHARADATA are mutually exclusive so a constant
+		// array never reaches the fold (the exemption is recorded in .scratch/arg-contract/arg-slots.py).
+		AllowConstRef = 1 << 5,
+
+		// Slot belongs to a variadic tail: governed by LastVariadics, not by the slot number.
+		Variadic = 1 << 6,
+	}
+
 	protected sealed class _ArgType
 	{
 		public _ArgType(ArgType t)
@@ -151,13 +185,170 @@ internal abstract class FunctionMethod
 		}
 	}
 
+	/// <summary>
+	/// Slot view produced by the checker (rule-table family) or declared by a discriminating call site (operator /
+	/// StrForm / TOSTR wrapper): <c>terms</c> is the check-time snapshot, <c>roles</c> the per-slot contract.
+	/// The in-place fold performed after the check (<see cref="FunctionMethodTerm.Restructure"/>) does not write the
+	/// snapshot back - it only replaces an element with a value-equal term (a SingleTerm for a statically evaluable
+	/// identifier, a FixedVariableTerm for constant indices, which is still a VariableTerm), so a value read through
+	/// this view matches the live list's. The evaluation <i>moment</i> is not part of
+	/// that equivalence: a call the fold could not fold as a whole keeps the unfolded argument here, so it re-evaluates
+	/// an inner call the fold already evaluated once.
+	/// </summary>
+	internal sealed class ArgumentSlots
+	{
+		private ArgumentSlots(List<AExpression?> arguments, SlotRole[]? roles)
+		{
+			// A short role array is not a runtime input: RoleAt would silently downgrade the tail slots to Loose,
+			// which reads as "the call site claims nothing" instead of as the authoring bug it is.
+			if (roles != null && roles.Length != arguments.Count)
+			{
+				throw new ArgumentException(
+					$"slot roles ({roles.Length}) must cover every argument ({arguments.Count})", nameof(roles));
+			}
+
+			FoldTarget = arguments;
+			terms = [.. arguments];
+			this.roles = roles;
+		}
+
+		/// <summary>
+		/// The live list the term owns and <see cref="FunctionMethodTerm.Restructure"/> rewrites in place. The
+		/// accessors read the check-time snapshot instead, so reading a value here would bypass the snapshot
+		/// semantics - this list exists for the fold and for handing the whole call on (<see cref="Tail"/>).
+		/// </summary>
+		internal List<AExpression?> FoldTarget { get; }
+
+		private readonly AExpression?[] terms;
+		private readonly SlotRole[]? roles;
+
+		/// <summary>Rule-table family: roles are projected from the rule block the checker matched.</summary>
+		internal static ArgumentSlots Checked(List<AExpression?> arguments, SlotRole[] roles) => new(arguments, roles);
+
+		/// <summary>Caller-declared family: <paramref name="roles"/> is null when the call site claims nothing.</summary>
+		internal static ArgumentSlots Trusted(List<AExpression?> arguments, SlotRole[]? roles) => new(arguments, roles);
+
+		internal int Count => terms.Length;
+
+		/// <summary>True when the view carries a declared contract (rule-table family or a caller that stated roles).</summary>
+		internal bool HasDeclaredRoles => roles != null;
+
+		/// <summary>
+		/// The contract declared for <paramref name="index"/>, or <see cref="SlotRole.Loose"/> when the view declares
+		/// nothing (an index outside the declared size included: the claim describes the slot, not the caller's
+		/// index). <see cref="Term"/> reads it to name the broken promise in its failure message.
+		/// </summary>
+		internal SlotRole RoleAt(int index) =>
+			roles != null && index >= 0 && index < roles.Length ? roles[index] : SlotRole.Loose;
+
+		/// <summary>The slot holds a value. A negative index holds nothing, like an index past the list.</summary>
+		internal bool Has(int index) => (uint)index < (uint)terms.Length && terms[index] != null;
+
+		/// <summary>The slot was written as an explicitly empty argument.</summary>
+		internal bool IsEmpty(int index) => (uint)index < (uint)terms.Length && terms[index] == null;
+
+		/// <summary>The argument list is shorter than the slot, an index before the first slot included.</summary>
+		internal bool IsMissing(int index) => (uint)index >= (uint)terms.Length;
+
+		/// <summary>
+		/// Slot value. The caller owes <b>two</b> proofs, and <see cref="SlotRole.Required"/> only carries the second:
+		/// the slot is <b>present</b> (guarded by <see cref="Count"/>/<see cref="IsMissing"/>, or an index below the
+		/// matched block's minimum argument count) and it is <b>not explicitly empty</b> (role
+		/// <see cref="SlotRole.Required"/>, or an explicit <see cref="Has"/>/<see cref="IsEmpty"/>/<see cref="IsMissing"/>
+		/// test) - hence the non-null read, whose failure <see cref="Term"/> reports.
+		/// </summary>
+		internal long Int(ExpressionMediator exm, int index) => Term(index).GetIntValue(exm);
+
+		/// <inheritdoc cref="Int"/>
+		internal string Str(ExpressionMediator exm, int index) => Term(index).GetStrValue(exm);
+
+		/// <inheritdoc cref="Int"/>
+		internal bool IsInteger(int index) => Term(index).IsInteger;
+
+		/// <inheritdoc cref="Int"/>
+		internal bool IsString(int index) => Term(index).IsString;
+
+		/// <summary>
+		/// Variable entity behind a reference slot. Preconditions: the slot is present (as for <see cref="Int"/> - a
+		/// reference slot past the block's minimum count still needs a Count guard), role <see cref="SlotRole.Ref"/>,
+		/// and a non-constant argument (a rule carrying <see cref="SlotRole.AllowConstRef"/> implies the class sets
+		/// HasUniqueRestructure, so the constant array is not folded into a SingleTerm).
+		/// </summary>
+		internal VariableTerm Var(int index) => Term(index) as VariableTerm ?? throw new ExeEE(
+			$"slot {index} (role {RoleAt(index)}) is not a variable entity: the slot must be a reference slot");
+
+		/// <summary>
+		/// Raw handle. An index outside the argument list is a programmer error and throws
+		/// <see cref="IndexOutOfRangeException"/>, as <c>ArgumentListExtensions.Required</c> did. An index the checker
+		/// lets hold an explicitly empty slot (or a <see cref="Var"/> slot that holds no variable entity) reports
+		/// itself through <see cref="ExeEE"/> rather than handing null to the caller: only the body can know whether
+		/// it guarded that slot, and the role names what the call site promised.
+		/// </summary>
+		internal AExpression Term(int index)
+		{
+			if ((uint)index >= (uint)terms.Length)
+			{
+				throw new IndexOutOfRangeException($"slot {index} of {terms.Length} (role {RoleAt(index)})");
+			}
+
+			return terms[index] ?? throw new ExeEE(
+				$"slot {index} (role {RoleAt(index)}) is explicitly empty: the body must test "
+				+ "Has/IsEmpty/IsMissing before reading it");
+		}
+
+		/// <summary>Raw handle, or null when the slot is empty or omitted.</summary>
+		internal AExpression? TermOrNull(int index) => (uint)index < (uint)terms.Length ? terms[index] : null;
+
+		/// <summary>
+		/// Slots from <paramref name="from"/> on, forwarded to a downstream callee that owns their contract. The
+		/// snapshot is what gets forwarded, as everywhere else in this view, so the callee re-evaluates them itself
+		/// instead of inheriting the fold's results (see the class summary).
+		/// </summary>
+		internal List<AExpression?> Tail(int from)
+		{
+			// A forwarded tail starts past the end whenever the caller omitted it (GETMETH with one argument).
+			int start = Math.Max(0, from);
+			return start >= terms.Length ? [] : [.. terms[start..]];
+		}
+	}
+
 	protected ArgTypeList[]? argumentTypeArrayEx;
+
+	// The one judgement the checker and the slot projection both ask: does this block reject an explicitly empty
+	// slot? OmitStart stays -1 when a rule block omits it, and the count check then demands exactly ArgTypes.Count
+	// arguments, so no slot may be omitted. Past OmitStart a slot is omittable by count only, and ArgType.NotNull
+	// (or the SameAsFirst slot-0 case, which reads slot 0 to learn the expected operand type) is what rejects an
+	// explicitly empty one, because the implementation reads the slot anyway.
+	private static bool RejectsEmptySlot(ArgTypeList list, _ArgType rule, int index)
+		=> list.OmitStart < 0 || index < list.OmitStart || rule.NotNull
+			|| (index == 0 && list.OmitStart == 0 && list.UsesSameAsFirst);
+
+	// The rule governing slot `index` of a matched block: a variadic tail repeats the block's trailing variadic
+	// rules by modulo. The caller hoists LastVariadics because that property allocates on every read.
+	// Precondition (both callers): index < ArgTypes.Count unless lastVariadics is non-null.
+	private static _ArgType RuleForSlot(ArgTypeList list, _ArgType[]? lastVariadics, int index)
+		=> lastVariadics != null && index >= list.ArgTypes.Count
+			? lastVariadics[(index - list.ArgTypes.Count) % lastVariadics.Length]
+			: list.ArgTypes[index];
+
+	// Slot 0's operand type, the reference `SameAsFirst` rules compare against. Hoisted per rule block because the
+	// check loops ask it once per slot; an empty slot 0 falls back to the default the SameAsFirst rules assume.
+	private static Type FirstOperandType(List<AExpression?> arguments)
+		=> arguments.Count > 0 && arguments[0] != null ? arguments.Required(0).GetOperandType() : typeof(long);
+
+	// The operand type a slot is expected to hold, or null when the rule accepts either type (ArgType.Any). The
+	// checker compares an argument against this and the slot projection turns it into the Int/String/Any role flag,
+	// so the two judgements are one judgement instead of two copies that can drift apart.
+	private static Type? ExpectedType(_ArgType rule, Type firstType)
+		=> rule.Any ? null : rule.SameAsFirst ? firstType : rule.Type;
 
 	//引数の数・型が一致するかどうかのテスト
 	//正しくない場合はエラーメッセージを返す。
 	//引数の数が不定である場合や引数の省略を許す場合にはoverrideすること。
-	private string? CheckArgumentTypeEx(string name, List<AExpression?> arguments)
+	// matchedIdx = the rule block that passed (-1 when none did); the slot projection is built from that block.
+	private string? CheckArgumentTypeEx(string name, List<AExpression?> arguments, out int matchedIdx)
 	{
+		matchedIdx = -1;
 		// Only reached from CheckArgumentType after the null check on argumentTypeArrayEx.
 		ArgTypeList[] rules = argumentTypeArrayEx!;
 		string[] errMsg = new string[rules.Length];
@@ -180,21 +371,14 @@ internal abstract class FunctionMethod
 					}
 				}
 
-				// A SameAsFirst rule reads slot 0 below to learn the expected operand type, so slot 0 must be
-				// filled. OmitStart == 0 is the only shape that would let an explicitly empty slot 0 through
-				// the loop and dereference it there, so that case requires the slot instead of crashing.
-				bool slot0Required = list.OmitStart == 0 && list.UsesSameAsFirst;
 				// 引数の数が有効
+				Type firstType = FirstOperandType(arguments);
 				for (int i = 0; i < (variadic ? arguments.Count : Math.Min(arguments.Count, list.ArgTypes.Count)); i++)
 				{
-					_ArgType rule = variadic && i >= list.ArgTypes.Count ? vs![(i - list.ArgTypes.Count) % vs.Length] : list.ArgTypes[i];
+					_ArgType rule = RuleForSlot(list, vs, i);
 					if (arguments[i] == null)
 					{
-						// OmitStart stays -1 when a rule block omits it, and argsNotLessThanRule above then demands
-						// exactly ArgTypes.Count arguments: no slot may be omitted, so an empty slot is an error.
-						// Past OmitStart a slot is omittable by count only; ArgType.NotNull is what rejects an
-						// explicitly empty one, because the implementation reads the slot anyway.
-						if (list.OmitStart < 0 || i < list.OmitStart || rule.NotNull || (i == 0 && slot0Required))
+						if (RejectsEmptySlot(list, rule, i))
 						{
 							errMsg[idx] = string.Format(trerror.ArgCanNotBeNull.Text, name, i + 1);
 							break;
@@ -205,9 +389,8 @@ internal abstract class FunctionMethod
 						}
 					}
 
-					bool typeNotMatch = rule.SameAsFirst
-						? arguments.Required(0).GetOperandType() != arguments.Required(i).GetOperandType()
-						: !rule.Any && rule.Type != arguments.Required(i).GetOperandType();
+					Type? expected = ExpectedType(rule, firstType);
+					bool typeNotMatch = expected != null && expected != arguments.Required(i).GetOperandType();
 					if (rule.Ref)
 					{
 						if (rule.CharacterData && (!(arguments[i] is VariableTerm cvarTerm) || !cvarTerm.Identifier.IsCharacterData))
@@ -278,7 +461,7 @@ internal abstract class FunctionMethod
 					}
 					else if (typeNotMatch)
 					{
-						Type type = rule.SameAsFirst ? arguments.Required(0).GetOperandType() : rule.Type;
+						Type type = ExpectedType(rule, firstType) ?? rule.Type;
 						// 引数の型が違う
 						errMsg[idx] = type == typeof(string)
 							? string.Format(trerror.ArgIsNotStr.Text, name, i + 1)
@@ -289,6 +472,7 @@ internal abstract class FunctionMethod
 
 				if (errMsg[idx] == null)
 				{
+					matchedIdx = idx;
 					return null;
 				}
 			}
@@ -335,11 +519,27 @@ internal abstract class FunctionMethod
 		return string.Format(trerror.NotValidArgs.Text, name, sb);
 	}
 
-	public virtual string? CheckArgumentType(string name, List<AExpression?> arguments)
+	/// <summary>
+	/// Legacy checker entry, kept as a <b>non-virtual facade</b>: it forwards to the pass that also reports the
+	/// matched rule block. Subclasses check for themselves by overriding
+	/// <see cref="CheckArgumentType(string, List{AExpression?}, out int)"/> instead - overriding this overload would
+	/// be silently bypassed, because <see cref="CheckAndResolveSlots"/> dispatches on that one.
+	/// </summary>
+	public string? CheckArgumentType(string name, List<AExpression?> arguments)
+		=> CheckArgumentType(name, arguments, out _);
+
+	/// <summary>
+	/// The one checker pass. <paramref name="matchedIdx"/> reports the rule block that passed (-1 when none did),
+	/// which the slot projection then reads: a caller resolves both the message and the roles from one call instead
+	/// of asking the checker twice. Subclasses that check for themselves override this overload, so the resolution
+	/// path cannot bypass them.
+	/// </summary>
+	internal virtual string? CheckArgumentType(string name, List<AExpression?> arguments, out int matchedIdx)
 	{
+		matchedIdx = -1;
 		if (argumentTypeArrayEx != null)
 		{
-			return CheckArgumentTypeEx(name, arguments);
+			return CheckArgumentTypeEx(name, arguments, out matchedIdx);
 		}
 		else if (argumentTypeArray != null)
 		{
@@ -377,6 +577,90 @@ internal abstract class FunctionMethod
 		return null;
 	}
 
+	/// <summary>
+	/// True when this class refuses <see cref="CheckArgumentType(string, List{AExpression?}, out int)"/> on purpose
+	/// (the operator / StrForm families) and the call site owns the argument contract. The list-based facade branches
+	/// on this rather than on "has a rule table": one caller-checked class (`PlusStrStr`) does carry an
+	/// <c>argumentTypeArray</c> while its checker only refuses, so the table alone is not the criterion.
+	/// </summary>
+	internal virtual bool CallerOwnsCheck => false;
+
+	/// <summary>
+	/// Runs the checker and resolves the term's slot view from that same pass: the rule-table family gets the roles
+	/// projected from the block that matched, anything else (a class without a rule table, or one that reports its
+	/// own error) claims nothing. Callers throw <paramref name="errmes"/> when it is non-null.
+	/// </summary>
+	internal string? CheckAndResolveSlots(string name, List<AExpression?> arguments, out ArgumentSlots slots)
+	{
+		string? errmes = CheckArgumentType(name, arguments, out int matchedIdx);
+		slots = ResolveSlots(arguments, matchedIdx);
+		return errmes;
+	}
+
+	// The one factory behind every term construction: the roles come from the rule block the checker matched.
+	private ArgumentSlots ResolveSlots(List<AExpression?> arguments, int matchedIdx)
+	{
+		if (argumentTypeArrayEx != null)
+		{
+			return matchedIdx < 0
+				? ArgumentSlots.Trusted(arguments, null)
+				: ArgumentSlots.Checked(arguments, ProjectRoles(argumentTypeArrayEx[matchedIdx], arguments));
+		}
+
+		if (argumentTypeArray != null)
+		{
+			return ArgumentSlots.Checked(arguments, ProjectFixedRoles(argumentTypeArray, arguments.Count));
+		}
+
+		return ArgumentSlots.Trusted(arguments, null);
+	}
+
+	// A fixed-count table rejects an empty slot as well as an argument count mismatch, so every slot is required.
+	private static SlotRole[] ProjectFixedRoles(Type[] table, int count)
+	{
+		SlotRole[] roles = new SlotRole[count];
+		for (int i = 0; i < roles.Length; i++)
+		{
+			roles[i] = SlotRole.Required | (i < table.Length && table[i] == typeof(long) ? SlotRole.Int : SlotRole.String);
+		}
+
+		return roles;
+	}
+
+	// Roles for the block the checker matched, read through the same helpers CheckArgumentTypeEx uses so the two
+	// judgements cannot drift apart.
+	private static SlotRole[] ProjectRoles(ArgTypeList matched, List<AExpression?> arguments)
+	{
+		_ArgType[]? vs = matched.LastVariadics;
+		Type firstType = FirstOperandType(arguments);
+		SlotRole[] roles = new SlotRole[arguments.Count];
+		for (int i = 0; i < roles.Length; i++)
+		{
+			_ArgType rule = RuleForSlot(matched, vs, i);
+			SlotRole role = RejectsEmptySlot(matched, rule, i) ? SlotRole.Required : SlotRole.Loose;
+			if (rule.Variadic)
+			{
+				role |= SlotRole.Variadic;
+			}
+
+			if (rule.Ref)
+			{
+				role |= SlotRole.Ref;
+			}
+
+			if (rule.AllowConstRef)
+			{
+				role |= SlotRole.AllowConstRef;
+			}
+
+			Type? expected = ExpectedType(rule, firstType);
+			role |= expected == null ? SlotRole.Any : expected == typeof(string) ? SlotRole.String : SlotRole.Int;
+			roles[i] = role;
+		}
+
+		return roles;
+	}
+
 	#endregion
 
 	//Argumentが全て定数の時にMethodを解体してよいかどうか。RANDやCharaを参照するものなどは不可
@@ -385,27 +669,70 @@ internal abstract class FunctionMethod
 	//FunctionMethodが固有のRestructure()を持つかどうか
 	public bool HasUniqueRestructure { get; protected set; }
 
-	//実際の計算。
-	public virtual long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+	/// <summary>
+	/// Slot-based entry the term and the function bodies read through. The base throws for a class whose return type
+	/// does not match the call.
+	/// </summary>
+	public virtual long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 	{
 		throw new ExeEE(trerror.ReturnTypeDifferentOrNotImpelemnt.Text);
 	}
 
-	public virtual string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
+	/// <inheritdoc cref="GetIntValue(ExpressionMediator, ArgumentSlots)"/>
+	public virtual string GetStrValue(ExpressionMediator exm, ArgumentSlots slots)
 	{
 		throw new ExeEE(trerror.ReturnTypeDifferentOrNotImpelemnt.Text);
 	}
 
-	public virtual SingleTerm GetReturnValue(ExpressionMediator exm, List<AExpression?> arguments)
+	/// <inheritdoc cref="GetIntValue(ExpressionMediator, ArgumentSlots)"/>
+	public virtual SingleTerm GetReturnValue(ExpressionMediator exm, ArgumentSlots slots)
 	{
 		if (ReturnType == typeof(long))
 		{
-			return new SingleLongTerm(GetIntValue(exm, arguments));
+			return new SingleLongTerm(GetIntValue(exm, slots));
 		}
 		else
 		{
-			return new SingleStrTerm(GetStrValue(exm, arguments));
+			return new SingleStrTerm(GetStrValue(exm, slots));
 		}
+	}
+
+	/// <summary>
+	/// Legacy list-based entry, kept as a <b>non-virtual facade</b>: it resolves the check-time roles and forwards to
+	/// the slot-based entry. Its only consumers are the tests in `ArgumentSlotsTests`, and a subclass override is a
+	/// compile error (CS0115; see .scratch/arg-contract/issues/05). A class that refuses the checker, or one without a
+	/// rule table, resolves without one: see <see cref="ResolveSlots(List{AExpression?})"/>.
+	/// </summary>
+	public long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		=> GetIntValue(exm, ResolveSlots(arguments));
+
+	/// <inheritdoc cref="GetIntValue(ExpressionMediator, List{AExpression?})"/>
+	public string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
+		=> GetStrValue(exm, ResolveSlots(arguments));
+
+	/// <inheritdoc cref="GetIntValue(ExpressionMediator, List{AExpression?})"/>
+	public SingleTerm GetReturnValue(ExpressionMediator exm, List<AExpression?> arguments)
+		=> GetReturnValue(exm, ResolveSlots(arguments));
+
+	// The facade cannot invent a role it was not given. Two shapes reach it without a checker worth asking: a class
+	// that refuses the checker on purpose (<see cref="CallerOwnsCheck"/> - operator / StrForm) and a class with no
+	// rule table at all (`MesSkipMethod` checks for itself). Neither has a matched block, so the facade claims nothing
+	// except where a fixed-count table still describes every slot (a caller-checked class may carry one). Every other
+	// class runs the same single check the construction points run, and the failure is thrown as the checker's message.
+	private ArgumentSlots ResolveSlots(List<AExpression?> arguments)
+	{
+		if (CallerOwnsCheck || (argumentTypeArrayEx == null && argumentTypeArray == null))
+		{
+			return ResolveSlots(arguments, -1);
+		}
+
+		string? errmes = CheckArgumentType(Name, arguments, out int matchedIdx);
+		if (errmes != null)
+		{
+			throw new CodeEE(errmes);
+		}
+
+		return ResolveSlots(arguments, matchedIdx);
 	}
 
 	/// <summary>

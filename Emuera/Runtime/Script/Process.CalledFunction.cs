@@ -251,7 +251,9 @@ internal sealed class CalledFunction
 
 					tostrMethod ??= FunctionMethodCreator.GetMethodList()["TOSTR"];
 
-					term = new FunctionMethodTerm(tostrMethod, [term]);
+					// The wrapped term is the integer side of the conversion, so slot 0 is filled and numeric.
+					term = new FunctionMethodTerm(tostrMethod, FunctionMethod.ArgumentSlots.Trusted([term],
+						[FunctionMethod.SlotRole.Required | FunctionMethod.SlotRole.Int]));
 				}
 			}
 

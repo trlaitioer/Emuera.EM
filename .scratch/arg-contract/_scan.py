@@ -176,7 +176,7 @@ def parse_blocks(src, pos, end):
 NOT_NULL_FLAG = "ArgType.NotNull"
 # `Creator.Method.cs` 的期望值：(含注释 处数, 含注释 行数, 剥注释 处数, 剥注释 行数)。
 # 两套口径不同是因为注释里也提到过该标志；数值变化只在改 `Creator.Method.cs` 时发生，届时同步此处与票面。
-NOT_NULL_EXPECTED = (87, 76, 81, 70)
+NOT_NULL_EXPECTED = (88, 77, 81, 70)
 
 
 def not_null_counts(text, strip_regions=False):

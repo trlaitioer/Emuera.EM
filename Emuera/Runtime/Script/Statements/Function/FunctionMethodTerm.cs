@@ -5,36 +5,41 @@ namespace MinorShift.Emuera.Runtime.Script.Statements.Function;
 
 internal sealed class FunctionMethodTerm : AExpression
 {
-	public FunctionMethodTerm(FunctionMethod meth, List<AExpression?> args)
+	public FunctionMethodTerm(FunctionMethod meth, FunctionMethod.ArgumentSlots slots)
 		: base(meth.ReturnType)
 	{
 		Method = meth;
-		Arguments = args;
+		Slots = slots;
 	}
 
 	internal FunctionMethod Method { get; }
-	internal List<AExpression?> Arguments { get; }
+
+	/// <summary>Check-time slot view (roles + snapshot) the body reads through.</summary>
+	internal FunctionMethod.ArgumentSlots Slots { get; }
 
 	public override long GetIntValue(ExpressionMediator exm)
 	{
-		return Method.GetIntValue(exm, Arguments);
+		return Method.GetIntValue(exm, Slots);
 	}
 
 	public override string GetStrValue(ExpressionMediator exm)
 	{
-		return Method.GetStrValue(exm, Arguments);
+		return Method.GetStrValue(exm, Slots);
 	}
 
 	public override SingleTerm GetValue(ExpressionMediator exm)
 	{
-		return Method.GetReturnValue(exm, Arguments);
+		return Method.GetReturnValue(exm, Slots);
 	}
 
 	public override AExpression Restructure(ExpressionMediator exm)
 	{
+		List<AExpression?> arguments = Slots.FoldTarget;
 		if (Method.HasUniqueRestructure)
 		{
-			if (Method.UniqueRestructure(exm, [.. Arguments]) && Method.CanRestructure)
+			// UniqueRestructure receives a copy, so a fold it performs on that copy is discarded
+			// (.scratch/arg-contract/issues/04).
+			if (Method.UniqueRestructure(exm, [.. arguments]) && Method.CanRestructure)
 			{
 				return GetValue(exm);
 			}
@@ -43,15 +48,15 @@ internal sealed class FunctionMethodTerm : AExpression
 		}
 
 		bool argIsConst = true;
-		for (int i = 0; i < Arguments.Count; i++)
+		for (int i = 0; i < arguments.Count; i++)
 		{
-			if (Arguments[i] == null)
+			if (arguments[i] == null)
 			{
 				continue;
 			}
 
-			Arguments[i] = Arguments.Required(i).Restructure(exm);
-			argIsConst &= Arguments[i] is SingleTerm;
+			arguments[i] = arguments.Required(i).Restructure(exm);
+			argIsConst &= arguments[i] is SingleTerm;
 		}
 
 		if (Method.CanRestructure && argIsConst)

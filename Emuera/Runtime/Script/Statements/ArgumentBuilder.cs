@@ -1590,13 +1590,15 @@ internal static partial class ArgumentParser
 		public override Argument CreateArgument(InstructionLine line, ExpressionMediator exm)
 		{
 			List<AExpression?> args = popTerms(line);
-			string? errmes = line.Function.Method!.CheckArgumentType(line.Function.Name, args);
+			// Same single-pass path as IdentifierDictionary.GetFunctionMethod: the checker resolves the slot roles.
+			string? errmes = line.Function.Method!.CheckAndResolveSlots(line.Function.Name, args,
+				out FunctionMethod.ArgumentSlots slots);
 			if (errmes != null)
 			{
 				throw new CodeEE(errmes);
 			}
 
-			FunctionMethodTerm mTerm = new(line.Function.Method, args);
+			FunctionMethodTerm mTerm = new(line.Function.Method, slots);
 			return new MethodArgument(mTerm.Restructure(exm));
 		}
 	}

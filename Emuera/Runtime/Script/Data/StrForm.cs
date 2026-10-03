@@ -22,6 +22,31 @@ internal sealed class StrForm
 	private string[] strs; //terms.Count + 1
 	private AExpression[] terms;
 
+	// Caller-declared slot roles for the terms this file builds: the formatted-string family bypasses the rule table
+	// (FormattedStringMethod.CheckArgumentType throws), so the construction sites state what they guarantee. Slot 0 is
+	// always the filled operand; the width / LEFT-RIGHT slots are written as explicit nulls when absent and are
+	// emptiness-tested by the body, so they carry no claim.
+	private static readonly FunctionMethod.SlotRole[] YenAtRoles =
+	[
+		FunctionMethod.SlotRole.Required | FunctionMethod.SlotRole.Int,
+		FunctionMethod.SlotRole.Required | FunctionMethod.SlotRole.String,
+		FunctionMethod.SlotRole.Required | FunctionMethod.SlotRole.String
+	];
+
+	private static readonly FunctionMethod.SlotRole[] IntFormatRoles =
+	[
+		FunctionMethod.SlotRole.Required | FunctionMethod.SlotRole.Int,
+		FunctionMethod.SlotRole.Loose,
+		FunctionMethod.SlotRole.Loose
+	];
+
+	private static readonly FunctionMethod.SlotRole[] StrFormatRoles =
+	[
+		FunctionMethod.SlotRole.Required | FunctionMethod.SlotRole.String,
+		FunctionMethod.SlotRole.Loose,
+		FunctionMethod.SlotRole.Loose
+	];
+
 	/// <summary>
 	/// Returns the int operand of the single {…} interpolation when funcnameTerm is fixed
 	/// literals plus exactly one {int-expr} ("PREFIX_{I}" or a bare "{I}"); null otherwise.
@@ -43,7 +68,7 @@ internal sealed class StrForm
 
 		if (funcnameTerm is FunctionMethodTerm fmt
 		    && ReferenceEquals(fmt.Method, formatCurlyBrace)
-		    && fmt.Arguments[0] is { IsInteger: true } operand)
+		    && fmt.Slots.TermOrNull(0) is { IsInteger: true } operand)
 		{
 			return operand;
 		}
@@ -84,11 +109,16 @@ internal sealed class StrForm
 		VariableTerm callnameplayer = new(callnameID, [player]);
 		VariableTerm nameassi = new(nameID, [assi]);
 		VariableTerm callnametarget = new(callnameID, [target]);
-		NameTarget = new FunctionMethodTerm(formatPercent, [nametarget, null, null]);
-		CallnameMaster = new FunctionMethodTerm(formatPercent, [callnamemaster, null, null]);
-		CallnamePlayer = new FunctionMethodTerm(formatPercent, [callnameplayer, null, null]);
-		NameAssi = new FunctionMethodTerm(formatPercent, [nameassi, null, null]);
-		CallnameTarget = new FunctionMethodTerm(formatPercent, [callnametarget, null, null]);
+		NameTarget = new FunctionMethodTerm(formatPercent,
+			FunctionMethod.ArgumentSlots.Trusted([nametarget, null, null], StrFormatRoles));
+		CallnameMaster = new FunctionMethodTerm(formatPercent,
+			FunctionMethod.ArgumentSlots.Trusted([callnamemaster, null, null], StrFormatRoles));
+		CallnamePlayer = new FunctionMethodTerm(formatPercent,
+			FunctionMethod.ArgumentSlots.Trusted([callnameplayer, null, null], StrFormatRoles));
+		NameAssi = new FunctionMethodTerm(formatPercent,
+			FunctionMethod.ArgumentSlots.Trusted([nameassi, null, null], StrFormatRoles));
+		CallnameTarget = new FunctionMethodTerm(formatPercent,
+			FunctionMethod.ArgumentSlots.Trusted([callnametarget, null, null], StrFormatRoles));
 	}
 
 	public static StrForm FromWordToken(StrFormWord wt)
@@ -142,7 +172,8 @@ internal sealed class StrForm
 				AExpression left = new StrFormTerm(FromWordToken(yenat.Left));
 				AExpression right = yenat.Right == null ? new SingleStrTerm("") : new StrFormTerm(FromWordToken(yenat.Right));
 
-				termArray[i] = new FunctionMethodTerm(formatYenAt, [operand, left, right]);
+				termArray[i] = new FunctionMethodTerm(formatYenAt,
+					FunctionMethod.ArgumentSlots.Trusted([operand, left, right], YenAtRoles));
 				continue;
 			}
 
@@ -198,7 +229,8 @@ internal sealed class StrForm
 					throw new CodeEE(trerror.IsNotNumericBrace.Text);
 				}
 
-				termArray[i] = new FunctionMethodTerm(formatCurlyBrace, [operand, second, third]);
+				termArray[i] = new FunctionMethodTerm(formatCurlyBrace,
+					FunctionMethod.ArgumentSlots.Trusted([operand, second, third], IntFormatRoles));
 				continue;
 			}
 
@@ -207,7 +239,8 @@ internal sealed class StrForm
 				throw new CodeEE(trerror.IsNotStringPer.Text);
 			}
 
-			termArray[i] = new FunctionMethodTerm(formatPercent, [operand, second, third]);
+			termArray[i] = new FunctionMethodTerm(formatPercent,
+				FunctionMethod.ArgumentSlots.Trusted([operand, second, third], StrFormatRoles));
 		}
 
 		return new StrForm(wt.Strs, termArray);
@@ -293,49 +326,54 @@ internal sealed class StrForm
 			ReturnType = typeof(string);
 		}
 
-		public override string CheckArgumentType(string name, List<AExpression?> arguments)
+		internal override string CheckArgumentType(string name, List<AExpression?> arguments, out int matchedIdx)
 		{
 			throw new ExeEE(trerror.TypeCheckIsCallersResponsibility.Text);
 		}
 
-		public override long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
+		// Tells the list-based facade the same thing: the roles come from the construction sites above, not from a
+		// checker that only refuses.
+		internal override bool CallerOwnsCheck => true;
+
+		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
 			throw new ExeEE(trerror.ReturnTypeMismatch.Text);
 		}
 
-		public override SingleTerm GetReturnValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override SingleTerm GetReturnValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			return new SingleStrTerm(GetStrValue(exm, arguments));
+			return new SingleStrTerm(GetStrValue(exm, slots));
 		}
 	}
 
 	private sealed class FormatCurlyBrace : FormattedStringMethod
 	{
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override string GetStrValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			string ret = arguments.Required(0).GetIntValue(exm).ToString();
-			if (arguments[1] is not { } widthArg)
+			string ret = slots.Int(exm, 0).ToString();
+			if (!slots.Has(1))
 			{
 				return ret;
 			}
 
-			return arguments[2] != null
-				? ret.PadRight((int)widthArg.GetIntValue(exm), ' ') //LEFT
-				: ret.PadLeft((int)widthArg.GetIntValue(exm), ' '); //RIGHT
+			// Slot 2 selects LEFT (non-empty) or RIGHT (empty/omitted).
+			return slots.Has(2)
+				? ret.PadRight((int)slots.Int(exm, 1), ' ') //LEFT
+				: ret.PadLeft((int)slots.Int(exm, 1), ' '); //RIGHT
 		}
 	}
 
 	private sealed class FormatPercent : FormattedStringMethod
 	{
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override string GetStrValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			string ret = arguments.Required(0).GetStrValue(exm);
-			if (arguments[1] is not { } widthArg)
+			string ret = slots.Str(exm, 0);
+			if (!slots.Has(1))
 			{
 				return ret;
 			}
 
-			int totalLength = (int)widthArg.GetIntValue(exm);
+			int totalLength = (int)slots.Int(exm, 1);
 			int currentLength = LangManager.GetStrlenLang(ret);
 			totalLength -= currentLength - ret.Length; //全角文字の数だけマイナス。タブ文字？ゼロ幅文字？知るか！
 			if (totalLength < ret.Length)
@@ -343,7 +381,8 @@ internal sealed class StrForm
 				return ret; //PadLeftは0未満を送ると例外を投げる
 			}
 
-			return arguments[2] != null
+			// Slot 2 selects LEFT (non-empty) or RIGHT (empty/omitted).
+			return slots.Has(2)
 				? ret.PadRight(totalLength, ' ') //LEFT
 				: ret.PadLeft(totalLength, ' '); //RIGHT
 		}
@@ -352,9 +391,9 @@ internal sealed class StrForm
 	private sealed class FormatYenAt : FormattedStringMethod
 	{
 		//Operator のTernaryIntStrStrとやってることは同じ
-		public override string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
+		public override string GetStrValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
-			return arguments.Required(0).GetIntValue(exm) != 0 ? arguments.Required(1).GetStrValue(exm) : arguments.Required(2).GetStrValue(exm);
+			return slots.Int(exm, 0) != 0 ? slots.Str(exm, 1) : slots.Str(exm, 2);
 		}
 	}
 

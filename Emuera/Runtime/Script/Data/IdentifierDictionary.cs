@@ -620,8 +620,15 @@ internal partial class IdentifierDictionary
 			return null;
 		}
 
-		string? errmes = method.CheckArgumentType(codeStr, arguments);
-		return errmes == null ? new FunctionMethodTerm(method, arguments) : throw new CodeEE(errmes);
+		// One checker pass yields both the message and the slot view: the rule-table family gets the roles of the
+		// block that matched, while a class without a rule table (`MesSkipMethod`) claims nothing.
+		string? errmes = method.CheckAndResolveSlots(codeStr, arguments, out FunctionMethod.ArgumentSlots slots);
+		if (errmes != null)
+		{
+			throw new CodeEE(errmes);
+		}
+
+		return new FunctionMethodTerm(method, slots);
 	}
 
 	//1756 作成中途

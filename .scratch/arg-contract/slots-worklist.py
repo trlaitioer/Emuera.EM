@@ -22,6 +22,12 @@
 
 用法：python3.14 .scratch/arg-contract/slots-worklist.py
 产物：.scratch/arg-contract/slots-worklist.md（UTF-8 BOM，与本脚本的写出编码一致，故可逐字节复现）
+
+**冻结提示**：本表建模的是阶段 A 的「被 `Required`(字面量) 读取」这条车道。arg-contract/issues/05 的阶段 B
+把这些消费点全换成了 `ArgumentSlots` 访问器，迁移后再跑本脚本会**覆盖冻结产物**：口径数字必然漂移
+（`arguments.Required(` 405 → 26、A/B 两段 76 项 → 2 项、E 段 20 → 94），并打出「E 段存在未裁定的可省略槽」等
+WARN。故只在阶段 A 的 HEAD 上跑；阶段 B 的验收口径改用 [arg-slots.py](arg-slots.py) 的默认产物
+[slots-progress.md](slots-progress.md)。
 """
 
 import re

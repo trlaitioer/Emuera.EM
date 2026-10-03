@@ -10,6 +10,7 @@ using MinorShift.Emuera.Runtime.Script.Statements.Variable;
 using MinorShift.Emuera.Runtime.Utils;
 using System.Text;
 using Xunit;
+using static Emuera.Tests.Runtime.Script.Statements.Function.BuiltinFunctionTestKit;
 
 namespace Emuera.Tests.Runtime.Script.Statements.Function;
 
@@ -54,12 +55,12 @@ public class UnguardedAsCastTests : IDisposable
 	[Fact]
 	public void XmlGet_WithZeroDoOutput_ReturnsCount()
 	{
-		long count = Method("XML_GET").GetIntValue(null!,
+		long count = (long)InvokeWith(Method("XML_GET"),
 		[
 			new SingleStrTerm(Xml),
 			new SingleStrTerm("/test/file"),
 			new SingleLongTerm(0)
-		]);
+		], null);
 
 		Assert.Equal(2L, count);
 	}
@@ -68,7 +69,7 @@ public class UnguardedAsCastTests : IDisposable
 	[Fact]
 	public void XmlGet_WithNonZeroDoOutput_StillWritesResults()
 	{
-		long count = Method("XML_GET").GetIntValue(GlobalStatic.EMediator,
+		long count = (long)Invoke(Method("XML_GET"),
 		[
 			new SingleStrTerm(Xml),
 			new SingleStrTerm("/test/file/@name"),
@@ -88,7 +89,7 @@ public class UnguardedAsCastTests : IDisposable
 		string?[] previous = [.. (string?[])outputArray.GetArray()];
 		try
 		{
-			long count = Method("XML_GET").GetIntValue(GlobalStatic.EMediator,
+			long count = (long)Invoke(Method("XML_GET"),
 			[
 				new SingleStrTerm(Xml),
 				new SingleStrTerm("/test/file/@name"),

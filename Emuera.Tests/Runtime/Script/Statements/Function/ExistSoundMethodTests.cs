@@ -1,6 +1,7 @@
 ﻿using MinorShift.Emuera.GameData.Function;
 using MinorShift.Emuera.Runtime.Script.Statements.Expression;
 using Xunit;
+using static Emuera.Tests.Runtime.Script.Statements.Function.BuiltinFunctionTestKit;
 
 namespace Emuera.Tests.Runtime.Script.Statements.Function;
 
@@ -38,8 +39,7 @@ public class ExistSoundMethodTests
 	}
 
 	private static long ExistSound(string filename)
-		=> FunctionMethodCreator.GetMethodList()["EXISTSOUND"]
-			.GetIntValue(null!, [new SingleStrTerm(filename)]);
+		=> (long)InvokeWith(FunctionMethodCreator.GetMethodList()["EXISTSOUND"], [new SingleStrTerm(filename)], null);
 
 	private static void CreateSoundFile(string root, string relative)
 	{

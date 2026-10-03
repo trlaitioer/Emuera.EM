@@ -2,6 +2,7 @@
 using MinorShift.Emuera.GameData.Function;
 using MinorShift.Emuera.Runtime.Script.Statements.Expression;
 using Xunit;
+using static Emuera.Tests.Runtime.Script.Statements.Function.BuiltinFunctionTestKit;
 
 namespace Emuera.Tests.Runtime.Script.Statements.Function;
 
@@ -35,6 +36,6 @@ public class EnumFilesMethodTests
 	}
 
 	private static long EnumFiles(string directory, string pattern)
-		=> FunctionMethodCreator.GetMethodList()["ENUMFILES"]
-			.GetIntValue(GlobalStatic.EMediator, [new SingleStrTerm(directory), new SingleStrTerm(pattern), new SingleLongTerm(0)]);
+		=> (long)Invoke(FunctionMethodCreator.GetMethodList()["ENUMFILES"],
+			[new SingleStrTerm(directory), new SingleStrTerm(pattern), new SingleLongTerm(0)]);
 }

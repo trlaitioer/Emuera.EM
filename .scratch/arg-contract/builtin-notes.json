@@ -1,0 +1,2132 @@
+{
+ "functions": {
+  "ABS": {
+   "category": "算术",
+   "upstream": "返回绝对值；同页 SIGN 返回 -1/0/1 表示负、零、正；两者都支持指令和表达式函数两种用法",
+   "desc": "返回实参的绝对值，结果为 64 位整数",
+   "empty_slot": "—（恰 1 实参，少写或留空都报错）",
+   "notes": "long.MinValue 取绝对值无对应正值，抛 CodeEE(MinInt64CanNotApplyABS)；指令形式 ABS X 把结果写入 RESULT",
+   "uncertain": false
+  },
+  "ALLSAMES": {
+   "category": "算术",
+   "upstream": "所有参数必须同类型；当所有参数指定的值都相同时返回 1，否则返回 0",
+   "desc": "所有实参的值全部相等时返回 1，否则返回 0",
+   "empty_slot": "—（显式留空报 CodeEE(ArgCanNotBeNull)）",
+   "notes": "最少 2 个实参；三者共用 SameAsFirst 规则，第 1 实参决定尾部实参的期望类型；字符串按序数比较",
+   "uncertain": false
+  },
+  "ARRAYMSORT": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "按 variableName1 升序排序并按同一顺序重排 variableName2 及后续数组；全部成功返回非 0，某数组过短则中断返回 0",
+   "desc": "以首个一维数组的升序重排其后各数组；全部成功返回 1，任一数组长度不足返回 0",
+   "empty_slot": "无槽可留空（空槽报 CodeEE）；尾部数组可整段省略，只写首参则仅排它自己",
+   "notes": "文档称仅支持命令，本仓已注册为函数，表达式内也可调用；中途失败时前面的数组已被重排（非原子）",
+   "uncertain": false
+  },
+  "ARRAYMSORTEX": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "与本家 ARRAYMSORTEX 类似：重排索引数组并按该顺序重排 arrayNameList 中的数组；第三参非0或省略为顺序，size 则不视0/空串为结尾",
+   "desc": "按索引数组的排序结果重排列出的其它数组；成功返回1，失败返回0",
+   "empty_slot": "第3参留空=顺序（同省略）；第4参留空报错，省略=扫到0/空串为止",
+   "notes": "省略长度时键数组先遇0（整型）或空串（字符串）即返回0并放弃重排；长度实参为0也返回0，文档只说返回1",
+   "uncertain": false
+  },
+  "BARSTR": {
+   "category": "显示操作・字体操作・显示规格参照",
+   "upstream": "返回与同参数 BAR 命令所显示内容相同的字符串；实参 int,int,int，返回 string",
+   "desc": "按 当前值/最大值/长度 生成 [***..] 形式的进度条字符串并返回",
+   "empty_slot": "—（省略→个数错；留空→CodeEE(ArgCanNotBeNull)）",
+   "notes": "三实参必填；max<=0、length<=0、length>=100 抛 CodeEE；填充字符取自 _replace.csv 的 BARChar1/2",
+   "uncertain": false
+  },
+  "BITMAP_CACHE_ENABLE": {
+   "category": "显示操作・字体操作・显示规格参照",
+   "upstream": "频繁变色的文本按位图绘制以提速；启用后作用于之后所有行，用 1/0 包围重负载部分；显示位置可能偏移",
+   "desc": "设置之后新增的显示行是否启用位图缓存加速绘制，返回固定值 0。",
+   "empty_slot": "—",
+   "notes": "非 0 启用、0 关闭；标志不自动复位，对之后所有新增行持续生效（并非只影响下一行）；文档写返回 void，实际返回 0。",
+   "uncertain": false
+  },
+  "CBGCLEAR": {
+   "category": "图像处理相关",
+   "upstream": "解除所有以 CBG 开头的命令设置的背景图像设定；无参数，命令与式中函数两种写法都可用",
+   "desc": "清空全部 CBG 背景项（含按钮项）并解除按钮映射，固定返回 1",
+   "empty_slot": "—",
+   "notes": "清空 cbgList 后插入 zdepth=0 占位项；文档未写返回值，代码恒返回 1；WINAPI 模式的拦截已注释掉",
+   "uncertain": false
+  },
+  "CBGCLEARBUTTON": {
+   "category": "图像处理相关",
+   "upstream": "解除由 CBGSETBUTTONSPRITE 命令设置的按钮配置；无参数，返回 int；命令与表达式函数两种写法均可用。",
+   "desc": "删除全部按钮图并清空按钮映射，固定返回 1。",
+   "empty_slot": "—",
+   "notes": "只删 isButton 为真的项；WINAPI 绘制模式的拦截被注释掉，两种模式都执行。",
+   "uncertain": false
+  },
+  "CBGREMOVEBMAP": {
+   "category": "其他",
+   "upstream": "解除 CBGSETBMAPG 设置的按钮映射；无参数、返回 int；命令与式中函数两用",
+   "desc": "解除 CBGSETBMAPG 设置的按钮映射，固定返回 1",
+   "empty_slot": "—",
+   "notes": "无论此前是否设置过映射都返回 1；文档未写返回值；GDIPLUS 限制检查已被注释掉",
+   "uncertain": false
+  },
+  "CBGREMOVERANGE": {
+   "category": "图像处理相关",
+   "upstream": "解除 CBGSETG/CBGSETSPRITE/CBGSETBUTTONSPRITE 所设图像里 Z 深度在 zMin..zMax（含）者；返回 int。",
+   "desc": "按 Z 深度闭区间批量删除背景图，固定返回 1。",
+   "empty_slot": "—",
+   "notes": "zMin>zMax 静默不删、不报错；zdepth==0 的占位项永不删，故 zMin<=0 也删不掉它。",
+   "uncertain": false
+  },
+  "CBGSETBMAPG": {
+   "category": "图像处理相关",
+   "upstream": "把 gID 的 Graphics 设为客户端按钮映射，影响 CBGSETBUTTONSPRITE 与 INPUTMOUSEKEY；映射图本身不显示",
+   "desc": "把 gID 的 Graphics 登记为按钮映射：成功返回 1，图像未创建返回 0",
+   "empty_slot": "无槽可留空：显式留空与少写尾实参都报 CodeEE",
+   "notes": "CBG_SetButtonMap 的返回值被丢弃：重复设同一 gID 仍返回 1；gID<0/过大抛 CodeEE；WINAPI 抛 GDIPlusOnly",
+   "uncertain": false
+  },
+  "CBGSETBUTTONSPRITE": {
+   "category": "图像处理相关",
+   "upstream": "按按钮映射颜色命中 button 时显示 spriteNameB，否则 spriteName（可为空串不显示）；第 7 参可选 tooltip",
+   "desc": "登记 button 对应的常态/选中精灵按钮：成功返回 1，button<0 或 >0xFFFFFF 返回 0",
+   "empty_slot": "第 7 参 tooltip 可省略（取 null）；写了却留空报 CodeEE",
+   "notes": "两个精灵名查不到也返回 1（不校验 null，与 CBGSETSPRITE 不同）；zDepth=0/越界抛 CodeEE；WINAPI 抛 GDIPlusOnly",
+   "uncertain": false
+  },
+  "CBGSETG": {
+   "category": "图像处理相关",
+   "upstream": "把 gID 的 Graphics 显示到客户端区域；(x,y)=(0,0) 为左下角对齐，zDepth 非零、负值画在文字前",
+   "desc": "把 gID 的图像按 (x,y)、zDepth 登记进背景列表：成功返回 1，图像未创建返回 0",
+   "empty_slot": "无槽可留空：显式留空与少写尾实参都报 CodeEE",
+   "notes": "zDepth=0 或超 int 范围、gID<0/过大均抛 CodeEE；WINAPI 绘制模式抛 GDIPlusOnly；文档未写返回值",
+   "uncertain": false
+  },
+  "CBGSETSPRITE": {
+   "category": "图像处理相关",
+   "upstream": "把精灵 spriteName 显示到客户端区域；(x,y)=(0,0) 左下角对齐，zDepth 非零、负值画在文字前",
+   "desc": "把精灵按 (x,y)、zDepth 登记进背景列表：成功返回 1，精灵不存在或已销毁返回 0",
+   "empty_slot": "无槽可留空：显式留空与少写尾实参都报 CodeEE",
+   "notes": "名字先 ToUpper 再查 imageDictionary，查不到即返回 0；zDepth=0/超 int 范围抛 CodeEE；文档未写返回值",
+   "uncertain": false
+  },
+  "CBRT": {
+   "category": "算术",
+   "upstream": "私有改造版新增的数学函数：CBRT（立方根），格式为 CBRT(参数)；Emuera 无法处理小数，使用需技巧",
+   "desc": "返回实参的立方根，结果截断为 64 位整数",
+   "empty_slot": "—（恰 1 实参，少写或留空都报错）",
+   "notes": "浮点截断：(long)Math.Pow(ret,1/3) 使 CBRT(64)=3、CBRT(125)=4，完全立方数常少 1；负实参抛 CodeEE",
+   "uncertain": false
+  },
+  "CHARATU": {
+   "category": "字符串操作・参照",
+   "upstream": "取字符串中指定位置的字符；参数 string, int；文档称采用 Unicode 编码，且同时支持指令与表达式函数两种形式",
+   "desc": "取出字符串中指定位置的字符并返回；位置越界时返回空串",
+   "empty_slot": "—（少写或留空均报错）",
+   "notes": "第 2 实参必需（文档写 [获取字符位置] 易误读为可省）；按 UTF-16 代码单元索引，代理对会拆成半个字符",
+   "uncertain": false
+  },
+  "CHKCHARADATA": {
+   "category": "存档数据操作",
+   "upstream": "返回 dat 内 chara_*.dat 的数据信息：可加载返 0，否则返非 0；备注或失败原因写入 RESULTS:0；页面称指令与式中函数两种形式均支持",
+   "desc": "按名字检查 dat/chara_*.dat，返回状态码（0=可加载），备注或失败原因写入 RESULTS:0",
+   "empty_slot": "—（实参恰好 1 个，无槽可省略或留空）",
+   "notes": "0=可加载,1=不存在,2=别的游戏,3=版本不符,4=其它；空名/越界名按不存在返 1；RESULTS:0 记备注或原因；不写 RESULT:1",
+   "uncertain": false
+  },
+  "CHKDATA": {
+   "category": "存档数据操作",
+   "upstream": "检查编号 saveID 的存档并把信息赋给 RESULT:0 与 RESULTS:0；0 可加载、1 无文件、2 游戏代码不符、3 版本不符、4 其他",
+   "desc": "检查存档可否加载：返回状态码 0–4，注释写 RESULTS:0、版本写 RESULT:1",
+   "empty_slot": "—",
+   "notes": "文档称 RESULT:0 还会得到存档时间戳，代码无此路径；实参为负或超 int 上限抛 CodeEE",
+   "uncertain": false
+  },
+  "CHKFONT": {
+   "category": "显示操作・字体操作・显示规格参照",
+   "upstream": "检查指定名称的字体是否已安装：已安装则赋值/返回 1，未安装则返回 0",
+   "desc": "检查指定名称的字体是否可用，已安装返回 1，否则返回 0",
+   "empty_slot": "—（唯一实参不可省略、不可留空）",
+   "notes": "兼查游戏 font/ 目录加载的私有字体；名称按序数精确比较、大小写敏感；空串合法且返回 0",
+   "uncertain": false
+  },
+  "CLEARMEMORY": {
+   "category": "其他",
+   "upstream": "释放内存并返回释放量（byte）；在 LOADDATA、DELCHARA、重启之后使用效果较好。",
+   "desc": "执行 GC.Collect() 并返回清理前后进程工作集内存之差（byte），可能为负。",
+   "empty_slot": "—（恰 0 实参；写实参报 ArgsNotNeeded）",
+   "notes": "只调 GC.Collect()，不等终结器也不压缩 LOH；没有可释放对象时返回 0，内存增长时为负。",
+   "uncertain": false
+  },
+  "CLIENTHEIGHT": {
+   "category": "其他",
+   "upstream": "获取客户端区域（窗口绘图区域）的当前高度；不含边框、菜单栏、滚动条与输入框，游戏中可能被用户改变。",
+   "desc": "返回主绘图区（客户端区）当前高度的像素值；无失败路径。",
+   "empty_slot": "—（恰 0 实参；写实参报 ArgsNotNeeded）",
+   "notes": "取 Console.ClientHeight（即 MainPicBox.Height），随窗口缩放实时变化；窗口未建时是控件默认值。",
+   "uncertain": false
+  },
+  "CLIENTWIDTH": {
+   "category": "其他",
+   "upstream": "获取客户端区域（窗口绘图区域）的当前宽度；不含边框、菜单栏、滚动条与输入框，游戏中可能被用户改变。",
+   "desc": "返回主绘图区（客户端区）当前宽度的像素值；无失败路径。",
+   "empty_slot": "—（恰 0 实参；写实参报 ArgsNotNeeded）",
+   "notes": "取 Console.ClientWidth（即 MainPicBox.Width）；与 CLIENTHEIGHT 一起用于把客户端坐标换算。",
+   "uncertain": false
+  },
+  "CMATCH": {
+   "category": "算术",
+   "upstream": "CARRAY 页：遍历角色间的 MATCH 变体，charaArray 须为角色数组，start/end 按角色注册编号指定",
+   "desc": "统计角色范围 [start,end) 内、各角色同一数组元素等于 value 的个数",
+   "empty_slot": "留空与少写尾实参同义：start=0、end=CHARANUM",
+   "notes": "start>=CHARANUM 或 end>CHARANUM 抛 CodeEE；首实参须是 1 维角色数组变量（CFLAG:2、CSTR:1）",
+   "uncertain": false
+  },
+  "COLOR_FROMNAME": {
+   "category": "显示操作・字体操作・显示规格参照",
+   "upstream": "把实参当颜色名判断，返回 0xRRGGBB 数值；无对应颜色名返回 -1；同时支持指令与表达式函数",
+   "desc": "按颜色名求 0xRRGGBB 颜色值；颜色名无效时返回 -1。",
+   "empty_slot": "—",
+   "notes": "颜色名 \"transparent\"（不分大小写）抛 CodeEE 而非返回 -1；空串等未知名的返回 -1；实参须为字符串且不可省略。",
+   "uncertain": false
+  },
+  "COLOR_FROMRGB": {
+   "category": "显示操作・字体操作・显示规格参照",
+   "upstream": "把 R、G、B 三个值作为 0xRRGGBB 数值返回；参数超出 0-255 范围时发生错误",
+   "desc": "把 0-255 的 R、G、B 合成 0xRRGGBB 数值返回。",
+   "empty_slot": "—",
+   "notes": "三个实参任一 <0 或 >255 抛 CodeEE(ArgIsOutOfRange)，消息含第几号实参；三槽均为 int 且不可省略。",
+   "uncertain": false
+  },
+  "CONVERT": {
+   "category": "算术",
+   "upstream": "第 2 参数只能填 2、8、10、16；返回把第 1 参数表示为该进制数的字符串",
+   "desc": "把第 1 实参按第 2 实参指定的进制转成字符串返回",
+   "empty_slot": "—（显式留空报 CodeEE(ArgCanNotBeNull)）",
+   "notes": "负数在 2/8/16 进制下按二进制补码输出、没有负号（16 进制为小写）；进制非 2/8/10/16 在求值期抛 CodeEE",
+   "uncertain": false
+  },
+  "CSVABL": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "直接调用 CSV 中定义的 ABL 值；第 1 参为角色编号，第 2 参为该变量的索引",
+   "desc": "读 CSV 模板的 ABL[index]；返回 int，模板未定义该角色时抛 CodeEE",
+   "empty_slot": "第 3 参留空或省略均取 0（表示非 SP 角色）",
+   "notes": "索引须小于 CSV 声明的 ABL 数组长度，越界抛 CodeEE；范围内未定义的值返回 0",
+   "uncertain": false
+  },
+  "CSVBASE": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "直接调用 CSV 中定义的 BASE 值；第 1 参为角色编号，第 2 参为索引",
+   "desc": "读 CSV 模板的 BASE[index]；返回 int，模板未定义该角色时抛 CodeEE",
+   "empty_slot": "第 3 参留空或省略均取 0（表示非 SP 角色）",
+   "notes": "索引上限取 BASE 与 MAXBASE 声明长度的较大者，越界抛 CodeEE；未定义值返回 0",
+   "uncertain": false
+  },
+  "CSVCALLNAME": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "直接调用 CSV 中定义的 CALLNAME（称呼名）；参数为角色编号 NO",
+   "desc": "取 CSV 模板的 CALLNAME；返回字符串，模板未定义该角色时抛 CodeEE",
+   "empty_slot": "第 2 参留空或省略均取 0（表示非 SP 角色）",
+   "notes": "文档未载第 2 参（SP 标志）；未开兼容选项「使用SP角色」时传非 0 抛 CodeEE",
+   "uncertain": false
+  },
+  "CSVCFLAG": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "直接调用 CSV 中定义的 CFLAG 值；第 1 参为角色编号，第 2 参为索引",
+   "desc": "读 CSV 模板的 CFLAG[index]；返回 int，模板未定义该角色时抛 CodeEE",
+   "empty_slot": "第 3 参留空或省略均取 0（表示非 SP 角色）",
+   "notes": "索引须小于 CSV 声明的 CFLAG 数组长度，越界抛 CodeEE；未定义值返回 0",
+   "uncertain": false
+  },
+  "CSVCSTR": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "直接调用 CSV 中定义的 CSTR 值；第 1 参为角色编号，第 2 参为索引",
+   "desc": "读 CSV 模板的 CSTR[index] 字符串；越界或角色未定义时抛 CodeEE",
+   "empty_slot": "第 3 参留空或省略均取 0（表示非 SP 角色）",
+   "notes": "第 2 参是必需的索引而非 SP 标志；越界抛 OoRCstr；范围内的缺失元素返回空串",
+   "uncertain": false
+  },
+  "CSVEQUIP": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "直接调用 CSV 中定义的 EQUIP 值；第 1 参为角色编号，第 2 参为索引",
+   "desc": "读 CSV 模板的 EQUIP[index]；返回 int，模板未定义该角色时抛 CodeEE",
+   "empty_slot": "第 3 参留空或省略均取 0（表示非 SP 角色）",
+   "notes": "索引须小于 CSV 声明的 EQUIP 数组长度，越界抛 CodeEE；未定义值返回 0",
+   "uncertain": false
+  },
+  "CSVEXP": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "直接调用 CSV 中定义的 EXP 值；第 1 参为角色编号，第 2 参为索引",
+   "desc": "读 CSV 模板的 EXP[index]（经验初值）；返回 int，角色未定义时抛 CodeEE",
+   "empty_slot": "第 3 参留空或省略均取 0（表示非 SP 角色）",
+   "notes": "索引须小于 CSV 声明的 EXP 数组长度，越界抛 CodeEE；未定义值返回 0",
+   "uncertain": false
+  },
+  "CSVJUEL": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "直接调用 CSV 中定义的 JUEL 值；第 1 参为角色编号，第 2 参为索引",
+   "desc": "读 CSV 模板的 JUEL[index]（珠初值）；返回 int，角色未定义时抛 CodeEE",
+   "empty_slot": "第 3 参留空或省略均取 0（表示非 SP 角色）",
+   "notes": "索引须小于 CSV 声明的 JUEL 数组长度，越界抛 CodeEE；未定义值返回 0",
+   "uncertain": false
+  },
+  "CSVMARK": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "直接调用 CSV 中定义的 MARK 值；第 1 参为角色编号，第 2 参为索引",
+   "desc": "读 CSV 模板的 MARK[index]（刻印初值）；返回 int，角色未定义时抛 CodeEE",
+   "empty_slot": "第 3 参留空或省略均取 0（表示非 SP 角色）",
+   "notes": "索引须小于 CSV 声明的 MARK 数组长度，越界抛 CodeEE；未定义值返回 0",
+   "uncertain": false
+  },
+  "CSVMASTERNAME": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "直接调用 CSV 中定义的 MASTERNAME（主人名）；参数为角色编号 NO",
+   "desc": "取 CSV 模板的 MASTERNAME；返回字符串，模板未定义该角色时抛 CodeEE",
+   "empty_slot": "第 2 参留空或省略均取 0（表示非 SP 角色）",
+   "notes": "文档未载第 2 参（SP 标志）；未开兼容选项「使用SP角色」时传非 0 抛 CodeEE",
+   "uncertain": false
+  },
+  "CSVNAME": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "直接调用 CSV 中定义的 NAME（全名）；参数为角色编号 NO，未拥有角色亦可取",
+   "desc": "取 CSV 模板的 NAME；返回字符串，模板未定义该角色时抛 CodeEE",
+   "empty_slot": "第 2 参留空或省略均取 0（表示非 SP 角色）",
+   "notes": "文档只写 1 个 int 参数，实际第 2 参（SP 标志）可选；SP 标志现已不参与查表",
+   "uncertain": false
+  },
+  "CSVNICKNAME": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "直接调用 CSV 中定义的 NICKNAME（昵称）；参数为角色编号 NO",
+   "desc": "取 CSV 模板的 NICKNAME；返回字符串，模板未定义该角色时抛 CodeEE",
+   "empty_slot": "第 2 参留空或省略均取 0（表示非 SP 角色）",
+   "notes": "文档未载第 2 参（SP 标志）；未开兼容选项「使用SP角色」时传非 0 抛 CodeEE",
+   "uncertain": false
+  },
+  "CSVRELATION": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "直接调用 CSV 中定义的 RELATION 值；第 1 参为角色编号，第 2 参为索引",
+   "desc": "读 CSV 模板的 RELATION[index]；返回 int，模板未定义该角色时抛 CodeEE",
+   "empty_slot": "第 3 参留空或省略均取 0（表示非 SP 角色）",
+   "notes": "索引须小于 CSV 声明的 RELATION 数组长度，越界抛 CodeEE；未定义值返回 0",
+   "uncertain": false
+  },
+  "CSVTALENT": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "直接调用 CSV 中定义的 TALENT 值；第 1 参为角色编号，第 2 参为索引",
+   "desc": "读 CSV 模板的 TALENT[index]（才能初值）；返回 int，角色未定义时抛 CodeEE",
+   "empty_slot": "第 3 参留空或省略均取 0（表示非 SP 角色）",
+   "notes": "索引须小于 CSV 声明的 TALENT 数组长度，越界抛 CodeEE；未定义值返回 0",
+   "uncertain": false
+  },
+  "CURRENTALIGN": {
+   "category": "显示操作・字体操作・显示规格参照",
+   "upstream": "ALIGNMENT 之后的行按 LEFT/CENTER/RIGHT 对齐；当前的 ALIGNMENT 状态由 CURRENTALIGN 获取。",
+   "desc": "返回当前 ALIGNMENT 状态的字串：LEFT / CENTER / RIGHT；无实参。",
+   "empty_slot": "—",
+   "notes": "文档示例/API 行把名字误写成 CURRENTALIGHN；作指令时结果写入 RESULTS。",
+   "uncertain": false
+  },
+  "CURRENTREDRAW": {
+   "category": "显示操作・字体操作・显示规格参照",
+   "upstream": "REDRAW 为绘图控制命令；当前的 REDRAW 状态（0 或 1）可由 CURRENTREDRAW 获取。",
+   "desc": "返回当前 REDRAW 状态：0=仅在需要输入时绘制，否则 1；无实参。",
+   "empty_slot": "—",
+   "notes": "REDRAW 2/3 的第 2 位只触发即时重绘，故仍返回 1；作指令时写入 RESULT:0。",
+   "uncertain": false
+  },
+  "DT_CELL_GET": {
+   "category": "DataTable（数据库）系",
+   "upstream": "返回 row 行指定列的整数，失败返回 0；asId 为 1 时 row 按 id 列查找。",
+   "desc": "取指定单元格的整数；表、行列不存在或值为空都返回 0。",
+   "empty_slot": "省略 asId 视为 0（按行号）；asId 留空报 CodeEE",
+   "notes": "字符串列存非数字文本时走 Convert.ToInt64 会抛异常而非返回 0；asId 用主键 id 查行。",
+   "uncertain": false
+  },
+  "DT_CELL_GETS": {
+   "category": "DataTable（数据库）系",
+   "upstream": "返回 row 行指定列的字符串，失败返回空字符串。",
+   "desc": "取指定单元格的字符串；表、行列不存在或值为空时返回空串。",
+   "empty_slot": "省略 asId 视为 0（按行号）；asId 留空报 CodeEE",
+   "notes": "asId 分支直接 (string) 强转，对整数列会抛 InvalidCastException；按行号分支用 ToString 不抛。",
+   "uncertain": false
+  },
+  "DT_CELL_ISNULL": {
+   "category": "DataTable（数据库）系",
+   "upstream": "单元格值为空（DBNull）返回 1，非空 0；表不存在 -1，行列不存在 -2。",
+   "desc": "判断单元格是否为空；空 1、非空 0、表不存在 -1、行列不存在 -2。",
+   "empty_slot": "省略 asId 视为 0（按行号）；asId 留空报 CodeEE",
+   "notes": "GET/GETS 失败都只有一种返回值，ISNULL 用 -1/-2 区分表与行列两类错误，且不抛异常。",
+   "uncertain": false
+  },
+  "DT_CELL_SET": {
+   "category": "DataTable（数据库）系",
+   "upstream": "把 row 行指定列赋值为 value，省略 value 则赋空；成功 1，表不存在 -1，写 id 列 0，类型不符 -2，行列不存在 -3。",
+   "desc": "把单元格赋值为 value（留空写 DBNull）；1 成功、0 写 id 列、-1/-2/-3 各类失败。",
+   "empty_slot": "留空/省略第 4 槽都写 DBNull；asId 省略按行号、留空报错",
+   "notes": "类型是否相符按实参静态类型判断（不试转换），不符只返回 -2 不报错；列名 id 不区分大小写，写 id 返回 0。",
+   "uncertain": false
+  },
+  "DT_CLEAR": {
+   "category": "DataTable（数据库）系",
+   "upstream": "删除 DataTable 中保存的所有行（不清除列设置），返回 1；表不存在返回 -1。",
+   "desc": "清空指定 DataTable 的全部行，保留列设置；表存在返回 1、不存在 -1。",
+   "empty_slot": "—（name 必填；省略报参数数不足，留空报 CodeEE）",
+   "notes": "清空后 DT_ROW_LENGTH 为 0，列数与 id 列不变；DT_CREATE 会自动加 id 列。",
+   "uncertain": false
+  },
+  "DT_COLUMN_ADD": {
+   "category": "DataTable（数据库）系",
+   "upstream": "添加列：type 可写 1–5 或 int8/int16/int32/int64/string，nullable 控制可空；列已存在返回 0。",
+   "desc": "新加一列（可指定数据类型与是否可空）；列已存在返回 0，成功返回 1。",
+   "empty_slot": "省略 type 默认 string；省略 nullable 视为可空",
+   "notes": "type 名区分大小写（只有小写 int8/int16/int32/int64/string）；非法 type 或数值抛 CodeEE；表不存在返回 -1。",
+   "uncertain": false
+  },
+  "DT_COLUMN_EXIST": {
+   "category": "DataTable（数据库）系",
+   "upstream": "判断列是否存在：存在返回存储类型对应数值（1–5），否则返回 0。",
+   "desc": "查列是否存在；存在返回类型码（1=int8…5=string），不存在返回 0。",
+   "empty_slot": "—（两个实参都必填；省略报参数数不足，留空报 CodeEE）",
+   "notes": "文档漏了第三种结果：DataTable 本身不存在时返回 -1；类型码与 DT_COLUMN_ADD 的 type 编号一致。",
+   "uncertain": false
+  },
+  "DT_COLUMN_LENGTH": {
+   "category": "DataTable（数据库）系",
+   "upstream": "返回 DataTable 的列数；表不存在返回 -1。",
+   "desc": "返回指定 DataTable 的列数；表不存在返回 -1。",
+   "empty_slot": "—（name 必填；省略报参数数不足，留空报 CodeEE）",
+   "notes": "DT_CREATE 自动加的 id 列也计入，所以刚建好的表就有 1 列。",
+   "uncertain": false
+  },
+  "DT_COLUMN_NAMES": {
+   "category": "DataTable（数据库）系",
+   "upstream": "把列名依次赋值给 outputArray；省略 outputArray 时赋给 RESULTS，返回列数。",
+   "desc": "把列名依次写入字符串数组（省略则写 RESULTS），返回列数。",
+   "empty_slot": "省略或留空第 2 实参都改写 RESULTS；表不存在返回 -1",
+   "notes": "写用户数组时按列数逐项写、不检查数组长度，数组短于列数会越界抛异常；RESULTS 路径安全。",
+   "uncertain": false
+  },
+  "DT_COLUMN_REMOVE": {
+   "category": "DataTable（数据库）系",
+   "upstream": "删除指定列，成功返回 1；不能删除 id 列。",
+   "desc": "删除指定列；成功返回 1，列不存在或试图删 id 列返回 0。",
+   "empty_slot": "—（两个实参都必填；省略报参数数不足，留空报 CodeEE）",
+   "notes": "表不存在返回 -1；id 判定不区分大小写（写 ID 同样删不掉）；删列会连带丢掉该列数据。",
+   "uncertain": false
+  },
+  "DT_CREATE": {
+   "category": "DataTable（数据库）系",
+   "upstream": "生成名为 dataTableName 的 DataTable；已存在则创建失败返回 0，成功返回 1。",
+   "desc": "新建一张 DataTable（自动带 id 主键列）；已存在返回 0，成功 1。",
+   "empty_slot": "—（name 必填；省略报参数数不足，留空报 CodeEE）",
+   "notes": "id 列类型 int64、唯一主键、不允许 NULL；默认区分大小写；返回标题或 RESETDATA 会自动删除全部表。",
+   "uncertain": false
+  },
+  "DT_EXIST": {
+   "category": "DataTable（数据库）系",
+   "upstream": "判断名为 dataTableName 的 DataTable 是否存在，存在返回 1，否则返回 0。",
+   "desc": "查询指定名字的 DataTable 是否存在；存在 1，不存在 0。",
+   "empty_slot": "—（name 必填；省略报参数数不足，留空报 CodeEE）",
+   "notes": "名字比较区分大小写（Dictionary 默认比较器），两张表名只差大小写会各建一张。",
+   "uncertain": false
+  },
+  "DT_FROMXML": {
+   "category": "DataTable（数据库）系",
+   "upstream": "解析模式 XML schemaXml 与数据 XML dataXml，覆盖名为 dataTableName 的 DataTable；成功返回 1，否则返回 0",
+   "desc": "用 XML 模式与数据重建并替换指定名的 DataTable，成功返回 1、解析异常返回 0",
+   "empty_slot": "—（3 个槽都必填，显式留空报 ArgCanNotBeNull）",
+   "notes": "文档说“覆盖”，实为新建表后整体替换字典项；解析失败时原表不动；表名以 schema 内声明为准，字典键仍取第 1 实参",
+   "uncertain": false
+  },
+  "DT_NOCASE": {
+   "category": "DataTable（数据库）系",
+   "upstream": "设置 DataTable 在 DT_SELECT 处理字符串比较时是否无视大小写；返回 1，表不存在返回 -1。",
+   "desc": "设置 DT_SELECT 字符串比较是否忽略大小写；成功 1，表不存在 -1。",
+   "empty_slot": "—（name、ignoreCase 都必填；省略/留空都报错）",
+   "notes": "写 0 为区分大小写（默认）、非 0 为忽略；它改的是 DataTable.CaseSensitive，列名匹配也受其影响。",
+   "uncertain": false
+  },
+  "DT_RELEASE": {
+   "category": "DataTable（数据库）系",
+   "upstream": "删除名为 dataTableName 的 DataTable。",
+   "desc": "删除指定 DataTable 及其全部行列；无论是否存在都返回 1。",
+   "empty_slot": "—（name 必填；省略报参数数不足，留空报 CodeEE）",
+   "notes": "表不存在也不报错、仍返回 1；与 DT_CLEAR、DT_COLUMN_LENGTH 的 -1 语义不同，无法用返回值判存在。",
+   "uncertain": false
+  },
+  "DT_ROW_ADD": {
+   "category": "DataTable（数据库）系",
+   "upstream": "为 DataTable 添加一行：可传多组列名+值，或列名数组+值数组+count；返回该行 id 值。",
+   "desc": "新增一行并赋值，返回新行的 id（时间点值）；表不存在返回 -1。",
+   "empty_slot": "成对形式的值槽留空写 DBNull；列名槽与数组形式各槽留空报 CodeEE",
+   "notes": "id 取内部时间点而非自增序号；列名写错或写 id、值类型与列类型不符都抛 CodeEE；只给表名会插入空行。",
+   "uncertain": false
+  },
+  "DT_ROW_LENGTH": {
+   "category": "DataTable（数据库）系",
+   "upstream": "返回 DataTable 的行数；表不存在返回 -1。",
+   "desc": "返回指定 DataTable 的行数；表不存在返回 -1。",
+   "empty_slot": "—（name 必填；省略报参数数不足，留空报 CodeEE）",
+   "notes": "与 DT_COLUMN_LENGTH 同一实现，只差取 Rows.Count 还是 Columns.Count。",
+   "uncertain": false
+  },
+  "DT_ROW_REMOVE": {
+   "category": "DataTable（数据库）系",
+   "upstream": "删除行：按 idValue 删 1 行成功返回 1，或用 id 数组+count 批量删除并返回删除行数。",
+   "desc": "按 id 删行；单值形式成功 1、数组形式返回删除行数，表不存在 -1。",
+   "empty_slot": "—（各实参都不可留空；数组形式的 count 必须给）",
+   "notes": "单值形式找不到该 id 返回 0（文档只写了返回 1）；批量形式 count<=0 返回 0，且 count 会先被数组长度截断。",
+   "uncertain": false
+  },
+  "DT_ROW_SET": {
+   "category": "DataTable（数据库）系",
+   "upstream": "修改 id 为 idValue 的行：多组列名+值或列名数组+值数组+count；返回编辑成功的值总数，表不存在 -1。",
+   "desc": "按 id 定位行并改若干列，返回成功设置的值个数；表不存在 -1。",
+   "empty_slot": "—（各实参都不可留空；数组形式的 count 必给）",
+   "notes": "该 id 不存在返回 -2（文档未列）；列名写错或写 id、值类型与列类型不符都抛 CodeEE。",
+   "uncertain": false
+  },
+  "DT_SELECT": {
+   "category": "DataTable（数据库）系",
+   "upstream": "选出满足 filterExpression 的行，按 sortRule 排序，把 id 列值依次代入 output（省略则 RESULT:1 起），返回行总数",
+   "desc": "筛选并按规则排序 DataTable，把首列(id)值写入 output 或 RESULT，返回命中行数",
+   "empty_slot": "槽2、3 省略或留空＝不筛选/不排序；槽4 省略则写 RESULT:1 起",
+   "notes": "表不存在返回 -1、RESULT:0 写为命中数（文档未载）；取第 0 列而非名为 id 的列；数组写满即截断但返回总数；表达式非法抛非 CodeEE 异常",
+   "uncertain": false
+  },
+  "DT_TOXML": {
+   "category": "DataTable（数据库）系",
+   "upstream": "把 DataTable 转为 XML，模式 XML 存入 schemaOutput（省略则存 RESULTS:1），返回数据 XML",
+   "desc": "把指定 DataTable 序列化为 XML，模式写入 ref 字符串变量，返回数据 XML",
+   "empty_slot": "槽2 省略则模式存 RESULTS:1；留空报 ArgCanNotBeNull",
+   "notes": "文档未载表不存在时返回空串且不写模式；模式写入所传数组下标 0（RESULT 系才从 1 起）；即 WriteXmlSchema/WriteXml 输出",
+   "uncertain": false
+  },
+  "ENCODETOUNI": {
+   "category": "字符串操作・参照",
+   "upstream": "命令形态把各字符码点写入 RESULT:1～（RESULT:0 为字符数）；式中函数取指定位置的码值，位置省略为 0",
+   "desc": "返回第 1 参数字符串在指定位置的 Unicode 码点（可跨代理对）；空串返回 -1",
+   "empty_slot": "槽2 省略或显式留空都取 0（位置 0）",
+   "notes": "空串抢先返回 -1，位置检查被跳过；位置为负或 ≥ 串长抛 CodeEE；命令形态是另一实现（写 RESULT 数组）",
+   "uncertain": false
+  },
+  "ENUMFILES": {
+   "category": "其他",
+   "upstream": "把 dir 下符合 pattern 的文件名代入 RESULTS 数组，返回文件数；option 非 0 时连子目录一并搜索。",
+   "desc": "枚举目录下匹配的文件，写入 RESULTS 或指定字符串数组，返回写入条数。",
+   "empty_slot": "留空报错；省略则 pattern=\"*\"、option=0、写入 RESULTS",
+   "notes": "返回 min(命中数,目标数组长) 而非命中总数；目录非法/不存在或模式含分隔符时返回 -1。",
+   "uncertain": false
+  },
+  "ENUMFUNCBEGINSWITH": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "把已定义函数名中以 keyword 开头的具体函数名存入 RESULTS 数组，并返回总数（RESULT）",
+   "desc": "枚举非事件函数名以 keyword 开头者，写入 RESULTS，返回写入条数",
+   "empty_slot": "第 2 参省略时写入 RESULTS（默认 100 格）；留空报错",
+   "notes": "文档只写 1 参，实际第 2 参可传 str[] 作输出（不可为常量）；匹配不区分大小写，结果未排序，超容量被截断",
+   "uncertain": false
+  },
+  "ENUMFUNCENDSWITH": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "把已定义函数名中以 keyword 结尾的具体函数名存入 RESULTS 数组，并返回总数（RESULT）",
+   "desc": "枚举非事件函数名以 keyword 结尾者，写入 RESULTS，返回写入条数",
+   "empty_slot": "第 2 参省略时写入 RESULTS（默认 100 格）；留空报错",
+   "notes": "文档只写 1 参，实际第 2 参可传 str[] 作输出（不可为常量）；匹配不区分大小写，结果未排序，超容量被截断",
+   "uncertain": false
+  },
+  "ENUMFUNCWITH": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "把已定义函数名中包含 keyword 的具体函数名存入 RESULTS 数组，并返回总数（RESULT）",
+   "desc": "枚举非事件函数名中包含 keyword 者，写入 RESULTS，返回写入条数",
+   "empty_slot": "第 2 参省略时写入 RESULTS（默认 100 格）；留空报错",
+   "notes": "文档只写 1 参，实际第 2 参可传 str[] 作输出（不可为常量）；匹配不区分大小写，结果未排序，超容量被截断",
+   "uncertain": false
+  },
+  "ENUMMACROBEGINSWITH": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "把已定义宏名中以 keyword 开头的具体宏名存入 RESULTS 数组，并返回总数（RESULT）",
+   "desc": "枚举 #DEFINE 宏名以 keyword 开头者，写入 RESULTS，返回写入条数",
+   "empty_slot": "第 2 参省略时写入 RESULTS（默认 100 格）；留空报错",
+   "notes": "文档只写 1 参，实际第 2 参可传 str[] 作输出（不可为常量）；匹配不区分大小写，结果未排序，超容量被截断",
+   "uncertain": false
+  },
+  "ENUMMACROENDSWITH": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "把已定义宏名中以 keyword 结尾的具体宏名存入 RESULTS 数组，并返回总数（RESULT）",
+   "desc": "枚举 #DEFINE 宏名以 keyword 结尾者，写入 RESULTS，返回写入条数",
+   "empty_slot": "第 2 参省略时写入 RESULTS（默认 100 格）；留空报错",
+   "notes": "文档只写 1 参，实际第 2 参可传 str[] 作输出（不可为常量）；匹配不区分大小写，结果未排序，超容量被截断",
+   "uncertain": false
+  },
+  "ENUMMACROWITH": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "把已定义宏名中包含 keyword 的具体宏名存入 RESULTS 数组，并返回总数（RESULT）",
+   "desc": "枚举 #DEFINE 宏名中包含 keyword 者，写入 RESULTS，返回写入条数",
+   "empty_slot": "第 2 参省略时写入 RESULTS（默认 100 格）；留空报错",
+   "notes": "文档只写 1 参，实际第 2 参可传 str[] 作输出（不可为常量）；匹配不区分大小写，结果未排序，超容量被截断",
+   "uncertain": false
+  },
+  "ENUMVARBEGINSWITH": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "把已定义变量/常量名中以 keyword 开头的名字存入 RESULTS 数组，并返回总数（RESULT）",
+   "desc": "枚举全局变量/常量名以 keyword 开头者，写入 RESULTS，返回写入条数",
+   "empty_slot": "第 2 参省略时写入 RESULTS（默认 100 格）；留空报错",
+   "notes": "文档只写 1 参，实际第 2 参可传 str[]；不含局部变量（与 EXISTVAR 不同），匹配不区分大小写，结果未排序",
+   "uncertain": false
+  },
+  "ENUMVARENDSWITH": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "把已定义变量/常量名中以 keyword 结尾的名字存入 RESULTS 数组，并返回总数（RESULT）",
+   "desc": "枚举全局变量/常量名以 keyword 结尾者，写入 RESULTS，返回写入条数",
+   "empty_slot": "第 2 参省略时写入 RESULTS（默认 100 格）；留空报错",
+   "notes": "文档只写 1 参，实际第 2 参可传 str[]；不含局部变量（与 EXISTVAR 不同），匹配不区分大小写，结果未排序",
+   "uncertain": false
+  },
+  "ENUMVARWITH": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "把已定义变量/常量名中包含 keyword 的名字存入 RESULTS 数组，并返回总数（RESULT）",
+   "desc": "枚举全局变量/常量名中包含 keyword 者，写入 RESULTS，返回写入条数",
+   "empty_slot": "第 2 参省略时写入 RESULTS（默认 100 格）；留空报错",
+   "notes": "文档只写 1 参，实际第 2 参可传 str[]；不含局部变量（与 EXISTVAR 不同），匹配不区分大小写，结果未排序",
+   "uncertain": false
+  },
+  "ERDNAME": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "指定 ERD 变量的下标，返回元素名称；可用 dimension 指定维度（与文件名规则相同，从左起依次为1、2、3）",
+   "desc": "返回 ERD 变量指定下标对应的关键字名；无对应项时返回空串",
+   "empty_slot": "第3参省略=只用变量名（不带@维度）；显式留空报错",
+   "notes": "维度从1起，1维变量须省略该参；值为负或该变量无对应 ERD 项时返回空串且不报错",
+   "uncertain": false
+  },
+  "ESCAPE": {
+   "category": "字符串操作・参照",
+   "upstream": "对参数字符串中的正则表达式元字符转义，使其在正则中被视为普通文本；指令与式中函数都支持",
+   "desc": "用 Regex.Escape 转义正则元字符后返回，常配 REPLACE / REGEXPMATCH 使用",
+   "empty_slot": "—（少写或留空均报错）",
+   "notes": "转义规则即 .NET Regex.Escape（空白字符也加反斜杠），不是 HTML/CSV 转义，勿与 HTML_ESCAPE 混用",
+   "uncertain": false
+  },
+  "EXISTCSV": {
+   "category": "角色操作・参照",
+   "upstream": "检查对应角色是否已定义并赋给 RESULT:0 或直接返回：已定义 1，未定义 0；可用于判断 ADDCHARA no 是否会出错",
+   "desc": "查 chara*.csv 中是否存在 NO 等于参数的已定义角色，存在返回 1，否则返回 0",
+   "empty_slot": "槽 2（SP 标志）省略或留空均按 0（非 SP）处理",
+   "notes": "文档未提第 2 参；传非 0 抛 CodeEE（CompatiSPChara 关闭），开启后该标志亦被忽略",
+   "uncertain": false
+  },
+  "EXISTFILE": {
+   "category": "其他",
+   "upstream": "判断 exe 同级及下级子目录的相对路径文件是否存在，存在返回 1、否则 0；不能用 .. 访问上级目录。",
+   "desc": "判断相对游戏根的文件是否存在；存在返回 1，否则（含路径非法）返回 0。",
+   "empty_slot": "—（恰 1 实参；空字符串合法但返回 0，空槽报错）",
+   "notes": "目录也返回 0（File.Exists 语义）；越出游戏根或含非法字符返回 0 不抛错；根内 .. 回退仍合法。",
+   "uncertain": false
+  },
+  "EXISTFUNCTION": {
+   "category": "函数系（CALL 等）",
+   "upstream": "判定是否定义过该名字的函数/行内函数：常规函数 1、数值型行内函数 2、字符串型 3、其他 0；系统函数在 ERB 内有定义返 1 否则 0。",
+   "desc": "查名字对应的非事件标签：普通标签1、#FUNCTION 2、#FUNCTIONS 3，查不到返0",
+   "empty_slot": "第2实参省略时按0处理（同一直查分支）；显式留空 f(a,,) 编译期报错",
+   "notes": "第2实参非0时改走大小写不敏感（CurrentCultureIgnoreCase）全表线性查找，文档未记载；@EVENT* 事件标签默认不算存在",
+   "uncertain": false
+  },
+  "EXISTMETH": {
+   "category": "函数系（CALL 等）",
+   "upstream": "指定名是式中函数时 #FUNCTION 返1、#FUNCTIONS 返2，否则返0；提示称命令与式中函数两种写法均支持。",
+   "desc": "查用户定义的式中函数：整数型 #FUNCTION 返回1、字符串型 #FUNCTIONS 返回2，否则返0",
+   "empty_slot": "—",
+   "notes": "页面提示'命令与式中函数均支持'与实现不符：只查用户定义 #FUNCTION(S)，普通标签返0；且以零实参构造调用项，REF 形参者返0",
+   "uncertain": false
+  },
+  "EXISTSOUND": {
+   "category": "声音系",
+   "upstream": "判断音频资源目录 ./sound/ 中是否存在参数 MediaFile 指定的音频文件；存在返回 1，不存在返回 0",
+   "desc": "在游戏 sound/ 目录内解析实参指定的音频文件名，文件存在返回 1，否则返回 0。",
+   "empty_slot": "无；个数须恰好 1；显式空槽报 CodeEE(ArgCanNotBeNull)",
+   "notes": "不补扩展名、不做模糊匹配，与 PLAYSOUND 同一解析；越界路径(如 ..\\x.wav)与空串直接返回 0；命令写法亦可(返回值丢弃)",
+   "uncertain": false
+  },
+  "EXISTVAR": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "存在同名变量/常量则返回对应正整数，否则返回 0；整数 1、字符串 2、常量 4、二维 8、三维 16",
+   "desc": "按名字查变量/常量并返回位掩码（1整数 2字符串 4常量 8二维 16三维），不存在返回 0",
+   "empty_slot": "无槽可省略或留空：空槽与少写尾参都会报 CodeEE",
+   "notes": "可查到当前函数作用域的私有变量（ENUMVAR 系列查不到）；名字比较随 IgnoreCase 配置",
+   "uncertain": false
+  },
+  "EXPONENT": {
+   "category": "其他",
+   "upstream": "MATH_EXTENSION 页的指数函数；日文/中文页把名字误写成 EXPOMENT；参数与返回值均为 int",
+   "desc": "返回 e 的实参次幂，结果向零截断为整数；超 int64 或溢出时报错",
+   "empty_slot": "—",
+   "notes": "结果截断：EXPONENT(-1)=0；实参≥44 结果即超 int64 抛 CodeEE，极大值报溢出",
+   "uncertain": false
+  },
+  "FINDCHARA": {
+   "category": "角色操作・参照",
+   "upstream": "返回角色变量等于指定值的角色注册编号（FINDCHARA 首个、FINDLASTCHARA 末个）；无匹配返回 -1；第 3、4 参为搜索起止，越界报错",
+   "desc": "按角色变量查找值等于第 2 参（须同型）的角色，返回首个匹配的列表编号，无匹配返回 -1",
+   "empty_slot": "槽 3 省略/留空取 0（起点），槽 4 取 CHARANUM（终点）",
+   "notes": "起点=CHARANUM 或 CHARANUM=0 时抛 CodeEE；返回列表下标而非 CSV 的 NO；起点≥终点返回 -1",
+   "uncertain": false
+  },
+  "FINDELEMENT": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "在数组 startIndex~endIndex 内查找与 value 相同的元素，返回第一个匹配位置，无匹配返回 -1",
+   "desc": "在一维数组 [start,end) 内找等于 value 的最小下标；无匹配返回 -1",
+   "empty_slot": "槽3→0；槽4→数组长度；槽5→0（部分匹配）",
+   "notes": "字符串 value 按正则解释，非法正则抛 CodeEE；start/end 越界抛 CodeEE；start≥end 返回 -1",
+   "uncertain": false
+  },
+  "FINDLASTCHARA": {
+   "category": "角色操作・参照",
+   "upstream": "返回角色变量等于指定值的角色注册编号（FINDCHARA 首个、FINDLASTCHARA 末个）；无匹配返回 -1；第 3、4 参为搜索起止，越界报错",
+   "desc": "同 FINDCHARA，但自后向前查找，返回最后一个值匹配的角色列表编号，无匹配返回 -1",
+   "empty_slot": "槽 3 省略/留空取 0（起点），槽 4 取 CHARANUM（终点）",
+   "notes": "起点=CHARANUM 或 CHARANUM=0 时抛 CodeEE；返回列表下标而非 CSV 的 NO；起点≥终点返回 -1",
+   "uncertain": false
+  },
+  "FINDLASTELEMENT": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "在数组 startIndex~endIndex 内查找与 value 相同的元素，返回最后一个匹配位置，无匹配返回 -1",
+   "desc": "在一维数组 [start,end) 内找等于 value 的最大下标；无匹配返回 -1",
+   "empty_slot": "槽3→0；槽4→数组长度；槽5→0（部分匹配）",
+   "notes": "字符串 value 按正则解释，非法正则抛 CodeEE；start/end 越界抛 CodeEE；start≥end 返回 -1",
+   "uncertain": false
+  },
+  "FIND_CHARADATA": {
+   "category": "存档数据操作",
+   "upstream": "在 dat 内搜索可作为 LOADCHARA 目标的 chara_*.dat，把 * 部分代入 RESULTS、返回命中数；省略参数时按 * 处理",
+   "desc": "在 dat 目录中按通配名搜索 chara_*.dat，把 * 部分自 RESULTS:0 起写入并返回命中数",
+   "empty_slot": "槽1省略或留空均按 *（搜全部 chara_*.dat）",
+   "notes": "命中名写入 RESULTS:0 起，超出元素数只截断不报错；模式含分隔符/.. 或空串时直接 0 命中；顺序未排序",
+   "uncertain": false
+  },
+  "FLOWINPUT": {
+   "category": "调试辅助・系统流程控制",
+   "upstream": "为流程中的INPUT（如@SHOW_SHOP内）设定默认值、是否允许左键点击、是否允许跳过等选项；第5参数非0时强制填入默认值并跳过",
+   "desc": "设定系统流程INPUT的默认值与左键/跳过行为（每参非0即启用），固定返回0",
+   "empty_slot": "槽1必填；槽2~4可省略→保持上次值；任一槽留空抛CodeEE",
+   "notes": "文档标void，代码返回int 0并写RESULT:0；设定存ProcessState且无复位手段；第2实参=0时默认值不生效；槽4非0不等待输入易死循环",
+   "uncertain": false
+  },
+  "FLOWINPUTS": {
+   "category": "其他",
+   "upstream": "第一参数非 0 时启用，系统流程中所有 INPUT 都按 INPUTS 处理；第二参数为默认值",
+   "desc": "设定系统流程的 INPUT 是否按 INPUTS（字符串输入）处理并给出默认串，返回 0",
+   "empty_slot": "第 2 实参留空抛 CodeEE；整体省略则沿用上次的默认字符串",
+   "notes": "文档标返回值 void，代码实际返回 int 0；只作用于系统流程 INPUT，不改变 ERB 内 INPUT 命令",
+   "uncertain": false
+  },
+  "GCLEAR": {
+   "category": "图像处理相关",
+   "upstream": "把 gID 的 Graphics 整区替换为指定颜色；成功返回非0；gID 或颜色不当报错",
+   "desc": "用 cARGB 清空 gID 的 Graphics（整区，或 6 参时的矩形区）；成功 1，未创建 0",
+   "empty_slot": "—（两种形状实参数固定；留空报 ArgCanNotBeNull）",
+   "notes": "6 参矩形清屏是 EM 私有扩展，upstream 只写 2 参；x/y/w/h 不校验，w/h=0 静默无效",
+   "uncertain": false
+  },
+  "GCREATE": {
+   "category": "图像处理相关",
+   "upstream": "以 gID、width、height 创建 Graphics；尺寸须 1..8192，越界报错；已存在则返回 0",
+   "desc": "创建 gID 的 width×height 位图 Graphics；成功 1，gID 已存在 0",
+   "empty_slot": "—（三个实参全必填；留空报 ArgCanNotBeNull）",
+   "notes": "gID<0 或尺寸 ≤0/>8192(MAX_IMAGESIZE) 抛 CodeEE；已存在不报错、直接返回 0",
+   "uncertain": false
+  },
+  "GCREATED": {
+   "category": "图像处理相关",
+   "upstream": "若指定gID的Graphics已创建则返回1，未创建（包括已销毁）则返回0。",
+   "desc": "判断 gID 的 Graphics 是否已创建：已创建返回1，未创建或已销毁返回0",
+   "empty_slot": "无；须恰好1个实参，空槽抛CodeEE(ArgCanNotBeNull)",
+   "notes": "gID为负或超过int上限时抛CodeEE而非返回0；WINAPI文字模式抛CodeEE",
+   "uncertain": false
+  },
+  "GCREATEFROMFILE": {
+   "category": "图像处理相关",
+   "upstream": "用相对 resources 的路径打开图像建 Graphics；已存在或文件无效返回 0",
+   "desc": "从图像文件创建 gID 的 Graphics；成功 1，已存在/找不到/非图像/过大 0",
+   "empty_slot": "第3实参 isRelative 省略取 0(false)；留空报 ArgCanNotBeNull",
+   "notes": "upstream 未记载第3实参：非0 时按游戏根目录解析；绝对路径须落在 resources 内",
+   "uncertain": false
+  },
+  "GDASHSTYLE": {
+   "category": "图像处理相关",
+   "upstream": "指定GDRAWLINE线条样式：DashStyle 0实线/1短划线/2点/3点划线/4双点划线，DashCap 0直角/2圆/3三角（1缺号）。",
+   "desc": "设置该图像画笔的虚线样式与端点形状（供GDRAWLINE用），成功返回1。",
+   "empty_slot": "—",
+   "notes": "文档API行误写成GDRAWline；style/cap越界抛InvalidEnumArgumentException（非CodeEE）；未设画笔时自动建笔。",
+   "uncertain": false
+  },
+  "GDISPOSE": {
+   "category": "图像处理相关",
+   "upstream": "销毁 gID 的 Graphics；成功返回非0；未创建（含已销毁）返回 0",
+   "desc": "销毁 gID 的 Graphics 并释放位图/画笔/字体；成功 1，未创建 0",
+   "empty_slot": "—（唯一实参必填；留空报 ArgCanNotBeNull）",
+   "notes": "销毁后 IsCreated 为假，再调用 GCLEAR/GDISPOSE 等只返回 0，不报错",
+   "uncertain": false
+  },
+  "GDRAWG": {
+   "category": "图像处理相关",
+   "upstream": "把 srcID 的 Graphics 按目标/源两个矩形画到 destID；可选 5x5 颜色矩阵（元素/256）",
+   "desc": "把 src 的 srcRect 区缩放画到 dest 的 destRect；成功 1，任一未创建 0",
+   "empty_slot": "第11实参可省略或留空 = 不使用颜色矩阵",
+   "notes": "矩形仅校验 int 范围与非0尺寸，不查越界（GDI+ 自行裁剪）；dest 与 src 可同一个",
+   "uncertain": false
+  },
+  "GDRAWGWITHMASK": {
+   "category": "图像处理相关",
+   "upstream": "以 maskID 为蒙版把 srcID 画到 destID 的 (destX,destY)；src/mask 尺寸须一致且不越界",
+   "desc": "以 mask 蓝通道为不透明度把 src 画到 dest 的 (destX,destY)；成功 1，否则 0",
+   "empty_slot": "—（五个实参全必填；留空报 ArgCanNotBeNull）",
+   "notes": "负 destX/destY 不被拒绝，内部按行算像素下标会越界抛异常；纯 CPU 逐像素，很慢",
+   "uncertain": false
+  },
+  "GDRAWGWITHROTATE": {
+   "category": "图像处理相关",
+   "upstream": "把第2个ID的图像顺时针旋转Angle度贴到第1个ID上，x/y可指定旋转中心，省略则用图中心(x/2,y/2)。",
+   "desc": "把第2实参图像绕指定中心旋转Angle度后画到第1实参图像上，成功返回1。",
+   "empty_slot": "省略x,y（共3实参）时用源图中心；留空槽报CodeEE",
+   "notes": "只写4个实参（省略y）检查器放行、运行期IndexOutOfRangeException；旋转的世界变换残留，同图后续绘制会叠加旋转。",
+   "uncertain": false
+  },
+  "GDRAWLINE": {
+   "category": "图像处理相关",
+   "upstream": "在gID上从(fromX,fromY)到(forX,forY)画直线，颜色粗细由GSETPEN指定；返回值1。",
+   "desc": "在该图像上用当前画笔从(fromX,fromY)到(toX,toY)画直线，成功返回1。",
+   "empty_slot": "—",
+   "notes": "文档返回值列只写1，实际图像未GCREATE时返回0；未设画笔用前景色1像素临时笔；坐标超int范围抛CodeEE。",
+   "uncertain": false
+  },
+  "GDRAWSPRITE": {
+   "category": "图像处理相关",
+   "upstream": "在 gID 上画 spriteName 的 Sprite，可指定位置/缩放/颜色矩阵；成功返回非0",
+   "desc": "把已创建的 Sprite 画到 gID，可指定目标矩形与颜色矩阵；成功 1，否则 0",
+   "empty_slot": "—（可省略第7实参，但留空一律报 ArgCanNotBeNull）",
+   "notes": "4 参只给位置，6 参给目标矩形（缩放），7 参尾参须 5x5 数值数组；sprite 未创建返回 0",
+   "uncertain": false
+  },
+  "GDRAWTEXT": {
+   "category": "图像处理相关",
+   "upstream": "在 gID 的 Graphics 中绘制 text，字体描边用 GSETFONT/GSETPEN 指定；省略 x、y 默认 (0, 0) 绘制；返回 int。",
+   "desc": "在 gID 的 Graphics 上绘制文本，并把文本宽高写入 RESULT:1/2，返回 1。",
+   "empty_slot": "省略尾参 x,y 取 (0,0)；留空 x/y 抛 CodeEE",
+   "notes": "3 个实参能过检查却不绘制（只写 RESULT）；未创建返回 0 且不写 RESULT；RESULT:1=宽、2=高。",
+   "uncertain": false
+  },
+  "GETBGCOLOR": {
+   "category": "显示操作・字体操作・显示规格参照",
+   "upstream": "无参数；返回当前使用的背景颜色，值为十六进制 0xRRGGBB",
+   "desc": "返回当前使用的背景颜色，形如 0xRRGGBB",
+   "empty_slot": "—",
+   "notes": "取 Console.bgColor（SETBGCOLOR 设置，初值 Config.BackColor）并屏蔽 alpha 位",
+   "uncertain": false
+  },
+  "GETBIT": {
+   "category": "算术",
+   "upstream": "取参1数字中参2指定的位，参2范围为 0～63，超范围报错；等价于 (X & (1<<m)) != 0",
+   "desc": "取参1的第参2位，返回 0 或 1",
+   "empty_slot": "—（恰 2 实参，少写或留空都报错）",
+   "notes": "0～63 的范围检查在取值时进行（CheckArgumentType 里的常量检查已注释掉）；负数按 64 位算术右移",
+   "uncertain": false
+  },
+  "GETCHARA": {
+   "category": "角色操作・参照",
+   "upstream": "判断指定角色是否在当前持有列表，在则返回其在列表中的位置，否则返回 -1；表中参数只标 1 个 int",
+   "desc": "在持有角色列表中查找 NO 等于第1实参的角色，返回其下标，找不到返回 -1",
+   "empty_slot": "第2实参可整省或显式留空（均按 0/false 处理）；第1实参不可空",
+   "notes": "第2实参仅在 CompatiSPChara 兼容模式下生效（先查非SP再查SP），默认配置下根本不读；返回下标从0起",
+   "uncertain": false
+  },
+  "GETCOLOR": {
+   "category": "显示操作・字体操作・显示规格参照",
+   "upstream": "无参数；返回当前使用的文字颜色，值为十六进制 0xRRGGBB",
+   "desc": "返回当前使用的文字颜色，形如 0xRRGGBB",
+   "empty_slot": "—",
+   "notes": "取 SETCOLOR 后的用户样式色并屏蔽 alpha；多写实参报 ArgsNotNeeded，不存在可留空槽",
+   "uncertain": false
+  },
+  "GETCONFIG": {
+   "category": "其他",
+   "upstream": "获取配置项及 replace.csv 设置项的整数值；可获取的项目见配置页；指令与表达式两用。",
+   "desc": "取配置项（replace.csv 可覆盖）的整数值；该配置不是整数时抛 CodeEE。",
+   "empty_slot": "—（恰 1 实参；空槽报错，空字符串另抛 ArgIsEmptyString）",
+   "notes": "未知项名或不可取值的项抛 CodeEE；值为字符串时抛 InvalidType 提示改用 GETCONFIGS；YES/NO 记 1/0。",
+   "uncertain": false
+  },
+  "GETCONFIGS": {
+   "category": "其他",
+   "upstream": "获取配置项及 replace.csv 设置项的字符串值；可获取的项目见配置页；指令与表达式两用。",
+   "desc": "取配置项的字符串值；该配置在 ERB 中是整数时抛 CodeEE。",
+   "empty_slot": "—（恰 1 实参；空槽报错，空字符串另抛 ArgIsEmptyString）",
+   "notes": "两边按取值后的实际类型判定：走 default 分支的项若值形如数字会取到整数，只能配 GETCONFIG。",
+   "uncertain": false
+  },
+  "GETDEFBGCOLOR": {
+   "category": "显示操作・字体操作・显示规格参照",
+   "upstream": "无参数；返回配置中指定的默认背景颜色，值为十六进制 0xRRGGBB",
+   "desc": "返回 emuera.config 指定的默认背景颜色，形如 0xRRGGBB",
+   "empty_slot": "—",
+   "notes": "取 Config.BackColor；CanRestructure 为真，可被常量折叠而在解析期定型",
+   "uncertain": false
+  },
+  "GETDEFCOLOR": {
+   "category": "显示操作・字体操作・显示规格参照",
+   "upstream": "无参数；返回配置中指定的文字颜色，值为十六进制 0xRRGGBB",
+   "desc": "返回 emuera.config 指定的文字颜色，形如 0xRRGGBB",
+   "empty_slot": "—",
+   "notes": "取 Config.ForeColor；CanRestructure 为真，可被常量折叠而在解析期定型",
+   "uncertain": false
+  },
+  "GETDISPLAYLINE": {
+   "category": "显示操作・字体操作・显示规格参照",
+   "upstream": "从已显示的行中返回指定行的字符串；行以数组管理故索引从 0 起，配合 LINECOUNT 循环可遍历全部行",
+   "desc": "取当前日志缓冲中第 n 个显示行的纯文本；索引越界返回空串。",
+   "empty_slot": "—",
+   "notes": "索引越界(<0 或 ≥行数)返回空串；索引指向当前显示缓冲，受 MaxLog 修剪影响；自动换行时行数多于 LINECOUNT，按它遍历会漏行。",
+   "uncertain": false
+  },
+  "GETDOINGFUNCTION": {
+   "category": "其他",
+   "upstream": "仅日文/英文更新日志有「新增 GETDOINGFUNCTION」一行，无参考页与语义说明",
+   "desc": "返回当前执行行所属标签（函数）名，取不到扫描行时返回空串",
+   "empty_slot": "—",
+   "notes": "文档无说明；CanRestructure=true，作实参时会在解析期折叠为当时的扫描标签名",
+   "uncertain": false
+  },
+  "GETEXPLV": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "比较给定值与 EXPLV，返回其达到或超过的等级；第 2 参为要调查的最大等级",
+   "desc": "按 EXPLV 的边界把 value 分级，返回其等级（0 起，上限 maxLV）",
+   "empty_slot": "—",
+   "notes": "仅比较 EXPLV[1]..EXPLV[maxLV]；maxLV≤0 直接返回 maxLV；maxLV 超出数组长度抛越界异常",
+   "uncertain": false
+  },
+  "GETFOCUSCOLOR": {
+   "category": "显示操作・字体操作・显示规格参照",
+   "upstream": "无参数；返回按钮选中时的文字颜色，值为十六进制 0xRRGGBB",
+   "desc": "返回配置中按钮/高亮选中时的文字颜色，形如 0xRRGGBB",
+   "empty_slot": "—",
+   "notes": "取 Config.FocusColor；CanRestructure 为真；多写实参报 ArgsNotNeeded",
+   "uncertain": false
+  },
+  "GETFONT": {
+   "category": "显示操作・字体操作・显示规格参照",
+   "upstream": "无参数；返回当前使用的字体名，未执行 SETFONT 时为配置中的标准字体名",
+   "desc": "返回当前使用的字体名，未 SETFONT 时为配置标准字体名",
+   "empty_slot": "—",
+   "notes": "读 userStyle.Fontname；SETFONT 省略实参或传空串即回落 Config.FontName；不可折叠",
+   "uncertain": false
+  },
+  "GETKEY": {
+   "category": "AWAIT 相关",
+   "upstream": "返回键盘/鼠标按键状态：指定键码被按下返回 1，否则 0；窗口非活动时恒返回 0",
+   "desc": "读 Win32 GetKeyState，指定虚拟键码当前按下返回 1，否则返回 0",
+   "empty_slot": "—（实参必填：少写报个数错，留空报 ArgCanNotBeNull）",
+   "notes": "键码 <0 或 >255 静默返回 0；GetKeyState 依赖消息泵，不配 AWAIT/输入等待会读到陈旧值；作指令时结果写入 RESULT",
+   "uncertain": false
+  },
+  "GETKEYTRIGGERED": {
+   "category": "AWAIT 相关",
+   "upstream": "与 GETKEY 类似，但仅在按键按下瞬间返回 1；持续按住时只最初返回 1，之后返回 0",
+   "desc": "同 GETKEY，但只在键的切换状态与上次调用不同且当前按下时返回 1",
+   "empty_slot": "—（实参必填：少写报个数错，留空报 ArgCanNotBeNull）",
+   "notes": "普通键低位恒 0，同一键码除进程内首次外恒返回 0，与文档『按下瞬间』不符；与 GETKEY 共用 keytoggle 表，同键码混用会互相吞掉触发",
+   "uncertain": false
+  },
+  "GETLINESTR": {
+   "category": "PRINT 系",
+   "upstream": "将模式串交给 CUSTOMDRAWLINE/DRAWLINEFORM 时返回将显示的字符串；同时支持指令与式中函数",
+   "desc": "按当前绘制宽度重复模式串并裁剪，返回 CUSTOMDRAWLINE/DRAWLINEFORM 会显示的整行字符串",
+   "empty_slot": "—（省略→个数错；留空→CodeEE(ArgCanNotBeNull)）",
+   "notes": "实参为空串抛 CodeEE(ArgIsEmptyString)；非空但显示宽度为 0（如 U+200B）会死循环；可折叠，可用于 #DIM 常量初值",
+   "uncertain": false
+  },
+  "GETMEMORYUSAGE": {
+   "category": "其他",
+   "upstream": "返回当前运行中的 Emuera 占用的内存使用量，单位为 byte。",
+   "desc": "返回当前进程的工作集内存大小（WorkingSet64），单位为 byte。",
+   "empty_slot": "—（恰 0 实参；写实参报 ArgsNotNeeded）",
+   "notes": "取当前进程 WorkingSet64（含共享页），与任务管理器口径接近；无失败路径。",
+   "uncertain": false
+  },
+  "GETMETH": {
+   "category": "函数系（CALL 等）",
+   "upstream": "可从字符串调用式中函数；第二参数是函数未找到时的返回值，第三参数起成为目标函数的实参；提示称命令与式中函数两种写法均支持。",
+   "desc": "按名字调用用户定义的整数型式中函数并返回其返回值；目标不存在时返回第二参数",
+   "empty_slot": "省略/留空槽2=无兜底（未找到即抛CodeEE）；槽3起留空原样转发给目标",
+   "notes": "只查用户定义#FUNCTION(S)（REF 亦可）；非#FUNCTION标签抛CodeEE，内建函数不可调，页面提示'命令/式中函数均可'与实现不符",
+   "uncertain": false
+  },
+  "GETMETHS": {
+   "category": "函数系（CALL 等）",
+   "upstream": "可从字符串调用式中函数；第二参数是函数未找到时的返回值，第三参数起成为目标函数的实参；提示称命令与式中函数两种写法均支持。",
+   "desc": "按名字调用用户定义的字符串型式中函数并返回其返回值；目标不存在时返回第二参数",
+   "empty_slot": "省略/留空槽2=无兜底（未找到即抛CodeEE）；槽3起留空原样转发给目标",
+   "notes": "只查用户定义#FUNCTION(S)（REF 亦可）；非#FUNCTION标签抛CodeEE，内建函数不可调；目标非字符串型抛CodeEE",
+   "uncertain": false
+  },
+  "GETMILLISECOND": {
+   "category": "日期・时刻获取",
+   "upstream": "取自公元0001年1月1日起经过的毫秒数；比GETTIME更适合测量经过时间；精度约十几到几十毫秒；指令与表达式两用",
+   "desc": "返回自公元0001-01-01起的毫秒数（DateTime.Now.Ticks/10000）",
+   "empty_slot": "—（无实参，无槽可省略或留空）",
+   "notes": "无实参，写实参即报 TooManyFuncArgs；精度受系统时钟限制（约15ms），短间隔内连续调用可能返回同值",
+   "uncertain": false
+  },
+  "GETNUM": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "按 CSV 中定义的名字取对应数值赋给 RESULT:0；未定义则结果为 -1",
+   "desc": "按名称在关键字表中查整数，指令形式写入 RESULT:0；查不到返回 -1",
+   "empty_slot": "省略第 3 参→用变量自身名字；留空→CodeEE（不能为空）",
+   "notes": "第 2 参须为字符串；第 3 参拼成「变量名@N」选择 ERD 名称表，文档未载此参数",
+   "uncertain": false
+  },
+  "GETNUMB": {
+   "category": "其他",
+   "upstream": "无参考页；GETNUM 页只写 GETNUM（第1参是变量引用、另有第3参 ERD 下标）",
+   "desc": "按变量名与 csv 关键字取数值并返回；关键字为空或查不到返回 -1",
+   "empty_slot": "—",
+   "notes": "第1参是变量名字符串而非变量本身，名字非变量抛 CodeEE(NotVariableName)；取不到多维 ERD；代码注明未使用未测试",
+   "uncertain": false
+  },
+  "GETPALAMLV": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "比较给定值与 PALAMLV，返回其达到或超过的等级；第 2 参为要调查的最大等级",
+   "desc": "按 PALAMLV 的边界把 value 分级，返回其等级（0 起，上限 maxLV）",
+   "empty_slot": "—",
+   "notes": "仅比较 PALAMLV[1]..PALAMLV[maxLV]；maxLV≤0 直接返回 maxLV；maxLV 超出数组长度抛越界异常",
+   "uncertain": false
+  },
+  "GETSECOND": {
+   "category": "日期・时刻获取",
+   "upstream": "取自公元0001年1月1日起经过的秒数，赋值给RESULT:0；比GETTIME更适合算经过时间；指令与表达式两用",
+   "desc": "返回自公元0001-01-01起的整秒数（DateTime.Now.Ticks/10^7）",
+   "empty_slot": "—（无实参，无槽可省略或留空）",
+   "notes": "文档 API 行把函数名误写成 int GETTIME；无实参，写实参即报错；精度同样受时钟限制",
+   "uncertain": false
+  },
+  "GETSPCHARA": {
+   "category": "其他",
+   "upstream": "无参考页；GETCHARA 页只写单实参的 GETCHARA，索引里没有 GETSPCHARA",
+   "desc": "返回 CFLAG:0 非 0（SP 角色）且 NO 等于实参的角色在列表中的下标；无则 -1",
+   "empty_slot": "—",
+   "notes": "需开启兼容性选项「使用SP角色」，默认关闭，调用必抛 CodeEE；与 GETCHARA 不同，没有第 2 实参",
+   "uncertain": false
+  },
+  "GETSTYLE": {
+   "category": "显示操作・字体操作・显示规格参照",
+   "upstream": "无参数；返回当前字体样式：0 常规、1 粗体、2 斜体、4 删除线、8 下划线，可按位叠加",
+   "desc": "返回当前字体样式的位掩码：1 粗体、2 斜体、4 删除线、8 下划线",
+   "empty_slot": "—",
+   "notes": "读 StringStyle.FontStyle；FONTSTYLE 只映射 1/2/4/8 位，其它位丢弃；默认 Regular 返回 0",
+   "uncertain": false
+  },
+  "GETTEXTBOX": {
+   "category": "其他",
+   "upstream": "返回执行时输入框内的字符串。",
+   "desc": "返回当前输入框内的文本；没有输入内容时返回空字符串。",
+   "empty_slot": "—（恰 0 实参；写实参报 ArgsNotNeeded）",
+   "notes": "直接读输入框控件的 Text，不改变其内容；返回空串与“读取失败”无法区分。",
+   "uncertain": false
+  },
+  "GETTIME": {
+   "category": "日期・时刻获取",
+   "upstream": "把当前日期时间写入RESULT:0（17位整数）和RESULTS:0（yyyy/MM/dd HH:mm:ss）；表达式形式各自返回值",
+   "desc": "返回当前日期时间拼成的17位整数，形如 yyyyMMddHHmmssfff",
+   "empty_slot": "—（无实参，无槽可省略或留空）",
+   "notes": "文档称同时写RESULT:0与RESULTS:0，代码只写RESULT:0（字符串名GETTIMES）；各字段分次取Now，跨秒边界可能不自洽",
+   "uncertain": false
+  },
+  "GETTIMES": {
+   "category": "日期・时刻获取",
+   "upstream": "表达式形式，返回GETTIME指令写入RESULTS:0的日期时间字符串；RESULTS:0主要预想用于存档数据的注释",
+   "desc": "返回当前日期时间字符串，格式 yyyy/MM/dd HH:mm:ss",
+   "empty_slot": "—（无实参，无槽可省略或留空）",
+   "notes": "作为指令使用时写入RESULTS:0；文档未单列此名，是在 GETTIME 页给出的表达式形式",
+   "uncertain": false
+  },
+  "GETVAR": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "名为 varName 的整型变量/常量的 GET 函数，返回其值；命令/行内函数两种写法均有效",
+   "desc": "运行时解析变量名，返回该整型变量/常量的值；非变量或非整型抛 CodeEE",
+   "empty_slot": "—",
+   "notes": "整型常量也能读；名字里可带数组下标如 A:1；无法解析的标识符在解析阶段即抛 CodeEE",
+   "uncertain": false
+  },
+  "GETVARS": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "名为 varName 的字符串变量/常量的 GET 函数，返回其值；命令/行内函数两种写法均有效",
+   "desc": "运行时解析变量名，返回该字符串变量/常量的值；非变量或非字符串抛 CodeEE",
+   "empty_slot": "—",
+   "notes": "字符串常量也能读；固定 1 参，显式留空或多写少写实参都报 CodeEE",
+   "uncertain": false
+  },
+  "GFILLRECTANGLE": {
+   "category": "图像处理相关",
+   "upstream": "在 gID 上按 x,y,width,height 填充矩形；颜色由 GSETBRUSH 指定，否则用配置文字色",
+   "desc": "用当前画刷填充 gID 上的矩形；成功 1，gID 未创建 0",
+   "empty_slot": "—（五个实参全必填；留空报 ArgCanNotBeNull）",
+   "notes": "upstream 说缺省用配置文字色，代码实际用 Config.BackColor；width/height 为 0 抛 CodeEE",
+   "uncertain": false
+  },
+  "GGETBRUSH": {
+   "category": "图像处理相关",
+   "upstream": "返回gID图像中GSETBRUSH指定的颜色（cARGB）。",
+   "desc": "返回该图像GSETBRUSH设定的单色画刷颜色（无符号ARGB）；未创建返回0。",
+   "empty_slot": "—",
+   "notes": "WINAPI文字模式抛CodeEE；GCREATE后未调用GSETBRUSH时brush为null，取色抛NullReferenceException。",
+   "uncertain": false
+  },
+  "GGETCOLOR": {
+   "category": "图像处理相关",
+   "upstream": "取指定gID在(x,y)的颜色，按0xAARRGGBB整数返回；未创建或越界返回-1；文档称这是唯一失败返-1的函数。",
+   "desc": "取 gID 图像 (x,y) 像素颜色（0xAARRGGBB）；未创建或超界返回-1，成功返回ARGB值",
+   "empty_slot": "无；须恰好3个实参，空槽抛CodeEE(ArgCanNotBeNull)",
+   "notes": "越界判断把x<0写了两遍、漏判y<0，y为负时Bitmap.GetPixel抛.NET异常；全透明黑返回0而非-1",
+   "uncertain": false
+  },
+  "GGETFONT": {
+   "category": "图像处理相关",
+   "upstream": "返回指定 gID 使用 GSETFONT 设置的字体名称；参数 int，返回 string；命令 / 行内函数两种写法均有效。",
+   "desc": "取得 gID 图像的字体名；图像未创建时返回空串。",
+   "empty_slot": "—",
+   "notes": "未创建返回空串；已创建但未 GSETFONT（或 GSETFONT 失败）时 font 为 null，取 font.Name 抛 NRE。",
+   "uncertain": false
+  },
+  "GGETFONTSIZE": {
+   "category": "图像处理相关",
+   "upstream": "返回指定 gID 使用 GSETFONT 设置的字体大小；参数 int，返回 int；命令 / 行内函数两种写法均有效。",
+   "desc": "取得 gID 图像的字号（GSETFONT 传入的像素值）；未创建时返回 0。",
+   "empty_slot": "—",
+   "notes": "返回 (int)font.Size；未 GSETFONT 时读 font.Size 抛 NRE；负数 gID 抛 CodeEE(GIdIsNegative)。",
+   "uncertain": false
+  },
+  "GGETFONTSTYLE": {
+   "category": "图像处理相关",
+   "upstream": "返回指定 gID 使用 GSETFONT 设置的字体样式标记；参数 int，返回 int；命令 / 行内函数两种写法均有效。",
+   "desc": "取得字体样式位（1粗体 2斜体 4删除线 8下划线）；未创建时返回 0。",
+   "empty_slot": "—",
+   "notes": "读独立 style 字段，未 GSETFONT 时为 0 而不抛 NRE；只回显 GSETFONT 的 1/2/4/8 位。",
+   "uncertain": false
+  },
+  "GGETPEN": {
+   "category": "图像处理相关",
+   "upstream": "返回gID图像中GSETPEN指定的颜色（cARGB）；示例输出Color:4278255360。",
+   "desc": "返回该图像GSETPEN设定的画笔颜色（无符号ARGB）；未创建返回0。",
+   "empty_slot": "—",
+   "notes": "WINAPI文字模式抛CodeEE；GCREATE后未调用GSETPEN时pen为null，取色抛NullReferenceException。",
+   "uncertain": false
+  },
+  "GGETPENWIDTH": {
+   "category": "图像处理相关",
+   "upstream": "返回gID图像中GSETPEN指定的画笔宽度。",
+   "desc": "返回该图像GSETPEN设定的画笔宽度；未创建返回0。",
+   "empty_slot": "—",
+   "notes": "WINAPI模式抛CodeEE；未设画笔时pen为null抛NullReferenceException；宽度按float回读并截断。",
+   "uncertain": false
+  },
+  "GGETTEXTSIZE": {
+   "category": "图像处理相关",
+   "upstream": "预测 GDRAWTEXT 用同参数绘制时的宽高，代入 RESULT:0/RESULT:1；参数 string,string,int(,int)，返回 int。",
+   "desc": "用字体名、字号、样式量测文本，返回宽并把高写入 RESULT:1。",
+   "empty_slot": "省略 fontStyle 取 Regular(0)；留空抛 CodeEE",
+   "notes": "宽高按 SizeF 截断为整数；字体名非法或字号<=0 时 Font 构造抛异常，无 try/catch。",
+   "uncertain": false
+  },
+  "GHEIGHT": {
+   "category": "图像处理相关",
+   "upstream": "获取指定gID的Graphics高度；未创建（包括已销毁）则返回0。",
+   "desc": "返回 gID 图形的像素高度；未创建或已销毁返回0",
+   "empty_slot": "无；须恰好1个实参，空槽抛CodeEE(ArgCanNotBeNull)",
+   "notes": "gID为负或超过int上限时抛CodeEE；WINAPI文字模式抛CodeEE",
+   "uncertain": false
+  },
+  "GLOAD": {
+   "category": "图像处理相关",
+   "upstream": "读取GSAVE保存的编号图像并创建Graphics，行为近似GCREATEFROMFILE；成功返非0；该gID已存在则返回0。",
+   "desc": "从 sav 目录按编号读取 GSAVE 保存的 PNG 创建 gID 图形，成功返回1，失败返回0",
+   "empty_slot": "无；须恰好2个实参，空槽抛CodeEE(ArgCanNotBeNull)",
+   "notes": "gID已存在时先返回0、不校验fileNo；fileNo越界/文件不存在/加载异常/尺寸超8192均返回0",
+   "uncertain": false
+  },
+  "GROUPMATCH": {
+   "category": "算术",
+   "upstream": "所有参数必须同类型；返回第 1 个参数值与第 2 个及后续参数值相匹配的总数",
+   "desc": "返回第 1 实参的值在第 2 个起的实参中出现的次数（不含自身）",
+   "empty_slot": "—（显式留空报 CodeEE(ArgCanNotBeNull)）",
+   "notes": "尾部实参类型必须与第 1 实参一致，混用 int/str 在检查期即报错；重复值会被重复计数",
+   "uncertain": false
+  },
+  "GSAVE": {
+   "category": "图像处理相关",
+   "upstream": "把指定gID的Graphics以png格式按fileNo编号保存，处理成功时返回非0值。",
+   "desc": "把 gID 图形以 PNG 存到 sav 目录（文件名 img+4位编号），成功返回1，失败返回0",
+   "empty_slot": "无；须恰好2个实参，空槽抛CodeEE(ArgCanNotBeNull)",
+   "notes": "路径形如sav/img0000.png（fileNo零填充4位）；fileNo越界、目录创建或保存异常均返回0",
+   "uncertain": false
+  },
+  "GSETBRUSH": {
+   "category": "图像处理相关",
+   "upstream": "为指定ID的Graphics设置指定颜色的画刷，GDISPOSE前一直保持，成功返回非0；可用GGETBRUSH读取，供GFILLRECTANGLE使用。",
+   "desc": "为 gID 的 Graphics 设置单色画刷（供 GFILLRECTANGLE 填充用），成功返回1，未创建返回0",
+   "empty_slot": "无；须恰好2个实参，空槽抛CodeEE(ArgCanNotBeNull)",
+   "notes": "cARGB不在0–0xFFFFFFFF内抛CodeEE；WINAPI文字模式下抛GDIPlusOnly；旧画刷由GSetBrush释放",
+   "uncertain": false
+  },
+  "GSETCOLOR": {
+   "category": "图像处理相关",
+   "upstream": "把指定ID的Graphics在(x,y)处的像素替换为cARGB颜色，成功返回非0；文档强调速度慢，整图重写不实用。",
+   "desc": "把 gID 图像在 (x,y) 处的像素改成 cARGB 颜色，成功返回1，未创建或超界返回0",
+   "empty_slot": "无；须恰好4个实参，空槽抛CodeEE(ArgCanNotBeNull)",
+   "notes": "越界判断把x<0写了两遍、漏判y<0，y为负时Bitmap.SetPixel抛.NET异常而非返回0；WINAPI模式抛CodeEE",
+   "uncertain": false
+  },
+  "GSETFONT": {
+   "category": "图像处理相关",
+   "upstream": "为指定gID设置字体名与字号，第4个样式参数（同SETFONT的4位值）为EM+EE新增；GDISPOSE前保持，成功返非0。",
+   "desc": "为 gID 设置字体（名称、像素字号、可选样式），成功返回1，未创建或字体创建失败返回0",
+   "empty_slot": "第4个实参可整体省略，省略时取Regular=0；不能写成空槽",
+   "notes": "文档参数表把fontSize误写为string；样式位1/2/4/8对应Bold/Italic/Strikeout/Underline，未知位忽略",
+   "uncertain": false
+  },
+  "GSETPEN": {
+   "category": "图像处理相关",
+   "upstream": "为指定gID设置指定颜色和宽度的画笔，GDISPOSE前保持，成功返回非0；供GDRAWTEXT、GDRAWLINE使用。",
+   "desc": "为 gID 设置画笔颜色与线宽，供 GDRAWLINE/GDRAWTEXT 使用，成功返回1，未创建返回0",
+   "empty_slot": "无；须恰好3个实参，空槽抛CodeEE(ArgCanNotBeNull)",
+   "notes": "penWidth不做范围校验，负宽度由GDI+静默当1处理；cARGB越界抛CodeEE；重设画笔会保留已有虚线样式",
+   "uncertain": false
+  },
+  "GWIDTH": {
+   "category": "图像处理相关",
+   "upstream": "获取指定gID的Graphics宽度；未创建（包括已销毁）则返回0。",
+   "desc": "返回 gID 图形的像素宽度；未创建或已销毁返回0",
+   "empty_slot": "无；须恰好1个实参，空槽抛CodeEE(ArgCanNotBeNull)",
+   "notes": "gID为负或超过int上限时抛CodeEE；WINAPI文字模式抛CodeEE",
+   "uncertain": false
+  },
+  "HOTKEY_STATE": {
+   "category": "其他",
+   "upstream": "无参考页；仅更新日志 v48 有「HOTKEY関連命令追加」一行，无参数与语义说明",
+   "desc": "把热键状态数组第 index 项设为 value 并返回 0（即 HOTKEY.ERB 的 state[i]=v）",
+   "empty_slot": "—",
+   "notes": "未先调 HOTKEY_STATE_INIT 抛非 CodeEE 的 Exception；index 越界抛 IndexOutOfRangeException",
+   "uncertain": false
+  },
+  "HOTKEY_STATE_INIT": {
+   "category": "其他",
+   "upstream": "无参考页；仅更新日志 v48 有「HOTKEY関連命令追加」一行",
+   "desc": "分配长度为 size 的热键状态数组（初值全 0）并返回 0",
+   "empty_slot": "—",
+   "notes": "重复调用会重建数组、清空原有状态；需 exe 目录有 HOTKEY.ERB 且 Ctrl+D 启用热键才生效",
+   "uncertain": false
+  },
+  "HTML_ESCAPE": {
+   "category": "HTML 系",
+   "upstream": "把字符串转义为 HTML 字符引用（&amp; 等）；可用 HTML_TOPLAINTEXT 反向还原",
+   "desc": "把 & < > 及单双引号五个字符替换为 &amp; 等 HTML 字符引用后返回",
+   "empty_slot": "—（唯一实参不可省略，留空报 CodeEE(ArgCanNotBeNull)）",
+   "notes": "只转义 & > < \" ' 五个字符，空格等其余字符原样保留；与 Unescape 对称",
+   "uncertain": false
+  },
+  "HTML_GETPRINTEDSTR": {
+   "category": "HTML 系",
+   "upstream": "获取已显示行中由 lineNo 指定行的内容，以 HTML 格式字符串形式返回；行号计数方式与 LINECOUNT 或 CLEARLINE 指令相同。",
+   "desc": "返回指定显示行的 HTML 格式字符串；行号取不到内容时返回空串",
+   "empty_slot": "省略实参=0（最新行）；显式留空被拒绝，抛 CodeEE",
+   "notes": "lineNo 自末尾计数（0=最新一行），越界返回空串；负数抛 CodeEE；GETDISPLAYLINE 则自首行计数",
+   "uncertain": false
+  },
+  "HTML_POPPRINTINGSTR": {
+   "category": "HTML 系",
+   "upstream": "获取当前 PRINT 中处于换行等待状态的字符串缓冲区的 HTML 格式内容并清空；不含 p 标签，故 ALIGNMENT 无效。",
+   "desc": "取走并清空待换行输出缓冲区的 HTML 字符串；无缓冲区时返回空串",
+   "empty_slot": "—",
+   "notes": "结果不含 <p>，故 align 属性不生效；控制台未启用或缓冲区为空时返回空串",
+   "uncertain": false
+  },
+  "HTML_STRINGLEN": {
+   "category": "HTML 系",
+   "upstream": "返回 html 的渲染宽度，多行时取第一行；第 2 实参为 0 或省略时返回半角字符数，否则返回像素",
+   "desc": "按 HTML_PRINT 排版测量 html 首行宽度；默认把像素换算成半角字符数返回",
+   "empty_slot": "省略则按 0 计（返回半角字符数）；留空报 ArgCanNotBeNull",
+   "notes": "像素换算半角字符数用 ceil(2*px/FontSize)，全角记 2；超出窗口宽度会被截断",
+   "uncertain": false
+  },
+  "HTML_STRINGLINES": {
+   "category": "HTML 系",
+   "upstream": "html 用 HTML_PRINT 打印后按 width（半角字符数）分割的行数；示例 <b> 加宽 → 2 行",
+   "desc": "循环用 HtmlSubString 按 width 切分 html，累计切出的行数；空串返回 0",
+   "empty_slot": "—（两个实参都必填，留空报 CodeEE(ArgCanNotBeNull)）",
+   "notes": "width 过小（含 0/负数）时一个字符都放不下，HtmlSubString 不消耗字符 → 死循环",
+   "uncertain": false
+  },
+  "HTML_SUBSTRING": {
+   "category": "HTML 系",
+   "upstream": "返回不超过 width（半角字符数）的前段，剩余部分在 RESULTS:1；v8b 起返回 str（原为 int）",
+   "desc": "按 HTML 排版宽度切出不超过 width 的前段返回；剩余部分写入 RESULTS:1",
+   "empty_slot": "—（两个实参都必填，留空报 CodeEE(ArgCanNotBeNull)）",
+   "notes": "文档 API 行仍写 int，正文注意已说明 v8b 起为 str；width 先按 width*FontSize/2 换算像素",
+   "uncertain": false
+  },
+  "HTML_TOPLAINTEXT": {
+   "category": "HTML 系",
+   "upstream": "删除 HTML 标签并展开字符引用转为纯文本；示例 <b>AAA</b> 等 → AAABBBCCC",
+   "desc": "用正则删掉 <> 包裹的标签，再还原 &amp; 等字符引用，返回纯文本",
+   "empty_slot": "—（唯一实参必填，留空报 CodeEE(ArgCanNotBeNull)）",
+   "notes": "正则 \\<[^<]*\\> 删标签，尖括号不成对时按整段删除；& 无分号等非法引用会抛 CodeEE",
+   "uncertain": false
+  },
+  "INRANGE": {
+   "category": "算术",
+   "upstream": "参1大于等于参2且小于等于参3时返回 1，否则返回 0；指令和表达式函数两种形式都支持",
+   "desc": "判断参1是否落在 [参2, 参3] 闭区间内，返回 1 或 0",
+   "empty_slot": "—（恰 3 实参，少写或留空都报错）",
+   "notes": "含两端点；参2 大于参3 时恒返回 0，不报错",
+   "uncertain": false
+  },
+  "INRANGEARRAY": {
+   "category": "算术",
+   "upstream": "INRANGEARRAY 页：返回数组中满足 minValue <= value < maxValue 的元素数量",
+   "desc": "统计数组 [start,end) 内满足 min<=v<max 的元素个数",
+   "empty_slot": "留空与少写尾实参同义：start=0、end=数组长度",
+   "notes": "区间左闭右开，与 INRANGE 的双闭不同；start=end=数组长度合法且返回 0",
+   "uncertain": false
+  },
+  "INRANGECARRAY": {
+   "category": "算术",
+   "upstream": "同页：返回角色数组中满足 minValue <= value < maxValue 的元素数量",
+   "desc": "统计角色范围 [start,end) 内各角色数组元素满足 min<=v<max 的个数",
+   "empty_slot": "留空与少写尾实参同义：start=0、end=CHARANUM",
+   "notes": "start>=CHARANUM 或 end>CHARANUM 抛 CodeEE；区间左闭右开，与 INRANGE 不同",
+   "uncertain": false
+  },
+  "ISACTIVE": {
+   "category": "AWAIT 相关",
+   "upstream": "返回 Emuera 窗口状态：活动返回 1，否则返回 0；指令与式中函数两种用法都支持",
+   "desc": "判断窗口是否活动：活动返回 1，否则返回 0；无实参",
+   "empty_slot": "—（恰 0 实参，无空槽；写实参报 ArgsNotNeeded）",
+   "notes": "活动判定用 Form.ActiveForm（本应用内任一窗体激活即算 1，不限于游戏窗口）；作指令时结果写入 RESULT",
+   "uncertain": false
+  },
+  "ISDEFINED": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "如果定义了同名宏(#DEFINE XXX)则返回 1，未定义返回 0；指令与行内函数两种写法均可用",
+   "desc": "判断文本宏名是否已用 #DEFINE 定义：已定义返回 1，否则返回 0",
+   "empty_slot": "无槽可省略或留空：空槽与少写尾参都会报 CodeEE",
+   "notes": "只查 #DEFINE 宏字典，不认变量与函数；名字比较的大小写敏感度随 IgnoreCase 配置",
+   "uncertain": false
+  },
+  "ISNUMERIC": {
+   "category": "字符串操作・参照",
+   "upstream": "判断字符串能否解析为数值；能则返回 1，否则返回 0；全角数字也不能数值化",
+   "desc": "判断参数能否被 TOINT 数值化：可以返回 1，否则返回 0",
+   "empty_slot": "—（少写或留空均报错）",
+   "notes": "仅 ASCII 会继续判断，出现全角即 0；0x/0b/指数形式算数值，但 0b2、1e999 会抛 CodeEE 而非返回 0",
+   "uncertain": false
+  },
+  "ISSKIP": {
+   "category": "显示操作・字体操作・显示规格参照",
+   "upstream": "SKIPDISP 标志为非 0（即忽略 PRINT 等输出）时返回 1，否则返回 0；可作函数",
+   "desc": "返回当前是否处于 SKIPDISP 忽略输出状态（1/0），无实参",
+   "empty_slot": "—（恰 0 实参，无空槽；多写实参报 ArgsNotNeeded）",
+   "notes": "读 Process.SkipPrint；文档称 SKIPDISP 恒把 RESULT:0 置 0，代码实为置成标志值(1/0)",
+   "uncertain": false
+  },
+  "LIMIT": {
+   "category": "算术",
+   "upstream": "返回参1：小于参2则返回参2，大于参3则返回参3；指令和表达式函数两种形式都支持",
+   "desc": "把参1夹到 [参2, 参3] 区间内并返回（钳位）",
+   "empty_slot": "—（恰 3 实参，少写或留空都报错）",
+   "notes": "先判 value<min 再判 value>max；参2 大于参3 时返回参2（LIMIT(5,10,0)=10），不报错",
+   "uncertain": false
+  },
+  "LINEISEMPTY": {
+   "category": "显示操作・字体操作・显示规格参照",
+   "upstream": "若此刻执行 PRINTL 只会输出空行则返回 1，否则返回 0；可作指令或函数",
+   "desc": "返回当前行缓冲区是否为空（1=空行，0=已有输出）",
+   "empty_slot": "—（恰 0 实参，无空槽；多写实参报 ArgsNotNeeded）",
+   "notes": "读 Console.EmptyLine(=printBuffer.IsEmpty)；PRINTC 已排入按钮时算非空，返回 0",
+   "uncertain": false
+  },
+  "LOADTEXT": {
+   "category": "存档数据操作",
+   "upstream": "命令版把文件内容（默认 sav 内 textXX）赋给 RESULTS:0；第2参非0强用 sav，第3参非0按 UTF-8 读；失败为空串",
+   "desc": "读取文本文件内容并返回，文件不存在、读失败或扩展名非法时返回空串；返回值中 CR 被删除",
+   "empty_slot": "—（无槽可留空；显式留空一律报 CodeEE）",
+   "notes": "实际文件名是 sav 下 txtXX.txt（文档写 textXX）；第2/3参无效，读时按 DetectEncoding 自动判编码；fileNo<0 得空串",
+   "uncertain": false
+  },
+  "LOG": {
+   "category": "算术",
+   "upstream": "私有改造版新增的数学函数：LOG（自然对数），格式为 LOG(参数)；Emuera 无法处理小数，使用需技巧",
+   "desc": "返回实参的自然对数，结果截断为 64 位整数",
+   "empty_slot": "—（恰 1 实参，少写或留空都报错）",
+   "notes": "文档未写实参限制；实参 <=0 抛 CodeEE，结果截断（LOG(2)=0、LOG(100)=4）",
+   "uncertain": false
+  },
+  "LOG10": {
+   "category": "算术",
+   "upstream": "同上页：私有改造版新增的数学函数，LOG10 为常用对数，格式为 LOG10(参数)",
+   "desc": "返回实参的常用（10 为底）对数，结果截断为 64 位整数",
+   "empty_slot": "—（恰 1 实参，少写或留空都报错）",
+   "notes": "与 LOG 同一个类，仅底数换成 10；实参 <=0 抛 CodeEE，LOG10(100)=2",
+   "uncertain": false
+  },
+  "MAP_CLEAR": {
+   "category": "MAP（关联数组）系",
+   "upstream": "清空 MAP 中保存的所有键值对，返回 1；MAP 不存在返回 -1。",
+   "desc": "清空指定 MAP 的全部键值对，MAP 存在返回 1、不存在返回 -1，MAP 本身仍保留。",
+   "empty_slot": "—（mapName 必填；省略报参数数不足，留空报 CodeEE）",
+   "notes": "MAP 不存在（名字写错也算）一律返回 -1；清空后 MAP 仍存在，MAP_SIZE 变 0。",
+   "uncertain": false
+  },
+  "MAP_CREATE": {
+   "category": "MAP（关联数组）系",
+   "upstream": "生成名为 mapName 的 MAP；已存在则创建失败返回 0，成功返回 1。",
+   "desc": "新建一个空的 string→string 字典；已存在返回 0，创建成功返回 1。",
+   "empty_slot": "—（mapName 必填；省略报参数数不足，留空报 CodeEE）",
+   "notes": "已存在时不覆盖也不报错，直接返回 0；返回标题界面或 RESETDATA 会自动删除全部 MAP。",
+   "uncertain": false
+  },
+  "MAP_EXIST": {
+   "category": "MAP（关联数组）系",
+   "upstream": "判断名为 mapName 的 MAP 是否存在，存在返回 1，否则返回 0。",
+   "desc": "查询指定名字的 MAP 是否存在；存在返回 1，不存在返回 0。",
+   "empty_slot": "—（mapName 必填；省略报参数数不足，留空报 CodeEE）",
+   "notes": "名字比较区分大小写（Dictionary 默认比较器），myMap 与 MyMap 视为两个 MAP。",
+   "uncertain": false
+  },
+  "MAP_FROMXML": {
+   "category": "MAP（关联数组）系",
+   "upstream": "解析 <map><p><k>键</k><v>值</v></p>…</map> 格式的 XML，把内容读入名为 mapName 的 MAP。",
+   "desc": "把 XML 文本解析进指定 MAP；成功返回 1，MAP 不存在返回 0。",
+   "empty_slot": "—（mapName/xmlMap 必填；省略报不足，留空报 CodeEE）",
+   "notes": "不先清空：同名键被覆盖、其余旧键保留；XML 非法抛 CodeEE；缺 k 或 v 的 p 被跳过；值取 InnerXml、键取 InnerText。",
+   "uncertain": false
+  },
+  "MAP_GET": {
+   "category": "MAP（关联数组）系",
+   "upstream": "取出 MAP 中 key 对应的值；MAP 或 key 不存在时返回空字符串，不抛异常。",
+   "desc": "取指定 MAP 中 key 的值；MAP 或 key 不存在返回空串，不报错。",
+   "empty_slot": "—（mapName、key 均必填；省略报参数数不足，留空报 CodeEE）",
+   "notes": "空串既可能是真值也可能是查不到，需先用 MAP_HAS / MAP_EXIST 判别；键名区分大小写。",
+   "uncertain": false
+  },
+  "MAP_GETKEYS": {
+   "category": "MAP（关联数组）系",
+   "upstream": "输出 MAP 全部键名：1 参返回逗号串；2 参 doOutput 非 0 写入 RESULTS 并返回 RESULTS:0；3 参写字符串数组、返回空串。",
+   "desc": "输出指定 MAP 的全部键名，按实参个数有逗号串 / RESULTS / 字符串数组三种形态。",
+   "empty_slot": "省第2/3实参走1参形态；doOutput 留空报错、写 0 返回空串",
+   "notes": "MAP 不存在返回空串且不动 RESULTS/RESULT；写数组时只填到数组长度，RESULT 仍为完整键数。",
+   "uncertain": false
+  },
+  "MAP_HAS": {
+   "category": "MAP（关联数组）系",
+   "upstream": "判断 MAP 中是否存在指定 key：存在返回 1，不存在返回 0；MAP 本身不存在返回 -1。",
+   "desc": "查询 key 是否存在于指定 MAP；存在 1、无此 key 0、MAP 不存在 -1。",
+   "empty_slot": "—（mapName、key 均必填；省略报参数数不足，留空报 CodeEE）",
+   "notes": "0 与 -1 语义不同，判存在请写 =1；MAP 不存在不会退化成 0（与不报错的 MAP_GET 不同）。",
+   "uncertain": false
+  },
+  "MAP_RELEASE": {
+   "category": "MAP（关联数组）系",
+   "upstream": "删除名为 mapName 的 MAP（连同其中全部键值对）。",
+   "desc": "删除指定名字的 MAP 及其全部内容；无论是否存在都返回 1。",
+   "empty_slot": "—（mapName 必填；省略报参数数不足，留空报 CodeEE）",
+   "notes": "MAP 不存在也不报错、仍返回 1；与 MAP_CLEAR / MAP_SIZE 的 -1 语义不同，不能用返回值判存在。",
+   "uncertain": false
+  },
+  "MAP_REMOVE": {
+   "category": "MAP（关联数组）系",
+   "upstream": "删除 MAP 中 key 对应的键值对，返回 1；MAP 不存在返回 -1。",
+   "desc": "删除指定 MAP 中的 key；MAP 存在返回 1，MAP 不存在返回 -1。",
+   "empty_slot": "—（mapName、key 均必填；省略报参数数不足，留空报 CodeEE）",
+   "notes": "key 本来就不存在也返回 1（Map.Remove 的结果被忽略），文档未区分这两种情况。",
+   "uncertain": false
+  },
+  "MAP_SET": {
+   "category": "MAP（关联数组）系",
+   "upstream": "在 MAP 中覆写 key 对应的值；key 不存在则自动新增，成功返回 1；MAP 不存在返回 -1。",
+   "desc": "设置 MAP 中 key 的值（键不存在则新增）；成功 1，MAP 不存在 -1。",
+   "empty_slot": "—（3 个实参都必填；省略报不足，留空报 CodeEE）",
+   "notes": "value 允许空字符串，但要存空串必须写 \"\"，留空槽会报 CodeEE。",
+   "uncertain": false
+  },
+  "MAP_SIZE": {
+   "category": "MAP（关联数组）系",
+   "upstream": "返回 MAP 中保存的键值对数量；MAP 不存在返回 -1。",
+   "desc": "返回指定 MAP 中键值对的数量；MAP 不存在返回 -1。",
+   "empty_slot": "—（mapName 必填；省略报参数数不足，留空报 CodeEE）",
+   "notes": "空 MAP 返回 0，与 MAP 不存在（-1）可区分。",
+   "uncertain": false
+  },
+  "MAP_TOXML": {
+   "category": "MAP（关联数组）系",
+   "upstream": "把名为 mapName 的 MAP 转成 <map><p><k>键</k><v>值</v></p>…</map> 文本返回。",
+   "desc": "把指定 MAP 序列化为 XML 字符串返回；MAP 不存在返回空串。",
+   "empty_slot": "—（mapName 必填；省略报参数数不足，留空报 CodeEE）",
+   "notes": "键值不做 XML 转义，含 < & 等字符时产出的文本 MAP_FROMXML 解不开；顺序即 Dictionary 枚举序。",
+   "uncertain": false
+  },
+  "MATCH": {
+   "category": "算术",
+   "upstream": "MATCH 页：返回数组中与 value 相等的元素数量；等价于 FOR 计数循环，数值/字符串皆可",
+   "desc": "统计数组 [start,end) 内等于 value 的元素个数，数值与字符串数组通用",
+   "empty_slot": "留空与少写尾实参同义：start=0、end=数组长度",
+   "notes": "value 类型须与数组一致；传 CFLAG:2 等角色数组时范围参数是第二下标，只统计 TARGET 角色",
+   "uncertain": false
+  },
+  "MAX": {
+   "category": "算术",
+   "upstream": "返回所有参数中的最大值；指令和表达式函数两种形式都支持",
+   "desc": "返回全部实参（至少 1 个）中的最大值",
+   "empty_slot": "—（尾实参可少写，少写的槽不参与比较；显式空槽报错）",
+   "notes": "1 个实参时返回自身；只有尾实参可按数量省略，显式留空一律 CodeEE(ArgCanNotBeNull)",
+   "uncertain": false
+  },
+  "MAXARRAY": {
+   "category": "算术",
+   "upstream": "MAXMINARRAY 页：返回数组在 [start,end) 内的最大值；省略 end 时搜到数组末尾",
+   "desc": "返回数组 [start,end) 内的最大元素值",
+   "empty_slot": "留空与少写尾实参同义：start=0、end=数组长度",
+   "notes": "start==end==数组长度时仍先读 X:start，会抛越界异常；start>end 则返回 X:start",
+   "uncertain": false
+  },
+  "MAXCARRAY": {
+   "category": "算术",
+   "upstream": "CARRAY 页：遍历角色间的 MAXARRAY 变体，start/end 按角色注册编号指定",
+   "desc": "返回角色范围 [start,end) 内各角色同一数组元素的最大值",
+   "empty_slot": "留空与少写尾实参同义：start=0、end=CHARANUM",
+   "notes": "start>=CHARANUM 或 end>CHARANUM 抛 CodeEE；start=end 时返回起始角色的元素",
+   "uncertain": false
+  },
+  "MESSKIP": {
+   "category": "显示操作・字体操作・显示规格参照",
+   "upstream": "处于 WAIT 跳过状态时返回 1，否则返回 0；MOUSESKIP 已并入此函数",
+   "desc": "返回是否处于消息跳过（WAIT/宏跳过）状态（1/0）",
+   "empty_slot": "—（恰 0 实参，自检；任何实参报 TooManyFuncArgs）",
+   "notes": "读 Console.MesSkip；SKIPLOG 指令、宏文本含 \\e 也会置位，故宏跳过期间同样返回 1",
+   "uncertain": false
+  },
+  "MIN": {
+   "category": "算术",
+   "upstream": "返回所有参数中的最小值；指令和表达式函数两种形式都支持",
+   "desc": "返回全部实参（至少 1 个）中的最小值",
+   "empty_slot": "—（尾实参可少写，少写的槽不参与比较；显式空槽报错）",
+   "notes": "1 个实参时返回自身；与 MAX 同一个类，只换比较方向；显式留空一律 CodeEE(ArgCanNotBeNull)",
+   "uncertain": false
+  },
+  "MINARRAY": {
+   "category": "算术",
+   "upstream": "同页：返回数组在 [start,end) 内的最小值；省略 end 时搜到数组末尾",
+   "desc": "返回数组 [start,end) 内的最小元素值",
+   "empty_slot": "留空与少写尾实参同义：start=0、end=数组长度",
+   "notes": "start==end==数组长度时仍先读 X:start，会抛越界异常；start>end 则返回 X:start",
+   "uncertain": false
+  },
+  "MINCARRAY": {
+   "category": "算术",
+   "upstream": "CARRAY 页：遍历角色间的 MINARRAY 变体，start/end 按角色注册编号指定",
+   "desc": "返回角色范围 [start,end) 内各角色同一数组元素的最小值",
+   "empty_slot": "留空与少写尾实参同义：start=0、end=CHARANUM",
+   "notes": "start>=CHARANUM 或 end>CHARANUM 抛 CodeEE；start=end 时返回起始角色的元素",
+   "uncertain": false
+  },
+  "MONEYSTR": {
+   "category": "显示操作・字体操作・显示规格参照",
+   "upstream": "给数值附上已设定的货币单位（前置/后置自动处理），第 2 实参为 TOSTR 式格式指定",
+   "desc": "把数值按货币单位（可选格式转换）拼成字符串返回",
+   "empty_slot": "第 2 实参省略或留空：不做格式转换，直接拼接数字与单位",
+   "notes": "单位与位置取 Config.MoneyLabel/MoneyFirst；格式串非法抛 CodeEE(InvalidFormat)；第 1 实参必填",
+   "uncertain": false
+  },
+  "MOUSEB": {
+   "category": "AWAIT 相关",
+   "upstream": "获取鼠标悬停中的按钮内容；返回 string；可与 AWAIT 组合；因执行时点无法确定是 INPUT 还是 INPUTS 故返回字符串",
+   "desc": "返回鼠标下按钮的输入值（整数按钮转成字符串，否则用原字符串），无按钮时为\"\"",
+   "empty_slot": "—（恰 0 实参，无空槽；写实参报 ArgsNotNeeded）",
+   "notes": "返回的是按钮的输入值而非显示文本，普通文本/无按钮都为空串；会临时置 AlwaysRefresh 并按真实光标位置刷新悬停态",
+   "uncertain": false
+  },
+  "MOUSESKIP": {
+   "category": "显示操作・字体操作・显示规格参照",
+   "upstream": "旧函数，1.810 起并入 MESSKIP，官方建议改用 MESSKIP；过去按右键跳过返回 1",
+   "desc": "与 MESSKIP 行为相同的旧名，返回消息跳过状态（1/0）",
+   "empty_slot": "—（恰 0 实参，自检；任何实参报 TooManyFuncArgs）",
+   "notes": "代码仍注册且在表达式中可用，解析时发弃用警告（FuncDeprecated→MESSKIP），返回值同 MESSKIP",
+   "uncertain": false
+  },
+  "MOUSEX": {
+   "category": "AWAIT 相关",
+   "upstream": "取鼠标光标的 X 坐标；以客户端区域左下角为(0,0)，向右为正；窗口非活动或光标在窗口外也有效",
+   "desc": "返回鼠标光标相对客户端区域左下角的 X 坐标（向右为正）",
+   "empty_slot": "—（恰 0 实参，无空槽；写实参报 ArgsNotNeeded）",
+   "notes": "直接读 Cursor.Position，不依赖消息泵；窗口尚未创建时恒返回 0 而不报错；作指令时结果写入 RESULT",
+   "uncertain": false
+  },
+  "MOUSEY": {
+   "category": "AWAIT 相关",
+   "upstream": "取鼠标光标的 Y 坐标；以客户端区域左下角为(0,0)，向下为正；光标在客户端内时为负值",
+   "desc": "返回鼠标光标的 Y 坐标（原点在左下角，向下为正，客户端内为负）",
+   "empty_slot": "—（恰 0 实参，无空槽；写实参报 ArgsNotNeeded）",
+   "notes": "窗口尚未创建时恒返回 0；要换成客户端左上角基准用 MOUSEY()+CLIENTHEIGHT()",
+   "uncertain": false
+  },
+  "MOVETEXTBOX": {
+   "category": "其他",
+   "upstream": "下次 INPUT/INPUTS 时把输入框移到 (xPos,yPos) 并设宽度 width；原点为画面左下角，yPos 为正向上。",
+   "desc": "预约把输入框移到 (xPos,yPos)、宽度设为 width，返回 1；下次 INPUT 时生效。",
+   "empty_slot": "—（3 个 int 全必填；省略报不足，留空报 CodeEE）",
+   "notes": "三值都会被夹取（x≥0、不越上边、宽≥50）且截断成 int，越界不报错；画面回滚时暂回原位。",
+   "uncertain": false
+  },
+  "NOSAMES": {
+   "category": "算术",
+   "upstream": "所有参数必须同类型；当所有参数指定的值都不同时返回 1，否则返回 0",
+   "desc": "所有实参的值两两不同（无重复）时返回 1，否则返回 0",
+   "empty_slot": "—（显式留空报 CodeEE(ArgCanNotBeNull)）",
+   "notes": "重复判定用 Distinct 序数比较（区分大小写）；仅 2 个实参也合法；类型混用在检查期报错",
+   "uncertain": false
+  },
+  "OUTPUTLOG": {
+   "category": "存档数据操作",
+   "upstream": "把显示日志输出成文件；EM+EE 允许用参数指定文件名.扩展名（字面量同 PRINTS），只允许子目录，v5fix 修复了父目录漏洞；页面称仅支持指令形式",
+   "desc": "把当前显示内容写入日志文件（UTF-8 BOM），恒定返回 1（不反映写出失败）",
+   "empty_slot": "槽1省略→emuera.log；槽2省略→0(false)；留空抛 CodeEE",
+   "notes": "页面只列 1 个参数且称仅支持指令；代码实为式中函数，另有未文档化的第 2 参 hideInfo(1=隐藏环境信息)，且路径非法/写出失败时仍返回 1",
+   "uncertain": false
+  },
+  "POWER": {
+   "category": "算术",
+   "upstream": "命令形式 POWER 变量,x,y 把 x 的 y 次方赋给变量；函数形式 POWER(x,y) 返回结果",
+   "desc": "计算 x 的 y 次方，截断为 64 位整数后返回（或赋给变量）",
+   "empty_slot": "—（函数形式恰 2、命令形式恰 3 实参，留空或数量不符报错）",
+   "notes": "结果为 (long)Math.Pow 截断；NaN、无穷、超出 long 范围抛 CodeEE；命令形式首实参须为可赋值变量",
+   "uncertain": false
+  },
+  "PRINTCLENGTH": {
+   "category": "显示操作・字体操作・显示规格参照",
+   "upstream": "返回配置项 PRINTC的字符数的值；与 RESULT = GETCONFIG(\"PRINTC的字符数\") 同义。",
+   "desc": "返回配置 PRINTC的字符数（Config.PrintCLength）；无实参。",
+   "empty_slot": "—",
+   "notes": "配置默认 25（文档未给）；CanRestructure=true，表达式中会折叠为常量。",
+   "uncertain": false
+  },
+  "PRINTCPERLINE": {
+   "category": "显示操作・字体操作・显示规格参照",
+   "upstream": "把配置 PRINTC排列数量 的值赋给 RESULT:0 或返回该值；默认值为 3。",
+   "desc": "返回配置 PRINTC的排列数量（Config.PrintCPerLine），默认 3；无实参。",
+   "empty_slot": "—",
+   "notes": "指令形式可带目标变量（PRINTCPERLINE X），省略则写 RESULT:0，与函数形式不同。",
+   "uncertain": false
+  },
+  "RAND": {
+   "category": "其他",
+   "upstream": "RAND(X) 与 RAND:X 行为相同；给两个参数时第 1 个为最小值；max 必须大于 min（不能相等），max-min 超 64 位最大值会出错",
+   "desc": "返回 [min, max) 内的随机整数；单参 RAND(X) 等价 RAND(0, X)，即 min 取 0",
+   "empty_slot": "省略第2实参即 min=0；两槽显式留空都报 ArgCanNotBeNull",
+   "notes": "RAND(0)/RAND:0 抛 CodeEE 但消息不同；max-min 溢出时抛 ArgumentOutOfRangeException；非2的幂取余有偏",
+   "uncertain": false
+  },
+  "REGEXPMATCH": {
+   "category": "字符串操作・参照",
+   "upstream": "str 符合 pattern 正则时返回匹配数量，否则返回 0；带 output 时把子表达式组数存入 RESULT:1、全部结果存入 RESULTS",
+   "desc": "用正则 pattern 匹配 str 并返回匹配个数；可回填分组数与各匹配的分组内容",
+   "empty_slot": "第3实参可整省（=0，不写 RESULT:1/RESULTS）；显式留空报错",
+   "notes": "4实参须为 ref int/ref str[] 且恰好4个；组数含组0；命名组时 GetGroupNames 输出会多写；数组过小静默截断；无匹配返回0",
+   "uncertain": false
+  },
+  "REPLACE": {
+   "category": "字符串操作・参照",
+   "upstream": "在目标串中按 C# 正则搜索并替换；()[]$/*+ 等元字符需转义；指令与式中函数都支持",
+   "desc": "把目标串中匹配第 2 参数正则（或字面串）的部分替换为第 3 参数后返回",
+   "empty_slot": "—（4 个槽都拒绝留空）；槽4 整体省略时取 0",
+   "notes": "槽4：0 或其它=正则替换，1=按字符串数组逐次替换（槽3 须为非 const 字符串一维数组，多出的匹配替换为空串），2=纯字面替换；正则非法抛 CodeEE",
+   "uncertain": false
+  },
+  "RESUMETEXTBOX": {
+   "category": "其他",
+   "upstream": "取消上一次 MOVETEXTBOX 的设置，令输入框返回原本位置（页面函数表把参数写作“无”）。",
+   "desc": "取消 MOVETEXTBOX 的位移预约，让输入框回到原本位置，返回 1。",
+   "empty_slot": "3 个 int 必填（值全被忽略，写 0,0,0 即可）；留空报 CodeEE",
+   "notes": "与 MOVETEXTBOX 同一实现类，固定 3 个 int 是检查器要求，运行期完全不读这三个值。",
+   "uncertain": false
+  },
+  "SAVENOS": {
+   "category": "存档数据操作",
+   "upstream": "作为命令时把配置「显示存档数据数量」赋给数值变量；作为表达式函数时返回该数量，默认值为 20",
+   "desc": "返回配置的「显示存档数据数量」（默认 20）；作命令时赋给数值变量",
+   "empty_slot": "—",
+   "notes": "配置值被夹在 20–80；函数形式不接受任何实参，多写实参报「不需要实参」",
+   "uncertain": false
+  },
+  "SAVETEXT": {
+   "category": "存档数据操作",
+   "upstream": "把文本原样写入 textXX.txt（fileNo 为第2参）；第3参非0强用 sav，第4参非0强用 UTF-8；成功非0失败0",
+   "desc": "把字符串原样写入文本文件，成功返回 1，fileNo 越界、路径或扩展名非法、IO 异常时返回 0",
+   "empty_slot": "—（无槽可留空；显式留空一律报 CodeEE）",
+   "notes": "实际文件名 txtXX.txt（文档写 textXX）；扩非白名单则改写为 .txt 仍写出；第4参 forceUTF8 未用，写死 UTF-8 BOM",
+   "uncertain": false
+  },
+  "SETANIMETIMER": {
+   "category": "图像处理相关",
+   "upstream": "为动画精灵指定以毫秒为单位的重绘间隔，可在 INPUT 等输入等待期间重绘；仅支持命令，返回值无。",
+   "desc": "设置动画重绘定时器的时间间隔（毫秒），固定返回 1。",
+   "empty_slot": "—",
+   "notes": "文档称仅支持命令/无返回值，代码却注册为返回 int 的式中函数；上限误用 short.MaxValue(32767)，超限抛 CodeEE。",
+   "uncertain": false
+  },
+  "SETTEXTBOX": {
+   "category": "其他",
+   "upstream": "将输入框内容替换为 text。",
+   "desc": "把输入框内容整体替换为 text，返回 1；text 为空串即清空输入框。",
+   "empty_slot": "—（text 必填；传空串合法（清空），留空槽报 CodeEE）",
+   "notes": "直接改控件 Text（光标与滚动位置一并复位），不影响 MOVETEXTBOX 的位移预约。",
+   "uncertain": false
+  },
+  "SETVAR": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "将名为 varName 的变量赋为 value，value 的类型必须与该变量原本的类型相同；常量无法 SET；返回1",
+   "desc": "运行时解析变量名，把第 2 个实参赋给该变量，恒返回 1",
+   "empty_slot": "—",
+   "notes": "常量不可写；类型不符抛 CodeEE，但消息把变量名说成类型不符（值类型才是问题）；恒返回1",
+   "uncertain": false
+  },
+  "SIGN": {
+   "category": "算术",
+   "upstream": "值为负返回 -1，为 0 返回 0，为正返回 1；支持指令和表达式函数两种用法",
+   "desc": "返回实参的符号：负数 -1、零 0、正数 1",
+   "empty_slot": "—（恰 1 实参，少写或留空都报错）",
+   "notes": "与 ABS 同页；无异常条件；指令形式 SIGN X 把结果写入 RESULT",
+   "uncertain": false
+  },
+  "SPRITEANIMEADDFRAME": {
+   "category": "图像处理相关",
+   "upstream": "向spriteName动画精灵添加帧：取gID的x,y,w,h矩形为帧，偏移offsetx/offsety，delay毫秒；成功返回1，失败返回0",
+   "desc": "给动画精灵加一帧（截 gID 的矩形，按偏移放置、delay 毫秒显示）；成功返回 1，失败返回 0",
+   "empty_slot": "无槽可留空：显式留空与少写尾实参都报 CodeEE",
+   "notes": "delay≤0 或 >int.MaxValue、矩形越界或宽高≤0 都返回 0（不加帧）；矩形宽高为 0/超 int 范围抛 CodeEE",
+   "uncertain": false
+  },
+  "SPRITEANIMECREATE": {
+   "category": "图像处理相关",
+   "upstream": "创建资源名spriteName、尺寸width×height的动画精灵，成功返回非0；同名已存在等失败返回0",
+   "desc": "新建指定名字与宽高的动画精灵（帧需再用 SPRITEANIMEADDFRAME 加）；成功返回 1，重名返回 0",
+   "empty_slot": "无槽可留空：显式留空与少写尾实参都报 CodeEE",
+   "notes": "width/height 须 >0 且 ≤8192，否则抛 CodeEE；名字为空返回 0；动画精灵 IsCreated 恒真，故同名必失败",
+   "uncertain": false
+  },
+  "SPRITECREATE": {
+   "category": "图像处理相关",
+   "upstream": "以gID的Graphics全部或x,y,w,h截取部分创建名为spriteName的精灵；成功返回非0，重名等失败返回0",
+   "desc": "用 gID 图形（整幅或截取矩形）建名为 spriteName 的精灵；成功返回 1，失败返回 0",
+   "empty_slot": "无槽可留空：实参数只能 2 或 6 个，其余都报 CodeEE",
+   "notes": "2 参取整幅且尺寸建时冻结；矩形与父图不交叠、w/h 为 0 抛 CodeEE；空名/重名/gID 未创建返回 0",
+   "uncertain": false
+  },
+  "SPRITECREATED": {
+   "category": "图像处理相关",
+   "upstream": "若指定名称的精灵已创建则返回1，未创建或已销毁则返回0",
+   "desc": "判断名为 spriteName 的精灵当前是否存在（含 csv 声明与代码创建）；存在返回 1，否则 0",
+   "empty_slot": "无槽可留空：显式留空与少写尾实参都报 CodeEE",
+   "notes": "动画精灵一旦建成即恒返回 1（IsCreated 恒真）；名字大小写不敏感，csv 资源也能查到",
+   "uncertain": false
+  },
+  "SPRITEDISPOSE": {
+   "category": "图像处理相关",
+   "upstream": "释放spriteName对应精灵，成功返回非零；不影响其来源Graphics，要释放G请用GDISPOSE",
+   "desc": "释放指定精灵（只解绑名字，不动父 Graphics）；已创建返回 1，否则返回 0",
+   "empty_slot": "无槽可留空：显式留空与少写尾实参都报 CodeEE",
+   "notes": "唯一不检查 GDI 模式的精灵函数（WINAPI 下也能用）；名字大小写不敏感；csv 同名资源可被 SPRITEDISPOSEALL(0) 恢复",
+   "uncertain": false
+  },
+  "SPRITEDISPOSEALL": {
+   "category": "图像处理相关",
+   "upstream": "销毁所有SPRITE：参数0只销毁ERB创建的，非0连resources内CSV创建的也销毁；返回被销毁的精灵数量。",
+   "desc": "销毁全部精灵，参数非0时连CSV精灵一起销毁，返回被销毁的数量。",
+   "empty_slot": "—",
+   "notes": "参数按!=0判断；0分支只替换字典不Dispose，已单独销毁的CSV精灵会被复活，返回值可能为负。",
+   "uncertain": false
+  },
+  "SPRITEGETCOLOR": {
+   "category": "图像处理相关",
+   "upstream": "取精灵x,y处的颜色，以0xAARRGGBB整数返回；精灵未创建或坐标越界返回-1（唯一失败返回-1的函数）",
+   "desc": "取精灵在 (x,y) 处的颜色（0xAARRGGBB）；精灵不存在或坐标越界返回 -1",
+   "empty_slot": "无槽可留空：显式留空与少写尾实参都报 CodeEE",
+   "notes": "对动画精灵取色（坐标在范围内）会抛 NotSupportedException；全透明黑返回 0；x/y 超 int 范围抛 CodeEE",
+   "uncertain": false
+  },
+  "SPRITEHEIGHT": {
+   "category": "图像处理相关",
+   "upstream": "获取指定名称的精灵的高度；如果精灵尚未创建或已被销毁，则返回0",
+   "desc": "返回精灵的高度（建精灵时定下的基准尺寸）；精灵不存在或已销毁返回 0",
+   "empty_slot": "无槽可留空：显式留空与少写尾实参都报 CodeEE",
+   "notes": "非实时父图尺寸：csv 精灵取 destSize，SPRITECREATE 截取矩形宽高为负时取绝对值",
+   "uncertain": false
+  },
+  "SPRITEMOVE": {
+   "category": "图像处理相关",
+   "upstream": "把 movex、movey 加到精灵相对位置的 X、Y 上，等价于 SPRITESETPOS 配合 SPRITEPOSX/Y；失败返回 0",
+   "desc": "把 (movex,movey) 叠加到精灵的相对偏移上：成功返回 1，精灵不存在返回 0",
+   "empty_slot": "无槽可留空：显式留空与少写尾实参都报 CodeEE",
+   "notes": "改的是随绘制缩放的相对偏移字段 DestBasePosition，无正负/范围限制；x/y 超 int 范围在 ReadPoint 抛 CodeEE",
+   "uncertain": false
+  },
+  "SPRITEPOSX": {
+   "category": "图像处理相关",
+   "upstream": "获取指定名称精灵的相对位置X；未创建或已销毁返回0，需另调SPRITECREATED区分0与不存在",
+   "desc": "返回精灵相对位置的 X（由 SPRITESETPOS/SPRITEMOVE 设定）；精灵不存在返回 0",
+   "empty_slot": "无槽可留空：显式留空与少写尾实参都报 CodeEE",
+   "notes": "是随绘制一起缩放的相对偏移，默认 0；本桶不含改它的 SPRITESETPOS/SPRITEMOVE",
+   "uncertain": false
+  },
+  "SPRITEPOSY": {
+   "category": "图像处理相关",
+   "upstream": "获取指定名称精灵的相对位置Y；未创建或已销毁返回0，需另调SPRITECREATED区分0与不存在",
+   "desc": "返回精灵相对位置的 Y（由 SPRITESETPOS/SPRITEMOVE 设定）；精灵不存在返回 0",
+   "empty_slot": "无槽可留空：显式留空与少写尾实参都报 CodeEE",
+   "notes": "是随绘制一起缩放的相对偏移，默认 0；本桶不含改它的 SPRITESETPOS/SPRITEMOVE",
+   "uncertain": false
+  },
+  "SPRITESETPOS": {
+   "category": "图像处理相关",
+   "upstream": "设置指定名称精灵的相对位置 X、Y：成功返回非 0，精灵未创建或已销毁等失败返回 0",
+   "desc": "把精灵的相对偏移直接设为 (x,y)：成功返回 1，精灵不存在返回 0",
+   "empty_slot": "无槽可留空：显式留空与少写尾实参都报 CodeEE",
+   "notes": "与 SPRITEMOVE 共用 SpriteSetPosMethod，仅按注册名分派赋值/叠加；同样受 ReadPoint 的 int 范围检查；upstream 把实参写作 posX/posY",
+   "uncertain": false
+  },
+  "SPRITEWIDTH": {
+   "category": "图像处理相关",
+   "upstream": "获取指定名称的精灵的宽度；如果精灵尚未创建或已被销毁，则返回0",
+   "desc": "返回精灵的宽度（建精灵时定下的基准尺寸）；精灵不存在或已销毁返回 0",
+   "empty_slot": "无槽可留空：显式留空与少写尾实参都报 CodeEE",
+   "notes": "非实时父图尺寸：csv 精灵取 destSize，SPRITECREATE 截取矩形宽高为负时取绝对值",
+   "uncertain": false
+  },
+  "SQRT": {
+   "category": "算术",
+   "upstream": "返回参数的平方根；小数部分会被舍去，建议使用前先放大数值",
+   "desc": "返回实参的平方根，小数部分直接截断",
+   "empty_slot": "—（恰 1 实参，少写或留空都报错）",
+   "notes": "负实参抛 CodeEE(ArgIsNegative)；Math.Sqrt 后截断，先放大可减少精度损失",
+   "uncertain": false
+  },
+  "STRCOUNT": {
+   "category": "字符串操作・参照",
+   "upstream": "统计字符串中指定子串的出现次数；参数 string, string，返回 int；第二参数按 C# 正则表达式规范解析",
+   "desc": "把第二实参当正则，统计第一实参中的匹配次数并返回",
+   "empty_slot": "—（少写或留空均报错）",
+   "notes": "正则非法时运行期抛 CodeEE(InvalidRegexArg)；计非重叠匹配、区分大小写；编译后的正则常驻静态缓存",
+   "uncertain": false
+  },
+  "STRFIND": {
+   "category": "字符串操作・参照",
+   "upstream": "从第 3 参数指定位置起检索子串，返回从 0 起的索引，未找到为 -1；全角按 2 个字符计（SHIFT-JIS 字节）",
+   "desc": "在目标串中从 start 起查找子串，按编码字节数返回其 0 起索引，未找到返回 -1",
+   "empty_slot": "start 省略/留空取 0",
+   "notes": "字节基准随 useLanguage（默认 SHIFT-JIS）；start<0 变 0、≥目标长度直接 -1；查找串为空返回 start（目标为空则 -1）",
+   "uncertain": false
+  },
+  "STRFINDU": {
+   "category": "字符串操作・参照",
+   "upstream": "STRFIND 的 Unicode 版：全角按 1 个字符计，返回从 0 起的索引，未找到为 -1",
+   "desc": "同 STRFIND，但 start 与返回索引按 UTF-16 代码单元（字符）计",
+   "empty_slot": "start 省略/留空取 0",
+   "notes": "start<0 直接返回 -1（与 STRFIND 变 0 不同）；start≥目标长度也 -1；代理对算 2 个",
+   "uncertain": false
+  },
+  "STRFORM": {
+   "category": "字符串操作・参照",
+   "upstream": "将给定字符串视为与 PRINTFORM 等相同的格式化字符串并返回展开结果；指令与式中函数两种形式均有效",
+   "desc": "把参数串按 PRINTFORM 的格式化规则展开，返回展开后的字符串",
+   "empty_slot": "—（无可省略槽；省略→个数错，留空→ArgCanNotBeNull）",
+   "notes": "实参须为 string；展开失败抛 CodeEE(InvalidFormString)；常量实参解析期折叠；指令形式结果入 RESULTS",
+   "uncertain": false
+  },
+  "STRJOIN": {
+   "category": "字符串操作・参照",
+   "upstream": "把字符串数组元素用分隔符连接；分隔符省略时为“,”；可指定起始下标与个数，指定个数时不可省略下标",
+   "desc": "把数组（任意元素类型、任意维数）的元素用分隔符连接成一个字符串返回",
+   "empty_slot": "槽2=“,”；槽3=0；槽4=余长（一直连到数组末尾）",
+   "notes": "槽4 显式留空等同省略；省略算出的余长为负时也抛 CodeEE 且报“第4引数”；字符变量的字符串数组运行时报错",
+   "uncertain": false
+  },
+  "STRLENS": {
+   "category": "字符串操作・参照",
+   "upstream": "测量字符串长度并赋值给 RESULT:0，以 SHIFT-JIS 字节数为准，全角按 2 计",
+   "desc": "按当前语言编码的字节数计算字符串长度（全角计 2）并返回",
+   "empty_slot": "—（少写或留空均报错）",
+   "notes": "字节数取 Config.Language 的编码，默认日语即 SHIFT-JIS；纯 ASCII 时直接返回字符数",
+   "uncertain": false
+  },
+  "STRLENSU": {
+   "category": "字符串操作・参照",
+   "upstream": "STRLENS 的 Unicode 版本，与 STRLENS 的区别是全角字符也按 1 个字符计数",
+   "desc": "返回字符串的 UTF-16 码元个数（str.Length），全角字符计 1",
+   "empty_slot": "—（少写或留空均报错）",
+   "notes": "按 .NET UTF-16 码元计数，代理对（如 emoji）算 2 而非 1",
+   "uncertain": false
+  },
+  "SUBSTRING": {
+   "category": "字符串操作・参照",
+   "upstream": "取从 start 起、长度为 length 的子串；起始越界返回空串；负长度或越界取到末尾；切口取下一字符边界",
+   "desc": "按当前编码的字节数从 start 起截取 length 字节，返回截得的子串",
+   "empty_slot": "start 省略/留空取 0；length 省略/留空取 -1（取到末尾）",
+   "notes": "字节基准随 useLanguage（默认 932），非固定 SHIFT-JIS；start<0 视为 0；切口向后取整可能多出 1 个字符",
+   "uncertain": false
+  },
+  "SUBSTRINGU": {
+   "category": "字符串操作・参照",
+   "upstream": "SUBSTRING 的 Unicode 版：按 Unicode 字符数（全角计 1）指定长度；起始越界返回空串；切口取下一边界",
+   "desc": "按 UTF-16 代码单元从 start 起取 length 个字符，返回截得的子串",
+   "empty_slot": "start 省略/留空取 0；length 省略/留空取 -1（取到末尾）",
+   "notes": "start<0 视为 0；start≥长度或 length=0 返回空串；代理对算 2 个，可能切在代理对中间",
+   "uncertain": false
+  },
+  "SUMARRAY": {
+   "category": "算术",
+   "upstream": "返回数组元素之和，合计 startIndex 以上、endIndex 未满的元素；省略 endIndex 则合计至数组末尾；仅能指定数值型1维数组",
+   "desc": "返回数值数组末维 [index1, index2) 区间元素之和",
+   "empty_slot": "槽2=0；槽3=末维长度（省略与留空同义，均合计到末尾）",
+   "notes": "文档称不可指定多维/角色数组，代码用 RefIntArray 接受任意维；索引越界报 CodeEE，index1>index2 得 0",
+   "uncertain": false
+  },
+  "SUMCARRAY": {
+   "category": "算术",
+   "upstream": "CARRAY 页：遍历角色间的 SUMARRAY 变体，B 必须小于 CHARANUM",
+   "desc": "返回角色范围 [start,end) 内各角色同一数组元素的合计值",
+   "empty_slot": "留空与少写尾实参同义：start=0、end=CHARANUM",
+   "notes": "文档称 B<CHARANUM，代码允许 end=CHARANUM；2D 角色数组（CDFLAG）解析放行但运行期越界",
+   "uncertain": false
+  },
+  "TOFULL": {
+   "category": "字符串操作・参照",
+   "upstream": "将半角字符转换为全角，赋值给 RESULTS:0 或作为返回值；也支持指令形式",
+   "desc": "把半角字符转成全角（英数、片假名、空格等），返回转换后的字符串",
+   "empty_slot": "—（少写或留空均报错）",
+   "notes": "半角空格会变成全角空格（见文档示例）；空串返回空串；走 VB StrConv(Wide)",
+   "uncertain": false
+  },
+  "TOHALF": {
+   "category": "字符串操作・参照",
+   "upstream": "将全角字符转换为半角；没有对应半角字符的全角字符保持不变",
+   "desc": "把全角字符转成半角（片假名转半角片假名等），返回转换后的字符串",
+   "empty_slot": "—（少写或留空均报错）",
+   "notes": "无对应半角的字符原样保留；片假名会拆成半角+浊点半角字符（如 ﾊﾟ）",
+   "uncertain": false
+  },
+  "TOINT": {
+   "category": "字符串操作・参照",
+   "upstream": "将字符串数值化后返回；只有半角数字能数值化，无法解释为数值时返回 0",
+   "desc": "把参数字符串转成整数返回；无法解释为数值时返回 0",
+   "empty_slot": "—（少写或留空均报错）",
+   "notes": "识别 0x/0b/指数与前导 ±；小数只取整数部分（1.9→1）；超 int64 或 0b2 会抛 CodeEE 而非返回 0",
+   "uncertain": false
+  },
+  "TOLOWER": {
+   "category": "字符串操作・参照",
+   "upstream": "将参数字符串中的字母转换为小写，赋值给 RESULTS:0 或作为返回值；也支持指令形式",
+   "desc": "把字符串中的字母转成小写，返回转换后的字符串",
+   "empty_slot": "—（少写或留空均报错）",
+   "notes": "用当前区域性 ToLower（未指定 InvariantCulture）；空串返回空串",
+   "uncertain": false
+  },
+  "TOSTR": {
+   "category": "字符串操作・参照",
+   "upstream": "把数值转成字符串；第二参数是 C# 数值格式串，可省略，格式不合适则报错",
+   "desc": "按可选格式串把整数转成字符串返回，如 \"X8\"、\"#,###\"、\"0000万0000\"",
+   "empty_slot": "槽2 省略或留空 = i.ToString()，即无格式的十进制",
+   "notes": "格式串直接交给 Int64.ToString；格式非法抛 CodeEE(InvalidFormat)；格式为空串按通用格式输出",
+   "uncertain": false
+  },
+  "TOUPPER": {
+   "category": "字符串操作・参照",
+   "upstream": "将参数字符串中的字母转换为大写，赋值给 RESULTS:0 或作为返回值；也支持指令形式",
+   "desc": "把字符串中的字母转成大写，返回转换后的字符串",
+   "empty_slot": "—（少写或留空均报错）",
+   "notes": "用当前区域性 ToUpper（未指定 InvariantCulture）；空串返回空串",
+   "uncertain": false
+  },
+  "UNICODE": {
+   "category": "字符串操作・参照",
+   "upstream": "根据参数值返回对应 Unicode 字符；不处理代理对，字体不支持时无法显示；指令与式中函数都支持",
+   "desc": "返回码值对应的单个 UTF-16 字符；不处理代理对，码值上限 0xFFFF",
+   "empty_slot": "—（少写或留空均报错）",
+   "notes": "码值 <0 或 >0xFFFF 抛 CodeEE；除 0x0A/0x0D 外的 <0x20 及 0x7F-0x9F 只警告并返回空串；代理区值原样返回",
+   "uncertain": false
+  },
+  "UNICODEBYTE": {
+   "category": "其他",
+   "upstream": "无参考页；UNICODE 页只有 UNICODE 与 ENCODETOUNI（后者式中形可选位置）",
+   "desc": "返回首字符的 Unicode 码位（小端 UTF-32 前 4 字节读作 int）",
+   "empty_slot": "—",
+   "notes": "只取首字符，其余字节被丢弃；空串时 BitConverter 越界抛异常（非 CodeEE）；代理对按一个码位返回",
+   "uncertain": false
+  },
+  "VARSETEX": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "与 VARSET 类似，用字符串变量名赋值；setAllDim 非0或省略则整个数组赋值，否则只赋最低维；from/to 指定起止（不含 to）",
+   "desc": "用变量名字符串把数组的一段（或全部维度）赋为同一个值，恒返回 1",
+   "empty_slot": "省略第3参=整维、第4参=0、第5参=数组末尾；显式留空均报错",
+   "notes": "越界抛 IndexOutOfRangeException，from/to 不校验不互换；3维省略 to 时 end=0；字符串数组忽略 setAllDim",
+   "uncertain": false
+  },
+  "VARSIZE": {
+   "category": "变量操作・变量参照・CSV 参照",
+   "upstream": "命令形式把各维大小依次写入 RESULT:0/1/2；式中须写变量名字符串，第 2 参指定维度（0 起，EM+EE 选项可改为 1 起）",
+   "desc": "按名称取变量的数组长度（指定某一维）；名字不是变量或该维不存在时抛 CodeEE",
+   "empty_slot": "省略或留空均取 0，即最左维（EM+EE 选项下 1 亦为最左维）",
+   "notes": "维越界抛 CodeEE；负维对可变长引用变量会走 array.GetLength(负) 越界；命令形式不受 ERD 选项影响",
+   "uncertain": false
+  },
+  "XML_ADDATTRIBUTE": {
+   "category": "XML 系",
+   "upstream": "按 xpath 选中的元素/属性新增属性 attrName=attrValue；省略 attrValue 时为空串；methodType 0末尾/1前/2后；返回新增次数，失败 0，文档不存在 -1",
+   "desc": "给 xpath 匹配的节点新增属性，返回新增次数；无匹配返 0，目标文档不存在返 -1",
+   "empty_slot": "attrValue 省略取空串；methodType/doSetAll 省略取 0；显式留空抛 CodeEE(ArgCanNotBeNull)",
+   "notes": "methodType=0 且 xpath 选中属性本身时 Attributes 为 null 抛空引用异常；1/2 要求选中属性，选元素则返 0；多匹配复用同一属性只落最后一个",
+   "uncertain": false
+  },
+  "XML_ADDATTRIBUTE_BYNAME": {
+   "category": "XML 系",
+   "upstream": "同 XML_ADDATTRIBUTE，但目标 XmlDocument 由 xmlName 指定；指定的 XmlDocument 不存在时返回 -1",
+   "desc": "以 xmlName 指定的 XmlDocument 为目标，给 xpath 匹配节点新增属性并返回新增次数",
+   "empty_slot": "attrValue 省略取空串；methodType/doSetAll 省略取 0；显式留空抛 CodeEE(ArgCanNotBeNull)",
+   "notes": "第 1 实参须为字符串（变量或字面量皆可，按内容查表）；其余坑同 XML_ADDATTRIBUTE",
+   "uncertain": false
+  },
+  "XML_ADDNODE": {
+   "category": "XML 系",
+   "upstream": "在 xpath 选中的元素上加 nodeXml 子节点；methodType 0子末/1之前/2之后；返回新增次数，失败 0，文档不存在 -1",
+   "desc": "向 xpath 选中的元素插入 nodeXml 新节点，返回匹配（新增）次数；无匹配返 0",
+   "empty_slot": "methodType/doSetAll 省略取 0（doSetAll 要给满 5 个实参才读）；显式留空抛 CodeEE",
+   "notes": "多匹配且 doSetAll=0 时不新增却返回匹配数；setAll 复用同一节点实例，实际只落最后一个；选中根节点时 1/2 返 0",
+   "uncertain": false
+  },
+  "XML_ADDNODE_BYNAME": {
+   "category": "XML 系",
+   "upstream": "同 XML_ADDNODE，但目标 XmlDocument 由 xmlName 指定；指定的 XmlDocument 不存在时返回 -1",
+   "desc": "以 xmlName 指定的 XmlDocument 为目标，向 xpath 选中的元素插入 nodeXml 并返回新增次数",
+   "empty_slot": "methodType/doSetAll 省略取 0（doSetAll 要给满 5 个实参才读）；显式留空抛 CodeEE",
+   "notes": "返回类型与同族主名一样是 int；多匹配/doSetAll 的坑与 XML_ADDNODE 相同",
+   "uncertain": false
+  },
+  "XML_DOCUMENT": {
+   "category": "XML 系",
+   "upstream": "解析 xmlContent 并保存为 XmlDocument；已存在同 ID（创建失败）返回 0，成功返回 1；ID 为整数时用 TOSTR 结果",
+   "desc": "解析 XML 文本并以字符串 ID 存入文档表，成功返回 1，该 ID 已被占用则返回 0。",
+   "empty_slot": "无；个数须恰好 2；显式空槽报 CodeEE(ArgCanNotBeNull)",
+   "notes": "解析失败抛 CodeEE（消息文本误用 XML_GET 前缀）；ID 取字符串实参或整数的 TOSTR，不做归一化",
+   "uncertain": false
+  },
+  "XML_EXIST": {
+   "category": "XML 系",
+   "upstream": "判断 xmlId 对应的 XmlDocument 是否存在，存在返回 1，否则返回 0；ID 为整数时用 TOSTR 结果",
+   "desc": "按字符串 ID 查文档表，存在返回 1，不存在返回 0。",
+   "empty_slot": "无；个数须恰好 1；显式空槽报 CodeEE(ArgCanNotBeNull)",
+   "notes": "RESETDATA 与返回标题界面会自动清空文档表；整数实参按 TOSTR 结果查找",
+   "uncertain": false
+  },
+  "XML_GET": {
+   "category": "XML 系",
+   "upstream": "按 xpath 在 XML 中检索节点；文档 ID 不存在返回 -1；doOutput 非 0 时结果写入 RESULTS，outputType 决定取值",
+   "desc": "按 xpath 检索节点并返回匹配数，可写入 RESULTS 或字符串数组；文档 ID 不存在返回 -1。",
+   "empty_slot": "省略第3参=不输出，第4参=0(Value)；显式空槽报 CodeEE",
+   "notes": "第 1 参为整型才当 ID，字符串一律当 XML 文本；RESULTS 写入受长度截断，返回值仍是完整匹配数",
+   "uncertain": false
+  },
+  "XML_GET_BYNAME": {
+   "category": "XML 系",
+   "upstream": "与 XML_GET 相同，但第 1 参是按名字指定的 XmlDocument；该文档不存在返回 -1",
+   "desc": "以字符串名为文档 ID 按 xpath 检索节点，返回匹配数；文档不存在返回 -1。",
+   "empty_slot": "省略第3参=不输出，第4参=0(Value)；显式空槽报 CodeEE",
+   "notes": "第 1 参字符串一律按名查表，不能当作 XML 文本传入；其余语义同 XML_GET",
+   "uncertain": false
+  },
+  "XML_RELEASE": {
+   "category": "XML 系",
+   "upstream": "删除 xmlId 对应的 XmlDocument（表格中返回值记为 1）",
+   "desc": "删除字符串 ID 对应的文档，成功返回 1；该 ID 不存在时返回 0。",
+   "empty_slot": "无；个数须恰好 1；显式空槽报 CodeEE(ArgCanNotBeNull)",
+   "notes": "文档未写 ID 不存在时的行为：代码返回 0 且不报错",
+   "uncertain": false
+  },
+  "XML_REMOVEATTRIBUTE": {
+   "category": "XML 系",
+   "upstream": "删除 xpath 选中的属性；多匹配须 doSetAll≠0 才能删除；返回已删除属性数，失败 0，文档不存在 -1",
+   "desc": "删除 xpath 选中的属性，返回匹配（删除）次数；xpath 选中元素或无匹配返 0",
+   "empty_slot": "doSetAll 省略取 0（要给满 3 个实参才读）；显式留空抛 CodeEE(ArgCanNotBeNull)",
+   "notes": "删除无方向参数，函数体读槽 3 是死代码；多匹配且 doSetAll=0 时不删却返回匹配数（与文档「失败返 0」不符）；xpath 须选属性（/xml/@a）",
+   "uncertain": false
+  },
+  "XML_REMOVEATTRIBUTE_BYNAME": {
+   "category": "XML 系",
+   "upstream": "同 XML_REMOVEATTRIBUTE，但目标 XmlDocument 由 xmlName 指定；指定的 XmlDocument 不存在时返回 -1",
+   "desc": "以 xmlName 指定的 XmlDocument 为目标，删除 xpath 选中的属性并返回删除次数",
+   "empty_slot": "doSetAll 省略取 0（要给满 3 个实参才读）；显式留空抛 CodeEE(ArgCanNotBeNull)",
+   "notes": "第 1 实参为字符串名，按内容查表；返回类型与主名同为 int；坑同 XML_REMOVEATTRIBUTE",
+   "uncertain": false
+  },
+  "XML_REMOVENODE": {
+   "category": "XML 系",
+   "upstream": "从 XML 中删除 xpath 选中的节点（根节点除外）；多匹配须 doSetAll≠0；返回删除数，失败 0，文档不存在 -1",
+   "desc": "删除 xpath 选中的节点，返回匹配（删除）次数；根节点或无匹配返 0",
+   "empty_slot": "doSetAll 省略取 0；显式留空抛 CodeEE(ArgCanNotBeNull)",
+   "notes": "删除无 methodType，函数内读槽 3 的局部变量是死代码；多匹配 doSetAll=0 时未删却返回匹配数；xpath 选中属性时 ParentNode 为 null 返 0",
+   "uncertain": false
+  },
+  "XML_REMOVENODE_BYNAME": {
+   "category": "XML 系",
+   "upstream": "同 XML_REMOVENODE，但目标 XmlDocument 由 xmlName 指定；指定的 XmlDocument 不存在时返回 -1",
+   "desc": "以 xmlName 指定的 XmlDocument 为目标，删除 xpath 选中的节点并返回删除次数",
+   "empty_slot": "doSetAll 省略取 0；显式留空抛 CodeEE(ArgCanNotBeNull)",
+   "notes": "第 1 实参为字符串名，按内容查表；删除无方向参数，坑同 XML_REMOVENODE",
+   "uncertain": false
+  },
+  "XML_REPLACE": {
+   "category": "XML 系",
+   "upstream": "2 参时把 xmlId 指定文档整体换成 newXml；3-4 参替换 xpath 选中节点；返回更新数，失败 0，不存在 -1",
+   "desc": "整体替换 xmlId 文档或替换 xpath 选中的节点，返回更新次数；目标不存在返 -1",
+   "empty_slot": "doSetAll 省略取 0，2 参形态无可省略槽；显式留空抛 CodeEE(ArgCanNotBeNull)",
+   "notes": "2 参时第 1 实参按名字查表（字符串变量也不回写，整体替换固定返 1）；newXml 先解析，非法 XML 先抛 CodeEE 而非返 -1",
+   "uncertain": false
+  },
+  "XML_REPLACE_BYNAME": {
+   "category": "XML 系",
+   "upstream": "同 XML_REPLACE 的 3-4 参形态，目标由 xmlName 指定；不存在返回 -1；返回已更新节点数",
+   "desc": "以 xmlName 指定的 XmlDocument 为目标，替换 xpath 选中的节点并返回更新次数",
+   "empty_slot": "doSetAll 省略取 0；显式留空抛 CodeEE(ArgCanNotBeNull)",
+   "notes": "只有 3-4 参形态，没有整体替换；xpath 选中根或属性时 Replace 返 0；多匹配 doSetAll=0 时未替换却返回匹配数",
+   "uncertain": false
+  },
+  "XML_SET": {
+   "category": "XML 系",
+   "upstream": "将 xpath 选中节点的内容设为 value；多匹配须 doSetAll≠0；返回更新数，文档 ID 不存在返回 -1",
+   "desc": "把 xpath 命中节点的内容设为 value，返回匹配节点数；文档 ID 不存在返回 -1。",
+   "empty_slot": "省略第4参=0(不批量)，第5参=0(Value)；显式空槽报 CodeEE",
+   "notes": "doSetAll=0 且多匹配时不更新却仍返回匹配数（文档称失败返 0）；仅匹配数>0 时回写第 1 参变量；// 提示与实测不符",
+   "uncertain": false
+  },
+  "XML_SET_BYNAME": {
+   "category": "XML 系",
+   "upstream": "同 XML_SET，第 1 参为 XmlDocument 名；该文档不存在返回 -1",
+   "desc": "以字符串名为文档 ID，把 xpath 命中节点内容设为 value，返回匹配节点数。",
+   "empty_slot": "省略第4参=0(不批量)，第5参=0(Value)；显式空槽报 CodeEE",
+   "notes": "第 1 参是普通字符串（可为字面量），非 ref；文档不存在返回 -1，其余同 XML_SET",
+   "uncertain": false
+  },
+  "XML_TOSTR": {
+   "category": "XML 系",
+   "upstream": "以 XML 文本形式返回 xmlId 指定的 XmlDocument 内容；ID 为整数时用 TOSTR 结果",
+   "desc": "返回字符串 ID 对应文档的 OuterXml；该 ID 不存在时返回空字符串。",
+   "empty_slot": "无；个数须恰好 1；显式空槽报 CodeEE(ArgCanNotBeNull)",
+   "notes": "文档未写 ID 不存在时的行为：代码返回空串；输出为 OuterXml（空元素展开成 <xml />）",
+   "uncertain": false
+  }
+ }
+}

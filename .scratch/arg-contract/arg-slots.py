@@ -1,10 +1,10 @@
-"""arg-contract/issues/04 阶段 A 片 0 的消费面重新基线生成器。
+"""arg-contract 的实参消费面生成器：issues/04 阶段 A 片 0 的重新基线 + issues/05 阶段 B 的验收口径。
 
 口径：
   · 扫描范围 = `Emuera/Runtime/Script/Statements/Function/Creator.Method.cs`（**规则表族**：183 个子类
     经 `FunctionMethod.CheckArgumentTypeEx` 校验）。另三族绕过规则表，不在本表：运算符族在
     `OperatorMethod.cs`（`CheckArgumentType` 抛 ExeEE）、StrForm 族在 `StrForm.cs`、TOSTR 包装在
-    `Process.CalledFunction.cs`（都由调用点担保）。
+    `Process.CalledFunction.cs`（都由调用点担保，见 G 段的 `Trusted` 计数）。
   · live = 剥注释后的文本（沿用 slots-worklist.py 的朴素逐行剥离；本文件无逐字字符串/原始字符串，
     3 处插值字符串不含 `arguments`）。「含注释」= 原始文本。
   · 「可空」= 存在一个规则段满足 `OmitStart >= 0` 且 `OmitStart <= i < ArgTypes.Count` 且该槽位
@@ -15,7 +15,8 @@
     「读该槽时是否保证 `Count >= i + 1`」须逐点人工核（票内片 1 第 2 条）。
   · 读取形态按 live 文本的字面量下标 + helper 偏移统计（helper 偏移由 helper 定义体内的
     `Required(argNo)` / `Required(argNo + k)` 机械推出，改 helper 即自动跟随）。非字面量下标、
-    整表转发、`Count` 循环等无法归到具体槽位的形态单列在 D 段。
+    整表转发、`Count` 循环等无法归到具体槽位的形态单列在 D 段。切片④ 后 helper 形参已换成
+    `ArgumentSlots slots`，故 helper 偏移只在阶段 A 快照里有意义；G 段另按函数体收齐非字面下标站点。
   · 可达 null 候选 = 可空 ∧ 读取形态含硬解引用（`Int`/`Str`/`IsInt`/`IsStr`/`as Var`/`cast Var`/
     `term`/`index`/helper）∧ 类内该槽无判空写法。有判空写法的槽单列在 B 段（判空未必守住解引用，
     须人工核；issues/03 的 B 表 34 项即此类）。
@@ -23,17 +24,33 @@
     候选集与裁定表不一致时脚本报警（缺裁定 = WARN 未裁定；裁定引用了不再出现的槽 = WARN 过期）。
     已带 `ArgType.NotNull` 的槽由脚本机械判定，不进裁定表。4 个硬转型槽的裁定取自跨脚本单一来源
     `_rulings.py`（slots-worklist.py 的 E 段引用同一条），避免两边文案各自漂移。
-  · 自校验（复跑即报警，逐项见产物 E 段）：本文件 live `arguments.Required(` = 404；`HasUniqueRestructure = true;`
-    语句 17 / 类 13；`UniqueRestructure` override 14；全仓 `[.. Arguments]` 1；候选集与裁定表一致；
+  · 自校验（复跑即报警，逐项见产物 E 段）：本文件 live `arguments.Required(` <= 404（404 是阶段 A 基线，
+    阶段 B 迁移中递减，超出即 WARN）；`HasUniqueRestructure = true;`
+    语句 17 / 类 13；`UniqueRestructure` override 14；全仓整表复制（`[.. Arguments]` / 切片④ 后的
+    `[.. Slots.FoldTarget]`）1、`ArgumentSlots` 快照的 ctor 复制 1；候选集与裁定表一致；
     以及**与 [slots-worklist.py](slots-worklist.py) 同函数同口径**的 `ArgType.NotNull` 计数
-    （含注释 87 处 / 76 行，剥注释 81 处 / 70 行；计数函数在 `_scan.not_null_counts`，预期值在
-    `_scan.NOT_NULL_EXPECTED`——两处同源，改 `Creator.Method.cs` 时同步这两处即可同时约束两个产物）。
-用法：python3.14 .scratch/arg-contract/arg-slots.py
-产物：.scratch/arg-contract/slots-consumption.md（UTF-8 BOM，与本脚本写出编码一致，可逐字节复现）
+    （计数函数在 `_scan.not_null_counts`，现行预期值是 `_scan.NOT_NULL_EXPECTED` 这一个常量——
+    数字不写在这里，改 `Creator.Method.cs` 时只同步 `_scan.py` 一处即可同时约束两个产物）。
+  · G 段（issues/05 阶段 B 的验收口径，见产物 G 段）：站点全集 = 全文件 live `arguments.Required(<任意下标>)`
+    （含文件作用域 helper 内部的读取，如 `ReadPoint`）。**形态**按站点后随成员归类（词表与 `read_forms`
+    一致，前缀窗 24 字符以容纳 `(VariableTerm)arguments.Required(n)` 这一写法）；**面**按花括号配对归属：
+    落在 `UniqueRestructure` / `CheckArgumentType` / `Get(Int|Str)Value` / `GetReturnValue` 体内的分别是
+    折叠面 / 检查面 / 消费面，类内其余方法与文件作用域 helper 都算消费面。阶段 B 只迁消费面，
+    折叠面保持旧签名 ⇒ **门禁目标是消费面归零，不是全文件归零**。基线（HEAD 30686cf4）：
+    全文件 372/404 = 92.1%（`Int` 188 + `Str` 152 + `IsInt` 15 + `IsStr` 17，复现 issues/04 的叙述值），
+    消费面 369/379 = 97.4%；消费面 `Var` 家族 32（硬转型 29）、旧签名 override 229
+    （规则表族 185 + Trusted 三族 44）、全库 `FunctionMethodTerm` 构造点 15。
+用法：python3.14 .scratch/arg-contract/arg-slots.py            # 只写阶段 B 的进度工件
+      python3.14 .scratch/arg-contract/arg-slots.py --phase-a  # 另写阶段 A 快照（只应在阶段 A 的 HEAD 上跑）
+产物：.scratch/arg-contract/slots-progress.md（默认：G 段 + 阶段 B 自校验；UTF-8 BOM，可逐字节复现）
+      .scratch/arg-contract/slots-consumption.md（--phase-a：阶段 A 的 A–F 与 E 段快照。阶段 B 重写消费面后
+      那批表的「读取形态」扫描不到访问器调用、必然漂移，故该文件已冻结在基线 HEAD 30686cf4，不再默认重写）
 """
 
 import os
 import re
+import sys
+from collections import Counter
 
 from _rulings import consumption_rulings
 from _scan import (NOT_NULL_EXPECTED, class_spans, methods_of, not_null_counts,
@@ -41,7 +58,12 @@ from _scan import (NOT_NULL_EXPECTED, class_spans, methods_of, not_null_counts,
 
 SRC = r"Emuera/Runtime/Script/Statements/Function/Creator.Method.cs"
 DST = r".scratch/arg-contract/slots-consumption.md"
+PROGRESS_DST = r".scratch/arg-contract/slots-progress.md"
 REPO = r"Emuera"
+# 阶段 A 的快照（slots-consumption.md 的 A–F 与 E 段）只在迁移开始前可复现：阶段 B 重写消费面后，
+# 那批表的「读取形态」扫描不到访问器调用，必然漂移。故默认只再生阶段 B 的进度工件（G 段），
+# 需要重生成阶段 A 快照时显式加 --phase-a（只应在阶段 A 的 HEAD 上跑）。
+PHASE_A = "--phase-a" in sys.argv
 
 src = open(SRC, encoding="utf-8-sig").read()
 
@@ -292,16 +314,20 @@ unruled = sorted(k for k in cand if k not in RULINGS)
 # 「已落地」= 裁定表里那些现在已带上 ArgType.NotNull 的槽（本片 1 的产物）；既不待办也不已落地才是真过期。
 done = {k: rows[k] for k in RULINGS if k not in cand and k in rows and rows[k]["flag"]}
 stale = sorted(k for k in RULINGS if k not in cand and k not in done)
-for k in unruled:
-    print("WARN 候选未裁定：", k)
-for k in stale:
-    print("WARN 裁定表引用了已消失的槽（类改名 / 不再可省略）：", k)
+# 候选集/裁定表的一致性只对阶段 A 快照有意义：阶段 B 迁移后「类内读取形态」认不出来，
+# 候选集会漂移（这正是快照要冻结的原因），故这批 WARN 只在 --phase-a 下打。
+if PHASE_A:
+    for k in unruled:
+        print("WARN 候选未裁定：", k)
+    for k in stale:
+        print("WARN 裁定表引用了已消失的槽（类改名 / 不再可省略）：", k)
 unruled2 = sorted(k for k in unseen if k not in RULINGS_A2)
 stale2 = sorted(k for k in RULINGS_A2 if k not in unseen)
-for k in unruled2:
-    print("WARN A2 段未裁定：", k)
-for k in stale2:
-    print("WARN A2 段裁定表引用了不再出现的槽：", k)
+if PHASE_A:
+    for k in unruled2:
+        print("WARN A2 段未裁定：", k)
+    for k in stale2:
+        print("WARN A2 段裁定表引用了不再出现的槽：", k)
 
 summary = {c: sum(1 for k in set(cand) | set(done) if RULINGS.get(k, ("",))[0] == c) for c in CATEGORIES}
 
@@ -314,6 +340,7 @@ has_unique_stmts = len(re.findall(r"HasUniqueRestructure = true;", code))
 has_unique_classes = sum(1 for name, pos, end in classes if "HasUniqueRestructure = true;" in code[pos:end])
 unique_overrides = len(re.findall(r"public override bool UniqueRestructure\(", code))
 copy_arguments = 0
+copy_snapshot = 0
 for root, _dirs, files in os.walk(REPO):
     for fn in files:
         if fn.endswith(".cs"):
@@ -321,7 +348,13 @@ for root, _dirs, files in os.walk(REPO):
                 txt = open(os.path.join(root, fn), encoding="utf-8-sig").read()
             except UnicodeDecodeError:
                 continue
-            copy_arguments += live_count(r"\.\. Arguments\]", strip_keep_lines(txt))
+            # unique 分支的整表副本只许有一处：`UniqueRestructure` 收到副本，故它内部的写回被丢弃（issues/04 #3）。
+            # 切片④ 后该副本的源是 `Slots.FoldTarget`，形态从 `[.. Arguments]` 变成 `[.. arguments]`，
+            # 故这里按「谁收到整表副本」定形，而不是按实参表的变量名。
+            copy_arguments += live_count(r"UniqueRestructure\(exm, \[\.\. \w+\]\)", strip_keep_lines(txt))
+            # 另一处整表复制在槽位类型自己的 ctor（检查期快照），它按定义就该有且只有一处——故单独立一条不变量，
+            # 不再混进上面那条「折叠面不变量」的计数（两者的理由不同：那条是「折叠写回被丢弃」，这条是快照语义）。
+            copy_snapshot += live_count(r"terms = \[\.\. arguments\]", strip_keep_lines(txt))
 
 repo_live = 0
 for root, _dirs, files in os.walk(REPO):
@@ -348,14 +381,298 @@ live_list_pattern = live_count(r"arguments is \[", code)
 live_skip = live_count(r"arguments\.Skip\(", code)
 live_cast_loop = live_count(r"arguments\.Cast<", code)
 
+# ── 阶段 B（issues/05）的验收口径：访问器覆盖与「消费面 / 折叠面」拆分 ─────────────────────
+# 站点全集 = 全文件 live `arguments.Required(<任意下标>)`，含文件作用域 helper（ReadPoint 等）内部的读取。
+ACCESSOR_FORMS = ("Int", "Str", "IsInt", "IsStr")
+OLD_SIG = (r"override\s+(?:long|string|SingleTerm)\s+"
+           r"(?:Get(?:Int|Str)Value|GetReturnValue)\s*\(ExpressionMediator exm, List<AExpression\?> arguments\)")
+TRUSTED_SRC = [
+    r"Emuera/Runtime/Script/Statements/Expression/OperatorMethod.cs",
+    r"Emuera/Runtime/Script/Data/StrForm.cs",
+    r"Emuera/Runtime/Script/Process.CalledFunction.cs",
+]
+FACE_PATTERNS = [
+    ("折叠面", r"(?:override|public|private|protected|internal|static)[\w<>?,\[\].\s]*?\bUniqueRestructure\s*\([^;{}]*\)\s*\{"),
+    ("检查面", r"(?:override|public|private|protected|internal|static)[\w<>?,\[\].\s]*?\bCheckArgumentType(?:Ex)?\s*\([^;{}]*\)\s*\{"),
+    ("消费面", r"(?:override|public|private|protected|internal|static)[\w<>?,\[\].\s]*?\bGet(?:Int|Str)Value\s*\([^;{}]*\)\s*\{"),
+    ("消费面", r"(?:override|public|private|protected|internal|static)[\w<>?,\[\].\s]*?\bGetReturnValue\s*\([^;{}]*\)\s*\{"),
+]
+
+
+def brace_end(text, open_idx):
+    """open_idx 处是 `{`，返回配对 `}` 之后的位置（找不到则到文末）。"""
+    depth = 0
+    for i in range(open_idx, len(text)):
+        if text[i] == "{":
+            depth += 1
+        elif text[i] == "}":
+            depth -= 1
+            if depth == 0:
+                return i + 1
+    return len(text)
+
+
+def face_ranges(text):
+    """(方法体起, 方法体止, 面) 三元组；同一站点取最内层。"""
+    out = []
+    for face, pat in FACE_PATTERNS:
+        for m in re.finditer(pat, text):
+            out.append((m.start(), brace_end(text, text.index("{", m.end() - 1)), face))
+    return out
+
+
+def required_form(text, start, end):
+    """`arguments.Required(...)` 站点的形态；词表与 read_forms 一致（前缀窗放宽到 24）。"""
+    tail, before = text[end:end + 32], text[max(0, start - 24):start]
+    if tail.startswith(".GetIntValue("):
+        return "Int"
+    if tail.startswith(".GetStrValue("):
+        return "Str"
+    if tail.startswith(".IsInteger"):
+        return "IsInt"
+    if tail.startswith(".IsString"):
+        return "IsStr"
+    if tail.startswith(".Restructure("):
+        return "折叠"
+    if "as VariableTerm" in tail[:24]:
+        return "as Var"
+    if "(VariableTerm)" in before or "(VariableTerm)" in tail[:24]:
+        return "cast Var"
+    return "term"
+
+
+REQUIRED_SITE = r"arguments\.Required\(\s*[^)]*\)"
+
+
+def required_sites():
+    """(面, 形态, 绝对位置) 的站点全集：类内按方法体归面，文件作用域 helper 一律消费面。"""
+    out = []
+    for _name, pos, cend in classes:
+        span = code[pos:cend]
+        rng = face_ranges(span)
+        for m in re.finditer(REQUIRED_SITE, span):
+            face, best = "消费面", None
+            for s, e, f in rng:
+                if s <= m.start() < e and (best is None or e - s < best[1] - best[0]):
+                    best = (s, e, f)
+            if best:
+                face = best[2]
+            out.append((face, required_form(span, m.start(), m.end()), pos + m.start()))
+    for m in re.finditer(REQUIRED_SITE, code):
+        if any(pos <= m.start() < cend for _n, pos, cend in classes):
+            continue
+        out.append(("消费面", required_form(code, m.start(), m.end()), m.start()))
+    return out
+
+
+cov_sites = required_sites()
+cov_forms = Counter(f for _fa, f, _p in cov_sites)
+cov_faces = Counter(fa for fa, _f, _p in cov_sites)
+cov_total = len(cov_sites)
+cov_file_covered = sum(cov_forms[f] for f in ACCESSOR_FORMS)
+cov_cons_total = cov_faces["消费面"]
+cov_cons_covered = sum(1 for fa, f, _p in cov_sites if fa == "消费面" and f in ACCESSOR_FORMS)
+# 基线（HEAD 30686cf4，issues/04 的叙述值：372/404 = 92.1%）：只做「不增」检查，递减是阶段 B 的进度。
+COV_BASELINE_FILE = {"Int": 188, "Str": 152, "IsInt": 15, "IsStr": 17}
+COV_BASELINE_FILE_TOTAL = 404
+COV_BASELINE_CONS = 379
+
+
+def var_family_form(text, start, end):
+    """`Var` 访问器覆盖的站点形态；None = 与变量实体无关。"""
+    tail, before = text[end:end + 32], text[max(0, start - 24):start]
+    if "as VariableTerm" in tail[:24]:
+        return "as Var"
+    if "(VariableTerm)" in before or "(VariableTerm)" in tail[:24]:
+        return "cast Var"
+    if "is VariableTerm" in tail[:24]:
+        return "is Var"
+    return None
+
+
+var_family = Counter()
+for _m in re.finditer(rf"(?:{REQUIRED_SITE}|arguments\[\s*[^\]]*\])", code):
+    _f = var_family_form(code, _m.start(), _m.end())
+    if _f:
+        var_family[_f] += 1
+var_family_total = sum(var_family.values())
+
+# `Var` 家族（`as VariableTerm` / `(VariableTerm)` / `is VariableTerm`）按面拆分：阶段 B 要把消费面的
+# 变量实体站点全部改成 `Var(i)`，故消费面硬转型数是切片④的门禁之一。
+INDEX_SITE = rf"(?:{REQUIRED_SITE}|arguments\[\s*[^\]]*\])"
+
+
+def index_sites():
+    """(面, 形态, 绝对位置)：`arguments.Required(...)` 与 `arguments[...]` 的并集。"""
+    out = []
+    for _name, pos, cend in classes:
+        span = code[pos:cend]
+        rng = face_ranges(span)
+        for m in re.finditer(INDEX_SITE, span):
+            face, best = "消费面", None
+            for s, e, f in rng:
+                if s <= m.start() < e and (best is None or e - s < best[1] - best[0]):
+                    best = (s, e, f)
+            if best:
+                face = best[2]
+            out.append((face, var_family_form(span, m.start(), m.end()), pos + m.start()))
+    for m in re.finditer(INDEX_SITE, code):
+        if any(pos <= m.start() < cend for _n, pos, cend in classes):
+            continue
+        out.append(("消费面", var_family_form(code, m.start(), m.end()), m.start()))
+    return out
+
+
+idx_sites = index_sites()
+cons_var_sites = sum(1 for fa, f, _p in idx_sites if fa == "消费面" and f)
+cons_hard_cast = sum(1 for fa, f, _p in idx_sites if fa == "消费面" and f in ("as Var", "cast Var"))
+fold_var_sites = sum(1 for fa, f, _p in idx_sites if fa == "折叠面" and f)
+BASELINE_CONS_VAR = 32
+BASELINE_CONS_HARD_CAST = 29
+
+
+def is_empty_test(text, start, end):
+    """槽位的判空写法（同 `_scan.null_handling_points` 的三组模式，下标不限字面量）。"""
+    tail = text[end:end + 28]
+    for kind, pat in (("`==/!= null`", r"\s*(?:==|!=)\s*null"),
+                      ("`is null`", r"\s+is\s+(?:not\s+)?null"),
+                      ("`?.`", r"\s*\?\.")):
+        if re.match(pat, tail):
+            return kind
+    return None
+
+
+empty_tests = Counter()
+for _name, _pos, _cend in classes:
+    _span = code[_pos:_cend]
+    for _m in re.finditer(INDEX_SITE, _span):
+        _k = is_empty_test(_span, _m.start(), _m.end())
+        if _k:
+            empty_tests[_k] += 1
+for _m in re.finditer(INDEX_SITE, code):
+    if any(pos <= _m.start() < cend for _n, pos, cend in classes):
+        continue
+    _k = is_empty_test(code, _m.start(), _m.end())
+    if _k:
+        empty_tests[_k] += 1
+empty_test_total = sum(empty_tests.values())
+
+# Trusted 三族（绕过规则表、由调用点担保）与 FunctionMethodTerm 构造点计数
+trusted_live = {}
+for p in TRUSTED_SRC:
+    t = strip_keep_lines(open(p, encoding="utf-8-sig").read())
+    trusted_live[p.split("/")[-1]] = {
+        "Required": live_count(r"arguments\.Required\(", t),
+        "字面量下标": live_count(r"arguments\[\s*\d+\s*\]", t),
+        "硬转型": live_count(r"as VariableTerm", t) + live_count(r"\(VariableTerm\)", t),
+        "构造点": live_count(r"new FunctionMethodTerm\(", t),
+        "旧签名 override": live_count(OLD_SIG, t),
+    }
+trusted_ctor_total = sum(v["构造点"] for v in trusted_live.values())
+literal_ctor_total = 0
+target_typed_ctor = 0
+trusted_entry_total = 0
+checked_entry_total = 0
+for _root, _dirs, _files in os.walk(REPO):
+    for _fn in _files:
+        if not _fn.endswith(".cs"):
+            continue
+        try:
+            _t = strip_keep_lines(open(os.path.join(_root, _fn), encoding="utf-8-sig").read())
+        except UnicodeDecodeError:
+            continue
+        literal_ctor_total += live_count(r"new FunctionMethodTerm\(", _t)
+        target_typed_ctor += live_count(r"FunctionMethodTerm\s+\w+\s*=\s*new\(", _t)
+        trusted_entry_total += live_count(r"ArgumentSlots\.Trusted\(", _t)
+        checked_entry_total += live_count(r"ArgumentSlots\.Checked\(", _t)
+old_sig_rule_table = live_count(OLD_SIG, code)
+old_sig_total = old_sig_rule_table + sum(v["旧签名 override"] for v in trusted_live.values())
+trusted_required_total = sum(v["Required"] for v in trusted_live.values())
+
+# ── 访问器前置核对（issues/05 切片④）：迁移后的函数体对「规则表允许为空」的槽取值时，体内必须有守卫 ──
+# 判据同票面：`Int`/`Str`/`IsInteger`/`IsString`/`Var` 只在 role 含 Required 的槽上可直接读；规则表放行显式
+# 空槽时，体内要先 `Has`/`IsEmpty`/`IsMissing` 把空槽挡掉。`slots.Count > n` **不算守卫**——数量省略与
+# 显式空槽正交，元素在而值为 null 时 Count 守卫照样放行（票面 B 段那 7 处 `Count` 守卫因此只在规则表已把
+# 该槽判为 Required 的类里成立，不在这张表里）。
+SLOT_BODY = re.compile(r"override\s+(?:long|string|SingleTerm)\s+(?:Get(?:Int|Str)Value|GetReturnValue)\s*"
+                       r"\(ExpressionMediator exm, ArgumentSlots slots\)\s*\{")
+ACCESSOR_READ = re.compile(r"slots\.(Int|Str|IsInteger|IsString|Var|Term)\(\s*(?:exm,\s*)?(\w+)\s*\)")
+CLAIM_ACCESSORS = ("Int", "Str", "IsInteger", "IsString", "Var")
+accessor_rows = []
+for _name, _pos, _cend in classes:
+    _span = code[_pos:_cend]
+    for _m in SLOT_BODY.finditer(_span):
+        _body_open = _m.end() - 1
+        _body = _span[_body_open:brace_end(_span, _body_open)]
+        for _am in ACCESSOR_READ.finditer(_body):
+            _acc, _idx = _am.group(1), _am.group(2)
+            if not _idx.isdigit():
+                continue
+            _k = int(_idx)
+            if not may_be_empty(_name, _k):
+                continue
+            _guard = bool(re.search(rf"slots\.(?:Has|IsEmpty|IsMissing)\(\s*{_k}\s*\)", _body))
+            accessor_rows.append((_name, _k, _acc, _guard))
+accessor_unproven = [r for r in accessor_rows if not r[3] and r[2] in CLAIM_ACCESSORS]
+
+# 非字面下标站点：`may_be_empty` 按槽号算，算不出变量/偏移表达式落在哪一槽，故上面那张表覆盖不到它们。
+# 这里按「函数体」收齐并给一条**弱判据**：体内出现 `Count`/`Has`/`IsEmpty`/`IsMissing` 之一即算有守卫
+# （票面那 5 处 helper 偏移读取由调用点的常量 argNo + 规则表担保，单列、不计入判定——它们所在的函数体
+# 连一个守卫都不写，正因如此不能拿同一条尺子量）。
+SLOTS_FUNC = re.compile(
+    r"(override\s+)?(?:long|string|SingleTerm|[\w<>\[\],?.]+)\s+(\w+)\s*\([^;{}]*ArgumentSlots\s+\w+[^;{}]*\)\s*\{")
+ACCESSOR_READ_ANY = re.compile(r"slots\.(Int|Str|IsInteger|IsString|Var|Term|TermOrNull|Tail)\(\s*(?:exm\s*,\s*)?([^)]*?)\s*\)")
+
+
+def class_at(pos):
+    """pos 处所在的（最内层）规则表族子类名；文件作用域 helper 返回 None。"""
+    best = None
+    for _n, _p, _e in classes:
+        if _p <= pos < _e and (best is None or _p > best[1]):
+            best = (_n, _p)
+    return best[0] if best else None
+
+
+accessor_dyn = []        # (类, 函数名, 访问器, 下标表达式, 体内有守卫) —— override 的槽位入口
+accessor_dyn_helper = []  # (helper 名, 访问器, 下标表达式) —— 文件作用域 helper（调用点担保）
+for _m in SLOTS_FUNC.finditer(code):
+    _ob = _m.end() - 1
+    _func_body = code[_ob:brace_end(code, _ob)]
+    for _am in ACCESSOR_READ_ANY.finditer(_func_body):
+        _idx = _am.group(2).strip()
+        if _idx.isdigit():
+            continue
+        _guard = bool(re.search(r"slots\.(?:Count|Has|IsEmpty|IsMissing)\b", _func_body))
+        if _m.group(1):
+            accessor_dyn.append((class_at(_m.start()), _m.group(2), _am.group(1), _idx, _guard))
+        else:
+            accessor_dyn_helper.append((_m.group(2), _am.group(1), _idx))
+dyn_all = [m for m in ACCESSOR_READ_ANY.finditer(code) if not m.group(2).strip().isdigit()]
+dyn_unproven = [r for r in accessor_dyn if not r[4] and r[2] in CLAIM_ACCESSORS]
+
+# `arguments.Count` 按面拆分：消费面要归零，折叠面（UniqueRestructure 收旧签名）保留。
+count_faces = Counter()
+for _name, _pos, _cend in classes:
+    _span = code[_pos:_cend]
+    _rng = face_ranges(_span)
+    for _m in re.finditer(r"arguments\.Count", _span):
+        _face, _best = "消费面", None
+        for _s, _e, _f in _rng:
+            if _s <= _m.start() < _e and (_best is None or _e - _s < _best[1] - _best[0]):
+                _best = (_s, _e, _f)
+        count_faces[_best[2] if _best else "消费面"] += 1
+
+
 # 与 slots-worklist.py 同函数同口径地数 `ArgType.NotNull`（issues/04 承诺的自校验项）
 nn = not_null_counts(src)
 nn_actual = (nn["raw_occ"], nn["raw_lines"], nn["live_occ"], nn["live_lines"])
 nn_ok = nn_actual == NOT_NULL_EXPECTED
 
-checks = []
-if live_required != 404:
-    checks.append(f"本文件 live `arguments.Required(` = {live_required}，预期 404（口径变更时同步票面）")
+checks = []          # 阶段 A 快照（slots-consumption.md）的自校验：只在 --phase-a 再生时才有意义
+checks_b = []        # 阶段 B 进度工件（slots-progress.md）的自校验：每次都跑
+if live_required != COV_BASELINE_FILE_TOTAL:
+    checks.append(f"本文件 live `arguments.Required(` = {live_required}，预期 404"
+                  "（阶段 A 快照的基线；阶段 B 迁移后重跑必然报警，属预期，进度看 slots-progress.md）")
 if repo_live < live_required:
     checks.append("全仓 live 计数小于本文件，扫描口径有误")
 if has_unique_stmts != 17:
@@ -365,17 +682,18 @@ if has_unique_classes != 13:
 if unique_overrides != 14:
     checks.append(f"`UniqueRestructure` override 数 = {unique_overrides}，预期 14")
 if copy_arguments != 1:
-    checks.append(f"全仓 `[.. Arguments]` = {copy_arguments}，预期 1（FunctionMethodTerm.cs 的 unique 分支）")
+    checks.append(f"全仓整表复制 `[.. Arguments]`/`[.. Slots.FoldTarget]` = {copy_arguments}，"
+                  "预期 1（FunctionMethodTerm.cs 的 unique 分支）")
+if copy_snapshot != 1:
+    checks.append(f"`ArgumentSlots` 快照的整表复制 `terms = [.. arguments]` = {copy_snapshot}，"
+                  "预期 1（FunctionMethod.cs 的 ArgumentSlots ctor）")
 if not nn_ok:
     checks.append(f"`ArgType.NotNull` 计数（含注释 处/行、剥注释 处/行）= {nn_actual}，预期 {NOT_NULL_EXPECTED}"
                   "（与 slots-worklist.py 同函数同口径）")
 
-unflagged_need = sorted(k for k, r in rows.items()
-                        if r["in_omittable"] and r["empty"] and not r["flag"] and not r["guard"])
-
 # ── issues/18 的不变量：规则含 `AllowConstRef` 的引用位 ⇒ 该类必须设 HasUniqueRestructure ─────────
 # 理由：常量数组实参会被 `VariableTerm.Restructure` 折成 `SingleTerm`，函数体的 `(VariableTerm)` 转换随后失效；
-# 该类的 `UniqueRestructure`（收到的是 `[.. Arguments]` 副本）是仓库既有的规避手法。
+# 该类的 `UniqueRestructure`（收到的是整表副本）是仓库既有的规避手法。违例进 b_rows，故默认产物也报警。
 allow_const = []
 for name, pos, end in classes:
     for b in blocks_by_class[name]:
@@ -386,7 +704,7 @@ unique_classes = {name for name, pos, end in classes if "HasUniqueRestructure = 
 # 人工豁免（逐槽）：`CONST` 与 `CHARADATA` 互斥，故角色数据段上的常量数组实参不可能存在，
 # 折叠路径不可达 ⇒ 该槽不受不变量约束（nullable-migration/issues/18 的「修法约束」已核过此处）。
 INVARIANT_EXEMPT = {
-    ("SumArrayMethod", 0): "角色数据段（`CharacterData | RefIntArray | AllowConstRef`）：常量数组不可能是角色数组变量",
+    ("SumArrayMethod", 0): "角色数据段（`CharacterData \\| RefIntArray \\| AllowConstRef`）：常量数组不可能是角色数组变量",
 }
 invariant_rows = []
 for name, i, om, argc in allow_const:
@@ -394,11 +712,69 @@ for name, i, om, argc in allow_const:
     invariant_rows.append((name, i, om, argc, name in unique_classes, exempt))
 invariant_violations = sorted({(n, i) for n, i, _om, _argc, ok, ex in invariant_rows if not ok and not ex})
 
-if checks:
-    for c in checks:
-        print("WARN 自校验：", c)
+# 测试侧的槽位构造点：`REPO` 只含 `Emuera/`，故直调工厂的用例单列计数——否则它就是第五条无人看管的构造路径。
+test_factory_total = 0
+for root, _dirs, files in os.walk("Emuera.Tests"):
+    for fn in files:
+        if fn.endswith(".cs"):
+            try:
+                txt = open(os.path.join(root, fn), encoding="utf-8-sig").read()
+            except UnicodeDecodeError:
+                continue
+            test_factory_total += live_count(r"ArgumentSlots\.(?:Trusted|Checked)\(", strip_keep_lines(txt))
+
+# 阶段 B 的自校验：结构不变量 + 相对基线不增 + 构造路径不增 + 终态一致性。
+# 这里也重申「折叠面不动」的三项（17/13/14/1/NotNull）——迁移不该碰它们，故两边都查。
+# b_rows 同时喂「报警」与进度工件的自校验表，避免两处各写一份判据。
+b_rows = [
+    ("G 段站点全集 == 本文件 live `arguments.Required(`",
+     cov_total == live_required),
+    ("G 段形态划分和 == 站点全集", sum(cov_forms.values()) == cov_total),
+    ("G 段面划分和（消费 + 检查 + 折叠）== 站点全集", sum(cov_faces.values()) == cov_total),
+    ("G 段基线不增（全文件覆盖 372 / 消费面 379 / 消费面 `Var` 32 / 硬转型 29）",
+     cov_file_covered <= 372 and cov_cons_total <= COV_BASELINE_CONS
+     and cons_var_sites <= BASELINE_CONS_VAR and cons_hard_cast <= BASELINE_CONS_HARD_CAST),
+    ("Trusted 三族构造点 == 13，全库字面 == 14，target-typed == 1",
+     (trusted_ctor_total, literal_ctor_total, target_typed_ctor) == (13, 14, 1)),
+    ("`ArgumentSlots.Trusted(` == 15（担保族 13 + 工厂的无声明分支 2），"
+     "`ArgumentSlots.Checked(` == 2（工厂：命中段 / 定数表）",
+     (trusted_entry_total, checked_entry_total) == (15, 2)),
+    ("阶段 B 终态一致性（规则表族：消费面归零 ⟺ 旧签名 override 归零）",
+     (cov_cons_total == 0) == (old_sig_rule_table == 0)),
+    ("阶段 B 终态一致性（Trusted 三族：`Required(` 归零 ⟺ 旧签名 override 归零）",
+     (trusted_required_total == 0) == (old_sig_total - old_sig_rule_table == 0)),
+    ("访问器前置：可空槽上的 Int/Str/IsInteger/IsString/Var 读取都有体内守卫（`Count` 不算守卫）",
+     not accessor_unproven),
+    ("访问器前置：动态下标站点所在的函数体都有守卫（弱判据：体内出现 `Count`/`Has`/`IsEmpty`/`IsMissing`）",
+     not dyn_unproven),
+    ("动态下标站点划分 == 全文件扫描（函数体内 + helper 内）",
+     len(accessor_dyn) + len(accessor_dyn_helper) == len(dyn_all)),
+    ("`ArgumentSlots` 快照的整表复制 == 1（ctor 的 `terms = [.. arguments]`）", copy_snapshot == 1),
+    ("折叠面不变量（17/13、override 14、整表复制 1）",
+     (has_unique_stmts, has_unique_classes, unique_overrides, copy_arguments) == (17, 13, 14, 1)),
+    (f"`ArgType.NotNull` 计数 == {NOT_NULL_EXPECTED}（与 slots-worklist.py 同函数同口径）", nn_ok),
+    ("全仓 live 计数 >= 本文件", repo_live >= live_required),
+    ("issues/18 不变量（`AllowConstRef` ⇒ `HasUniqueRestructure`）无违例", not invariant_violations),
+    ("测试侧的槽位构造点 == 7（ArgumentSlotsTests 直调 `Trusted(`；门禁扫描根只含 `Emuera/`）",
+     test_factory_total == 7),
+]
+checks_b = [label for label, ok in b_rows if not ok]
+
+
+unflagged_need = sorted(k for k, r in rows.items()
+                        if r["in_omittable"] and r["empty"] and not r["flag"] and not r["guard"])
+
+if PHASE_A:
+    if checks:
+        for c in checks:
+            print("WARN 阶段 A 快照自校验：", c)
+    else:
+        print("阶段 A 快照自校验通过")
+if checks_b:
+    for c in checks_b:
+        print("WARN 阶段 B 自校验：", c)
 else:
-    print("自校验通过")
+    print("阶段 B 自校验通过")
 
 # ── 产物 ─────────────────────────────────────────────────────────────────────────
 out = []
@@ -428,7 +804,7 @@ out.append(f"| 列表模式 `arguments is […]` | {live_list_pattern} | {live_c
 out.append(f"| `arguments.Skip(` / `arguments.Cast<` | {live_skip} / {live_cast_loop} | — |")
 out.append(f"| `HasUniqueRestructure = true;` | {has_unique_stmts} 条语句 / {has_unique_classes} 个类 | — |")
 out.append(f"| `UniqueRestructure` override | {unique_overrides} 个 | — |")
-out.append(f"| `[.. Arguments]`（全仓） | {copy_arguments} | — |")
+out.append(f"| unique 分支的整表副本（`UniqueRestructure(exm, [.. …])`） | {copy_arguments} | — |")
 out.append(f"| 全仓 `arguments.Required(` | {repo_live} | — |")
 out.append(f"| 可省略 (类,槽) 全集 | {len(all_omittable)} | — |")
 out.append(f"| 其中已带 `ArgType.NotNull` | {sum(1 for k in all_omittable if flagged(*k))} | — |")
@@ -467,7 +843,7 @@ if summary:
 out.append("## A2. 可空、无判空、机械未见硬解引用")
 out.append("")
 out.append("这些槽的读取路径不在「字面量下标」车道（走非字面量下标 / 整表转发），或函数体根本不读；")
-out.append("裁定来自 [arg-contract/issues/03](03-required-on-omittable-slot.md) 的片 2-C/2-D，本片不改。")
+out.append("裁定来自 [arg-contract/issues/03](issues/03-required-on-omittable-slot.md) 的片 2-C/2-D，本片不改。")
 out.append("")
 out.append("| 类[槽] | 可省略段 | 读取形态 | 类级读取路径（D 段） | 类别 | 裁定依据 |")
 out.append("| --- | --- | --- | --- | --- | --- |")
@@ -482,7 +858,7 @@ for key in sorted(unseen):
 out.append("")
 out.append("## B. 可空但有判空写法（人工核「判空是否守住解引用」）")
 out.append("")
-out.append("本段与 [arg-contract/issues/03](03-required-on-omittable-slot.md) 的 B 表逐项对应：34 项「有意可空」")
+out.append("本段与 [arg-contract/issues/03](issues/03-required-on-omittable-slot.md) 的 B 表逐项对应：34 项「有意可空」")
 out.append("（裁定见该票片 2-B） + 片 2-D 补判的 `DT_SELECT[1]`/`[2]`、`GDRAWG[10]`（有意可空），共 37 项。")
 out.append("另两条「有意可空」按本工件 A 段的判据（无判空写法 ∧ 读取形态在解引用车道）落在 A 段，不在此列：")
 out.append("`DataTableCellSetMethod[3]`、`DataTableColumnManagementMethod[1]`（跨构造器，Names 段空槽 = 写 RESULTS）。")
@@ -527,6 +903,129 @@ for name, _pos, _end in classes:
                f"{g('`Cast<>`')}/{g('`foreach (… in arguments)`')} | {g('`for(… arguments.Count …)`')} | "
                f"{g('`arguments.Count`')} | {g('列表模式 `arguments is […]`')} | {g('折叠站点 `.Restructure(exm)`')} |")
 out.append("")
+# G 段单独成篇（阶段 B 进度工件）：先记起点，段末整体摘出。
+g_begin = len(out)
+out.append("## G. 阶段 B 验收口径：访问器覆盖（issues/05）")
+out.append("")
+out.append(f"站点全集 = 本文件 live `arguments.Required(<任意下标>)` **{cov_total}** 处（含文件作用域 helper 内部的读取，")
+out.append("如 `ReadPoint`/`ReadColormatrix`）。形态按站点后随成员归类（词表同 `read_forms`，前缀窗 24 字符），")
+out.append("面按花括号配对归属到方法体。**阶段 B 只迁消费面**：14 个 `UniqueRestructure` 保持旧签名")
+out.append("（旧签名收 `List<AExpression?>`，写回被丢弃），故门禁目标是**消费面归零**，不是全文件归零。")
+out.append("")
+g_forms = ["Int", "Str", "IsInt", "IsStr", "term", "as Var", "cast Var", "折叠"]
+out.append("| 面 | " + " | ".join(f"`{f}`" for f in g_forms) + " | 合计 | 四访问器覆盖 |")
+out.append("| --- | " + " | ".join("---" for _ in g_forms) + " | --- | --- |")
+for _face in [f for f in ("消费面", "检查面", "折叠面") if f in cov_faces]:
+    _c = Counter(f for fa, f, _p in cov_sites if fa == _face)
+    _cov = sum(_c[f] for f in ACCESSOR_FORMS)
+    out.append(f"| {_face} | " + " | ".join(str(_c[f]) if _c[f] else "—" for f in g_forms)
+               + f" | {sum(_c.values())} | {_cov} |")
+out.append(f"| 合计 | " + " | ".join(str(cov_forms[f]) if cov_forms[f] else "—" for f in g_forms)
+           + f" | {cov_total} | {cov_file_covered} |")
+out.append("")
+out.append(f"全文件四访问器覆盖 **{cov_file_covered}/{cov_total}**"
+           + (f"（= {cov_file_covered / cov_total * 100:.1f}%）" if cov_total else "")
+           + f"：`Int` {cov_forms['Int']} + `Str` {cov_forms['Str']}"
+           f" + `IsInt` {cov_forms['IsInt']} + `IsStr` {cov_forms['IsStr']}；"
+           f"剔除折叠面后的**消费面覆盖 {cov_cons_covered}/{cov_cons_total}**"
+           + (f"（= {cov_cons_covered / cov_cons_total * 100:.1f}%）" if cov_cons_total else "")
+           + "。基线见「归零目标」表——迁移中站点数递减，故这两个比值只描述当前未迁移的部分。")
+out.append("")
+out.append("| 访问器 | 站点数（当前） | 说明 |")
+out.append("| --- | --- | --- |")
+out.append(f"| `Int`/`Str`/`IsInt`/`IsStr` | {cov_file_covered} | 全文件；消费面 {cov_cons_covered} |")
+out.append(f"| `Var` | {var_family_total} | "
+           + " + ".join(f"{k} {v}" for k, v in sorted(var_family.items()))
+           + f"（全文件；其中消费面 {cons_var_sites}、折叠面 {fold_var_sites}，切片④只归零消费面） |")
+out.append(f"| `Term`/`TermOrNull` | {cov_forms['term']} | 消费面里的裸句柄逃生口 |")
+out.append(f"| `Tail` | {live_skip} | `arguments.Skip(k)` 整段转发（GETMETH/GETMETHS） |")
+out.append(f"| `Count` | {live_count_expr + live_list_pattern + live_cast_loop} | "
+           f"`arguments.Count` {live_count_expr} + 列表模式 {live_list_pattern} + `Cast<>` {live_cast_loop} |")
+out.append(f"| `Has`/`IsEmpty`/`IsMissing` | {empty_test_total + live_list_pattern} | 判空写法 {empty_test_total}（"
+           + " + ".join(f"{k} {v}" for k, v in sorted(empty_tests.items()))
+           + f"） + 列表模式 {live_list_pattern} |")
+out.append("")
+out.append("### Trusted 三族（绕过规则表、由调用点担保，issues/05 的 A 边界）")
+out.append("")
+out.append("| 文件 | `arguments.Required(` | `arguments[<字面量>]` | 硬转型 | `new FunctionMethodTerm(` | 旧签名 override |")
+out.append("| --- | --- | --- | --- | --- | --- |")
+for _fn, _v in trusted_live.items():
+    out.append(f"| `{_fn}` | {_v['Required']} | {_v['字面量下标']} | {_v['硬转型']} | {_v['构造点']} | {_v['旧签名 override']} |")
+out.append(f"| 合计（Trusted 三族） | {sum(v['Required'] for v in trusted_live.values())} | "
+           f"{sum(v['字面量下标'] for v in trusted_live.values())} | "
+           f"{sum(v['硬转型'] for v in trusted_live.values())} | **{trusted_ctor_total}** | "
+           f"{sum(v['旧签名 override'] for v in trusted_live.values())} |")
+out.append("")
+out.append(f"全库构造点 **{literal_ctor_total + target_typed_ctor}** = Trusted 三族 {trusted_ctor_total} "
+           f"+ 规则表族 2（`IdentifierDictionary.cs` 字面 1 + `ArgumentBuilder.cs` target-typed {target_typed_ctor}）；"
+           f"字面 `new FunctionMethodTerm(` 全库 {literal_ctor_total}。`ArgumentSlots.Trusted(` 调用点 {trusted_entry_total}"
+           f"（调用点担保族 13 + `FunctionMethod.ResolveSlots` 的无声明分支 2）、`ArgumentSlots.Checked(` "
+           f"{checked_entry_total}（同一个工厂：命中段 / 定数表）。测试侧另有 {test_factory_total} 处直调工厂"
+           "（`Emuera.Tests` 不在门禁扫描根内，故单列）。")
+out.append("")
+out.append(f"阶段 B 进度：消费面 `arguments.Required(` 剩余 **{cov_cons_total}**（基线 379 → 目标 0）；"
+           f"旧签名 override 剩余 **{old_sig_total}**（规则表族 {old_sig_rule_table} + Trusted 三族 "
+           f"{old_sig_total - old_sig_rule_table}，目标 0，见 issues/05 切片④）。")
+out.append("")
+out.append("### 阶段 B 的归零目标（切片④的门禁）")
+out.append("")
+out.append("| 量 | 基线（HEAD 30686cf4） | 当前 | 目标 |")
+out.append("| --- | --- | --- | --- |")
+out.append(f"| 消费面 `arguments.Required(` | 379 | {cov_cons_total} | 0 |")
+out.append(f"| 消费面 `Var` 家族（`as`/cast/`is VariableTerm`） | {BASELINE_CONS_VAR} | {cons_var_sites} | 0（迁到 `Var(i)`） |")
+out.append(f"| 消费面硬转型（`as` + cast） | {BASELINE_CONS_HARD_CAST} | {cons_hard_cast} | 0 |")
+out.append(f"| 列表模式 `arguments is […]` | 16 | {live_list_pattern} | 0（迁到 `Has`/`IsEmpty`/`IsMissing`） |")
+out.append(f"| `arguments.Count` | 119 | {count_faces.get('消费面', 0)} | 0（消费面）；"
+           + "、".join(f"{k} {v} 处" for k, v in sorted(count_faces.items()) if k != "消费面")
+           + " 保留 |")
+out.append(f"| `arguments.Skip(` / `Cast<` | 2 / 1 | {live_skip} / {live_cast_loop} | 0 / 0 |")
+out.append(f"| 旧签名 override（规则表族 {old_sig_rule_table} + Trusted 三族 "
+           f"{old_sig_total - old_sig_rule_table}） | 229 | {old_sig_total} | 0 |")
+out.append("| 折叠面 `arguments.Required(` | 25 | " + str(cov_faces["折叠面"]) + " | 25（**不变**，旧签名保留） |")
+out.append(f"| `ArgumentSlots` 快照整表复制（ctor 的 `terms = [.. arguments]`） | 0 | {copy_snapshot} | 1（类型落地时即应有；与上面那条折叠面副本理由不同） |")
+out.append("")
+out.append("### 访问器前置核对（切片④）")
+out.append("")
+out.append("扫描迁移后的槽位入口函数体：对**规则表允许显式空槽**的槽（`OmitStart` 之后且未标 `ArgType.NotNull`），")
+out.append("`Int`/`Str`/`IsInteger`/`IsString`/`Var` 的读取必须由同体的 `Has`/`IsEmpty`/`IsMissing` 守卫兜住。")
+out.append("`Term` 是原始句柄逃生口，列在表内只作观察、不计入判定。")
+out.append("")
+out.append("**判据的边界（据实写清）**：守卫判据是「同体内出现过该下标的一次判空」，既不限读取点先后，")
+out.append("也不覆盖**非字面下标**（下标是变量/偏移时算不出落在哪一槽，`may_be_empty` 无从使用）——后者见下一张表。")
+out.append("")
+out.append("| 类 | 槽 | 访问器 | 体内有守卫 | 判定 |")
+out.append("| --- | --- | --- | --- | --- |")
+for _name, _k, _acc, _guard in sorted(accessor_rows):
+    _verdict = "通过" if (_guard or _acc not in CLAIM_ACCESSORS) else "**未证明**"
+    out.append(f"| `{_name}` | {_k} | `{_acc}` | {'是' if _guard else '—'} | {_verdict} |")
+out.append("")
+out.append(f"可空槽上的字面下标取值站点共 **{len(accessor_rows)}** 处，其中未证明 **{len(accessor_unproven)}** 处。")
+out.append("")
+out.append("### 访问器前置核对：非字面下标（弱判据）")
+out.append("")
+out.append("下标是变量/偏移表达式的读取。判据只到「同体内出现过 `Count`/`Has`/`IsEmpty`/`IsMissing` 之一」")
+out.append("这一量级（弱于上表），故逐点仍需人工核对；列全是为了让「覆盖了多少」不再只是叙述。")
+out.append("")
+out.append("| 类 | 函数 | 访问器 | 下标表达式 | 体内有守卫 | 判定 |")
+out.append("| --- | --- | --- | --- | --- | --- |")
+for _cls, _func, _acc, _idx, _guard in sorted(set(accessor_dyn), key=lambda r: (r[0] or "", r[2], r[3])):
+    _verdict = "通过（弱）" if (_guard or _acc not in CLAIM_ACCESSORS) else "**未证明**"
+    out.append(f"| `{_cls}` | `{_func}` | `{_acc}` | `{_idx}` | {'是' if _guard else '—'} | {_verdict} |")
+out.append("")
+out.append(f"槽位入口函数体里的非字面下标站点去重后 **{len(set(accessor_dyn))}** 处（原始读取 {len(accessor_dyn)} 次），"
+           f"其中未证明 **{len(dyn_unproven)}** 处；")
+out.append(f"另有 **{len(set(accessor_dyn_helper))}** 处落在文件作用域 helper 内"
+           "（`GraphicsDrawG` 族的 `ReadGraphics`/`ReadColor`/`ReadPoint`/`ReadRectangle`/`ReadColormatrix`：")
+out.append("调用点传常量 `argNo`、规则表把那些槽标成必填，故这些 helper 体内不写守卫，由调用点担保）。")
+out.append("helper 内明细：")
+out.append("")
+out.append("| helper | 访问器 | 下标表达式 |")
+out.append("| --- | --- | --- |")
+for _func, _acc, _idx in sorted(set(accessor_dyn_helper)):
+    out.append(f"| `{_func}` | `{_acc}` | `{_idx}` |")
+out.append("")
+g_section = out[g_begin:]
+del out[g_begin:]
 out.append("## F. 与邻票对齐")
 out.append("")
 out.append("### issues/03（`ArgType.NotNull` 的既有铺开）")
@@ -567,7 +1066,7 @@ out.append(f"| 与 [slots-worklist.py](slots-worklist.py) 同函数同口径的 
            f"{'通过' if nn_ok else '**不符：%d 处/%d 行、%d 处/%d 行**' % nn_actual} |")
 out.append(f"| `HasUniqueRestructure = true;` 语句/类 == 17/13 | {'通过' if (has_unique_stmts, has_unique_classes) == (17, 13) else '**不符：%d/%d**' % (has_unique_stmts, has_unique_classes)} |")
 out.append(f"| `UniqueRestructure` override == 14 | {'通过' if unique_overrides == 14 else '**不符：' + str(unique_overrides) + '**'} |")
-out.append(f"| 全仓 `[.. Arguments]` == 1 | {'通过' if copy_arguments == 1 else '**不符：' + str(copy_arguments) + '**'} |")
+out.append(f"| unique 分支的整表副本 == 1 | {'通过' if copy_arguments == 1 else '**不符：' + str(copy_arguments) + '**'} |")
 out.append(f"| 候选集裁定（未裁定 {len(unruled)} / 已落地 {len(done)} / 过期 {len(stale)}） | {'通过' if not unruled and not stale and len(done) == 4 else '**不符**'} |")
 out.append(f"| A2 段与裁定表一致 | {'通过' if not unruled2 and not stale2 else '**未裁定 %d / 过期 %d**' % (len(unruled2), len(stale2))} |")
 out.append(f"| A + A2 + B + 已标 = 可省略全集 96 | {'通过' if len(cand) + len(unseen) + len(guarded) + sum(1 for k in all_omittable if flagged(*k)) == 96 else '**不符**'} |")
@@ -575,5 +1074,28 @@ out.append(f"| issues/18 不变量（`AllowConstRef` ⇒ `HasUniqueRestructure`�
 out.append(f"| helper 偏移（机械推出） | {', '.join(f'{k}={v}' for k, v in helpers.items())} |")
 out.append("")
 
-open(DST, "w", encoding="utf-8-sig", newline="\n").write("\n".join(out) + "\n")
-print("rows", len(rows), "omittable", len(all_omittable), "cand", len(cand), "guarded", len(guarded))
+# ── 产物 ─────────────────────────────────────────────────────────────────────────
+# 默认只再生阶段 B 的进度工件；阶段 A 的快照（A–F + E 段）只在 --phase-a 时重写，
+# 因为阶段 B 重写消费面后那批表必然漂移（快照只在其基线 HEAD 上可复现）。
+b_out = []
+b_out.append("# arg-contract/issues/05 阶段 B 进度：访问器覆盖与归零目标")
+b_out.append("")
+b_out.append("本文件由 [arg-slots.py](arg-slots.py) 生成（默认产物；`--phase-a` 才另写阶段 A 快照")
+b_out.append("[slots-consumption.md](slots-consumption.md)，口径见脚本头注释）。票见")
+b_out.append("[arg-contract/issues/05](issues/05-argument-slots-type.md)。")
+b_out.append("")
+b_out.extend(g_section)
+b_out.append("## 自校验")
+b_out.append("")
+b_out.append("| 检查 | 结果 |")
+b_out.append("| --- | --- |")
+for _label, _ok in b_rows:
+    b_out.append(f"| {_label} | {'通过' if _ok else '**不符**'} |")
+b_out.append("")
+open(PROGRESS_DST, "w", encoding="utf-8-sig", newline="\n").write("\n".join(b_out) + "\n")
+if PHASE_A:
+    open(DST, "w", encoding="utf-8-sig", newline="\n").write("\n".join(out) + "\n")
+    print("wrote", DST, "(phase A snapshot)")
+print("wrote", PROGRESS_DST)
+print("rows", len(rows), "omittable", len(all_omittable), "cand", len(cand), "guarded", len(guarded),
+      "| 消费面 Required", cov_cons_total, "| 旧签名 override", old_sig_total)

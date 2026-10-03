@@ -3,6 +3,7 @@ using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.Runtime.Script.Statements.Expression;
 using System.Reflection;
 using Xunit;
+using static Emuera.Tests.Runtime.Script.Statements.Function.BuiltinFunctionTestKit;
 
 namespace Emuera.Tests.Runtime.Script.Statements.Function;
 
@@ -74,8 +75,8 @@ public class SaveTextMethodTests
 	}
 
 	private static long SaveText(string text, string filename)
-		=> FunctionMethodCreator.GetMethodList()["SAVETEXT"]
-			.GetIntValue(null!, [new SingleStrTerm(text), new SingleStrTerm(filename)]);
+		=> (long)InvokeWith(FunctionMethodCreator.GetMethodList()["SAVETEXT"],
+			[new SingleStrTerm(text), new SingleStrTerm(filename)], null);
 
 	/// <summary>
 	/// SAVETEXT 读 Config.ValidExtension,测试不加载配置文件,故按仓库惯例(见 StringMeasureTests)只赋这一个静态:

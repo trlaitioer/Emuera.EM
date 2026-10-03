@@ -1,7 +1,6 @@
 # 实参契约表（阶段 A）：可省略槽的硬转型止血
 
 Status: implemented
-Type: task
 
 ## 任务
 
@@ -35,7 +34,7 @@ Type: task
 | 3 | 决策 1「折叠必须并入或前移到检查之内」 | ✘ **前提不成立，已撤销**。`FunctionMethodTerm.Restructure` 传给 `UniqueRestructure` 的是 `[.. Arguments]` **副本**（全仓仅此 1 处该形态分配），那 14 个方法里的写回**全部被丢弃**；折叠对槽表唯一的实际影响是 `FunctionMethodTerm.Restructure` 自身的就地写，它本来就在检查之后 |
 | 4 | 决策 2「不可变集合会迫使 `Restructure` 返回新 term」 | ✘ **不需要付这个代价，已撤销**。builtin 槽表不进 `RowArgs`/`CallformCache`——`GetFunctionMethod(..., userDefinedOnly: true)` 在查 `methodDic` 之前就 `return null`（6 个生产调用者逐一核过），`RowArgs` 只喂 UDF 面；`FunctionMethodTerm.Arguments` 类外只有读（`StrForm.cs` 的 `SingleIntFormTerm`）。真正的跨实例共享只有 StrForm 的 5 个 `static readonly` term，其重复折叠写的是**恒等值**（`NAME`/`TARGET` 均 `CanRestructure = false`，`VariableTerm.Restructure` 最终 `return this`） |
 | 5 | 决策 3 候选门禁 `[Obsolete(error: true)]` | ✘ **拦不住**：实测（net10.0）对 override 只报 **warning CS0672** 并编译通过；`Emuera.csproj` 的 `WarningsAsErrors` 只覆盖 `nullable`；仓库无 CI |
-| 6 | 片②「33 处活 cast」 | ⚠ 结论对、算式要改：`33 = 23 处活 `as VariableTerm)!` + 10 处活 `(VariableTerm)``（`is VariableTerm` 不参与；原式 24+16+21−6 混了 raw 与 live）。且 [nullable-migration/issues/18](../../nullable-migration/issues/18-unguarded-as-casts.md) 已落地 4 处（XML_GET 分流、CMATCH 收紧规则、INRANGEARRAY/MAXARRAY 补 `HasUniqueRestructure`），故「可达 null」的集合必须以 HEAD 重新基线 |
+| 6 | 片②「33 处活 cast」 | ⚠ 结论对、算式要改：33 = 23 处活 `as VariableTerm)!` + 10 处活 `(VariableTerm)`（`is VariableTerm` 不参与；原式 24+16+21−6 混了 raw 与 live）。且 [nullable-migration/issues/18](../../nullable-migration/issues/18-unguarded-as-casts.md) 已落地 4 处（XML_GET 分流、CMATCH 收紧规则、INRANGEARRAY/MAXARRAY 补 `HasUniqueRestructure`），故「可达 null」的集合必须以 HEAD 重新基线 |
 | 7 | 片①「10 处可达 null」 | ⚠ 同上，需重新基线。机制上可达 null 只可能来自「可省略槽的显式空槽」或「引用型实参被折叠成 `SingleTerm`」两条路；后者由 issues/18 立的**不变量**（规则含 `AllowConstRef` 的引用位 ⇒ 类必须设 `HasUniqueRestructure`）覆盖 |
 | 8 | 「184 个活的子类」 | 差 1：活类声明 184 = 外层 `FunctionMethodCreator` 1 + 子类 **183**；另有 3 条在注释里 |
 | 9 | 「17 个 unique 方法每次折叠分配一次 `[.. Arguments]`」 | ✘ **错**：全仓只有 `FunctionMethodTerm.Restructure` 一处该分配。17 是 `HasUniqueRestructure = true;` 的**语句数**（13 个类；`UniqueRestructure` override 14 个） |
@@ -59,7 +58,7 @@ Type: task
 
 与 issues/18 对齐：该票立的**不变量**（规则含 `AllowConstRef` 的引用位 ⇒ 类必须设 `HasUniqueRestructure`）已做成机械核对，18 个引用位里 17 个受保护、1 个（`SumArrayMethod[0]`，角色数据段）按「`CONST` 与 `CHARADATA` 互斥、折叠路径不可达」豁免。
 
-自校验项（脚本复跑即报警）：与 `slots-worklist.py` **同函数同口径**地数 `ArgType.NotNull`（含注释 87 处 / 76 行，剥注释 81 处 / 70 行）；`HasUniqueRestructure` 语句数 = 17 / 类数 13；`[.. Arguments]` 全仓 1 处；`arguments.Required(` 的本文件 live 计数 = 404。
+自校验项（脚本复跑即报警）：与 `slots-worklist.py` **同函数同口径**地数 `ArgType.NotNull`（口径与现行预期值见 [_scan.py](../_scan.py) 的 `NOT_NULL_EXPECTED`，数字不在此复述——阶段 B 起步后含注释口径由 87/76 上调为 88/77，剥注释口径仍 81 处 / 70 行）；`HasUniqueRestructure` 语句数 = 17 / 类数 13；`[.. Arguments]` 全仓 1 处；`arguments.Required(` 的本文件 live 计数 = 404。
 
 观察项（不属本片，记此备查）：`Creator.Method.cs` 的 `ArrayMultiSortExMethod.UniqueRestructure` 从不被调用——该类未设 `HasUniqueRestructure`，是静态可证的**死 override**；因它的两条规则都不含 `AllowConstRef`，常量数组进不到该槽，故**无缺陷**，只是死代码（本票不改，避免与阶段 B 的类型化改造冲突）。
 
@@ -96,5 +95,5 @@ Type: task
 - **行为变更**：4 个槽的**显式空槽**由运行期 NRE 变为检查器判据拒绝的 `CodeEE(ArgCanNotBeNull)`（`FunctionMethod.CheckArgumentTypeEx`；默认在首次执行该行时抛出，时机见 issues/03 风险 6）；数量省略与合法写法不变。涉及的注册名：`ENUMFUNCBEGINSWITH`/`ENUMFUNCENDSWITH`/`ENUMFUNCWITH`/`ENUMVARBEGINSWITH`/`ENUMVARENDSWITH`/`ENUMVARWITH`/`ENUMMACROBEGINSWITH`/`ENUMMACROENDSWITH`/`ENUMMACROWITH`（9 个名字共用同一规则形状）、`ENUMFILES`、`DT_SELECT`、`DT_TOXML`。
 - **阶段 B**：已转出为 [arg-contract/issues/05](05-argument-slots-type.md)（`ready-for-agent`），改动面与性能说明见该票。
 - **不在本票范围**：issues/03 的片 5（B 表执行期语义用例）与片 6（指令侧 `ArgumentBuilder` 两轴定案）是与本票同批落地的工作，记录在 [issues/03](03-required-on-omittable-slot.md) 的对应小节，不属本票的完成标准。
-- **邻票**：`arg-contract/issues/01/02/03`（01/02 已落地；03 余项 7「`docs/` 侧内建函数契约表」仍待办）、`nullable-migration/issues/18`（已落地，本票按它的 `AllowConstRef ⇒ HasUniqueRestructure` 不变量收口）、`nullable-migration/issues/22`（其余 `as`+`!` 站点的理由注释，`ready-for-agent`）、`.scratch/backlog/issues/15`（`Argument` 三字段折叠协议，同一 seam 的另一侧，不并轨）。
+- **邻票**：`arg-contract/issues/01/02/03`（01/02 已落地；03 余项 7「`docs/` 侧内建函数契约表」已落地为 [docs/builtin-functions.md](../../../docs/builtin-functions.md)，03 随之收尾）、`nullable-migration/issues/18`（已落地，本票按它的 `AllowConstRef ⇒ HasUniqueRestructure` 不变量收口）、`nullable-migration/issues/22`（其余 `as`+`!` 站点的理由注释，`ready-for-agent`）、`.scratch/backlog/issues/15`（`Argument` 三字段折叠协议，同一 seam 的另一侧，不并轨）。
 - **原始审查记录**：`.scratch/backlog/issues/02`。
