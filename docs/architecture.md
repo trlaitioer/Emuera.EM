@@ -43,7 +43,7 @@ git remote set-branches upstream master
   - `Process.SystemProc.cs` — 系统级处理(BEGIN/END、初始化流程)
 - `Statements/Instruction.cs` + `Instraction.Child.cs` — **所有命令的实现**:`AInstruction` 抽象基类,`Instraction.Child.cs` 内含全部 `*_Instruction` 指令类(PRINT、INPUT、WAIT、SAVECHARA、PLAYSOUND…)
 - `Statements/FunctionIdentifier.cs` — 命令注册表:静态构造函数调用 `addFunction(FunctionCode, ...)` 注册全部内置命令,flag 常量(PARTIAL、IS_PRINT、FLOW_CONTROL…)决定运行时分派行为
-- `Statements/Function/Creator.cs` + `Creator.Method.cs` — `FunctionMethodCreator` 静态字典注册**所有式中函数/内建函数**(数值/字符串操作、数学、CSV 查询等),每个函数是一个 `FunctionMethod` 子类
+- `Statements/Function/Creator.cs` + `Statements/Function/BuiltinMethod/` — `FunctionMethodCreator` 静态字典注册**所有式中函数/内建函数**(数值/字符串操作、数学、CSV 查询等),每个函数是一个 `FunctionMethod` 子类。名字不再手写在注册表里,而是以 `[BuiltinMethod("NAME")]` 声明在该类体内的静态工厂方法上(`BuiltinMethodAttribute.cs`);静态构造扫描这些工厂建表(重名以 `OrdinalIgnoreCase` 拒绝),「名字 ↔ 实现」因此同处一处,`BuiltinMethod/` 目录按来源 region 大致分组(`Graphics.cs`/`ArrayOperations.cs`/`GeneralPurpose.cs`/`StringOperations.cs` 各由多个来源 region 合并而成;该目录同时放着图形实参读取器 `BuiltinArgReaders`;某注册名的实现与工厂位置 = `grep -rnF '[BuiltinMethod("NAME")]'` 的命中处)
 - `Statements/Variable/` — 变量系统:`VariableEvaluator`(变量存储与求值)、`VariableParser`(解析 `A[1]:B[2]` 类变量引用)、`VariableCode`/`VariableTerm`
 - `Statements/Expression/` — 表达式:`ExpressionParser` 生成 `AExpression` 树,`Term` 为叶节点,`OperatorMethod.cs`(+`OperatorCode.cs`)实现运算符
 - `Statements/Expression/ArgumentListExtensions.cs` — 提供参数槽位的具名非空读取 `Required(i)`(担保只对该槽被规则表标为必填时成立:无 `OmitStart` 的块、`i < OmitStart`、`ArgType.NotNull`,以及 `SameAsFirst` 块里 `OmitStart == 0` 时被要求必填的 0 号槽;数量省略只让实参表更短、不产生 null,而显式空槽以 null 元素进入函数体,`i >= OmitStart` 的槽须由函数体自行判空)。

@@ -7,7 +7,7 @@ Status: ready-for-human
 评估两处 Framework 时代依赖 Microsoft.VisualBasic 的 `Strings.StrConv` 用法是否替换:
 
 - `ExpressionMediator.ConvertStringType`(`Runtime/Script/Statements/ExpressionMediator.cs`):假名/平假名转换(0x0411 日语 LCID),受 forceHiragana/forceKatakana/halftoFull 强制度控制;
-- 内建字符串函数 TOFULL/TOHALF(`Runtime/Script/Statements/Function/Creator.Method.cs`,strType 的 Full/Half 分支):全角/半角转换。
+- 内建字符串函数 TOFULL/TOHALF(`Runtime/Script/Statements/Function/BuiltinMethod/StringOperations.cs` 的 `StrChangeStyleMethod`,strType 的 Full/Half 分支):全角/半角转换。
 
 net10.0-windows 的 Windows Desktop runtime 自带 VB runtime,依赖 NLS,在当前"Windows 专用"的平台目标下行为正确。完成标准:决策记录于本文,提交 triage 定案。
 

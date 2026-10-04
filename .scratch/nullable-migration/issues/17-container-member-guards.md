@@ -15,7 +15,7 @@ issues/13 把接收者为 `AExpression?` 的元素断言收敛到 `ArgumentListE
 | `Process.ScriptProc.cs` 的 `doNormalFunction`（ARRAYCOPY 分支） | `vars` 声明为 `VariableToken?[]`，动态分支在每次 `GetVariableToken` 赋值后判空并抛错，字面量分支不判空，随后直接用 `vars[0]!`/`vars[1]!` | **不可达（判定成立）**，依据见下「站点 1」；处置＝补理由注释，不加判空 |
 | `Instraction.Child.cs` 的 `DT_COLUMN_OPTIONS_Instruction.DoInstruction` | 表不存在时置 `RESULT = -1` 后继续，紧接 `dict[key]`；列不存在时置 `RESULT = 0` 后继续，紧接 `dt.Columns[cName]!` 的解引用 | **可达，两处都是崩溃**；处置＝缺表 `RESULT = -1` + `return`（贴合 DT 函数族「缺表返回 -1」的约定），缺列抛 `CodeEE(DTLackOfNamedColumn)` |
 | `Expression/ExpressionParser.cs` 的 `ReduceArguments`（`isDefine` 分支） | 判空写成 `if (terms.Last == null)`，而紧接 `AddLast` 之后该节点必非空；真正要判的是 `terms.Last.Value == null` | **守卫对象写错（判定成立）**，但后果不是死代码：null 元素会被 `terms.Last!.Value!.IsInteger`/`GetOperandType()` 解引用成 NRE；处置＝收窄为局部变量后再 `AddLast`，顺带去掉两处 `terms.Last!.Value!` |
-| `Runtime/Script/Statements/Function/Creator.Method.cs` 的 `HtmlSubStringMethod.GetStrValue`（`HTML_SUBSTRING`；`HtmlManager.cs` 内无该取值） | 取 `output[0]!`，`output` 来自 `VEvaluator.RESULTS_ARRAY` | **判据更正**：该 `!` 抑制的是 CS8603，删掉必报错，不属「冗余 `!`」；真正的不变量是拷贝长度 `outputlength >= 1`；处置＝`return strs[0]`（与 `output[0]` 恒等且静态非空），`Array.Copy` 保留 |
+| `Runtime/Script/Statements/Function/BuiltinMethod/PrivateAdditions.cs` 的 `HtmlSubStringMethod.GetStrValue`（`HTML_SUBSTRING`；`HtmlManager.cs` 内无该取值） | 取 `output[0]!`，`output` 来自 `VEvaluator.RESULTS_ARRAY` | **判据更正**：该 `!` 抑制的是 CS8603，删掉必报错，不属「冗余 `!`」；真正的不变量是拷贝长度 `outputlength >= 1`；处置＝`return strs[0]`（与 `output[0]` 恒等且静态非空），`Array.Copy` 保留 |
 
 > 同型相邻缺陷（本票一并修）：`ArgumentBuilder.cs` 的 `SP_COPY_ARRAY_Arguments` 中第 2 实参的 `IsArray1D/IsArray2D/IsArray3D` 检查缺 `return null`（第 1 实参有），与 `DT_COLUMN_OPTIONS` 缺 `return` 同型。
 
@@ -29,7 +29,7 @@ issues/13 把接收者为 `AExpression?` 的元素断言收敛到 `ArgumentListE
 
 以下经核实不构成缺陷，不在本票内改动：
 
-- `XmlNodeList` 的 15 处元素断言（`Creator.Method.cs` 11 处 `nodes[...]!` + `Lang.cs` 2 处 + `sMap[key[0]!...] = val[0]!...` 2 处）：BCL 索引器仅在越界时返回 null，各站点均在 `Count`/`Math.Min` 界内。
+- `XmlNodeList` 的 15 处元素断言（`BuiltinMethod/PrivateAdditions.cs` 11 处 `nodes[...]!` + `Lang.cs` 2 处 + `sMap[key[0]!...] = val[0]!...` 2 处）：BCL 索引器仅在越界时返回 null，各站点均在 `Count`/`Math.Min` 界内。
 - `DataColumnCollection` 的整型索引器：对应断言**已由 `e70ec779 clean: 移除冗余的 ! 标识` 移除**（现为 `dt.Columns[i].ColumnName`，全仓已无整型索引器断言，剩余的 `!` 都在字符串索引器上）。反射实测其注解为 `this[int]` = NotNull、`this[string]` = Nullable，与该删除一致。
 - `List<AExpression?>`（`SpSetArrayArgument.TermList`）2 处：两条构造路径都对 null 元素 `assignwarn` 并返回 null。
 - `ExpressionArrayArgument.TermList` 是 `AExpression[]` 而由 `List<AExpression?>` 经 `CopyTo` 填充（`Argument.cs`）：两条构造路径都已保证非空（`INT_ANY_ArgumentBuilder` 经 `checkArgumentType` 拒绝 null 元素，`FORM_STR_ANY_ArgumentBuilder` 自建非空 term），非缺陷；其「契约诚实化」属 issues/22 的可选条目。

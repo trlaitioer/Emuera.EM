@@ -2,7 +2,7 @@
 
 本文件由 [arg-slots.py](arg-slots.py) 生成，口径见脚本头注释；票见 [arg-contract/issues/04](issues/04-argument-slots.md)。
 
-扫描范围是**规则表族**（`Creator.Method.cs` 的 183 个子类，经 `FunctionMethod.CheckArgumentTypeEx` 校验）。
+扫描范围是**规则表族**（`BuiltinMethod/*.cs` 的 183 个子类，经 `FunctionMethod.CheckArgumentTypeEx` 校验）。
 运算符族（`OperatorMethod.cs`）、StrForm 族（`StrForm.cs`）、TOSTR 包装（`Process.CalledFunction.cs`）
 都绕过规则表、由调用点担保，不在本表。
 

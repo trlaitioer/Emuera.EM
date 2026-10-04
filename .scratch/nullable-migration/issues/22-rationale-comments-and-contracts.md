@@ -20,9 +20,9 @@ issues/14 判定 `(x as T)!` 中 49 处有前置类型检查，需逐点注明�
 
 | 位置 | 依据 |
 | --- | --- |
-| `ExpressionMediator.cs`（`ConvertStringType` 3 处）与 `Creator.Method.cs`（`StrChangeStyleMethod.GetStrValue` 2 处）的 `Strings.StrConv` | **判定更正：不属冗余，本票不删。** `StrConv` 在 .NET 上的签名是 `string? StrConv(string? str, VbStrConv, int LocaleID = 0)`，该 `!` 抑制的是 CS8603；不支持的转换抛 `ArgumentException`。两处已有同义 TODO（issues/08 迁移时补入，早于本票），本票只复核 TODO |
-| `Creator.Method.cs` 的 `DataColumnCollection` 整型索引 | **已完成**：`e70ec779 clean: 移除冗余的 ! 标识` 把 `DataTableColumnManagementMethod.GetIntValue` 的 `Operation.Names` 分支由 `dt.Columns[i]!.ColumnName` 改为 `dt.Columns[i].ColumnName`；全仓已无整型索引器断言 |
-| `Creator.Method.cs` 的 `ArrayMultiSortExMethod` 中 `is VariableTerm` 分支后再 `as` | 两分支均非空 |
+| `ExpressionMediator.cs`（`ConvertStringType` 3 处）与 `BuiltinMethod/StringOperations.cs`（`StrChangeStyleMethod.GetStrValue` 2 处）的 `Strings.StrConv` | **判定更正：不属冗余，本票不删。** `StrConv` 在 .NET 上的签名是 `string? StrConv(string? str, VbStrConv, int LocaleID = 0)`，该 `!` 抑制的是 CS8603；不支持的转换抛 `ArgumentException`。两处已有同义 TODO（issues/08 迁移时补入，早于本票），本票只复核 TODO |
+| `BuiltinMethod/PrivateAdditions.cs` 的 `DataColumnCollection` 整型索引 | **已完成**：`e70ec779 clean: 移除冗余的 ! 标识` 把 `DataTableColumnManagementMethod.GetIntValue` 的 `Operation.Names` 分支由 `dt.Columns[i]!.ColumnName` 改为 `dt.Columns[i].ColumnName`；全仓已无整型索引器断言 |
+| `BuiltinMethod/PrivateAdditions.cs` 的 `ArrayMultiSortExMethod` 中 `is VariableTerm` 分支后再 `as` | 两分支均非空 |
 | `Instraction.Child.cs` 的 `VARI_Instruction` 对 `IntAsignArgument.Exp` | 两条构造路径都提供表达式，无非空构造器在用 |
 | `Instraction.Child.cs` 的 `CALLSHARP_Instruction` 对 `arg.CallFunc` | 该构造器以常量字符串（`SingleStrTerm`）构造函数名，`IsConst` 必为真，`SetJumpTo` 中的非常量分支不可达；`CallFunc` 保持 null 的唯一路径是 `!manager.HasMethod` 分支，该处以 `Warn(..., isError: true)` 阻断执行——`!` 的实际保证来自这一错误标记，而非 `IsConst` |
 | `Instraction.Child.cs` 的 `RETURNF_Instruction` 对 `((ExpressionArgument)…).Term` | `SetJumpTo` 与 `DoInstruction` 两处读取点都紧接 `if (term != null)`，`!` 纯属冗余（issues/14 复核表第 1 项移交） |
@@ -43,7 +43,7 @@ issues/14 判定 `(x as T)!` 中 49 处有前置类型检查，需逐点注明�
 - `InstructionLine.PopArgumentPrimitive()` 的 `CharStream?` 返回——`argprimitive` 由构造器写入一次、每行至多被取一次（issues/21 判 A），可空签名只换来 18 处 `!`。**已完成**（`59cd307e`）：改为非可空返回，字段已被取走时抛 `ExeEE(MissingArg)`。
 - `Process.CalledFunction.ConvertArg`/`UserDefinedMethodTerm.Create`/`MemoryLineEntry.Build`——`TryXxx` 已就位，但「调用方只关心失败就抛」的那一半仍由每个调用点手写（`? : throw new CodeEE(errMes)`、`if (!Try…) throw`）。**已完成**（`59cd307e`）：补上抛异常兄弟并替换 3 处调用点；`ErbLoader` 与 `SetJumpTo` 的 Warn 路径继续用 Try 版。
 - `UI/Game/HtmlManager.cs` 中作为换行哨兵的 null 元素（`buttonList.Add(null!)`）——容器元素类型 `List<ConsoleButtonString>` 应改为 `List<ConsoleButtonString?>`；消费方 `PrintStringBuffer.ButtonsToDisplayLines` 的形参与 `m_buttonsToDisplayLine` 字段须同步改，否则该处既有的 `if (buttonList[i] == null)` 判空与新元素类型对不上。
-- `Creator.Method.cs` 的 `XmlGetMethod`/`XmlSetMethod` 中 `nodes` 局部——赋值发生在 `try` 内、唯一 `catch` 抛出，编译器无法据此证明「读取前必已赋值」；提取方法或调整结构让赋值可被证明，而不是用 `= null!`。
+- `BuiltinMethod/PrivateAdditions.cs` 的 `XmlGetMethod`/`XmlSetMethod` 中 `nodes` 局部——赋值发生在 `try` 内、唯一 `catch` 抛出，编译器无法据此证明「读取前必已赋值」；提取方法或调整结构让赋值可被证明，而不是用 `= null!`。
 - `HtmlManager.tagAnalyze` 的 `ref height!`/`ref width!`/`ref x!`/`ref y!` 等 15 处与 `ParseParam4IntNum(ref CreateIfNull(ref box!).color!, …)`（issues/21 的 D 类）——`Utils.ParseMixedNum(ref MixedNum num, …)` 的第一步就是 `if (num == null) num = new MixedNum();`，`CreateIfNull<T>(ref T obj)` 同样以 null 为正常入参；`!` 断言的内容为假。把形参改为 `ref MixedNum?`/`ref int[]?`，调用点的 `!` 一并删除（元数据级，零行为变化）。
 
 ### 4. 常量折叠实参的具名入口
@@ -56,7 +56,7 @@ issues/14 判定 `(x as T)!` 中 49 处有前置类型检查，需逐点注明�
 
 - `ArgumentBuilder.cs` 的 `SP_COPY_ARRAY_Arguments`：`terms[0]`/`terms[1]` 两块约 15 行仅差下标、参数序号与局部名（`vars[0]`/`vars[1]`、`term`/`term1`），第一个实参块有 `return null` 而第二个原本没有（issues/17 已补）。抽出一个「按序号检查一个数组实参」的辅助后，两块的差异只剩实参序号，`return null` 也从「要记得写」变成「不可漏写」。
 - `ArgumentBuilder.cs` 的 `SP_COPY_ARRAY_Arguments` × `Process.ScriptProc.cs` 的 `doNormalFunction`（ARRAYCOPY 分支）：字面量实参名 `GetVariableToken(term.Str, null, true)` 的解析存在两处，解析期那处的结果未传给执行期那处。issues/17 已在执行期补注释说明「两处必须同步」，属把耦合写明；若要消除，可让 `SpCopyArrayArgument` 携带解析期已得到的 `VariableToken?`，执行期只在动态分支重解析。
-- `Instraction.Child.cs` 的 `DT_COLUMN_OPTIONS_Instruction.DoInstruction`：表/列解析内联复刻了 DT 函数族（`Creator.Method.cs` 的 `DataTableColumnManagementMethod` 与 `DataTableRowSetMethod.CheckName`）的形状——`TryGetValue` 取表、缺表 `-1`、缺列抛 `DTLackOfNamedColumn`。共享一处解析器可让族内约定只有一份；顺带说明：族内 `id` 列不可改的守卫（`DTCanNotEditIdColumn`）只加在写行的路径上，`DT_COLUMN_OPTIONS` 改的是列默认值，是否需要该守卫属产品判断，需与共享解析一起定。
+- `Instraction.Child.cs` 的 `DT_COLUMN_OPTIONS_Instruction.DoInstruction`：表/列解析内联复刻了 DT 函数族（`BuiltinMethod/PrivateAdditions.cs` 的 `DataTableColumnManagementMethod` 与 `DataTableRowSetMethod.CheckName`）的形状——`TryGetValue` 取表、缺表 `-1`、缺列抛 `DTLackOfNamedColumn`。共享一处解析器可让族内约定只有一份；顺带说明：族内 `id` 列不可改的守卫（`DTCanNotEditIdColumn`）只加在写行的路径上，`DT_COLUMN_OPTIONS` 改的是列默认值，是否需要该守卫属产品判断，需与共享解析一起定。
 
 ### 6. `ExpressionArrayArgument.TermList` 的契约诚实化（issues/17 审计移交）
 

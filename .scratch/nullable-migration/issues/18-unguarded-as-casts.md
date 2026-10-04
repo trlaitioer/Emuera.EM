@@ -10,10 +10,10 @@ Status: in-progress
 
 | 位置 | 为什么无保护 | 触发 |
 | --- | --- | --- |
-| `Creator.Method.cs` 的 `XmlGetMethod.GetIntValue` | 第 3 实参规则是 `ArgType.Int`（`OmitStart = 2`）或 `RefString1D`；`IsInteger && 求值 != 0` 为假时进 `else`，取 `(arguments[2] as VariableTerm)!` | `XML_GET(xml, path, 0)`；整型表达式求值为 0 时同样进入（整型数组变量亦同，随后 `GetArray() as string[]` 得 null） |
-| `Creator.Method.cs` 的 `MatchMethod.GetIntValue`（`CMATCH` 注册） | `CMATCH` 走 `MatchMethod(true)`，规则首项为 `ArgType.Any`（严格规则就在同处被注释掉），`CheckArgumentType` 因 `Any` 不做类型约束 | `CMATCH(0, 1)` |
-| `Creator.Method.cs` 的 `InRangeArrayMethod.GetIntValue` | 解析期规则 `RefInt1D \| AllowConstRef` 保证是变量；但该类未设 `HasUniqueRestructure`，`FunctionMethodTerm.Restructure` 走非 unique 分支就地改写入参列表，用户定义常量一维数组被折叠成 `SingleTerm` | `INRANGEARRAY` 传常量数组变量（角色版 `INRANGECARRAY` 不可达：`CONST` 与 `CHARADATA` 互斥） |
-| `Creator.Method.cs` 的 `MaxArrayMethod.GetIntValue`（同源追加） | 同上：`MAXARRAY`/`MINARRAY` 的非角色 ctor 规则含 `AllowConstRef`、未设 `HasUniqueRestructure`，取变量处是直接转换 `(VariableTerm)`，折叠后抛 `InvalidCastException` | `MAXARRAY(CONSTARR, 0, 3)` |
+| `BuiltinMethod/PrivateAdditions.cs` 的 `XmlGetMethod.GetIntValue` | 第 3 实参规则是 `ArgType.Int`（`OmitStart = 2`）或 `RefString1D`；`IsInteger && 求值 != 0` 为假时进 `else`，取 `(arguments[2] as VariableTerm)!` | `XML_GET(xml, path, 0)`；整型表达式求值为 0 时同样进入（整型数组变量亦同，随后 `GetArray() as string[]` 得 null） |
+| `BuiltinMethod/ArrayOperations.cs` 的 `MatchMethod.GetIntValue`（`CMATCH` 注册） | `CMATCH` 走 `MatchMethod(true)`，规则首项为 `ArgType.Any`（严格规则就在同处被注释掉），`CheckArgumentType` 因 `Any` 不做类型约束 | `CMATCH(0, 1)` |
+| `BuiltinMethod/ArrayOperations.cs` 的 `InRangeArrayMethod.GetIntValue` | 解析期规则 `RefInt1D \| AllowConstRef` 保证是变量；但该类未设 `HasUniqueRestructure`，`FunctionMethodTerm.Restructure` 走非 unique 分支就地改写入参列表，用户定义常量一维数组被折叠成 `SingleTerm` | `INRANGEARRAY` 传常量数组变量（角色版 `INRANGECARRAY` 不可达：`CONST` 与 `CHARADATA` 互斥） |
+| `BuiltinMethod/ArrayOperations.cs` 的 `MaxArrayMethod.GetIntValue`（同源追加） | 同上：`MAXARRAY`/`MINARRAY` 的非角色 ctor 规则含 `AllowConstRef`、未设 `HasUniqueRestructure`，取变量处是直接转换 `(VariableTerm)`，折叠后抛 `InvalidCastException` | `MAXARRAY(CONSTARR, 0, 3)` |
 
 对照：`MATCH` 与 `FINDELEMENT`/`FINDLASTELEMENT` 安全。机制是 `FunctionMethodTerm.Restructure` 的 unique 分支把实参列表以 `[.. Arguments]` **副本**传入、改写落在副本上（不是「实参规则含 `AllowConstRef` 且丢弃结果」——`FINDELEMENT` 的规则是 `CharacterData | Any`，靠的是 `CharacterData` 检查）。折叠本身发生在 `VariableTerm.Restructure`：用户定义常量数组的 `CanRestructure = isConst`，裸一维数组名经 `VariableParser.ReduceVariable` 得到 `[ZeroTerm]`（`allArgIsConst` 为真），故取值后被折成 `SingleTerm`。
 
@@ -86,6 +86,6 @@ if (arguments.Count >= 3)
 
 ## 影响
 
-- 本票只动 `Creator.Method.cs` 的四处（`XmlGetMethod`、`MatchMethod(bool)`、`InRangeArrayMethod`、`MaxArrayMethod`）及其契约，不触碰 issues/22 的其余站点（那些保留 `as`+`!` 并补注释）
+- 本票只动 `BuiltinMethod/*.cs` 的四处（`XmlGetMethod`、`MatchMethod(bool)`、`InRangeArrayMethod`、`MaxArrayMethod`）及其契约，不触碰 issues/22 的其余站点（那些保留 `as`+`!` 并补注释）
 - 行为变更：`XML_GET`/`XML_GET_BYNAME` 的 `doOutput` 为 0（或求值为 0）由 NRE 变为按文档只返回结果数；`CMATCH` 的非角色变量实参由运行期崩溃/静默错扫变为解析期 `CodeEE`；`INRANGEARRAY`/`INRANGECARRAY`/`MAXARRAY`/`MINARRAY` 族传常量一维数组时不再在解析期被折叠。三处都不是「本来能正常工作的写法被改掉」
 - 相邻观察（不在本票）：`XmlSetMethod.saveToArg0` 路径（与其后的 `(arguments[0] as VariableTerm)!`）不可达——两个 ctor 的 arg0 规则分别是 `Int` 与 `String`，`IsInteger || (byName && IsString)` 恒真；`XmlGetMethod` 的 `doc.SelectNodes(path)!` 得 null 的情形仍归 issues/22

@@ -7,9 +7,9 @@ Status: in-progress
 
 来源：2026-09-27 的只读架构审查（五处热点并行），结论落在 `.scratch/backlog/issues/02`（深化）与 `.scratch/backlog/issues/03/04/16`（缺陷）。本 effort 承接它们。
 
-式中関数（`FunctionMethod`，`Creator.Method.cs` 内 183 个**活的**子类 / 266 个活注册名——口径为 `Creator.cs` 内行首 `["NAME"] = `，另有 4 条注册被注释，其中 3 条写字面量 `//methodList[...]`）用**数据**声明实参形状：114 个 `ArgTypeList` 规则块（91 个设了 `OmitStart`），另有类只用旧的 `argumentTypeArray`（`Type[]`）。声明方向是对的——184 个类里只有 `MesSkipMethod` override 了检查（`Creator.Method.cs`）——但**一份声明有三个独立解释者**：
+式中関数（`FunctionMethod`，`BuiltinMethod/*.cs` 内 183 个**活的**子类 / 266 个活注册名——注册名现以类体上的 `[BuiltinMethod("NAME")]` 工厂声明（issues/18），此前口径为 `Creator.cs` 内行首 `["NAME"] = ` 的字面量表，含 4 条被注释的注册）用**数据**声明实参形状：114 个 `ArgTypeList` 规则块（91 个设了 `OmitStart`），另有类只用旧的 `argumentTypeArray`（`Type[]`）。声明方向是对的——184 个类里只有 `MesSkipMethod` override 了检查（`BuiltinMethod/GeneralPurpose.cs`）——但**一份声明有三个独立解释者**：
 
-1. **检查器**：`FunctionMethod.CheckArgumentTypeEx`（`FunctionMethod.cs`），另有 4 个实现分散在 `OperatorMethod.cs` 的 `CheckArgumentType`、`StrForm.cs` 的 `FormattedStringMethod.CheckArgumentType`、`Creator.Method.cs` 的 `MesSkipMethod.CheckArgumentType` 与指令侧 `ArgumentBuilder.cs` 的 `CreateArgument`
+1. **检查器**：`FunctionMethod.CheckArgumentTypeEx`（`FunctionMethod.cs`），另有 4 个实现分散在 `OperatorMethod.cs` 的 `CheckArgumentType`、`StrForm.cs` 的 `FormattedStringMethod.CheckArgumentType`、`BuiltinMethod/GeneralPurpose.cs` 的 `MesSkipMethod.CheckArgumentType` 与指令侧 `ArgumentBuilder.cs` 的 `CreateArgument`
 2. **折叠**：`FunctionMethodTerm.Restructure`（`FunctionMethodTerm.cs`）会**就地改写**实参表，并用 `SingleTerm` 替换整个 term
 3. **函数体**：每个 `GetIntValue`/`GetStrValue` 自己重新回答规则表已经回答过的 5 个问题——有没有值 / 是值还是变量 / 哪个变量 / 几维 / 是否已被折叠
 
@@ -78,7 +78,7 @@ Status: in-progress
 
 ## 影响
 
-- 改动面：`FunctionMethod.cs`（规则表与检查器）、`Creator.Method.cs`（114 个规则块 + 约 682 处消费点）、`FunctionMethodTerm.cs`、`ArgumentBuilder.cs`、`IdentifierDictionary.cs`、`ArgumentListExtensions.cs`；`UserDefinedMethodTerm.cs`（UDF 侧同型站点在 ref 分支上，已核实为死代码，见 arg-contract/issues/03）
+- 改动面：`FunctionMethod.cs`（规则表与检查器）、`BuiltinMethod/*.cs`（114 个规则块 + 约 682 处消费点）、`FunctionMethodTerm.cs`、`ArgumentBuilder.cs`、`IdentifierDictionary.cs`、`ArgumentListExtensions.cs`；`UserDefinedMethodTerm.cs`（UDF 侧同型站点在 ref 分支上，已核实为死代码，见 arg-contract/issues/03）
 - 交付顺序：01（Array3D 标志位）→ 02（OmitStart 判据）→ 03（可省略槽上的 `Required`；UDF 侧已核实为死代码，不在其中）→ 04（阶段 A 止血：重新基线 + 4 个硬转型槽标 `NotNull`，已落地）→ 05（阶段 B 类型深化：槽位类型 + 183 个子类迁移）。01/02 已落地；03 的片 1 是高优先、低风险的止血，片 2/3/4（A 表 41 槽铺 `NotNull`、B 表 34 槽裁定为「有意可空」、A/B 用例网 76 槽 + UDF 默认值 1 条）也已落地，片 2-C 把变长尾部按转发型/消费型逐块定案（`MAX`/`MIN`、`ARRAYMSORT` 标 `NotNull`），片 2-D 把工作表从 76 补到全集 96：补车道 20 项逐项过「数量省略越界」尺子并裁定（7 处「无意且可达」补标 `NotNull` + 用例、2 处「有意可空」补注释、4 处硬转型归 04），变量下标 `Required(i)` 与 helper 传参路径随之并入。03 的余项已全部落地——最后的余项 7（`docs/` 侧内建函数契约表）产出为 [docs/builtin-functions.md](../../docs/builtin-functions.md)（266 个注册名的逐槽形状 + 空槽语义 + 说明，生成器 [builtin-contract.py](builtin-contract.py) 可复跑），03 随之转为 `implemented`。原列的三条里，B 表执行期语义抽查（片 5，46 条用例，覆盖 27/34 槽）与指令侧 `ArgumentBuilder` 的两轴模型定案（片 6，**定案为「不对齐」**——指令侧即函数侧被否决的 A 极性，工件为 `instruction-args.py`/`.md`）已落地；那 4 处硬转型已由 04 的阶段 A 标 `NotNull` 收口（cast 本身的类型化移除归 05）。同批复核发现的另两条（未被 `Required` 读取的 3 个有意可空槽补注释、两处代码注释不再指向票据）已就地落地
 - 测试：`CheckArgumentType`/`ArgTypeList`/`argumentTypeArrayEx` 原先**零命中**——114 个规则块是仓库里最大的一块未测行为。本 effort 的表驱动用例是该面的首个覆盖，落在 `Emuera.Tests/Runtime/Script/Statements/Function/CheckArgumentTypeEx.cs`
 - 与既有票的关系：`.scratch/nullable-migration/issues/08-expression-method-chain.md`（把「数量上可省略」写成「槽可以为 null」的出处）、`nullable-migration/issues/13`（`Required` 的引入）、`nullable-migration/issues/05`（省略实参以 null 承载的契约）——`nullable-migration/issues/08` 与 `nullable-migration/issues/13` 已随 `arg-contract/issues/03` 回填

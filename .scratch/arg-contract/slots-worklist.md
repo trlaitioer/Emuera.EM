@@ -84,7 +84,7 @@ A/B 两段的 76 项 + E 段的 20 项 = 可省略 (类,槽) 全集 96 项。E �
 
 判空若是防御性写法或注释残留，归 A 表；片 2-B 逐槽取证后**无一项**归 A——34 项的函数体都把 null 与「不传该实参」读成同一个默认值（或走明确分支，如 `GETMETH` 无兜底值时抛 `CodeEE`）。
 
-各槽的空槽语义写在 `Creator.Method.cs` 对应规则段旁，由 `CheckArgumentTypeEx.IntentionalEmptySlot_IsAccepted` 逐槽钉住；A 表里的 `DataTableColumnManagementMethod[1]` 同判（NAMES 的空槽 = 写入 RESULTS 数组），故它是 A 表唯一不带 `NotNull` 的行。
+各槽的空槽语义写在 `BuiltinMethod/*.cs` 对应规则段旁，由 `CheckArgumentTypeEx.IntentionalEmptySlot_IsAccepted` 逐槽钉住；A 表里的 `DataTableColumnManagementMethod[1]` 同判（NAMES 的空槽 = 写入 RESULTS 数组），故它是 A 表唯一不带 `NotNull` 的行。
 
 | 类[槽] | 站点（类内方法） | 可省略段 | 必填段 | 类内 null 处理（方法） |
 | --- | --- | --- | --- | --- |

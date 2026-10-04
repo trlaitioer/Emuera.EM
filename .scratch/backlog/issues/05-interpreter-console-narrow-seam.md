@@ -9,7 +9,7 @@ Status: needs-triage
 `EmueraConsole` 既是 module、又是「通往 WinForms 的窗口」，解释器侧直接依赖它：
 
 - 注入路径：`Process.cs:26, 47, 70`、`Process.State.cs:94-102`、`ExpressionMediator.cs:17-26`（`public readonly EmueraConsole Console`）、`ConstantData.cs:137-139`、`ParserMediator.cs:34-36`、`ErbLoader.cs:25, 34`、`ErhLoader.cs:18, 26`、`LogicalLineParser.cs:333, 340, 411, 454, 676`、`VariableEvaluator.cs:2250, 2327`
-- 反向穿透（解释器拿到 Form）：`Instraction.Child.cs:1046, 1111, 2674, 2791, 2899, 3016` 的 `exm.Console.Window.ApplyTextBoxChanges()`、`Creator.Method.cs:2972, 2976, 9101-9103, 9719, 10085-10106` 的 `Window.MainPicBox.PointToClient` / `Window.hotkeyState`
+- 反向穿透（解释器拿到 Form）：`Instraction.Child.cs:1046, 1111, 2674, 2791, 2899, 3016` 的 `exm.Console.Window.ApplyTextBoxChanges()`、`BuiltinMethod/Graphics.cs` 的 `MouseButtonMethod`（`Window.MainPicBox.PointToClient`）与 `BuiltinMethod/EeAndPatches.cs` 的 `HotkeyStateMethod`/`HotkeyStateInitMethod`（`Window.hotkeyState`）
 
 量化：Runtime 侧 16 个文件、417 个调用点、触及 105 个不同的 `EmueraConsole` 成员。而各调用方真正需要的极窄——`ErbLoader` 只要 `PrintSystemLine`(20) / `PrintError`(12) / `NewLine`(5)，`ErhLoader` 只要 `PrintSystemLine`(1)，`ConstantData` 只要 `PrintError`(8) / `PrintSystemLine`(4)，`LogicalLineParser` 只在 411/676 各一处。
 
@@ -36,7 +36,7 @@ Status: needs-triage
 
 ## 影响
 
-- **测试面**：今天全部靠 `null!` 绕过——`TestBootstrap.cs:47, 58, 60` 的 `new ConstantData(csvDir, null!, false)` / `new ExpressionMediator(null!, vEvaluator, null!)` / `new Process(null!)`，`PluginManagerTests.cs:26` 的 `new ProcessState(null!)`，`ErbLoaderNestCheckTests.cs:44` 的 `new ErbLoader(null!, …)`。`HTML_STRINGLEN`（`Creator.Method.cs:32-60` → `HtmlManager.cs:48-50` 读 `GlobalStatic.Console.StrMeasure`）在夹具里必然 NRE。改造后可断言「加载 N 个 erb 产生哪些告警行、顺序如何」
+- **测试面**：今天全部靠 `null!` 绕过——`TestBootstrap.cs:47, 58, 60` 的 `new ConstantData(csvDir, null!, false)` / `new ExpressionMediator(null!, vEvaluator, null!)` / `new Process(null!)`，`PluginManagerTests.cs:26` 的 `new ProcessState(null!)`，`ErbLoaderNestCheckTests.cs:44` 的 `new ErbLoader(null!, …)`。`HTML_STRINGLEN`（`BuiltinMethod/PrivateAdditions.cs` 的 `HtmlStringLenMethod` → `HtmlManager.cs:48-50` 读 `GlobalStatic.Console.StrMeasure`）在夹具里必然 NRE。改造后可断言「加载 N 个 erb 产生哪些告警行、顺序如何」
 - **与既有票的关系**：`.scratch/nullable-migration/issues/20-debug-eval-context-null.md:32, 42` 已记载 `exm.Process` 那一支无覆盖；`.scratch/nullable-migration/issues/12-ui-periphery.md:218` 记了 `MainWindow.console` 可空后两条取值路径的判空责任待明确——本票是它们的结构性解法，不是重复
 - **与既有决策的冲突**：`.scratch/performance-optimization/issues/04-parse-parallel.md` 已就 `Application.DoEvents`、`SystemSounds`、`ParserMediator` 告警列表的并发纪律逐项定案（含把 `Application.DoEvents` 从并行区移除并入该票）。本票若动 seam，须与该票的并行边界结论对齐，不重复裁定并发问题
 - 改动量估计：大（16 个文件、417 个调用点）。建议先切 `ErbLoader`/`ErhLoader`/`ConstantData`/`LogicalLineParser` 四个窄需求方，再动指令层

@@ -44,7 +44,7 @@ issues/21 的断言审计（批次 1/2/3）与 issues/14 复核表第 4 项另�
 | `PrintStringBuffer.getDivideIndex` 的 `css.Font!` | `Font == null` 只在 `Error`，本方法不查 `Error`，但 `Error` 部件宽度恒为 0 | `Error` 部件参与宽度累加 |
 | `ErbLoader.nestCheck` 的 `func!`（`Stack<InstructionLine>.Pop()`） | 循环条件 `nestStack.Count != 0` 保证 `Pop()` 非空，故 `if (func != null)` 恒真、含该 `!` 的分支是死代码 | 附带缺陷：null 测试疑似写反（应为 `funcMatch == null`），属潜在缺陷 |
 | `EmueraConsole.GetDebugTraceLog` 的 `line.ParentLabelLine!` | 该行的理由注释「有 Position 就是从文件解析来的行」对内存行失效（默认 `ScriptPosition` 非 null），`Position == null` 的判空挡不住 `ParentLabelLine == null` | 调试窗口打开时 `Process.GetScaningLine()` 指向内存行（插件/调试命令解析过 `VARI` 一类会写 `scaningLine` 的行） |
-| `Creator.Method.cs` 的 `UnicodeMethod.GetStrValue` 对 `getCurrentLine.Position!` | 只判 `getCurrentLine != null`，未判 `Position`；由 issues/14 复核表第 4 项移交（B） | 出现 `Position` 为 null 的当前行（现无该形态的构造点） |
+| `BuiltinMethod/StringOperations.cs` 的 `UnicodeMethod.GetStrValue` 对 `getCurrentLine.Position!` | 只判 `getCurrentLine != null`，未判 `Position`；由 issues/14 复核表第 4 项移交（B） | 出现 `Position` 为 null 的当前行（现无该形态的构造点） |
 | `UserDefinedMethodTerm.cs` 的 `UserDefinedRefMethodTerm.Restructure` 对 `srcArgs.Required(i)` | `srcArgs` 的元素可空（省略实参），此处按非空读取；由 issues/14 复核表第 4 项移交（该 `Restructure` 现无调用点，B） | 该 `Restructure` 重新接回调用链 |
 
 ### 相关发现(不在本票)
