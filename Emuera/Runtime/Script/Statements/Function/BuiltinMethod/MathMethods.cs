@@ -10,6 +10,12 @@ namespace MinorShift.Emuera.GameData.Function;
 
 internal sealed class RandMethod : FunctionMethod
 {
+	[BuiltinMethod("RAND")]
+	private static RandMethod CreateRAND()
+	{
+		return new RandMethod();
+	}
+
 	public RandMethod()
 	{
 		ReturnType = typeof(long);
@@ -81,6 +87,18 @@ internal sealed class RandMethod : FunctionMethod
 
 internal sealed class MaxMethod : FunctionMethod
 {
+	[BuiltinMethod("MIN")]
+	private static MaxMethod CreateMIN()
+	{
+		return new MaxMethod(false);
+	}
+
+	[BuiltinMethod("MAX")]
+	private static MaxMethod CreateMAX()
+	{
+		return new MaxMethod(true);
+	}
+
 	private readonly bool isMax;
 
 	public MaxMethod()
@@ -156,6 +174,12 @@ internal sealed class MaxMethod : FunctionMethod
 
 internal sealed class AbsMethod : FunctionMethod
 {
+	[BuiltinMethod("ABS")]
+	private static AbsMethod CreateABS()
+	{
+		return new AbsMethod();
+	}
+
 	public AbsMethod()
 	{
 		ReturnType = typeof(long);
@@ -178,6 +202,12 @@ internal sealed class AbsMethod : FunctionMethod
 
 internal sealed class PowerMethod : FunctionMethod
 {
+	[BuiltinMethod("POWER")]
+	private static PowerMethod CreatePOWER()
+	{
+		return new PowerMethod();
+	}
+
 	public PowerMethod()
 	{
 		ReturnType = typeof(long);
@@ -212,6 +242,12 @@ internal sealed class PowerMethod : FunctionMethod
 
 internal sealed class SqrtMethod : FunctionMethod
 {
+	[BuiltinMethod("SQRT")]
+	private static SqrtMethod CreateSQRT()
+	{
+		return new SqrtMethod();
+	}
+
 	public SqrtMethod()
 	{
 		ReturnType = typeof(long);
@@ -234,6 +270,12 @@ internal sealed class SqrtMethod : FunctionMethod
 
 internal sealed class CbrtMethod : FunctionMethod
 {
+	[BuiltinMethod("CBRT")]
+	private static CbrtMethod CreateCBRT()
+	{
+		return new CbrtMethod();
+	}
+
 	public CbrtMethod()
 	{
 		ReturnType = typeof(long);
@@ -256,6 +298,18 @@ internal sealed class CbrtMethod : FunctionMethod
 
 internal sealed class LogMethod : FunctionMethod
 {
+	[BuiltinMethod("LOG")]
+	private static LogMethod CreateLOG()
+	{
+		return new LogMethod();
+	}
+
+	[BuiltinMethod("LOG10")]
+	private static LogMethod CreateLOG10()
+	{
+		return new LogMethod(10.0d);
+	}
+
 	private readonly double Base;
 
 	public LogMethod()
@@ -318,6 +372,12 @@ internal sealed class LogMethod : FunctionMethod
 
 internal sealed class ExpMethod : FunctionMethod
 {
+	[BuiltinMethod("EXPONENT")]
+	private static ExpMethod CreateEXPONENT()
+	{
+		return new ExpMethod();
+	}
+
 	public ExpMethod()
 	{
 		ReturnType = typeof(long);
@@ -351,6 +411,12 @@ internal sealed class ExpMethod : FunctionMethod
 
 internal sealed class SignMethod : FunctionMethod
 {
+	[BuiltinMethod("SIGN")]
+	private static SignMethod CreateSIGN()
+	{
+		return new SignMethod();
+	}
+
 	public SignMethod()
 	{
 		ReturnType = typeof(long);
@@ -367,6 +433,12 @@ internal sealed class SignMethod : FunctionMethod
 
 internal sealed class GetLimitMethod : FunctionMethod
 {
+	[BuiltinMethod("LIMIT")]
+	private static GetLimitMethod CreateLIMIT()
+	{
+		return new GetLimitMethod();
+	}
+
 	public GetLimitMethod()
 	{
 		ReturnType = typeof(long);

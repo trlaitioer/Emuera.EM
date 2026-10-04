@@ -24,6 +24,54 @@ namespace MinorShift.Emuera.GameData.Function;
 
 internal sealed class GraphicsStateMethod : FunctionMethod
 {
+	[BuiltinMethod("GCREATED")]
+	private static GraphicsStateMethod CreateGCREATED()
+	{
+		return new GraphicsStateMethod();
+	}
+
+	[BuiltinMethod("GWIDTH")]
+	private static GraphicsStateMethod CreateGWIDTH()
+	{
+		return new GraphicsStateMethod();
+	}
+
+	[BuiltinMethod("GHEIGHT")]
+	private static GraphicsStateMethod CreateGHEIGHT()
+	{
+		return new GraphicsStateMethod();
+	}
+
+	[BuiltinMethod("GGETFONTSIZE")]
+	private static GraphicsStateMethod CreateGGETFONTSIZE()
+	{
+		return new GraphicsStateMethod();
+	}
+
+	[BuiltinMethod("GGETFONTSTYLE")]
+	private static GraphicsStateMethod CreateGGETFONTSTYLE()
+	{
+		return new GraphicsStateMethod();
+	}
+
+	[BuiltinMethod("GGETBRUSH")]
+	private static GraphicsStateMethod CreateGGETBRUSH()
+	{
+		return new GraphicsStateMethod();
+	}
+
+	[BuiltinMethod("GGETPEN")]
+	private static GraphicsStateMethod CreateGGETPEN()
+	{
+		return new GraphicsStateMethod();
+	}
+
+	[BuiltinMethod("GGETPENWIDTH")]
+	private static GraphicsStateMethod CreateGGETPENWIDTH()
+	{
+		return new GraphicsStateMethod();
+	}
+
 	public GraphicsStateMethod()
 	{
 		ReturnType = typeof(long);
@@ -79,6 +127,12 @@ internal sealed class GraphicsStateMethod : FunctionMethod
 
 internal sealed class GraphicsStateStrMethod : FunctionMethod
 {
+	[BuiltinMethod("GGETFONT")]
+	private static GraphicsStateStrMethod CreateGGETFONT()
+	{
+		return new GraphicsStateStrMethod();
+	}
+
 	public GraphicsStateStrMethod()
 	{
 		ReturnType = typeof(string);
@@ -114,6 +168,12 @@ internal sealed class GraphicsStateStrMethod : FunctionMethod
 
 internal sealed class GraphicsGetColorMethod : FunctionMethod
 {
+	[BuiltinMethod("GGETCOLOR")]
+	private static GraphicsGetColorMethod CreateGGETCOLOR()
+	{
+		return new GraphicsGetColorMethod();
+	}
+
 	public GraphicsGetColorMethod()
 	{
 		ReturnType = typeof(long);
@@ -150,6 +210,12 @@ internal sealed class GraphicsGetColorMethod : FunctionMethod
 
 internal sealed class GraphicsSetColorMethod : FunctionMethod
 {
+	[BuiltinMethod("GSETCOLOR")]
+	private static GraphicsSetColorMethod CreateGSETCOLOR()
+	{
+		return new GraphicsSetColorMethod();
+	}
+
 	public GraphicsSetColorMethod()
 	{
 		ReturnType = typeof(long);
@@ -185,6 +251,12 @@ internal sealed class GraphicsSetColorMethod : FunctionMethod
 
 internal sealed class GraphicsSetBrushMethod : FunctionMethod
 {
+	[BuiltinMethod("GSETBRUSH")]
+	private static GraphicsSetBrushMethod CreateGSETBRUSH()
+	{
+		return new GraphicsSetBrushMethod();
+	}
+
 	public GraphicsSetBrushMethod()
 	{
 		ReturnType = typeof(long);
@@ -216,6 +288,12 @@ internal sealed class GraphicsSetBrushMethod : FunctionMethod
 
 internal sealed class GraphicsSetFontMethod : FunctionMethod
 {
+	[BuiltinMethod("GSETFONT")]
+	private static GraphicsSetFontMethod CreateGSETFONT()
+	{
+		return new GraphicsSetFontMethod();
+	}
+
 	public GraphicsSetFontMethod()
 	{
 		ReturnType = typeof(long);
@@ -314,6 +392,12 @@ internal sealed class GraphicsSetFontMethod : FunctionMethod
 
 internal sealed class GraphicsSetPenMethod : FunctionMethod
 {
+	[BuiltinMethod("GSETPEN")]
+	private static GraphicsSetPenMethod CreateGSETPEN()
+	{
+		return new GraphicsSetPenMethod();
+	}
+
 	public GraphicsSetPenMethod()
 	{
 		ReturnType = typeof(long);
@@ -348,6 +432,12 @@ internal sealed class GraphicsSetPenMethod : FunctionMethod
 
 internal sealed class GraphicsSetDashStyleMethod : FunctionMethod
 {
+	[BuiltinMethod("GDASHSTYLE")]
+	private static GraphicsSetDashStyleMethod CreateGDASHSTYLE()
+	{
+		return new GraphicsSetDashStyleMethod();
+	}
+
 	public GraphicsSetDashStyleMethod()
 	{
 		ReturnType = typeof(long);
@@ -380,6 +470,12 @@ internal sealed class GraphicsSetDashStyleMethod : FunctionMethod
 
 internal sealed class GraphicsDrawStringMethod : FunctionMethod
 {
+	[BuiltinMethod("GDRAWTEXT")]
+	private static GraphicsDrawStringMethod CreateGDRAWTEXT()
+	{
+		return new GraphicsDrawStringMethod();
+	}
+
 	public GraphicsDrawStringMethod()
 	{
 		ReturnType = typeof(long);
@@ -467,6 +563,12 @@ internal sealed class GraphicsDrawStringMethod : FunctionMethod
 
 internal sealed class GraphicsGetTextSizeMethod : FunctionMethod
 {
+	[BuiltinMethod("GGETTEXTSIZE")]
+	private static GraphicsGetTextSizeMethod CreateGGETTEXTSIZE()
+	{
+		return new GraphicsGetTextSizeMethod();
+	}
+
 	public GraphicsGetTextSizeMethod()
 	{
 		ReturnType = typeof(long);
@@ -584,6 +686,12 @@ internal sealed class GraphicsGetTextSizeMethod : FunctionMethod
 //}
 internal sealed class GraphicsDrawGWithRotateMethod : FunctionMethod
 {
+	[BuiltinMethod("GDRAWGWITHROTATE")]
+	private static GraphicsDrawGWithRotateMethod CreateGDRAWGWITHROTATE()
+	{
+		return new GraphicsDrawGWithRotateMethod();
+	}
+
 	public GraphicsDrawGWithRotateMethod()
 	{
 		ReturnType = typeof(long);
@@ -682,6 +790,12 @@ internal sealed class GraphicsGetBrushMethod : FunctionMethod
 
 internal sealed class GraphicsDrawLineMethod : FunctionMethod
 {
+	[BuiltinMethod("GDRAWLINE")]
+	private static GraphicsDrawLineMethod CreateGDRAWLINE()
+	{
+		return new GraphicsDrawLineMethod();
+	}
+
 	public GraphicsDrawLineMethod()
 	{
 		ReturnType = typeof(long);
@@ -713,6 +827,36 @@ internal sealed class GraphicsDrawLineMethod : FunctionMethod
 
 internal sealed class SpriteStateMethod : FunctionMethod
 {
+	[BuiltinMethod("SPRITECREATED")]
+	private static SpriteStateMethod CreateSPRITECREATED()
+	{
+		return new SpriteStateMethod();
+	}
+
+	[BuiltinMethod("SPRITEWIDTH")]
+	private static SpriteStateMethod CreateSPRITEWIDTH()
+	{
+		return new SpriteStateMethod();
+	}
+
+	[BuiltinMethod("SPRITEHEIGHT")]
+	private static SpriteStateMethod CreateSPRITEHEIGHT()
+	{
+		return new SpriteStateMethod();
+	}
+
+	[BuiltinMethod("SPRITEPOSX")]
+	private static SpriteStateMethod CreateSPRITEPOSX()
+	{
+		return new SpriteStateMethod();
+	}
+
+	[BuiltinMethod("SPRITEPOSY")]
+	private static SpriteStateMethod CreateSPRITEPOSY()
+	{
+		return new SpriteStateMethod();
+	}
+
 	public SpriteStateMethod()
 	{
 		ReturnType = typeof(long);
@@ -749,6 +893,18 @@ internal sealed class SpriteStateMethod : FunctionMethod
 
 internal sealed class SpriteSetPosMethod : FunctionMethod
 {
+	[BuiltinMethod("SPRITEMOVE")]
+	private static SpriteSetPosMethod CreateSPRITEMOVE()
+	{
+		return new SpriteSetPosMethod();
+	}
+
+	[BuiltinMethod("SPRITESETPOS")]
+	private static SpriteSetPosMethod CreateSPRITESETPOS()
+	{
+		return new SpriteSetPosMethod();
+	}
+
 	public SpriteSetPosMethod()
 	{
 		ReturnType = typeof(long);
@@ -782,6 +938,12 @@ internal sealed class SpriteSetPosMethod : FunctionMethod
 
 internal sealed class SpriteGetColorMethod : FunctionMethod
 {
+	[BuiltinMethod("SPRITEGETCOLOR")]
+	private static SpriteGetColorMethod CreateSPRITEGETCOLOR()
+	{
+		return new SpriteGetColorMethod();
+	}
+
 	public SpriteGetColorMethod()
 	{
 		ReturnType = typeof(long);
@@ -819,6 +981,18 @@ internal sealed class SpriteGetColorMethod : FunctionMethod
 
 internal sealed class ClientSizeMethod : FunctionMethod
 {
+	[BuiltinMethod("CLIENTWIDTH")]
+	private static ClientSizeMethod CreateCLIENTWIDTH()
+	{
+		return new ClientSizeMethod();
+	}
+
+	[BuiltinMethod("CLIENTHEIGHT")]
+	private static ClientSizeMethod CreateCLIENTHEIGHT()
+	{
+		return new ClientSizeMethod();
+	}
+
 	public ClientSizeMethod()
 	{
 		ReturnType = typeof(long);
@@ -842,6 +1016,12 @@ internal sealed class ClientSizeMethod : FunctionMethod
 
 internal sealed class GraphicsCreateMethod : FunctionMethod
 {
+	[BuiltinMethod("GCREATE")]
+	private static GraphicsCreateMethod CreateGCREATE()
+	{
+		return new GraphicsCreateMethod();
+	}
+
 	public GraphicsCreateMethod()
 	{
 		ReturnType = typeof(long);
@@ -895,6 +1075,12 @@ internal sealed class GraphicsCreateMethod : FunctionMethod
 
 internal sealed class GraphicsCreateFromFileMethod : FunctionMethod
 {
+	[BuiltinMethod("GCREATEFROMFILE")]
+	private static GraphicsCreateFromFileMethod CreateGCREATEFROMFILE()
+	{
+		return new GraphicsCreateFromFileMethod();
+	}
+
 	public GraphicsCreateFromFileMethod()
 	{
 		ReturnType = typeof(long);
@@ -982,6 +1168,12 @@ internal sealed class GraphicsCreateFromFileMethod : FunctionMethod
 
 internal sealed class GraphicsDisposeMethod : FunctionMethod
 {
+	[BuiltinMethod("GDISPOSE")]
+	private static GraphicsDisposeMethod CreateGDISPOSE()
+	{
+		return new GraphicsDisposeMethod();
+	}
+
 	public GraphicsDisposeMethod()
 	{
 		ReturnType = typeof(long);
@@ -1014,6 +1206,12 @@ internal sealed class GraphicsDisposeMethod : FunctionMethod
 /// </summary>
 internal sealed class SpriteCreateMethod : FunctionMethod
 {
+	[BuiltinMethod("SPRITECREATE")]
+	private static SpriteCreateMethod CreateSPRITECREATE()
+	{
+		return new SpriteCreateMethod();
+	}
+
 	public SpriteCreateMethod()
 	{
 		ReturnType = typeof(long);
@@ -1117,6 +1315,12 @@ internal sealed class SpriteCreateMethod : FunctionMethod
 
 internal sealed class SpriteDisposeMethod : FunctionMethod
 {
+	[BuiltinMethod("SPRITEDISPOSE")]
+	private static SpriteDisposeMethod CreateSPRITEDISPOSE()
+	{
+		return new SpriteDisposeMethod();
+	}
+
 	public SpriteDisposeMethod()
 	{
 		ReturnType = typeof(long);
@@ -1140,6 +1344,12 @@ internal sealed class SpriteDisposeMethod : FunctionMethod
 
 internal sealed class SpriteDisposeAllMethod : FunctionMethod
 {
+	[BuiltinMethod("SPRITEDISPOSEALL")]
+	private static SpriteDisposeAllMethod CreateSPRITEDISPOSEALL()
+	{
+		return new SpriteDisposeAllMethod();
+	}
+
 	public SpriteDisposeAllMethod()
 	{
 		ReturnType = typeof(long);
@@ -1158,6 +1368,12 @@ internal sealed class SpriteDisposeAllMethod : FunctionMethod
 /// </summary>
 internal sealed class GraphicsClearMethod : FunctionMethod
 {
+	[BuiltinMethod("GCLEAR")]
+	private static GraphicsClearMethod CreateGCLEAR()
+	{
+		return new GraphicsClearMethod();
+	}
+
 	#region EM_私家版_GCLEAR拡張
 
 	public GraphicsClearMethod()
@@ -1233,6 +1449,12 @@ internal sealed class GraphicsClearMethod : FunctionMethod
 /// </summary>
 internal sealed class GraphicsFillRectangleMethod : FunctionMethod
 {
+	[BuiltinMethod("GFILLRECTANGLE")]
+	private static GraphicsFillRectangleMethod CreateGFILLRECTANGLE()
+	{
+		return new GraphicsFillRectangleMethod();
+	}
+
 	public GraphicsFillRectangleMethod()
 	{
 		ReturnType = typeof(long);
@@ -1266,6 +1488,12 @@ internal sealed class GraphicsFillRectangleMethod : FunctionMethod
 /// </summary>
 internal sealed class GraphicsDrawGMethod : FunctionMethod
 {
+	[BuiltinMethod("GDRAWG")]
+	private static GraphicsDrawGMethod CreateGDRAWG()
+	{
+		return new GraphicsDrawGMethod();
+	}
+
 	public GraphicsDrawGMethod()
 	{
 		ReturnType = typeof(long);
@@ -1397,6 +1625,12 @@ internal sealed class GraphicsDrawGMethod : FunctionMethod
 /// </summary>
 internal sealed class GraphicsDrawGWithMaskMethod : FunctionMethod
 {
+	[BuiltinMethod("GDRAWGWITHMASK")]
+	private static GraphicsDrawGWithMaskMethod CreateGDRAWGWITHMASK()
+	{
+		return new GraphicsDrawGWithMaskMethod();
+	}
+
 	public GraphicsDrawGWithMaskMethod()
 	{
 		ReturnType = typeof(long);
@@ -1455,6 +1689,12 @@ internal sealed class GraphicsDrawGWithMaskMethod : FunctionMethod
 /// </summary>
 internal sealed class GraphicsDrawSpriteMethod : FunctionMethod
 {
+	[BuiltinMethod("GDRAWSPRITE")]
+	private static GraphicsDrawSpriteMethod CreateGDRAWSPRITE()
+	{
+		return new GraphicsDrawSpriteMethod();
+	}
+
 	public GraphicsDrawSpriteMethod()
 	{
 		ReturnType = typeof(long);
@@ -1599,6 +1839,12 @@ internal sealed class GraphicsDrawSpriteMethod : FunctionMethod
 /// </summary>
 internal sealed class SpriteAnimeCreateMethod : FunctionMethod
 {
+	[BuiltinMethod("SPRITEANIMECREATE")]
+	private static SpriteAnimeCreateMethod CreateSPRITEANIMECREATE()
+	{
+		return new SpriteAnimeCreateMethod();
+	}
+
 	public SpriteAnimeCreateMethod()
 	{
 		ReturnType = typeof(long);
@@ -1660,6 +1906,12 @@ internal sealed class SpriteAnimeCreateMethod : FunctionMethod
 /// </summary>
 internal sealed class SpriteAnimeAddFrameMethod : FunctionMethod
 {
+	[BuiltinMethod("SPRITEANIMEADDFRAME")]
+	private static SpriteAnimeAddFrameMethod CreateSPRITEANIMEADDFRAME()
+	{
+		return new SpriteAnimeAddFrameMethod();
+	}
+
 	public SpriteAnimeAddFrameMethod()
 	{
 		ReturnType = typeof(long);
@@ -1724,6 +1976,12 @@ internal sealed class SpriteAnimeAddFrameMethod : FunctionMethod
 /// </summary>
 internal sealed class CBGClearMethod : FunctionMethod
 {
+	[BuiltinMethod("CBGCLEAR")]
+	private static CBGClearMethod CreateCBGCLEAR()
+	{
+		return new CBGClearMethod();
+	}
+
 	public CBGClearMethod()
 	{
 		ReturnType = typeof(long);
@@ -1745,6 +2003,12 @@ internal sealed class CBGClearMethod : FunctionMethod
 /// </summary>
 internal sealed class CBGRemoveRangeMethod : FunctionMethod
 {
+	[BuiltinMethod("CBGREMOVERANGE")]
+	private static CBGRemoveRangeMethod CreateCBGREMOVERANGE()
+	{
+		return new CBGRemoveRangeMethod();
+	}
+
 	public CBGRemoveRangeMethod()
 	{
 		ReturnType = typeof(long);
@@ -1770,6 +2034,12 @@ internal sealed class CBGRemoveRangeMethod : FunctionMethod
 /// </summary>
 internal sealed class CBGClearButtonMethod : FunctionMethod
 {
+	[BuiltinMethod("CBGCLEARBUTTON")]
+	private static CBGClearButtonMethod CreateCBGCLEARBUTTON()
+	{
+		return new CBGClearButtonMethod();
+	}
+
 	public CBGClearButtonMethod()
 	{
 		ReturnType = typeof(long);
@@ -1791,6 +2061,12 @@ internal sealed class CBGClearButtonMethod : FunctionMethod
 /// </summary>
 internal sealed class CBGRemoveBMapMethod : FunctionMethod
 {
+	[BuiltinMethod("CBGREMOVEBMAP")]
+	private static CBGRemoveBMapMethod CreateCBGREMOVEBMAP()
+	{
+		return new CBGRemoveBMapMethod();
+	}
+
 	public CBGRemoveBMapMethod()
 	{
 		ReturnType = typeof(long);
@@ -1812,6 +2088,12 @@ internal sealed class CBGRemoveBMapMethod : FunctionMethod
 /// </summary>
 internal sealed class CBGSetGraphicsMethod : FunctionMethod
 {
+	[BuiltinMethod("CBGSETG")]
+	private static CBGSetGraphicsMethod CreateCBGSETG()
+	{
+		return new CBGSetGraphicsMethod();
+	}
+
 	public CBGSetGraphicsMethod()
 	{
 		ReturnType = typeof(long);
@@ -1851,6 +2133,12 @@ internal sealed class CBGSetGraphicsMethod : FunctionMethod
 /// </summary>
 internal sealed class CBGSetBMapGMethod : FunctionMethod
 {
+	[BuiltinMethod("CBGSETBMAPG")]
+	private static CBGSetBMapGMethod CreateCBGSETBMAPG()
+	{
+		return new CBGSetBMapGMethod();
+	}
+
 	public CBGSetBMapGMethod()
 	{
 		ReturnType = typeof(long);
@@ -1882,6 +2170,12 @@ internal sealed class CBGSetBMapGMethod : FunctionMethod
 /// </summary>
 internal sealed class CBGSetCIMGMethod : FunctionMethod
 {
+	[BuiltinMethod("CBGSETSPRITE")]
+	private static CBGSetCIMGMethod CreateCBGSETSPRITE()
+	{
+		return new CBGSetCIMGMethod();
+	}
+
 	public CBGSetCIMGMethod()
 	{
 		ReturnType = typeof(long);
@@ -1923,6 +2217,12 @@ internal sealed class CBGSetCIMGMethod : FunctionMethod
 /// </summary>
 internal sealed class CBGSETButtonSpriteMethod : FunctionMethod
 {
+	[BuiltinMethod("CBGSETBUTTONSPRITE")]
+	private static CBGSETButtonSpriteMethod CreateCBGSETBUTTONSPRITE()
+	{
+		return new CBGSETButtonSpriteMethod();
+	}
+
 	public CBGSETButtonSpriteMethod()
 	{
 		ReturnType = typeof(long);
@@ -2011,6 +2311,18 @@ internal sealed class CBGSETButtonSpriteMethod : FunctionMethod
 
 internal sealed class GetKeyStateMethod : FunctionMethod
 {
+	[BuiltinMethod("GETKEY")]
+	private static GetKeyStateMethod CreateGETKEY()
+	{
+		return new GetKeyStateMethod();
+	}
+
+	[BuiltinMethod("GETKEYTRIGGERED")]
+	private static GetKeyStateMethod CreateGETKEYTRIGGERED()
+	{
+		return new GetKeyStateMethod();
+	}
+
 	private static readonly short[] keytoggle = new short[256];
 
 	public GetKeyStateMethod()
@@ -2048,6 +2360,18 @@ internal sealed class GetKeyStateMethod : FunctionMethod
 
 internal sealed class MousePosMethod : FunctionMethod
 {
+	[BuiltinMethod("MOUSEX")]
+	private static MousePosMethod CreateMOUSEX()
+	{
+		return new MousePosMethod();
+	}
+
+	[BuiltinMethod("MOUSEY")]
+	private static MousePosMethod CreateMOUSEY()
+	{
+		return new MousePosMethod();
+	}
+
 	public MousePosMethod()
 	{
 		ReturnType = typeof(long);
@@ -2071,6 +2395,12 @@ internal sealed class MousePosMethod : FunctionMethod
 
 internal sealed class MouseButtonMethod : FunctionMethod
 {
+	[BuiltinMethod("MOUSEB")]
+	private static MouseButtonMethod CreateMOUSEB()
+	{
+		return new MouseButtonMethod();
+	}
+
 	public MouseButtonMethod()
 	{
 		ReturnType = typeof(string);
@@ -2114,6 +2444,12 @@ internal sealed class MouseButtonMethod : FunctionMethod
 
 internal sealed class IsActiveMethod : FunctionMethod
 {
+	[BuiltinMethod("ISACTIVE")]
+	private static IsActiveMethod CreateISACTIVE()
+	{
+		return new IsActiveMethod();
+	}
+
 	public IsActiveMethod()
 	{
 		ReturnType = typeof(long);
@@ -2129,6 +2465,12 @@ internal sealed class IsActiveMethod : FunctionMethod
 
 internal sealed class SetAnimeTimerMethod : FunctionMethod
 {
+	[BuiltinMethod("SETANIMETIMER")]
+	private static SetAnimeTimerMethod CreateSETANIMETIMER()
+	{
+		return new SetAnimeTimerMethod();
+	}
+
 	public SetAnimeTimerMethod()
 	{
 		ReturnType = typeof(long);
@@ -2155,6 +2497,12 @@ internal sealed class SetAnimeTimerMethod : FunctionMethod
 /// </summary>
 internal sealed class SaveTextMethod : FunctionMethod
 {
+	[BuiltinMethod("SAVETEXT")]
+	private static SaveTextMethod CreateSAVETEXT()
+	{
+		return new SaveTextMethod();
+	}
+
 	public SaveTextMethod()
 	{
 		ReturnType = typeof(long);
@@ -2294,6 +2642,12 @@ internal sealed class SaveTextMethod : FunctionMethod
 /// </summary>
 internal sealed class LoadTextMethod : FunctionMethod
 {
+	[BuiltinMethod("LOADTEXT")]
+	private static LoadTextMethod CreateLOADTEXT()
+	{
+		return new LoadTextMethod();
+	}
+
 	public LoadTextMethod()
 	{
 		ReturnType = typeof(string);
@@ -2406,6 +2760,12 @@ internal sealed class LoadTextMethod : FunctionMethod
 /// </summary>
 internal sealed class GraphicsSaveMethod : FunctionMethod
 {
+	[BuiltinMethod("GSAVE")]
+	private static GraphicsSaveMethod CreateGSAVE()
+	{
+		return new GraphicsSaveMethod();
+	}
+
 	public GraphicsSaveMethod()
 	{
 		ReturnType = typeof(long);
@@ -2453,6 +2813,12 @@ internal sealed class GraphicsSaveMethod : FunctionMethod
 /// </summary>
 internal sealed class GraphicsLoadMethod : FunctionMethod
 {
+	[BuiltinMethod("GLOAD")]
+	private static GraphicsLoadMethod CreateGLOAD()
+	{
+		return new GraphicsLoadMethod();
+	}
+
 	public GraphicsLoadMethod()
 	{
 		ReturnType = typeof(long);

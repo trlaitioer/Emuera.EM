@@ -21,6 +21,12 @@ namespace MinorShift.Emuera.GameData.Function;
 
 internal sealed class StrlenMethod : FunctionMethod
 {
+	[BuiltinMethod("STRLENS")]
+	private static StrlenMethod CreateSTRLENS()
+	{
+		return new StrlenMethod();
+	}
+
 	public StrlenMethod()
 	{
 		ReturnType = typeof(long);
@@ -37,6 +43,12 @@ internal sealed class StrlenMethod : FunctionMethod
 
 internal sealed class StrlenuMethod : FunctionMethod
 {
+	[BuiltinMethod("STRLENSU")]
+	private static StrlenuMethod CreateSTRLENSU()
+	{
+		return new StrlenuMethod();
+	}
+
 	public StrlenuMethod()
 	{
 		ReturnType = typeof(long);
@@ -53,6 +65,12 @@ internal sealed class StrlenuMethod : FunctionMethod
 
 internal sealed class SubstringMethod : FunctionMethod
 {
+	[BuiltinMethod("SUBSTRING")]
+	private static SubstringMethod CreateSUBSTRING()
+	{
+		return new SubstringMethod();
+	}
+
 	public SubstringMethod()
 	{
 		ReturnType = typeof(string);
@@ -105,6 +123,12 @@ internal sealed class SubstringMethod : FunctionMethod
 
 internal sealed class SubstringuMethod : FunctionMethod
 {
+	[BuiltinMethod("SUBSTRINGU")]
+	private static SubstringuMethod CreateSUBSTRINGU()
+	{
+		return new SubstringuMethod();
+	}
+
 	public SubstringuMethod()
 	{
 		ReturnType = typeof(string);
@@ -184,6 +208,18 @@ internal sealed class SubstringuMethod : FunctionMethod
 
 internal sealed class StrfindMethod : FunctionMethod
 {
+	[BuiltinMethod("STRFIND")]
+	private static StrfindMethod CreateSTRFIND()
+	{
+		return new StrfindMethod(false);
+	}
+
+	[BuiltinMethod("STRFINDU")]
+	private static StrfindMethod CreateSTRFINDU()
+	{
+		return new StrfindMethod(true);
+	}
+
 	public StrfindMethod(bool unicode)
 	{
 		ReturnType = typeof(long);
@@ -255,6 +291,12 @@ internal sealed class StrfindMethod : FunctionMethod
 
 internal sealed class StrCountMethod : FunctionMethod
 {
+	[BuiltinMethod("STRCOUNT")]
+	private static StrCountMethod CreateSTRCOUNT()
+	{
+		return new StrCountMethod();
+	}
+
 	public StrCountMethod()
 	{
 		ReturnType = typeof(long);
@@ -281,6 +323,12 @@ internal sealed class StrCountMethod : FunctionMethod
 
 internal sealed class ToStrMethod : FunctionMethod
 {
+	[BuiltinMethod("TOSTR")]
+	private static ToStrMethod CreateTOSTR()
+	{
+		return new ToStrMethod();
+	}
+
 	public ToStrMethod()
 	{
 		ReturnType = typeof(string);
@@ -334,6 +382,12 @@ internal sealed class ToStrMethod : FunctionMethod
 
 internal sealed class ToIntMethod : FunctionMethod
 {
+	[BuiltinMethod("TOINT")]
+	private static ToIntMethod CreateTOINT()
+	{
+		return new ToIntMethod();
+	}
+
 	public ToIntMethod()
 	{
 		ReturnType = typeof(long);
@@ -402,6 +456,30 @@ internal enum StrFormType
 
 internal sealed class StrChangeStyleMethod : FunctionMethod
 {
+	[BuiltinMethod("TOUPPER")]
+	private static StrChangeStyleMethod CreateTOUPPER()
+	{
+		return new StrChangeStyleMethod(StrFormType.Upper);
+	}
+
+	[BuiltinMethod("TOLOWER")]
+	private static StrChangeStyleMethod CreateTOLOWER()
+	{
+		return new StrChangeStyleMethod(StrFormType.Lower);
+	}
+
+	[BuiltinMethod("TOHALF")]
+	private static StrChangeStyleMethod CreateTOHALF()
+	{
+		return new StrChangeStyleMethod(StrFormType.Half);
+	}
+
+	[BuiltinMethod("TOFULL")]
+	private static StrChangeStyleMethod CreateTOFULL()
+	{
+		return new StrChangeStyleMethod(StrFormType.Full);
+	}
+
 	private readonly StrFormType strType;
 
 	public StrChangeStyleMethod()
@@ -447,6 +525,12 @@ internal sealed class StrChangeStyleMethod : FunctionMethod
 
 internal sealed class LineIsEmptyMethod : FunctionMethod
 {
+	[BuiltinMethod("LINEISEMPTY")]
+	private static LineIsEmptyMethod CreateLINEISEMPTY()
+	{
+		return new LineIsEmptyMethod();
+	}
+
 	public LineIsEmptyMethod()
 	{
 		ReturnType = typeof(long);
@@ -464,6 +548,12 @@ internal sealed class LineIsEmptyMethod : FunctionMethod
 
 internal sealed class ReplaceMethod : FunctionMethod
 {
+	[BuiltinMethod("REPLACE")]
+	private static ReplaceMethod CreateREPLACE()
+	{
+		return new ReplaceMethod();
+	}
+
 	public ReplaceMethod()
 	{
 		ReturnType = typeof(string);
@@ -555,6 +645,12 @@ internal sealed class ReplaceMethod : FunctionMethod
 
 internal sealed class UnicodeMethod : FunctionMethod
 {
+	[BuiltinMethod("UNICODE")]
+	private static UnicodeMethod CreateUNICODE()
+	{
+		return new UnicodeMethod();
+	}
+
 	public UnicodeMethod()
 	{
 		ReturnType = typeof(string);
@@ -602,6 +698,12 @@ internal sealed class UnicodeMethod : FunctionMethod
 
 internal sealed class UnicodeByteMethod : FunctionMethod
 {
+	[BuiltinMethod("UNICODEBYTE")]
+	private static UnicodeByteMethod CreateUNICODEBYTE()
+	{
+		return new UnicodeByteMethod();
+	}
+
 	public UnicodeByteMethod()
 	{
 		ReturnType = typeof(long);
@@ -623,6 +725,12 @@ internal sealed class UnicodeByteMethod : FunctionMethod
 
 internal sealed class ConvertIntMethod : FunctionMethod
 {
+	[BuiltinMethod("CONVERT")]
+	private static ConvertIntMethod CreateCONVERT()
+	{
+		return new ConvertIntMethod();
+	}
+
 	public ConvertIntMethod()
 	{
 		ReturnType = typeof(string);
@@ -645,6 +753,12 @@ internal sealed class ConvertIntMethod : FunctionMethod
 
 internal sealed class IsNumericMethod : FunctionMethod
 {
+	[BuiltinMethod("ISNUMERIC")]
+	private static IsNumericMethod CreateISNUMERIC()
+	{
+		return new IsNumericMethod();
+	}
+
 	public IsNumericMethod()
 	{
 		ReturnType = typeof(long);
@@ -704,6 +818,12 @@ internal sealed class IsNumericMethod : FunctionMethod
 
 internal sealed class EscapeMethod : FunctionMethod
 {
+	[BuiltinMethod("ESCAPE")]
+	private static EscapeMethod CreateESCAPE()
+	{
+		return new EscapeMethod();
+	}
+
 	public EscapeMethod()
 	{
 		ReturnType = typeof(string);
@@ -719,6 +839,12 @@ internal sealed class EscapeMethod : FunctionMethod
 
 internal sealed class EncodeToUniMethod : FunctionMethod
 {
+	[BuiltinMethod("ENCODETOUNI")]
+	private static EncodeToUniMethod CreateENCODETOUNI()
+	{
+		return new EncodeToUniMethod();
+	}
+
 	public EncodeToUniMethod()
 	{
 		ReturnType = typeof(long);
@@ -773,6 +899,12 @@ internal sealed class EncodeToUniMethod : FunctionMethod
 
 internal sealed class CharAtMethod : FunctionMethod
 {
+	[BuiltinMethod("CHARATU")]
+	private static CharAtMethod CreateCHARATU()
+	{
+		return new CharAtMethod();
+	}
+
 	public CharAtMethod()
 	{
 		ReturnType = typeof(string);
@@ -795,6 +927,12 @@ internal sealed class CharAtMethod : FunctionMethod
 
 internal sealed class GetLineStrMethod : FunctionMethod
 {
+	[BuiltinMethod("GETLINESTR")]
+	private static GetLineStrMethod CreateGETLINESTR()
+	{
+		return new GetLineStrMethod();
+	}
+
 	public GetLineStrMethod()
 	{
 		ReturnType = typeof(string);
@@ -821,6 +959,12 @@ internal sealed class GetLineStrMethod : FunctionMethod
 
 internal sealed class StrFormMethod : FunctionMethod
 {
+	[BuiltinMethod("STRFORM")]
+	private static StrFormMethod CreateSTRFORM()
+	{
+		return new StrFormMethod();
+	}
+
 	public StrFormMethod()
 	{
 		ReturnType = typeof(string);
@@ -890,6 +1034,12 @@ internal sealed class StrFormMethod : FunctionMethod
 
 internal sealed class JoinMethod : FunctionMethod
 {
+	[BuiltinMethod("STRJOIN")]
+	private static JoinMethod CreateSTRJOIN()
+	{
+		return new JoinMethod();
+	}
+
 	public JoinMethod()
 	{
 		ReturnType = typeof(string);
@@ -971,6 +1121,18 @@ internal sealed class JoinMethod : FunctionMethod
 
 internal sealed class GetConfigMethod : FunctionMethod
 {
+	[BuiltinMethod("GETCONFIG")]
+	private static GetConfigMethod CreateGETCONFIG()
+	{
+		return new GetConfigMethod(true);
+	}
+
+	[BuiltinMethod("GETCONFIGS")]
+	private static GetConfigMethod CreateGETCONFIGS()
+	{
+		return new GetConfigMethod(false);
+	}
+
 	public GetConfigMethod(bool typeisInt)
 	{
 		if (typeisInt)

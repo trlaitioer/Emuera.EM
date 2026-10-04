@@ -11,6 +11,12 @@ namespace MinorShift.Emuera.GameData.Function;
 
 internal sealed class HtmlGetPrintedStrMethod : FunctionMethod
 {
+	[BuiltinMethod("HTML_GETPRINTEDSTR")]
+	private static HtmlGetPrintedStrMethod CreateHTML_GETPRINTEDSTR()
+	{
+		return new HtmlGetPrintedStrMethod();
+	}
+
 	public HtmlGetPrintedStrMethod()
 	{
 		ReturnType = typeof(string);
@@ -59,6 +65,12 @@ internal sealed class HtmlGetPrintedStrMethod : FunctionMethod
 
 internal sealed class HtmlPopPrintingStrMethod : FunctionMethod
 {
+	[BuiltinMethod("HTML_POPPRINTINGSTR")]
+	private static HtmlPopPrintingStrMethod CreateHTML_POPPRINTINGSTR()
+	{
+		return new HtmlPopPrintingStrMethod();
+	}
+
 	public HtmlPopPrintingStrMethod()
 	{
 		ReturnType = typeof(string);
@@ -80,6 +92,12 @@ internal sealed class HtmlPopPrintingStrMethod : FunctionMethod
 
 internal sealed class HtmlToPlainTextMethod : FunctionMethod
 {
+	[BuiltinMethod("HTML_TOPLAINTEXT")]
+	private static HtmlToPlainTextMethod CreateHTML_TOPLAINTEXT()
+	{
+		return new HtmlToPlainTextMethod();
+	}
+
 	public HtmlToPlainTextMethod()
 	{
 		ReturnType = typeof(string);
@@ -95,6 +113,12 @@ internal sealed class HtmlToPlainTextMethod : FunctionMethod
 
 internal sealed class HtmlEscapeMethod : FunctionMethod
 {
+	[BuiltinMethod("HTML_ESCAPE")]
+	private static HtmlEscapeMethod CreateHTML_ESCAPE()
+	{
+		return new HtmlEscapeMethod();
+	}
+
 	public HtmlEscapeMethod()
 	{
 		ReturnType = typeof(string);

@@ -21,6 +21,16 @@
 
   <ItemGroup>
     <!--
+      Gate C 的黄金名单快照(backlog/issues/18):266 行、按序数排序的内建函数注册名。
+      改名/删名/加名都必须显式改这个文件,故它要随测试产物一起拷贝。
+    -->
+    <Content Include="Runtime/Script/Statements/Function/BuiltinMethodNames.snapshot.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
       运行测试必须带 -c Debug-NAudio(见 README.md):
       Emuera.csproj 中 NAudio 相关 PackageReference 是按配置条件声明的,
       只有 NAudio 配置才引入包并排除 Sound.WMP.cs(默认配置引用 WMPLib COM,

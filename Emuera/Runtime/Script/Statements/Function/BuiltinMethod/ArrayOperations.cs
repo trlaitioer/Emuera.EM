@@ -16,6 +16,18 @@ namespace MinorShift.Emuera.GameData.Function;
 
 internal sealed class SumArrayMethod : FunctionMethod
 {
+	[BuiltinMethod("SUMARRAY")]
+	private static SumArrayMethod CreateSUMARRAY()
+	{
+		return new SumArrayMethod();
+	}
+
+	[BuiltinMethod("SUMCARRAY")]
+	private static SumArrayMethod CreateSUMCARRAY()
+	{
+		return new SumArrayMethod(true);
+	}
+
 	private readonly bool isCharaRange;
 
 	public SumArrayMethod()
@@ -100,6 +112,18 @@ internal sealed class SumArrayMethod : FunctionMethod
 
 internal sealed class MatchMethod : FunctionMethod
 {
+	[BuiltinMethod("MATCH")]
+	private static MatchMethod CreateMATCH()
+	{
+		return new MatchMethod();
+	}
+
+	[BuiltinMethod("CMATCH")]
+	private static MatchMethod CreateCMATCH()
+	{
+		return new MatchMethod(true);
+	}
+
 	private readonly bool isCharaRange;
 
 	public MatchMethod()
@@ -222,6 +246,12 @@ internal sealed class MatchMethod : FunctionMethod
 
 internal sealed class GroupMatchMethod : FunctionMethod
 {
+	[BuiltinMethod("GROUPMATCH")]
+	private static GroupMatchMethod CreateGROUPMATCH()
+	{
+		return new GroupMatchMethod();
+	}
+
 	public GroupMatchMethod()
 	{
 		ReturnType = typeof(long);
@@ -281,6 +311,12 @@ internal sealed class GroupMatchMethod : FunctionMethod
 
 internal sealed class NosamesMethod : FunctionMethod
 {
+	[BuiltinMethod("NOSAMES")]
+	private static NosamesMethod CreateNOSAMES()
+	{
+		return new NosamesMethod();
+	}
+
 	public NosamesMethod()
 	{
 		ReturnType = typeof(long);
@@ -345,6 +381,12 @@ internal sealed class NosamesMethod : FunctionMethod
 
 internal sealed class AllsamesMethod : FunctionMethod
 {
+	[BuiltinMethod("ALLSAMES")]
+	private static AllsamesMethod CreateALLSAMES()
+	{
+		return new AllsamesMethod();
+	}
+
 	public AllsamesMethod()
 	{
 		ReturnType = typeof(long);
@@ -403,6 +445,30 @@ internal sealed class AllsamesMethod : FunctionMethod
 
 internal sealed class MaxArrayMethod : FunctionMethod
 {
+	[BuiltinMethod("MAXARRAY")]
+	private static MaxArrayMethod CreateMAXARRAY()
+	{
+		return new MaxArrayMethod();
+	}
+
+	[BuiltinMethod("MAXCARRAY")]
+	private static MaxArrayMethod CreateMAXCARRAY()
+	{
+		return new MaxArrayMethod(true);
+	}
+
+	[BuiltinMethod("MINARRAY")]
+	private static MaxArrayMethod CreateMINARRAY()
+	{
+		return new MaxArrayMethod(false, false);
+	}
+
+	[BuiltinMethod("MINCARRAY")]
+	private static MaxArrayMethod CreateMINCARRAY()
+	{
+		return new MaxArrayMethod(true, false);
+	}
+
 	private readonly bool isCharaRange;
 	private readonly bool isMax;
 	private readonly string funcName;
@@ -539,6 +605,12 @@ internal sealed class MaxArrayMethod : FunctionMethod
 
 internal sealed class GetbitMethod : FunctionMethod
 {
+	[BuiltinMethod("GETBIT")]
+	private static GetbitMethod CreateGETBIT()
+	{
+		return new GetbitMethod();
+	}
+
 	public GetbitMethod()
 	{
 		ReturnType = typeof(long);
@@ -576,6 +648,12 @@ internal sealed class GetbitMethod : FunctionMethod
 
 internal sealed class GetnumMethod : FunctionMethod
 {
+	[BuiltinMethod("GETNUM")]
+	private static GetnumMethod CreateGETNUM()
+	{
+		return new GetnumMethod();
+	}
+
 	public GetnumMethod()
 	{
 		ReturnType = typeof(long);
@@ -648,6 +726,12 @@ internal sealed class GetnumMethod : FunctionMethod
 
 internal sealed class GetnumBMethod : FunctionMethod
 {
+	[BuiltinMethod("GETNUMB")]
+	private static GetnumBMethod CreateGETNUMB()
+	{
+		return new GetnumBMethod();
+	}
+
 	public GetnumBMethod()
 	{
 		ReturnType = typeof(long);
@@ -702,6 +786,12 @@ internal sealed class GetnumBMethod : FunctionMethod
 
 internal sealed class GetPalamLVMethod : FunctionMethod
 {
+	[BuiltinMethod("GETPALAMLV")]
+	private static GetPalamLVMethod CreateGETPALAMLV()
+	{
+		return new GetPalamLVMethod();
+	}
+
 	public GetPalamLVMethod()
 	{
 		ReturnType = typeof(long);
@@ -729,6 +819,12 @@ internal sealed class GetPalamLVMethod : FunctionMethod
 
 internal sealed class GetExpLVMethod : FunctionMethod
 {
+	[BuiltinMethod("GETEXPLV")]
+	private static GetExpLVMethod CreateGETEXPLV()
+	{
+		return new GetExpLVMethod();
+	}
+
 	public GetExpLVMethod()
 	{
 		ReturnType = typeof(long);
@@ -756,6 +852,18 @@ internal sealed class GetExpLVMethod : FunctionMethod
 
 internal sealed class FindElementMethod : FunctionMethod
 {
+	[BuiltinMethod("FINDELEMENT")]
+	private static FindElementMethod CreateFINDELEMENT()
+	{
+		return new FindElementMethod(false);
+	}
+
+	[BuiltinMethod("FINDLASTELEMENT")]
+	private static FindElementMethod CreateFINDLASTELEMENT()
+	{
+		return new FindElementMethod(true);
+	}
+
 	public FindElementMethod(bool last)
 	{
 		ReturnType = typeof(long);
@@ -876,6 +984,12 @@ internal sealed class FindElementMethod : FunctionMethod
 
 internal sealed class InRangeMethod : FunctionMethod
 {
+	[BuiltinMethod("INRANGE")]
+	private static InRangeMethod CreateINRANGE()
+	{
+		return new InRangeMethod();
+	}
+
 	public InRangeMethod()
 	{
 		ReturnType = typeof(long);
@@ -894,6 +1008,18 @@ internal sealed class InRangeMethod : FunctionMethod
 
 internal sealed class InRangeArrayMethod : FunctionMethod
 {
+	[BuiltinMethod("INRANGEARRAY")]
+	private static InRangeArrayMethod CreateINRANGEARRAY()
+	{
+		return new InRangeArrayMethod();
+	}
+
+	[BuiltinMethod("INRANGECARRAY")]
+	private static InRangeArrayMethod CreateINRANGECARRAY()
+	{
+		return new InRangeArrayMethod(true);
+	}
+
 	public InRangeArrayMethod()
 	{
 		ReturnType = typeof(long);
@@ -1031,6 +1157,12 @@ internal sealed class InRangeArrayMethod : FunctionMethod
 
 internal sealed class ArrayMultiSortMethod : FunctionMethod
 {
+	[BuiltinMethod("ARRAYMSORT")]
+	private static ArrayMultiSortMethod CreateARRAYMSORT()
+	{
+		return new ArrayMultiSortMethod();
+	}
+
 	public ArrayMultiSortMethod()
 	{
 		ReturnType = typeof(long);

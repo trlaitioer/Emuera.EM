@@ -18,6 +18,12 @@ namespace MinorShift.Emuera.GameData.Function;
 
 internal sealed class VarsizeMethod : FunctionMethod
 {
+	[BuiltinMethod("VARSIZE")]
+	private static VarsizeMethod CreateVARSIZE()
+	{
+		return new VarsizeMethod();
+	}
+
 	public VarsizeMethod()
 	{
 		ReturnType = typeof(long);
@@ -104,6 +110,12 @@ internal sealed class VarsizeMethod : FunctionMethod
 
 internal sealed class CheckfontMethod : FunctionMethod
 {
+	[BuiltinMethod("CHKFONT")]
+	private static CheckfontMethod CreateCHKFONT()
+	{
+		return new CheckfontMethod();
+	}
+
 	public CheckfontMethod()
 	{
 		ReturnType = typeof(long);
@@ -144,6 +156,12 @@ internal sealed class CheckfontMethod : FunctionMethod
 
 internal sealed class CheckdataMethod : FunctionMethod
 {
+	[BuiltinMethod("CHKDATA")]
+	private static CheckdataMethod CreateCHKDATA()
+	{
+		return new CheckdataMethod(EraSaveFileType.Normal);
+	}
+
 	public CheckdataMethod(EraSaveFileType type)
 	{
 		ReturnType = typeof(long);
@@ -180,6 +198,12 @@ internal sealed class CheckdataMethod : FunctionMethod
 /// </summary>
 internal sealed class CheckdataStrMethod : FunctionMethod
 {
+	[BuiltinMethod("CHKCHARADATA")]
+	private static CheckdataStrMethod CreateCHKCHARADATA()
+	{
+		return new CheckdataStrMethod(EraSaveFileType.CharVar);
+	}
+
 	public CheckdataStrMethod(EraSaveFileType type)
 	{
 		ReturnType = typeof(long);
@@ -204,6 +228,12 @@ internal sealed class CheckdataStrMethod : FunctionMethod
 /// </summary>
 internal sealed class FindFilesMethod : FunctionMethod
 {
+	[BuiltinMethod("FIND_CHARADATA")]
+	private static FindFilesMethod CreateFIND_CHARADATA()
+	{
+		return new FindFilesMethod(EraSaveFileType.CharVar);
+	}
+
 	public FindFilesMethod(EraSaveFileType type)
 	{
 		ReturnType = typeof(long);
@@ -254,6 +284,12 @@ internal sealed class FindFilesMethod : FunctionMethod
 
 internal sealed class IsSkipMethod : FunctionMethod
 {
+	[BuiltinMethod("ISSKIP")]
+	private static IsSkipMethod CreateISSKIP()
+	{
+		return new IsSkipMethod();
+	}
+
 	public IsSkipMethod()
 	{
 		ReturnType = typeof(long);
@@ -269,6 +305,18 @@ internal sealed class IsSkipMethod : FunctionMethod
 
 internal sealed class MesSkipMethod : FunctionMethod
 {
+	[BuiltinMethod("MOUSESKIP")]
+	private static MesSkipMethod CreateMOUSESKIP()
+	{
+		return new MesSkipMethod(true);
+	}
+
+	[BuiltinMethod("MESSKIP")]
+	private static MesSkipMethod CreateMESSKIP()
+	{
+		return new MesSkipMethod(false);
+	}
+
 	public MesSkipMethod(bool warn)
 	{
 		ReturnType = typeof(long);
@@ -307,6 +355,18 @@ internal sealed class MesSkipMethod : FunctionMethod
 
 internal sealed class GetColorMethod : FunctionMethod
 {
+	[BuiltinMethod("GETCOLOR")]
+	private static GetColorMethod CreateGETCOLOR()
+	{
+		return new GetColorMethod(false);
+	}
+
+	[BuiltinMethod("GETDEFCOLOR")]
+	private static GetColorMethod CreateGETDEFCOLOR()
+	{
+		return new GetColorMethod(true);
+	}
+
 	public GetColorMethod(bool isDef)
 	{
 		ReturnType = typeof(long);
@@ -326,6 +386,12 @@ internal sealed class GetColorMethod : FunctionMethod
 
 internal sealed class GetFocusColorMethod : FunctionMethod
 {
+	[BuiltinMethod("GETFOCUSCOLOR")]
+	private static GetFocusColorMethod CreateGETFOCUSCOLOR()
+	{
+		return new GetFocusColorMethod();
+	}
+
 	public GetFocusColorMethod()
 	{
 		ReturnType = typeof(long);
@@ -341,6 +407,18 @@ internal sealed class GetFocusColorMethod : FunctionMethod
 
 internal sealed class GetBGColorMethod : FunctionMethod
 {
+	[BuiltinMethod("GETBGCOLOR")]
+	private static GetBGColorMethod CreateGETBGCOLOR()
+	{
+		return new GetBGColorMethod(false);
+	}
+
+	[BuiltinMethod("GETDEFBGCOLOR")]
+	private static GetBGColorMethod CreateGETDEFBGCOLOR()
+	{
+		return new GetBGColorMethod(true);
+	}
+
 	public GetBGColorMethod(bool isDef)
 	{
 		ReturnType = typeof(long);
@@ -360,6 +438,12 @@ internal sealed class GetBGColorMethod : FunctionMethod
 
 internal sealed class GetStyleMethod : FunctionMethod
 {
+	[BuiltinMethod("GETSTYLE")]
+	private static GetStyleMethod CreateGETSTYLE()
+	{
+		return new GetStyleMethod();
+	}
+
 	public GetStyleMethod()
 	{
 		ReturnType = typeof(long);
@@ -397,6 +481,12 @@ internal sealed class GetStyleMethod : FunctionMethod
 
 internal sealed class GetFontMethod : FunctionMethod
 {
+	[BuiltinMethod("GETFONT")]
+	private static GetFontMethod CreateGETFONT()
+	{
+		return new GetFontMethod();
+	}
+
 	public GetFontMethod()
 	{
 		ReturnType = typeof(string);
@@ -412,6 +502,12 @@ internal sealed class GetFontMethod : FunctionMethod
 
 internal sealed class BarStringMethod : FunctionMethod
 {
+	[BuiltinMethod("BARSTR")]
+	private static BarStringMethod CreateBARSTR()
+	{
+		return new BarStringMethod();
+	}
+
 	public BarStringMethod()
 	{
 		ReturnType = typeof(string);
@@ -430,6 +526,12 @@ internal sealed class BarStringMethod : FunctionMethod
 
 internal sealed class CurrentAlignMethod : FunctionMethod
 {
+	[BuiltinMethod("CURRENTALIGN")]
+	private static CurrentAlignMethod CreateCURRENTALIGN()
+	{
+		return new CurrentAlignMethod();
+	}
+
 	public CurrentAlignMethod()
 	{
 		ReturnType = typeof(string);
@@ -456,6 +558,12 @@ internal sealed class CurrentAlignMethod : FunctionMethod
 
 internal sealed class CurrentRedrawMethod : FunctionMethod
 {
+	[BuiltinMethod("CURRENTREDRAW")]
+	private static CurrentRedrawMethod CreateCURRENTREDRAW()
+	{
+		return new CurrentRedrawMethod();
+	}
+
 	public CurrentRedrawMethod()
 	{
 		ReturnType = typeof(long);
@@ -471,6 +579,12 @@ internal sealed class CurrentRedrawMethod : FunctionMethod
 
 internal sealed class ColorFromNameMethod : FunctionMethod
 {
+	[BuiltinMethod("COLOR_FROMNAME")]
+	private static ColorFromNameMethod CreateCOLOR_FROMNAME()
+	{
+		return new ColorFromNameMethod();
+	}
+
 	public ColorFromNameMethod()
 	{
 		ReturnType = typeof(long);
@@ -505,6 +619,12 @@ internal sealed class ColorFromNameMethod : FunctionMethod
 
 internal sealed class ColorFromRGBMethod : FunctionMethod
 {
+	[BuiltinMethod("COLOR_FROMRGB")]
+	private static ColorFromRGBMethod CreateCOLOR_FROMRGB()
+	{
+		return new ColorFromRGBMethod();
+	}
+
 	public ColorFromRGBMethod()
 	{
 		ReturnType = typeof(long);

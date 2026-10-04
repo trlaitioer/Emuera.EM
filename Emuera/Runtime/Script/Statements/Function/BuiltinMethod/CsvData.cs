@@ -14,6 +14,12 @@ namespace MinorShift.Emuera.GameData.Function;
 
 internal sealed class GetcharaMethod : FunctionMethod
 {
+	[BuiltinMethod("GETCHARA")]
+	private static GetcharaMethod CreateGETCHARA()
+	{
+		return new GetcharaMethod();
+	}
+
 	public GetcharaMethod()
 	{
 		ReturnType = typeof(long);
@@ -80,6 +86,12 @@ internal sealed class GetcharaMethod : FunctionMethod
 
 internal sealed class GetspcharaMethod : FunctionMethod
 {
+	[BuiltinMethod("GETSPCHARA")]
+	private static GetspcharaMethod CreateGETSPCHARA()
+	{
+		return new GetspcharaMethod();
+	}
+
 	public GetspcharaMethod()
 	{
 		ReturnType = typeof(long);
@@ -102,6 +114,30 @@ internal sealed class GetspcharaMethod : FunctionMethod
 
 internal sealed class CsvStrDataMethod : FunctionMethod
 {
+	[BuiltinMethod("CSVNAME")]
+	private static CsvStrDataMethod CreateCSVNAME()
+	{
+		return new CsvStrDataMethod(CharacterStrData.NAME);
+	}
+
+	[BuiltinMethod("CSVCALLNAME")]
+	private static CsvStrDataMethod CreateCSVCALLNAME()
+	{
+		return new CsvStrDataMethod(CharacterStrData.CALLNAME);
+	}
+
+	[BuiltinMethod("CSVNICKNAME")]
+	private static CsvStrDataMethod CreateCSVNICKNAME()
+	{
+		return new CsvStrDataMethod(CharacterStrData.NICKNAME);
+	}
+
+	[BuiltinMethod("CSVMASTERNAME")]
+	private static CsvStrDataMethod CreateCSVMASTERNAME()
+	{
+		return new CsvStrDataMethod(CharacterStrData.MASTERNAME);
+	}
+
 	private readonly CharacterStrData charaStr;
 
 	public CsvStrDataMethod()
@@ -162,6 +198,12 @@ internal sealed class CsvStrDataMethod : FunctionMethod
 
 internal sealed class CsvcstrMethod : FunctionMethod
 {
+	[BuiltinMethod("CSVCSTR")]
+	private static CsvcstrMethod CreateCSVCSTR()
+	{
+		return new CsvcstrMethod();
+	}
+
 	public CsvcstrMethod()
 	{
 		ReturnType = typeof(string);
@@ -211,6 +253,60 @@ internal sealed class CsvcstrMethod : FunctionMethod
 
 internal sealed class CsvDataMethod : FunctionMethod
 {
+	[BuiltinMethod("CSVBASE")]
+	private static CsvDataMethod CreateCSVBASE()
+	{
+		return new CsvDataMethod(CharacterIntData.BASE);
+	}
+
+	[BuiltinMethod("CSVABL")]
+	private static CsvDataMethod CreateCSVABL()
+	{
+		return new CsvDataMethod(CharacterIntData.ABL);
+	}
+
+	[BuiltinMethod("CSVMARK")]
+	private static CsvDataMethod CreateCSVMARK()
+	{
+		return new CsvDataMethod(CharacterIntData.MARK);
+	}
+
+	[BuiltinMethod("CSVEXP")]
+	private static CsvDataMethod CreateCSVEXP()
+	{
+		return new CsvDataMethod(CharacterIntData.EXP);
+	}
+
+	[BuiltinMethod("CSVRELATION")]
+	private static CsvDataMethod CreateCSVRELATION()
+	{
+		return new CsvDataMethod(CharacterIntData.RELATION);
+	}
+
+	[BuiltinMethod("CSVTALENT")]
+	private static CsvDataMethod CreateCSVTALENT()
+	{
+		return new CsvDataMethod(CharacterIntData.TALENT);
+	}
+
+	[BuiltinMethod("CSVCFLAG")]
+	private static CsvDataMethod CreateCSVCFLAG()
+	{
+		return new CsvDataMethod(CharacterIntData.CFLAG);
+	}
+
+	[BuiltinMethod("CSVEQUIP")]
+	private static CsvDataMethod CreateCSVEQUIP()
+	{
+		return new CsvDataMethod(CharacterIntData.EQUIP);
+	}
+
+	[BuiltinMethod("CSVJUEL")]
+	private static CsvDataMethod CreateCSVJUEL()
+	{
+		return new CsvDataMethod(CharacterIntData.JUEL);
+	}
+
 	private readonly CharacterIntData charaInt;
 
 	public CsvDataMethod()
@@ -276,6 +372,18 @@ internal sealed class CsvDataMethod : FunctionMethod
 
 internal sealed class FindcharaMethod : FunctionMethod
 {
+	[BuiltinMethod("FINDCHARA")]
+	private static FindcharaMethod CreateFINDCHARA()
+	{
+		return new FindcharaMethod(false);
+	}
+
+	[BuiltinMethod("FINDLASTCHARA")]
+	private static FindcharaMethod CreateFINDLASTCHARA()
+	{
+		return new FindcharaMethod(true);
+	}
+
 	public FindcharaMethod(bool last)
 	{
 		ReturnType = typeof(long);
@@ -374,6 +482,12 @@ internal sealed class FindcharaMethod : FunctionMethod
 
 internal sealed class ExistCsvMethod : FunctionMethod
 {
+	[BuiltinMethod("EXISTCSV")]
+	private static ExistCsvMethod CreateEXISTCSV()
+	{
+		return new ExistCsvMethod();
+	}
+
 	public ExistCsvMethod()
 	{
 		ReturnType = typeof(long);

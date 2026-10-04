@@ -22,6 +22,12 @@ namespace MinorShift.Emuera.GameData.Function;
 
 internal sealed class ExistSoundMethod : FunctionMethod
 {
+	[BuiltinMethod("EXISTSOUND")]
+	private static ExistSoundMethod CreateEXISTSOUND()
+	{
+		return new ExistSoundMethod();
+	}
+
 	public ExistSoundMethod()
 	{
 		ReturnType = typeof(long);
@@ -46,6 +52,12 @@ internal sealed class ExistSoundMethod : FunctionMethod
 
 internal sealed class ExistFunctionMethod : FunctionMethod
 {
+	[BuiltinMethod("EXISTFUNCTION")]
+	private static ExistFunctionMethod CreateEXISTFUNCTION()
+	{
+		return new ExistFunctionMethod();
+	}
+
 	public ExistFunctionMethod()
 	{
 		ReturnType = typeof(long);
@@ -125,6 +137,12 @@ internal sealed class ExistFunctionMethod : FunctionMethod
 
 internal sealed class GetUsingMemoryMethod : FunctionMethod
 {
+	[BuiltinMethod("GETMEMORYUSAGE")]
+	private static GetUsingMemoryMethod CreateGETMEMORYUSAGE()
+	{
+		return new GetUsingMemoryMethod();
+	}
+
 	public GetUsingMemoryMethod()
 	{
 		ReturnType = typeof(long);
@@ -145,6 +163,12 @@ internal sealed class GetUsingMemoryMethod : FunctionMethod
 
 internal sealed class ClearMemoryMethod : FunctionMethod
 {
+	[BuiltinMethod("CLEARMEMORY")]
+	private static ClearMemoryMethod CreateCLEARMEMORY()
+	{
+		return new ClearMemoryMethod();
+	}
+
 	public ClearMemoryMethod()
 	{
 		ReturnType = typeof(long);
@@ -168,6 +192,12 @@ internal sealed class ClearMemoryMethod : FunctionMethod
 
 internal sealed class GetTextBoxMethod : FunctionMethod
 {
+	[BuiltinMethod("GETTEXTBOX")]
+	private static GetTextBoxMethod CreateGETTEXTBOX()
+	{
+		return new GetTextBoxMethod();
+	}
+
 	public GetTextBoxMethod()
 	{
 		ReturnType = typeof(string);
@@ -183,6 +213,12 @@ internal sealed class GetTextBoxMethod : FunctionMethod
 
 internal sealed class ChangeTextBoxMethod : FunctionMethod
 {
+	[BuiltinMethod("SETTEXTBOX")]
+	private static ChangeTextBoxMethod CreateSETTEXTBOX()
+	{
+		return new ChangeTextBoxMethod();
+	}
+
 	public ChangeTextBoxMethod()
 	{
 		ReturnType = typeof(long);
@@ -203,6 +239,12 @@ internal sealed class ChangeTextBoxMethod : FunctionMethod
 
 internal sealed class ErdNameMethod : FunctionMethod
 {
+	[BuiltinMethod("ERDNAME")]
+	private static ErdNameMethod CreateERDNAME()
+	{
+		return new ErdNameMethod();
+	}
+
 	public ErdNameMethod()
 	{
 		ReturnType = typeof(string);
@@ -252,6 +294,12 @@ internal sealed class ErdNameMethod : FunctionMethod
 
 internal sealed class GetDisplayLineMethod : FunctionMethod
 {
+	[BuiltinMethod("GETDISPLAYLINE")]
+	private static GetDisplayLineMethod CreateGETDISPLAYLINE()
+	{
+		return new GetDisplayLineMethod();
+	}
+
 	public GetDisplayLineMethod()
 	{
 		ReturnType = typeof(string);
@@ -285,6 +333,12 @@ internal sealed class GetDisplayLineMethod : FunctionMethod
 
 internal sealed class GetDoingFunctionMethod : FunctionMethod
 {
+	[BuiltinMethod("GETDOINGFUNCTION")]
+	private static GetDoingFunctionMethod CreateGETDOINGFUNCTION()
+	{
+		return new GetDoingFunctionMethod();
+	}
+
 	public GetDoingFunctionMethod()
 	{
 		ReturnType = typeof(string);
@@ -310,6 +364,12 @@ internal sealed class GetDoingFunctionMethod : FunctionMethod
 
 internal sealed class FlowInputMethod : FunctionMethod
 {
+	[BuiltinMethod("FLOWINPUT")]
+	private static FlowInputMethod CreateFLOWINPUT()
+	{
+		return new FlowInputMethod();
+	}
+
 	public FlowInputMethod()
 	{
 		ReturnType = typeof(long);
@@ -344,6 +404,12 @@ internal sealed class FlowInputMethod : FunctionMethod
 
 internal sealed class FlowInputsMethod : FunctionMethod
 {
+	[BuiltinMethod("FLOWINPUTS")]
+	private static FlowInputsMethod CreateFLOWINPUTS()
+	{
+		return new FlowInputsMethod();
+	}
+
 	public FlowInputsMethod()
 	{
 		ReturnType = typeof(long);
@@ -372,6 +438,12 @@ internal sealed class FlowInputsMethod : FunctionMethod
 
 internal sealed class GetMethMethod : FunctionMethod
 {
+	[BuiltinMethod("GETMETH")]
+	private static GetMethMethod CreateGETMETH()
+	{
+		return new GetMethMethod();
+	}
+
 	public GetMethMethod()
 	{
 		ReturnType = typeof(long);
@@ -417,6 +489,12 @@ internal sealed class GetMethMethod : FunctionMethod
 
 internal sealed class GetMethsMethod : FunctionMethod
 {
+	[BuiltinMethod("GETMETHS")]
+	private static GetMethsMethod CreateGETMETHS()
+	{
+		return new GetMethsMethod();
+	}
+
 	public GetMethsMethod()
 	{
 		ReturnType = typeof(string);
@@ -462,6 +540,12 @@ internal sealed class GetMethsMethod : FunctionMethod
 
 internal sealed class ExistMethMethod : FunctionMethod
 {
+	[BuiltinMethod("EXISTMETH")]
+	private static ExistMethMethod CreateEXISTMETH()
+	{
+		return new ExistMethMethod();
+	}
+
 	public ExistMethMethod()
 	{
 		ReturnType = typeof(long);
@@ -512,6 +596,12 @@ internal sealed class ExistMethMethod : FunctionMethod
 
 internal sealed class BitmapCacheEnableMethod : FunctionMethod
 {
+	[BuiltinMethod("BITMAP_CACHE_ENABLE")]
+	private static BitmapCacheEnableMethod CreateBITMAP_CACHE_ENABLE()
+	{
+		return new BitmapCacheEnableMethod();
+	}
+
 	public BitmapCacheEnableMethod()
 	{
 		ReturnType = typeof(long);
@@ -536,6 +626,12 @@ internal sealed class BitmapCacheEnableMethod : FunctionMethod
 //HOTKEY STATE
 internal sealed class HotkeyStateMethod : FunctionMethod
 {
+	[BuiltinMethod("HOTKEY_STATE")]
+	private static HotkeyStateMethod CreateHOTKEY_STATE()
+	{
+		return new HotkeyStateMethod();
+	}
+
 	public HotkeyStateMethod()
 	{
 		ReturnType = typeof(long);
@@ -561,6 +657,12 @@ internal sealed class HotkeyStateMethod : FunctionMethod
 
 internal sealed class HotkeyStateInitMethod : FunctionMethod
 {
+	[BuiltinMethod("HOTKEY_STATE_INIT")]
+	private static HotkeyStateInitMethod CreateHOTKEY_STATE_INIT()
+	{
+		return new HotkeyStateInitMethod();
+	}
+
 	public HotkeyStateInitMethod()
 	{
 		ReturnType = typeof(long);
@@ -584,6 +686,12 @@ internal sealed class HotkeyStateInitMethod : FunctionMethod
 
 internal sealed class OutputlogMethod : FunctionMethod
 {
+	[BuiltinMethod("OUTPUTLOG")]
+	private static OutputlogMethod CreateOUTPUTLOG()
+	{
+		return new OutputlogMethod();
+	}
+
 	public OutputlogMethod()
 	{
 		ReturnType = typeof(long);

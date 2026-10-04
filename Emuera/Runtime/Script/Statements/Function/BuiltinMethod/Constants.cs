@@ -11,6 +11,12 @@ namespace MinorShift.Emuera.GameData.Function;
 
 internal sealed class MoneyStrMethod : FunctionMethod
 {
+	[BuiltinMethod("MONEYSTR")]
+	private static MoneyStrMethod CreateMONEYSTR()
+	{
+		return new MoneyStrMethod();
+	}
+
 	public MoneyStrMethod()
 	{
 		ReturnType = typeof(string);
@@ -64,6 +70,12 @@ internal sealed class MoneyStrMethod : FunctionMethod
 
 internal sealed class GetPrintCPerLineMethod : FunctionMethod
 {
+	[BuiltinMethod("PRINTCPERLINE")]
+	private static GetPrintCPerLineMethod CreatePRINTCPERLINE()
+	{
+		return new GetPrintCPerLineMethod();
+	}
+
 	public GetPrintCPerLineMethod()
 	{
 		ReturnType = typeof(long);
@@ -79,6 +91,12 @@ internal sealed class GetPrintCPerLineMethod : FunctionMethod
 
 internal sealed class PrintCLengthMethod : FunctionMethod
 {
+	[BuiltinMethod("PRINTCLENGTH")]
+	private static PrintCLengthMethod CreatePRINTCLENGTH()
+	{
+		return new PrintCLengthMethod();
+	}
+
 	public PrintCLengthMethod()
 	{
 		ReturnType = typeof(long);
@@ -94,6 +112,12 @@ internal sealed class PrintCLengthMethod : FunctionMethod
 
 internal sealed class GetSaveNosMethod : FunctionMethod
 {
+	[BuiltinMethod("SAVENOS")]
+	private static GetSaveNosMethod CreateSAVENOS()
+	{
+		return new GetSaveNosMethod();
+	}
+
 	public GetSaveNosMethod()
 	{
 		ReturnType = typeof(long);
@@ -109,6 +133,12 @@ internal sealed class GetSaveNosMethod : FunctionMethod
 
 internal sealed class GettimeMethod : FunctionMethod
 {
+	[BuiltinMethod("GETTIME")]
+	private static GettimeMethod CreateGETTIME()
+	{
+		return new GettimeMethod();
+	}
+
 	public GettimeMethod()
 	{
 		ReturnType = typeof(long);
@@ -131,6 +161,12 @@ internal sealed class GettimeMethod : FunctionMethod
 
 internal sealed class GettimesMethod : FunctionMethod
 {
+	[BuiltinMethod("GETTIMES")]
+	private static GettimesMethod CreateGETTIMES()
+	{
+		return new GettimesMethod();
+	}
+
 	public GettimesMethod()
 	{
 		ReturnType = typeof(string);
@@ -146,6 +182,12 @@ internal sealed class GettimesMethod : FunctionMethod
 
 internal sealed class GetmsMethod : FunctionMethod
 {
+	[BuiltinMethod("GETMILLISECOND")]
+	private static GetmsMethod CreateGETMILLISECOND()
+	{
+		return new GetmsMethod();
+	}
+
 	public GetmsMethod()
 	{
 		ReturnType = typeof(long);
@@ -162,6 +204,12 @@ internal sealed class GetmsMethod : FunctionMethod
 
 internal sealed class GetSecondMethod : FunctionMethod
 {
+	[BuiltinMethod("GETSECOND")]
+	private static GetSecondMethod CreateGETSECOND()
+	{
+		return new GetSecondMethod();
+	}
+
 	public GetSecondMethod()
 	{
 		ReturnType = typeof(long);

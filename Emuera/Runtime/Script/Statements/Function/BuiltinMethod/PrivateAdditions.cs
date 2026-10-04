@@ -28,6 +28,12 @@ namespace MinorShift.Emuera.GameData.Function;
 
 internal sealed class HtmlStringLenMethod : FunctionMethod
 {
+	[BuiltinMethod("HTML_STRINGLEN")]
+	private static HtmlStringLenMethod CreateHTML_STRINGLEN()
+	{
+		return new HtmlStringLenMethod();
+	}
+
 	public HtmlStringLenMethod()
 	{
 		ReturnType = typeof(long);
@@ -59,6 +65,18 @@ internal sealed class HtmlStringLenMethod : FunctionMethod
 
 internal sealed class XmlGetMethod : FunctionMethod
 {
+	[BuiltinMethod("XML_GET")]
+	private static XmlGetMethod CreateXML_GET()
+	{
+		return new XmlGetMethod();
+	}
+
+	[BuiltinMethod("XML_GET_BYNAME")]
+	private static XmlGetMethod CreateXML_GET_BYNAME()
+	{
+		return new XmlGetMethod(true);
+	}
+
 	public XmlGetMethod()
 	{
 		ReturnType = typeof(long);
@@ -171,6 +189,12 @@ internal sealed class XmlGetMethod : FunctionMethod
 
 internal sealed class IsDefinedMethod : FunctionMethod
 {
+	[BuiltinMethod("ISDEFINED")]
+	private static IsDefinedMethod CreateISDEFINED()
+	{
+		return new IsDefinedMethod();
+	}
+
 	public IsDefinedMethod()
 	{
 		ReturnType = typeof(long);
@@ -186,6 +210,60 @@ internal sealed class IsDefinedMethod : FunctionMethod
 
 internal sealed class EnumNameMethod : FunctionMethod
 {
+	[BuiltinMethod("ENUMFUNCBEGINSWITH")]
+	private static EnumNameMethod CreateENUMFUNCBEGINSWITH()
+	{
+		return new EnumNameMethod(EType.Function, EAction.BeginsWith);
+	}
+
+	[BuiltinMethod("ENUMFUNCENDSWITH")]
+	private static EnumNameMethod CreateENUMFUNCENDSWITH()
+	{
+		return new EnumNameMethod(EType.Function, EAction.EndsWith);
+	}
+
+	[BuiltinMethod("ENUMFUNCWITH")]
+	private static EnumNameMethod CreateENUMFUNCWITH()
+	{
+		return new EnumNameMethod(EType.Function, EAction.With);
+	}
+
+	[BuiltinMethod("ENUMVARBEGINSWITH")]
+	private static EnumNameMethod CreateENUMVARBEGINSWITH()
+	{
+		return new EnumNameMethod(EType.Variable, EAction.BeginsWith);
+	}
+
+	[BuiltinMethod("ENUMVARENDSWITH")]
+	private static EnumNameMethod CreateENUMVARENDSWITH()
+	{
+		return new EnumNameMethod(EType.Variable, EAction.EndsWith);
+	}
+
+	[BuiltinMethod("ENUMVARWITH")]
+	private static EnumNameMethod CreateENUMVARWITH()
+	{
+		return new EnumNameMethod(EType.Variable, EAction.With);
+	}
+
+	[BuiltinMethod("ENUMMACROBEGINSWITH")]
+	private static EnumNameMethod CreateENUMMACROBEGINSWITH()
+	{
+		return new EnumNameMethod(EType.Macro, EAction.BeginsWith);
+	}
+
+	[BuiltinMethod("ENUMMACROENDSWITH")]
+	private static EnumNameMethod CreateENUMMACROENDSWITH()
+	{
+		return new EnumNameMethod(EType.Macro, EAction.EndsWith);
+	}
+
+	[BuiltinMethod("ENUMMACROWITH")]
+	private static EnumNameMethod CreateENUMMACROWITH()
+	{
+		return new EnumNameMethod(EType.Macro, EAction.With);
+	}
+
 	public enum EType
 	{
 		Function,
@@ -289,6 +367,12 @@ internal sealed class EnumNameMethod : FunctionMethod
 
 internal sealed class EnumFilesMethod : FunctionMethod
 {
+	[BuiltinMethod("ENUMFILES")]
+	private static EnumFilesMethod CreateENUMFILES()
+	{
+		return new EnumFilesMethod();
+	}
+
 	public EnumFilesMethod()
 	{
 		ReturnType = typeof(long);
@@ -348,6 +432,12 @@ internal sealed class EnumFilesMethod : FunctionMethod
 
 internal sealed class GetVarMethod : FunctionMethod
 {
+	[BuiltinMethod("GETVAR")]
+	private static GetVarMethod CreateGETVAR()
+	{
+		return new GetVarMethod();
+	}
+
 	public GetVarMethod()
 	{
 		ReturnType = typeof(long);
@@ -384,6 +474,12 @@ internal sealed class GetVarMethod : FunctionMethod
 
 internal sealed class GetVarsMethod : FunctionMethod
 {
+	[BuiltinMethod("GETVARS")]
+	private static GetVarsMethod CreateGETVARS()
+	{
+		return new GetVarsMethod();
+	}
+
 	public GetVarsMethod()
 	{
 		ReturnType = typeof(string);
@@ -420,6 +516,12 @@ internal sealed class GetVarsMethod : FunctionMethod
 
 internal sealed class ExistVarMethod : FunctionMethod
 {
+	[BuiltinMethod("EXISTVAR")]
+	private static ExistVarMethod CreateEXISTVAR()
+	{
+		return new ExistVarMethod();
+	}
+
 	public ExistVarMethod()
 	{
 		ReturnType = typeof(long);
@@ -467,6 +569,12 @@ internal sealed class ExistVarMethod : FunctionMethod
 
 internal sealed class ArrayMultiSortExMethod : FunctionMethod
 {
+	[BuiltinMethod("ARRAYMSORTEX")]
+	private static ArrayMultiSortExMethod CreateARRAYMSORTEX()
+	{
+		return new ArrayMultiSortExMethod();
+	}
+
 	public ArrayMultiSortExMethod()
 	{
 		ReturnType = typeof(long);
@@ -704,6 +812,12 @@ internal sealed class ArrayMultiSortExMethod : FunctionMethod
 
 internal sealed class SetVarMethod : FunctionMethod
 {
+	[BuiltinMethod("SETVAR")]
+	private static SetVarMethod CreateSETVAR()
+	{
+		return new SetVarMethod();
+	}
+
 	public SetVarMethod()
 	{
 		ReturnType = typeof(long);
@@ -757,6 +871,12 @@ internal sealed class SetVarMethod : FunctionMethod
 
 internal sealed class VarSetExMethod : FunctionMethod
 {
+	[BuiltinMethod("VARSETEX")]
+	private static VarSetExMethod CreateVARSETEX()
+	{
+		return new VarSetExMethod();
+	}
+
 	public VarSetExMethod()
 	{
 		ReturnType = typeof(long);
@@ -912,6 +1032,12 @@ internal sealed class VarSetExMethod : FunctionMethod
 
 internal sealed class HtmlSubStringMethod : FunctionMethod
 {
+	[BuiltinMethod("HTML_SUBSTRING")]
+	private static HtmlSubStringMethod CreateHTML_SUBSTRING()
+	{
+		return new HtmlSubStringMethod();
+	}
+
 	public HtmlSubStringMethod()
 	{
 		ReturnType = typeof(string);
@@ -934,6 +1060,12 @@ internal sealed class HtmlSubStringMethod : FunctionMethod
 
 internal sealed class HtmlStringLinesMethod : FunctionMethod
 {
+	[BuiltinMethod("HTML_STRINGLINES")]
+	private static HtmlStringLinesMethod CreateHTML_STRINGLINES()
+	{
+		return new HtmlStringLinesMethod();
+	}
+
 	public HtmlStringLinesMethod()
 	{
 		ReturnType = typeof(long);
@@ -963,6 +1095,12 @@ internal sealed class HtmlStringLinesMethod : FunctionMethod
 
 internal sealed class RegexpMatchMethod : FunctionMethod
 {
+	[BuiltinMethod("REGEXPMATCH")]
+	private static RegexpMatchMethod CreateREGEXPMATCH()
+	{
+		return new RegexpMatchMethod();
+	}
+
 	public RegexpMatchMethod()
 	{
 		ReturnType = typeof(long);
@@ -1029,6 +1167,24 @@ internal sealed class RegexpMatchMethod : FunctionMethod
 
 internal sealed class XmlDocumentMethod : FunctionMethod
 {
+	[BuiltinMethod("XML_DOCUMENT")]
+	private static XmlDocumentMethod CreateXML_DOCUMENT()
+	{
+		return new XmlDocumentMethod(Operation.Create);
+	}
+
+	[BuiltinMethod("XML_RELEASE")]
+	private static XmlDocumentMethod CreateXML_RELEASE()
+	{
+		return new XmlDocumentMethod(Operation.Release);
+	}
+
+	[BuiltinMethod("XML_EXIST")]
+	private static XmlDocumentMethod CreateXML_EXIST()
+	{
+		return new XmlDocumentMethod(Operation.Check);
+	}
+
 	public enum Operation
 	{
 		Create,
@@ -1109,6 +1265,18 @@ internal sealed class XmlDocumentMethod : FunctionMethod
 
 internal sealed class XmlSetMethod : FunctionMethod
 {
+	[BuiltinMethod("XML_SET")]
+	private static XmlSetMethod CreateXML_SET()
+	{
+		return new XmlSetMethod();
+	}
+
+	[BuiltinMethod("XML_SET_BYNAME")]
+	private static XmlSetMethod CreateXML_SET_BYNAME()
+	{
+		return new XmlSetMethod(true);
+	}
+
 	public XmlSetMethod()
 	{
 		ReturnType = typeof(long);
@@ -1256,6 +1424,12 @@ internal sealed class XmlSetMethod : FunctionMethod
 
 internal sealed class XmlToStrMethod : FunctionMethod
 {
+	[BuiltinMethod("XML_TOSTR")]
+	private static XmlToStrMethod CreateXML_TOSTR()
+	{
+		return new XmlToStrMethod();
+	}
+
 	public XmlToStrMethod()
 	{
 		ReturnType = typeof(string);
@@ -1283,6 +1457,30 @@ internal sealed class XmlToStrMethod : FunctionMethod
 
 internal sealed class XmlAddNodeMethod : FunctionMethod
 {
+	[BuiltinMethod("XML_ADDNODE")]
+	private static XmlAddNodeMethod CreateXML_ADDNODE()
+	{
+		return new XmlAddNodeMethod(Operation.Node);
+	}
+
+	[BuiltinMethod("XML_ADDNODE_BYNAME")]
+	private static XmlAddNodeMethod CreateXML_ADDNODE_BYNAME()
+	{
+		return new XmlAddNodeMethod(Operation.Node, true);
+	}
+
+	[BuiltinMethod("XML_ADDATTRIBUTE")]
+	private static XmlAddNodeMethod CreateXML_ADDATTRIBUTE()
+	{
+		return new XmlAddNodeMethod(Operation.Attribute);
+	}
+
+	[BuiltinMethod("XML_ADDATTRIBUTE_BYNAME")]
+	private static XmlAddNodeMethod CreateXML_ADDATTRIBUTE_BYNAME()
+	{
+		return new XmlAddNodeMethod(Operation.Attribute, true);
+	}
+
 	public enum Operation
 	{
 		Node,
@@ -1573,6 +1771,30 @@ internal sealed class XmlAddNodeMethod : FunctionMethod
 
 internal sealed class XmlRemoveNodeMethod : FunctionMethod
 {
+	[BuiltinMethod("XML_REMOVENODE")]
+	private static XmlRemoveNodeMethod CreateXML_REMOVENODE()
+	{
+		return new XmlRemoveNodeMethod(Operation.Node);
+	}
+
+	[BuiltinMethod("XML_REMOVENODE_BYNAME")]
+	private static XmlRemoveNodeMethod CreateXML_REMOVENODE_BYNAME()
+	{
+		return new XmlRemoveNodeMethod(Operation.Node, true);
+	}
+
+	[BuiltinMethod("XML_REMOVEATTRIBUTE")]
+	private static XmlRemoveNodeMethod CreateXML_REMOVEATTRIBUTE()
+	{
+		return new XmlRemoveNodeMethod(Operation.Attribute);
+	}
+
+	[BuiltinMethod("XML_REMOVEATTRIBUTE_BYNAME")]
+	private static XmlRemoveNodeMethod CreateXML_REMOVEATTRIBUTE_BYNAME()
+	{
+		return new XmlRemoveNodeMethod(Operation.Attribute, true);
+	}
+
 	public enum Operation
 	{
 		Node,
@@ -1707,6 +1929,18 @@ internal sealed class XmlRemoveNodeMethod : FunctionMethod
 
 internal sealed class XmlReplaceMethod : FunctionMethod
 {
+	[BuiltinMethod("XML_REPLACE")]
+	private static XmlReplaceMethod CreateXML_REPLACE()
+	{
+		return new XmlReplaceMethod();
+	}
+
+	[BuiltinMethod("XML_REPLACE_BYNAME")]
+	private static XmlReplaceMethod CreateXML_REPLACE_BYNAME()
+	{
+		return new XmlReplaceMethod(true);
+	}
+
 	public XmlReplaceMethod()
 	{
 		ReturnType = typeof(long);
@@ -1844,6 +2078,12 @@ internal sealed class XmlReplaceMethod : FunctionMethod
 
 internal sealed class ExistFileMethod : FunctionMethod
 {
+	[BuiltinMethod("EXISTFILE")]
+	private static ExistFileMethod CreateEXISTFILE()
+	{
+		return new ExistFileMethod();
+	}
+
 	public ExistFileMethod()
 	{
 		ReturnType = typeof(long);
@@ -1864,6 +2104,36 @@ internal sealed class ExistFileMethod : FunctionMethod
 
 internal sealed class DataTableManagementMethod : FunctionMethod
 {
+	[BuiltinMethod("DT_CREATE")]
+	private static DataTableManagementMethod CreateDT_CREATE()
+	{
+		return new DataTableManagementMethod(Operation.Create);
+	}
+
+	[BuiltinMethod("DT_EXIST")]
+	private static DataTableManagementMethod CreateDT_EXIST()
+	{
+		return new DataTableManagementMethod(Operation.Check);
+	}
+
+	[BuiltinMethod("DT_RELEASE")]
+	private static DataTableManagementMethod CreateDT_RELEASE()
+	{
+		return new DataTableManagementMethod(Operation.Release);
+	}
+
+	[BuiltinMethod("DT_NOCASE")]
+	private static DataTableManagementMethod CreateDT_NOCASE()
+	{
+		return new DataTableManagementMethod(Operation.Case);
+	}
+
+	[BuiltinMethod("DT_CLEAR")]
+	private static DataTableManagementMethod CreateDT_CLEAR()
+	{
+		return new DataTableManagementMethod(Operation.Clear);
+	}
+
 	public enum Operation
 	{
 		Create,
@@ -1950,6 +2220,30 @@ internal sealed class DataTableManagementMethod : FunctionMethod
 
 internal sealed class DataTableColumnManagementMethod : FunctionMethod
 {
+	[BuiltinMethod("DT_COLUMN_ADD")]
+	private static DataTableColumnManagementMethod CreateDT_COLUMN_ADD()
+	{
+		return new DataTableColumnManagementMethod(Operation.Create);
+	}
+
+	[BuiltinMethod("DT_COLUMN_NAMES")]
+	private static DataTableColumnManagementMethod CreateDT_COLUMN_NAMES()
+	{
+		return new DataTableColumnManagementMethod(Operation.Names);
+	}
+
+	[BuiltinMethod("DT_COLUMN_EXIST")]
+	private static DataTableColumnManagementMethod CreateDT_COLUMN_EXIST()
+	{
+		return new DataTableColumnManagementMethod(Operation.Check);
+	}
+
+	[BuiltinMethod("DT_COLUMN_REMOVE")]
+	private static DataTableColumnManagementMethod CreateDT_COLUMN_REMOVE()
+	{
+		return new DataTableColumnManagementMethod(Operation.Remove);
+	}
+
 	public enum Operation
 	{
 		Create,
@@ -2078,6 +2372,18 @@ internal sealed class DataTableColumnManagementMethod : FunctionMethod
 
 internal sealed class DataTableRowSetMethod : FunctionMethod
 {
+	[BuiltinMethod("DT_ROW_ADD")]
+	private static DataTableRowSetMethod CreateDT_ROW_ADD()
+	{
+		return new DataTableRowSetMethod(Operation.Add);
+	}
+
+	[BuiltinMethod("DT_ROW_SET")]
+	private static DataTableRowSetMethod CreateDT_ROW_SET()
+	{
+		return new DataTableRowSetMethod(Operation.Set);
+	}
+
 	public enum Operation
 	{
 		Add,
@@ -2265,6 +2571,18 @@ internal sealed class DataTableRowSetMethod : FunctionMethod
 
 internal sealed class DataTableLengthMethod : FunctionMethod
 {
+	[BuiltinMethod("DT_COLUMN_LENGTH")]
+	private static DataTableLengthMethod CreateDT_COLUMN_LENGTH()
+	{
+		return new DataTableLengthMethod(Operation.Column);
+	}
+
+	[BuiltinMethod("DT_ROW_LENGTH")]
+	private static DataTableLengthMethod CreateDT_ROW_LENGTH()
+	{
+		return new DataTableLengthMethod(Operation.Row);
+	}
+
 	public enum Operation
 	{
 		Row,
@@ -2296,6 +2614,12 @@ internal sealed class DataTableLengthMethod : FunctionMethod
 
 internal sealed class DataTableRowRemoveMethod : FunctionMethod
 {
+	[BuiltinMethod("DT_ROW_REMOVE")]
+	private static DataTableRowRemoveMethod CreateDT_ROW_REMOVE()
+	{
+		return new DataTableRowRemoveMethod();
+	}
+
 	public DataTableRowRemoveMethod()
 	{
 		ReturnType = typeof(long);
@@ -2360,6 +2684,24 @@ internal sealed class DataTableRowRemoveMethod : FunctionMethod
 
 internal sealed class DataTableCellGetMethod : FunctionMethod
 {
+	[BuiltinMethod("DT_CELL_GET")]
+	private static DataTableCellGetMethod CreateDT_CELL_GET()
+	{
+		return new DataTableCellGetMethod(Operation.Get);
+	}
+
+	[BuiltinMethod("DT_CELL_ISNULL")]
+	private static DataTableCellGetMethod CreateDT_CELL_ISNULL()
+	{
+		return new DataTableCellGetMethod(Operation.IsNull);
+	}
+
+	[BuiltinMethod("DT_CELL_GETS")]
+	private static DataTableCellGetMethod CreateDT_CELL_GETS()
+	{
+		return new DataTableCellGetMethod(Operation.Gets);
+	}
+
 	public enum Operation
 	{
 		Get,
@@ -2453,6 +2795,12 @@ internal sealed class DataTableCellGetMethod : FunctionMethod
 
 internal sealed class DataTableCellSetMethod : FunctionMethod
 {
+	[BuiltinMethod("DT_CELL_SET")]
+	private static DataTableCellSetMethod CreateDT_CELL_SET()
+	{
+		return new DataTableCellSetMethod();
+	}
+
 	public DataTableCellSetMethod()
 	{
 		ReturnType = typeof(long);
@@ -2535,6 +2883,12 @@ internal sealed class DataTableCellSetMethod : FunctionMethod
 
 internal sealed class DataTableSelectMethod : FunctionMethod
 {
+	[BuiltinMethod("DT_SELECT")]
+	private static DataTableSelectMethod CreateDT_SELECT()
+	{
+		return new DataTableSelectMethod();
+	}
+
 	public DataTableSelectMethod()
 	{
 		ReturnType = typeof(long);
@@ -2601,6 +2955,12 @@ internal sealed class DataTableSelectMethod : FunctionMethod
 
 internal sealed class DataTableToXmlMethod : FunctionMethod
 {
+	[BuiltinMethod("DT_TOXML")]
+	private static DataTableToXmlMethod CreateDT_TOXML()
+	{
+		return new DataTableToXmlMethod();
+	}
+
 	public DataTableToXmlMethod()
 	{
 		ReturnType = typeof(string);
@@ -2637,6 +2997,12 @@ internal sealed class DataTableToXmlMethod : FunctionMethod
 
 internal sealed class DataTableFromXmlMethod : FunctionMethod
 {
+	[BuiltinMethod("DT_FROMXML")]
+	private static DataTableFromXmlMethod CreateDT_FROMXML()
+	{
+		return new DataTableFromXmlMethod();
+	}
+
 	public DataTableFromXmlMethod()
 	{
 		ReturnType = typeof(long);
@@ -2674,6 +3040,24 @@ internal sealed class DataTableFromXmlMethod : FunctionMethod
 
 internal sealed class MapManagementMethod : FunctionMethod
 {
+	[BuiltinMethod("MAP_CREATE")]
+	private static MapManagementMethod CreateMAP_CREATE()
+	{
+		return new MapManagementMethod(Operation.Create);
+	}
+
+	[BuiltinMethod("MAP_EXIST")]
+	private static MapManagementMethod CreateMAP_EXIST()
+	{
+		return new MapManagementMethod(Operation.Check);
+	}
+
+	[BuiltinMethod("MAP_RELEASE")]
+	private static MapManagementMethod CreateMAP_RELEASE()
+	{
+		return new MapManagementMethod(Operation.Release);
+	}
+
 	public enum Operation
 	{
 		Create,
@@ -2725,6 +3109,36 @@ internal sealed class MapManagementMethod : FunctionMethod
 
 internal sealed class MapDataOperationMethod : FunctionMethod
 {
+	[BuiltinMethod("MAP_CLEAR")]
+	private static MapDataOperationMethod CreateMAP_CLEAR()
+	{
+		return new MapDataOperationMethod(Operation.Clear);
+	}
+
+	[BuiltinMethod("MAP_SIZE")]
+	private static MapDataOperationMethod CreateMAP_SIZE()
+	{
+		return new MapDataOperationMethod(Operation.Size);
+	}
+
+	[BuiltinMethod("MAP_HAS")]
+	private static MapDataOperationMethod CreateMAP_HAS()
+	{
+		return new MapDataOperationMethod(Operation.Has);
+	}
+
+	[BuiltinMethod("MAP_SET")]
+	private static MapDataOperationMethod CreateMAP_SET()
+	{
+		return new MapDataOperationMethod(Operation.Set);
+	}
+
+	[BuiltinMethod("MAP_REMOVE")]
+	private static MapDataOperationMethod CreateMAP_REMOVE()
+	{
+		return new MapDataOperationMethod(Operation.Remove);
+	}
+
 	public enum Operation
 	{
 		Set,
@@ -2796,6 +3210,24 @@ internal sealed class MapDataOperationMethod : FunctionMethod
 
 internal sealed class MapGetStrMethod : FunctionMethod
 {
+	[BuiltinMethod("MAP_GET")]
+	private static MapGetStrMethod CreateMAP_GET()
+	{
+		return new MapGetStrMethod(Operation.Get);
+	}
+
+	[BuiltinMethod("MAP_GETKEYS")]
+	private static MapGetStrMethod CreateMAP_GETKEYS()
+	{
+		return new MapGetStrMethod(Operation.GetKeys);
+	}
+
+	[BuiltinMethod("MAP_TOXML")]
+	private static MapGetStrMethod CreateMAP_TOXML()
+	{
+		return new MapGetStrMethod(Operation.ToXml);
+	}
+
 	public enum Operation
 	{
 		Get,
@@ -2917,6 +3349,12 @@ internal sealed class MapGetStrMethod : FunctionMethod
 
 internal sealed class MapFromXmlMethod : FunctionMethod
 {
+	[BuiltinMethod("MAP_FROMXML")]
+	private static MapFromXmlMethod CreateMAP_FROMXML()
+	{
+		return new MapFromXmlMethod();
+	}
+
 	public MapFromXmlMethod()
 	{
 		ReturnType = typeof(long);
@@ -2965,6 +3403,18 @@ internal sealed class MapFromXmlMethod : FunctionMethod
 
 internal sealed class MoveTextBoxMethod : FunctionMethod
 {
+	[BuiltinMethod("MOVETEXTBOX")]
+	private static MoveTextBoxMethod CreateMOVETEXTBOX()
+	{
+		return new MoveTextBoxMethod();
+	}
+
+	[BuiltinMethod("RESUMETEXTBOX")]
+	private static MoveTextBoxMethod CreateRESUMETEXTBOX()
+	{
+		return new MoveTextBoxMethod(true);
+	}
+
 	public MoveTextBoxMethod(bool b = false)
 	{
 		ReturnType = typeof(long);
