@@ -18,7 +18,7 @@ public class BuiltinMethodRegistryTests
 {
 	public BuiltinMethodRegistryTests() => TestBootstrap.Initialize();
 
-	// 266 / 183 的权威副本在 .scratch/arg-contract/builtin-contract.py(EXPECTED_NAMES / EXPECTED_CLASSES);
+	// 266 / 183 的权威副本在 tracker/arg-contract/builtin-contract.py(EXPECTED_NAMES / EXPECTED_CLASSES);
 	// 这里各留一份是有意的:闸门要能在脚本被改坏时独立报警,而不是跟着脚本一起漂。
 	private const int ExpectedNames = 266;      // == 改动前 Creator.cs 的 266 条活注册(issues/18 的 provenance)
 	private const int ExpectedClasses = 183;    // 汇编里该命名空间下的具体 FunctionMethod 子类数(BuiltinMethod/ 目录内 186 处 `: FunctionMethod` 声明 - 3 处注释掉的)

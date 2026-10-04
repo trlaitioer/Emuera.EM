@@ -20,8 +20,8 @@
     A 表逐站点核过（结果记在 D 段），E 段 20 项同样逐项核过（结果记在 E 段「尺子」列）。
 剥注释是逐行朴素实现（不识别字符串字面量里的 `//`），命中处仍需人工确认。
 
-用法：python3.14 .scratch/arg-contract/slots-worklist.py
-产物：.scratch/arg-contract/slots-worklist.md（UTF-8 BOM，与本脚本的写出编码一致，故可逐字节复现）
+用法：python3.14 tracker/arg-contract/slots-worklist.py
+产物：tracker/arg-contract/slots-worklist.md（UTF-8 BOM，与本脚本的写出编码一致，故可逐字节复现）
 
 **冻结提示**：本表建模的是阶段 A 的「被 `Required`(字面量) 读取」这条车道。arg-contract/issues/05 的阶段 B
 把这些消费点全换成了 `ArgumentSlots` 访问器，迁移后再跑本脚本会**覆盖冻结产物**：口径数字必然漂移
@@ -40,7 +40,7 @@ from _scan import (FREEZE_NOTE_WORKLIST, class_spans, line_of, load_sources, met
 
 # 扫描源 = `_scan.BUILTIN_METHOD_SRC`（阶段 A 之后 183 个子类分居 BuiltinMethod/*.cs；此前是单文件
 # Creator.Method.cs，拼接顺序与拆分前的区域顺序一致）。
-DST = r".scratch/arg-contract/slots-worklist.md"
+DST = r"tracker/arg-contract/slots-worklist.md"
 # 片 5 的用例数从测试文件机械数出（不把数字硬编码进产物：用例增删要跟着变；数不到即报警并以非零码退出）。
 TEST_SRC = r"Emuera.Tests/Runtime/Script/Statements/Function/IntentionalEmptySlotExecutionTests.cs"
 problems = []

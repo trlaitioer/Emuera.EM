@@ -63,7 +63,7 @@ if (list.OmitStart < 0 || i < list.OmitStart || rule.DisallowVoid)
 
 ## 影响
 
-- 失败模式按构建时机分叉（同 `.scratch/nullable-migration/issues/15-omitted-args-null-consumers.md:28`）：装载期 NRE 由 `ErbLoader.ParseFunctionWithCatch` 的宽 catch 兜成「函数分析失败」并附栈；首次执行的懒构建或 `DoInstruction` 内则冒泡到 `Process.DoScript` → `handleException`，脚本以 NullReferenceException 中止
+- 失败模式按构建时机分叉（同 `tracker/nullable-migration/issues/15-omitted-args-null-consumers.md:28`）：装载期 NRE 由 `ErbLoader.ParseFunctionWithCatch` 的宽 catch 兜成「函数分析失败」并附栈；首次执行的懒构建或 `DoInstruction` 内则冒泡到 `Process.DoScript` → `handleException`，脚本以 NullReferenceException 中止
 - 相关票：issues/01（维度标志位）、issues/03（可省略槽上的 `Required`）、issues/04（阶段 A 止血）、issues/05（槽位类型深化）
 - 改动量估计：1 行 + 用例；风险已由逐块裁定消除
-- 原始审查记录：`.scratch/backlog/issues/04`
+- 原始审查记录：`tracker/backlog/issues/04`

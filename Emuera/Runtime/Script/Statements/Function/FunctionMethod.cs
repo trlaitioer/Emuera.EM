@@ -84,10 +84,10 @@ internal abstract class FunctionMethod
 		// Reference slot: the argument is a variable entity rather than a value.
 		Ref = 1 << 4,
 
-		// Reference slot that admits a constant array. .scratch/nullable-migration/issues/18 then requires the class
+		// Reference slot that admits a constant array. tracker/nullable-migration/issues/18 then requires the class
 		// to set HasUniqueRestructure, otherwise the constant array is folded into a SingleTerm and the cast fails.
 		// Exempt: SumArrayMethod's character-data slot, where CONST and CHARADATA are mutually exclusive so a constant
-		// array never reaches the fold (the exemption is recorded in .scratch/arg-contract/arg-slots.py).
+		// array never reaches the fold (the exemption is recorded in tracker/arg-contract/arg-slots.py).
 		AllowConstRef = 1 << 5,
 
 		// Slot belongs to a variadic tail: governed by LastVariadics, not by the slot number.
@@ -700,7 +700,7 @@ internal abstract class FunctionMethod
 	/// <summary>
 	/// Legacy list-based entry, kept as a <b>non-virtual facade</b>: it resolves the check-time roles and forwards to
 	/// the slot-based entry. Its only consumers are the tests in `ArgumentSlotsTests`, and a subclass override is a
-	/// compile error (CS0115; see .scratch/arg-contract/issues/05). A class that refuses the checker, or one without a
+	/// compile error (CS0115; see tracker/arg-contract/issues/05). A class that refuses the checker, or one without a
 	/// rule table, resolves without one: see <see cref="ResolveSlots(List{AExpression?})"/>.
 	/// </summary>
 	public long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)

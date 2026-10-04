@@ -1,7 +1,7 @@
 # 内建函数（式中関数）契约表
 
 本表覆盖 `Emuera/Runtime/Script/Statements/Function/BuiltinMethod/` 目录下 `[BuiltinMethod]` 工厂注册的全部 **266 个式中関数注册名**（183 个 `FunctionMethod` 子类）的实参契约。
-形状、合法实参数与返回类型由代码机械推出（生成器 [`.scratch/arg-contract/builtin-contract.py`](../.scratch/arg-contract/builtin-contract.py)，可复跑）；说明列参考 [upstream 在线文档](https://evilmask.gitlab.io/emuera.em.doc/Reference/index.html) 并逐条按本仓代码核对，**不一致时以代码为准**。
+形状、合法实参数与返回类型由代码机械推出（生成器 [`tracker/arg-contract/builtin-contract.py`](../tracker/arg-contract/builtin-contract.py)，可复跑）；说明列参考 [upstream 在线文档](https://evilmask.gitlab.io/emuera.em.doc/Reference/index.html) 并逐条按本仓代码核对，**不一致时以代码为准**。
 
 ## 凡例
 

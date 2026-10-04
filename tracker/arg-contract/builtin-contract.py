@@ -14,12 +14,12 @@
   · 「合法实参数」按 `FunctionMethod.CheckArgumentTypeEx` 的判据机械推出：
     非变长段必须 `min <= Count <= ArgTypes.Count`（`min` = `OmitStart`，未写则 `ArgTypes.Count`）；
     变长段只要求 `Count >= min`；`MatchVariadicGroup` 另加 `(Count - 变长组起点) % 变长组长 == 0`。
-  · 「空槽语义」来自 `.scratch/arg-contract/builtin-notes.json`（人工/子 Agent 编写的说明，参考
+  · 「空槽语义」来自 `tracker/arg-contract/builtin-notes.json`（人工/子 Agent 编写的说明，参考
     upstream 在线文档并按代码核对）。缺说明的名字在产物里写 `（待补）`，脚本在控制台报告缺口。
 
-用法：python3.14 .scratch/arg-contract/builtin-contract.py            # 写 docs/builtin-functions.md
-      python3.14 .scratch/arg-contract/builtin-contract.py --dump    # 只打印解析结果（调试）
-      python3.14 .scratch/arg-contract/builtin-contract.py --merge   # 合并 .temp/notes/*.json 进 notes
+用法：python3.14 tracker/arg-contract/builtin-contract.py            # 写 docs/builtin-functions.md
+      python3.14 tracker/arg-contract/builtin-contract.py --dump    # 只打印解析结果（调试）
+      python3.14 tracker/arg-contract/builtin-contract.py --merge   # 合并 .temp/notes/*.json 进 notes
 """
 
 import glob
@@ -34,7 +34,7 @@ from _scan import class_spans, load_sources, parse_blocks, strip_keep_lines
 # 故注册名与规则表/函数体一律由 `_scan.load_sources()` 扫描（顺序 = 拆分前的区域顺序，
 # 见 `_scan.BUILTIN_METHOD_SRC`）；`Creator.cs` 只剩建表逻辑，不再有字面量可读。
 FUNCTION_SRC = "Emuera/Runtime/Script/Statements/Function/FunctionMethod.cs"
-NOTES_SRC = ".scratch/arg-contract/builtin-notes.json"
+NOTES_SRC = "tracker/arg-contract/builtin-notes.json"
 FRAGMENT_DIRS = (".temp/notes", ".temp/notes2")   # 第一轮（按 upstream 页面分桶）/ 第二轮（索引命不中的补漏）
 DST = "docs/builtin-functions.md"
 
@@ -883,8 +883,8 @@ def write_doc(rows, flags, notes):
     lines.append("本表覆盖 `Emuera/Runtime/Script/Statements/Function/BuiltinMethod/` 目录下 `[BuiltinMethod]` 工厂注册的全部 "
                  "**%d 个式中関数注册名**（%d 个 `FunctionMethod` 子类）的实参契约。"
                  % (len(rows), len(set(e["reg"]["cls"] for e in rows))))
-    lines.append("形状、合法实参数与返回类型由代码机械推出（生成器 [`.scratch/arg-contract/builtin-contract.py`]"
-                 "(../.scratch/arg-contract/builtin-contract.py)，可复跑）；"
+    lines.append("形状、合法实参数与返回类型由代码机械推出（生成器 [`tracker/arg-contract/builtin-contract.py`]"
+                 "(../tracker/arg-contract/builtin-contract.py)，可复跑）；"
                  "说明列参考 [upstream 在线文档](https://evilmask.gitlab.io/emuera.em.doc/Reference/index.html) "
                  "并逐条按本仓代码核对，**不一致时以代码为准**。")
     lines.append("")

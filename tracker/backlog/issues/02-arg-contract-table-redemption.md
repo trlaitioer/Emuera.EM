@@ -20,7 +20,7 @@ Status: superseded
   4. **54 处类型询问**说明函数体在运行期才知道槽的静态类型（`SameAsFirst` 规则）→ 访问器必须暴露 operand type
   5. 3 处把 `Required(i)` 原样传给别的 helper（`:147,2244,5147`）→ 需要「原始 term」逃生口
 - **消费面比预想的大**：除 405 处 `Required` 外，还有 `arguments[<字面量>]` **227 处**、`arguments[i]` 47 处、`arguments[b…]` 3 处、`arguments.Count` **264 处**；`as VariableTerm` 24、`(VariableTerm)` 16、`is VariableTerm` 21。⇒ 真正的函数体侧消费面约 **682 处取值 + 264 处计数**，本票的改动量估计应按此修正
-- `Required` 自称的不变量写在 `ArgumentListExtensions.cs:11-13`（「调用方担保」），而把该担保当作「解析器担保」的书面出处是 `.scratch/nullable-migration/issues/08-expression-method-chain.md:49`
+- `Required` 自称的不变量写在 `ArgumentListExtensions.cs:11-13`（「调用方担保」），而把该担保当作「解析器担保」的书面出处是 `tracker/nullable-migration/issues/08-expression-method-chain.md:49`
 
 完成标准：
 
@@ -43,8 +43,8 @@ Status: superseded
 
 - **测试面**：全工程 `CheckArgumentType` / `ArgTypeList` / `argumentTypeArrayEx` 零命中——114 个规则块是仓库里最大的一块未测行为。今天只能经 `FunctionMethodCreator.GetMethodList()["名字"]`（`Emuera.Tests/Runtime/Script/Statements/Function/FunctionMethodTests.cs:19-103`）或经 `IdentifierDictionary.GetFunctionMethod` 断言抛 `CodeEE`（`UnguardedAsCastTests.cs:116-117`）间接碰到
 - **与既有票的关系**：
-  - `ArgumentListExtensions.Required` 是 `.scratch/nullable-migration/issues/13-null-forgiving-cleanup.md` 的既定产物（该票把散落的 `!` 收成具名入口）。本票**不动它**——按该票的判据它仍是净收益；要做的是在产出端让槽位有值，使该入口自然失去存在理由
-  - 省略实参以 `null` 承载是 `.scratch/nullable-migration/issues/05-omitted-args-nullable.md` 的既定契约，本票不改该契约
+  - `ArgumentListExtensions.Required` 是 `tracker/nullable-migration/issues/13-null-forgiving-cleanup.md` 的既定产物（该票把散落的 `!` 收成具名入口）。本票**不动它**——按该票的判据它仍是净收益；要做的是在产出端让槽位有值，使该入口自然失去存在理由
+  - 省略实参以 `null` 承载是 `tracker/nullable-migration/issues/05-omitted-args-nullable.md` 的既定契约，本票不改该契约
   - 契约测试须与求值测试分开：`Creator.Method.cs` 有 68 处 `exm.VEvaluator`、46 处 `GlobalStatic.`，只有纯函数侧才能用 `exm: null!`
 - **边界：UDF 族不在本票范围内**。用户定义函数（`@FOO`）**不经过** `argumentTypeArrayEx`/`CheckArgumentTypeEx`，是另一套机制：形状声明在 `UserDefinedRefMethod.ArgTypeList`（枚举 `UserDifinedFunctionDataArgType`），检查在 `CalledFunction.TryConvertArg`，产物是 `UserDefinedFunctionArgument`。且两族的空槽语义**必须分开**——UDF 有逐参数默认值（`@FOO(A = 1)` → `FunctionLabelLine.Def`），内建函数没有任何声明默认值的地方。本票的槽位类型只覆盖内建函数；UDF 侧的同型缺陷见 issues/16
 - **头号可行性风险（(c) 方案）——已核实，比我原先的描述更硬**：不可变槽位集合与现状不兼容，但阻塞点不是「懒加载」，而是两个：
@@ -53,8 +53,8 @@ Status: superseded
   2. **共享与别名**：`IdentifierDictionary.cs:624` 直接 `new FunctionMethodTerm(method, arguments)` **不复制**；CALLF/CALLFORMF 传入的是 `SpCallArgment.RowArgs`，且结果被 `CallformCache` 按调用点缓存复用（`Argument.cs:528-538`）⇒ `Arguments` 与 `RowArgs` 是**同一个 List 且跨调用复用**。不可变集合会迫使 `Restructure` 返回**新的** term，从而改变这些共享语义
 
   另需纠正一处口径：默认配置下**不存在「解析期」折叠**——`ReduceArgumentOnLoad` 默认 `NO`，只有 `YES`/`AnalysisMode`/`FORCE_SETARG` 才在装载期折叠（`ErbLoader.cs:1314`），普通指令行是**首次执行时**构造（`Process.ScriptProc.cs:62-69`），结果由 `ArgumentParser.cs:65` 记忆
-- **并发现象（非缺陷，但深化时必须处理）**：`StrForm.cs:59-63,87-91` 的 5 个 `static readonly FunctionMethodTerm` 被塞进每个含 `***`/`+++`/`===`/`///`/`$$$` 的 StrForm，外层 `StrForm.Restructure`（`:235`）会对**同一对象**重复调 `Restructure`；在 `ErbLoader.cs:986` 的 `Parallel.ForEach` 下即对同一 `List` 的并发写。写入的是同值（引用写入原子），与 `.scratch/performance-optimization/issues/04-parse-parallel.md` 对 `Depth` 的论证同型
+- **并发现象（非缺陷，但深化时必须处理）**：`StrForm.cs:59-63,87-91` 的 5 个 `static readonly FunctionMethodTerm` 被塞进每个含 `***`/`+++`/`===`/`///`/`$$$` 的 StrForm，外层 `StrForm.Restructure`（`:235`）会对**同一对象**重复调 `Restructure`；在 `ErbLoader.cs:986` 的 `Parallel.ForEach` 下即对同一 `List` 的并发写。写入的是同值（引用写入原子），与 `tracker/performance-optimization/issues/04-parse-parallel.md` 对 `Depth` 的论证同型
 - **性能结论（已核实，纠正原先的「可能变快」）**：`Restructure` **不在稳态每调用热路径上**（每求值 0 次——折叠只在 Argument 构造时发生，而 Argument 被记忆）。当前每调用成本 = 1 次虚派发 + N×(索引器 + 虚派发)，无装箱，`Required` 是 3 条指令级静态方法。⇒ 本重构**在 per-call 上拿不到可测收益**，理由必须是**契约安全**（未证站点 + 33 处转型），不是速度。真实可省的成本在**构造/折叠期**（17 个 unique 方法每次折叠分配一次 `[.. Arguments]`、`VariableTerm.Restructure` 的重复 `CheckElement`）。且仓库**没有基准设施**（`BenchmarkDotNet`/`[Benchmark]` 零命中，50 个测试文件无一为性能测试，perf/04 的埋点是临时且未交付）——**任何性能主张必须先补基准**
 - 改动量估计：大（`FunctionMethod.cs` + `Creator.Method.cs` 的 114 个规则块 + 消费端）。建议按票拆：先 03/04 止血，再动槽位形状
 - 相关票：issues/03（维度标志位）、issues/04（省略判据）、issues/15（`Argument` 的三字段折叠协议，同一 seam 的另一侧）
-- **已转出（2026-09-27）**：承接方 `.scratch/arg-contract/issues/04-argument-slots.md`，方案裁定见 `.scratch/arg-contract/spec.md`。本票作为审查记录保留（文件不移动）
+- **已转出（2026-09-27）**：承接方 `tracker/arg-contract/issues/04-argument-slots.md`，方案裁定见 `tracker/arg-contract/spec.md`。本票作为审查记录保留（文件不移动）

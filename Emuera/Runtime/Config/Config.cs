@@ -293,7 +293,7 @@ internal static class Config
 		DrawingParam_ShapePositionShift = 0;
 		// The shift compensates the horizontal difference between the GDI text origin and the GDI+ shape
 		// origin. In GRAPHICS mode both come from GDI+ with the same origin, so nothing has to be
-		// compensated (see .scratch/ui-modernization/issues/04).
+		// compensated (see tracker/ui-modernization/issues/04).
 		if (TextDrawingMode == TextDrawingMode.TEXTRENDERER)
 		{
 			DrawingParam_ShapePositionShift = Math.Max(2, FontSize / 6);
@@ -306,7 +306,7 @@ internal static class Config
 	/// <summary>
 	/// Derives the size the fonts are built at. The em baseline stays FontSize, so the cells of a font whose
 	/// full width advance is not FontSize have to be brought back onto the baseline font's cell by the font
-	/// size alone (see .scratch/ui-modernization/issues/03).
+	/// size alone (see tracker/ui-modernization/issues/03).
 	/// </summary>
 	private static void RecomputeRenderFontSize()
 	{

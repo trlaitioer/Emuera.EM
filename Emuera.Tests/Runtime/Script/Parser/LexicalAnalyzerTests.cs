@@ -174,7 +174,7 @@ public class LexicalAnalyzerTests : IDisposable
 		// PRINTFORM 　\@ GETBIT(危険日感知フラグ, 1) ? 危险期 # 发情期 \@还剩2天结束
 		// 词法器对全角空格(U+3000)的处理依赖 Config.SystemAllowFullSpace,默认 false → 拒绝。
 		// 注意:未调用 Config.SetConfig 时,拒绝路径里的 GetConfigName 依赖 nameDic(为 null)
-		// 会抛 NRE——潜在健壮性问题(真实运行中 SetConfig 总先执行),已记入 .scratch。
+		// 会抛 NRE——潜在健壮性问题(真实运行中 SetConfig 总先执行),已记入 tracker。
 		var line = "PRINTFORM 　\\@ GETBIT(危険日感知フラグ, 1) ? 危险期 # 发情期 \\@还剩2天结束";
 		Assert.ThrowsAny<Exception>(() => Analyse(line));
 	}

@@ -32,6 +32,6 @@ Status: needs-triage
 ## 影响
 
 - **测试面**：`PrintStringBuffer` 全类 0 覆盖，`getDivideIndex` 的二分 0 覆盖；`ConsoleDisplayLineTests.cs:229, 239` 传 `null!` 参数
-- **与既有票的关系**：`.scratch/ui-modernization/issues/03-monospace-grid.md` 与 `04-graphics-text-mode.md` 已处理字体单元格宽/em 关系与 GDI+ 文字绘制档的测量缺陷。本票不动测量实现本身（`StringMeasure`/`GraphicsTextRenderer`/`FontMetrics` 三方经审查判为健康），只处理折行/切分的 module 边界与策略来源；落地时须与该两票的测量口径对齐
+- **与既有票的关系**：`tracker/ui-modernization/issues/03-monospace-grid.md` 与 `04-graphics-text-mode.md` 已处理字体单元格宽/em 关系与 GDI+ 文字绘制档的测量缺陷。本票不动测量实现本身（`StringMeasure`/`GraphicsTextRenderer`/`FontMetrics` 三方经审查判为健康），只处理折行/切分的 module 边界与策略来源；落地时须与该两票的测量口径对齐
 - 改动量估计：中到大
 - 相关票：issues/07（Config 静态量）、issues/05（console seam）

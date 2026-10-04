@@ -10,8 +10,8 @@ Type: bug
 
 这条错误假设的书面出处有两处，均已核实：
 
-- `.scratch/nullable-migration/issues/13-null-forgiving-cleanup.md` 的**提案代码块**把该访问器的注释写成「The parser rejects an omitted slot before an implementation reads it」；
-- `.scratch/nullable-migration/issues/08-expression-method-chain.md` 写「`i >= OmitStart` 的槽位允许省略」，却据此把 `!` 论证为「可证的注解层断言」——缺口就在这两句之间。
+- `tracker/nullable-migration/issues/13-null-forgiving-cleanup.md` 的**提案代码块**把该访问器的注释写成「The parser rejects an omitted slot before an implementation reads it」；
+- `tracker/nullable-migration/issues/08-expression-method-chain.md` 写「`i >= OmitStart` 的槽位允许省略」，却据此把 `!` 论证为「可证的注解层断言」——缺口就在这两句之间。
 
 落地版注释（`ArgumentListExtensions.Required` 的注释）已按 `nullable-migration/issues/13` 的结论改写，**不再断言那条不变量**，改为「担保只对规则表标为必填的槽成立」（无 `OmitStart` 的块 / `i < OmitStart` / `ArgType.NotNull`；变长尾部的标志由下标落到的那个变长规则决定）；而该不变量对 `i >= OmitStart` 的槽本就不成立（检查器只拒绝 `OmitStart` 未写的整块、`i < OmitStart` 及带 `NotNull` 的槽）。故本票要更正的是「调用方担保」这一措辞——对设计上可省略的槽，调用方担保不了。`nullable-migration/issues/13` 与 `nullable-migration/issues/08` 两票已回填（见「回填」）。
 
@@ -270,7 +270,7 @@ new ArgTypeList { ArgTypes = { ArgType.String, ArgType.String, ArgType.Int | Arg
 - **`DataTableRowSetMethod[2]` 是形态分裂的槽，故不标 `NotNull`**：`DT_ROW_ADD` 的变长对形态里它是 value 位，空槽经 `SetValue(..., AExpression v)` 的 `v == null` 分支写成 `DBNull`（**有意**）；4 实参数组形态共用该槽，但同类第二段（无 `OmitStart`）拒绝一切空槽，函数体在数组形态下读不到 null。标 `NotNull` 会连带拒掉变长形态的 DBNull 写法 → 只补注释。这条也是「同一槽在不同调用形态里语义不同」的首个实例，是 arg-contract/issues/05 槽位三态（缺失/显式留空/有值）的现成用例。
 - **数量省略尺子**：20 项逐项核过（E 段「尺子」列），**无一处**「少写尾实参即越界」，故本片没有第三处 `OmitStart` 附修。
 - 用例（落在既有 seam `CheckArgumentTypeEx`）：`OmittableSlot_WithExplicitEmptySlot_IsRejected` 追加 11 行（7 槽的必要注册名/形态）、`IntentionalEmptySlot_IsAccepted` 追加 2 行、`CountOmittedArgument_IsAccepted_AndYieldsNoEmptySlot` 追加 3 行（新收紧的三个注册名）、正控制 `SupplementalSlots_WithFilledArgs_AreAccepted`（9 条填满形态）。
-- 计数（由 `slots-worklist.py` 复核）：`ArgType.NotNull` **88 处 / 77 行**（含注释；剥注释 81 处 / 70 行）——唯一口径是 [_scan.py](../_scan.py) 的 `NOT_NULL_EXPECTED`；阶段 B 起步后 `DataTableRowSetMethod` 的规则段注释提到该标志，含注释口径由 87/76 上调 1，剥注释口径未动（见 [issues/05](05-argument-slots-type.md)）。拒绝侧共 **54** 个 (类,槽) = A 表 41 + 片 2-C 的 2（消费型变长尾）+ 本片 7 + [issues/04](04-argument-slots.md) 阶段 A 的 4（`EnumNameMethod[1]`、`EnumFilesMethod[3]`、`DataTableSelectMethod[3]`、`DataTableToXmlMethod[1]`）；可省略 (类,槽) 全集 96 = A/B 两段 76 + 本片 20。**这两个数不再由本票维护**：现行值以 [builtin-contract.py](../builtin-contract.py) 的自校验输出为准（`python3.14 .scratch/arg-contract/builtin-contract.py` 会打印「可省略 (类,槽) 96（其中拒绝显式空槽 54）」），本票与各片中出现的 96/54 是落地当时的记账值。
+- 计数（由 `slots-worklist.py` 复核）：`ArgType.NotNull` **88 处 / 77 行**（含注释；剥注释 81 处 / 70 行）——唯一口径是 [_scan.py](../_scan.py) 的 `NOT_NULL_EXPECTED`；阶段 B 起步后 `DataTableRowSetMethod` 的规则段注释提到该标志，含注释口径由 87/76 上调 1，剥注释口径未动（见 [issues/05](05-argument-slots-type.md)）。拒绝侧共 **54** 个 (类,槽) = A 表 41 + 片 2-C 的 2（消费型变长尾）+ 本片 7 + [issues/04](04-argument-slots.md) 阶段 A 的 4（`EnumNameMethod[1]`、`EnumFilesMethod[3]`、`DataTableSelectMethod[3]`、`DataTableToXmlMethod[1]`）；可省略 (类,槽) 全集 96 = A/B 两段 76 + 本片 20。**这两个数不再由本票维护**：现行值以 [builtin-contract.py](../builtin-contract.py) 的自校验输出为准（`python3.14 tracker/arg-contract/builtin-contract.py` 会打印「可省略 (类,槽) 96（其中拒绝显式空槽 54）」），本票与各片中出现的 96/54 是落地当时的记账值。
 
 ### 片 3：机制收尾——取 B（已定），A 留作收尾条件
 
@@ -384,7 +384,7 @@ public void OmittableSlot_WithExplicitEmptySlot_IsRejected(string name, string i
 
 ## 影响
 
-- `.scratch/nullable-migration/issues/08-expression-method-chain.md` 与 `13-null-forgiving-cleanup.md` 是本票所纠的书面假设的出处；`nullable-migration/issues/13` 引入 `Required` 并把「调用方担保」写进注释，本票不改该结论但更正措辞（落地注释已自行改写过一次，见「任务」）；`nullable-migration/issues/14` 的断言审计扫的是 `!`，本票扫的是 `Required`，口径相关但站点集合不同
+- `tracker/nullable-migration/issues/08-expression-method-chain.md` 与 `13-null-forgiving-cleanup.md` 是本票所纠的书面假设的出处；`nullable-migration/issues/13` 引入 `Required` 并把「调用方担保」写进注释，本票不改该结论但更正措辞（落地注释已自行改写过一次，见「任务」）；`nullable-migration/issues/14` 的断言审计扫的是 `!`，本票扫的是 `Required`，口径相关但站点集合不同
 - 失败模式同 arg-contract/issues/02：`AnalysisMode` / `ReduceArgumentOnLoad` / `FOR` 行下的装载期异常由 `ErbLoader.ParseFunctionWithCatch` 兜成「函数分析失败」；其余在首次执行该行时冒泡到 `Process.DoScript` → `handleException`（时机见风险 6）
 - UDF 侧本票**不改动**：`UserDefinedRefMethodTerm` 一行是死代码，活路径在 `CalledFunction.TryConvertArg` 已把省略实参换成默认值（默认值由 `ErbLoader.parseLabel` 建立，见「UDF 族」）
 - 片 1 已落地（3 处 NRE + 2 处数量省略越界 + 用例）。两处 `OmitStart` 改动后，工作表 A 表 42 项、全集 96 项、涉及函数 52 个
@@ -395,7 +395,7 @@ public void OmittableSlot_WithExplicitEmptySlot_IsRejected(string name, string i
 - 改动量估计：中——未证合计 134 处（口径 131 / 77）→ 槽级 96 个（A/B 两段 76 个已裁定；补车道 20 个已由片 2-D 裁定），拒绝侧 54 个 (类,槽) + 52 个函数的用例表 + 5 处改名（另 3 处是片 1 的新增标注）。片 1 的 3 处与两处数量省略越界已落地，其余**裁定工作可独立于 arg-contract/issues/04 先行开展**，且其结论正是 05 设计槽位类型时需要的输入
 - **待办：无**。余项 7（`docs/` 侧内建函数契约表）已落地为 [docs/builtin-functions.md](../../../docs/builtin-functions.md)；余项 1/2/3 的补车道裁定与余项 5 的 3 项注释、余项 4（片 5：B 表执行期语义，46 条用例）、余项 6（片 6：指令侧两轴模型定案 + `instruction-args.py`/`.md`）均已落地；原「回填 `nullable-migration/issues/13` 与 `nullable-migration/issues/08`」也已落地（含 08 的**影响段**）
 - 相关票：arg-contract/issues/04（阶段 A 止血）、arg-contract/issues/02（检查器侧的省略判据）、arg-contract/issues/01（维度标志位）
-- 原始审查记录：`.scratch/backlog/issues/16`
+- 原始审查记录：`tracker/backlog/issues/16`
 
 ### 回填
 

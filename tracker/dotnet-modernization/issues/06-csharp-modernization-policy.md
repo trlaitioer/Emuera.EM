@@ -8,7 +8,7 @@ Status: ready-for-human
 评估 C# 新语法采纳策略。项目 `LangVersion` 未显式设置,net10.0-windows 默认即 C# 14,全部源码已在 C# 14 下编译——不存在"升版本"动作,本票只评估新语法采纳(2026-08-30 全库 grep 扫描,136 个 .cs)。
 
 - EM 迁移过程中已顺带完成部分现代化:含 namespace 的 134 个文件中 112 个已是 file-scoped;collection expressions(`[.. _args, "-Debug"]` 形态)与 target-typed `new()` 已零星使用;匿名方法(`delegate { }` 表达式)已无残留,余下 `delegate` 均为类型声明。
-- NRT 属 OPT-IN,由 `.scratch/nullable-migration/` 独立承接,不在本票范围。
+- NRT 属 OPT-IN,由 `tracker/nullable-migration/` 独立承接,不在本票范围。
 
 完成标准:策略决策记录于本文,提交 triage 定案。
 

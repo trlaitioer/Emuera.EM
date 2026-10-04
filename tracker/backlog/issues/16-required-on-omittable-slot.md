@@ -10,7 +10,7 @@ Type: bug
 
 与 issues/04 不同：本票里**检查器是对的**——规则块的 `OmitStart` 正确声明了「哪些槽可省略」，null 因此是设计允许的合法输入；**错的是函数体**，它用 `arguments.Required(i)`（即 `arguments[i]!`，运行时无操作）无条件解引用一个设计上可空的槽。
 
-`ArgumentListExtensions.cs:11-13` 的注释把这条不变量写成「The parser rejects an omitted slot before an implementation reads it」，而该不变量对 `i >= OmitStart` 的槽**不成立**（检查器只拒绝 `i < OmitStart` 及 `DisallowVoid` 槽）。这条错误假设的书面出处是 `.scratch/nullable-migration/issues/08-expression-method-chain.md:49`：
+`ArgumentListExtensions.cs:11-13` 的注释把这条不变量写成「The parser rejects an omitted slot before an implementation reads it」，而该不变量对 `i >= OmitStart` 的槽**不成立**（检查器只拒绝 `i < OmitStart` 及 `DisallowVoid` 槽）。这条错误假设的书面出处是 `tracker/nullable-migration/issues/08-expression-method-chain.md:49`：
 
 > `argumentTypeArrayEx` 路径下 `i < OmitStart` …… 故 `!` 是可证的注解层断言；`i >= OmitStart` 的槽位允许省略
 
@@ -97,10 +97,10 @@ for (int i = 0; i < srcArgs.Count; i++)
 
 ## 影响
 
-- 与 `.scratch/nullable-migration/issues/08-expression-method-chain.md:49` 的关系：该票为 `!` 断言给出的理由是「`i >= OmitStart` 的槽位允许省略」——本票证明这句话与函数体的实际写法不一致。落地时应回填该票，或在该票正文标注本票承接
-- 与 `.scratch/nullable-migration/issues/13-null-forgiving-cleanup.md` 的关系：该票把散落的 `!` 收成 `Required` 具名入口，判据是「把不可见的 `!` 变成可检索的具名声明」。本票不改该结论，但要指出该入口的注释把「调用方担保」写成了「解析器担保」（`ArgumentListExtensions.cs:11-13`）
-- 与 `.scratch/nullable-migration/issues/14-null-assertion-audit.md`：其断言审计按「可达/不可达」分类，本票的 135 处属该口径的延伸，但站点集合不同（审计扫的是 `!`，本票扫的是 `Required`）
+- 与 `tracker/nullable-migration/issues/08-expression-method-chain.md:49` 的关系：该票为 `!` 断言给出的理由是「`i >= OmitStart` 的槽位允许省略」——本票证明这句话与函数体的实际写法不一致。落地时应回填该票，或在该票正文标注本票承接
+- 与 `tracker/nullable-migration/issues/13-null-forgiving-cleanup.md` 的关系：该票把散落的 `!` 收成 `Required` 具名入口，判据是「把不可见的 `!` 变成可检索的具名声明」。本票不改该结论，但要指出该入口的注释把「调用方担保」写成了「解析器担保」（`ArgumentListExtensions.cs:11-13`）
+- 与 `tracker/nullable-migration/issues/14-null-assertion-audit.md`：其断言审计按「可达/不可达」分类，本票的 135 处属该口径的延伸，但站点集合不同（审计扫的是 `!`，本票扫的是 `Required`）
 - 失败模式同 issues/04：装载期 NRE 由 `ErbLoader.ParseFunctionWithCatch` 兜成「函数分析失败」；执行期冒泡到 `Process.DoScript` → `handleException`
 - 改动量估计：中（135 处逐点裁定 + 用例）。**裁定工作可独立于 02 的深化先行开展**，且裁定结果正是 02 设计槽位类型时需要的输入
 - 相关票：issues/02（实参契约表兑现）、issues/04（检查器侧的省略判据）、issues/03（维度标志位）
-- **已转出（2026-09-27）**：承接方 `.scratch/arg-contract/issues/03-required-on-omittable-slot.md`。本票作为审查记录保留（文件不移动）
+- **已转出（2026-09-27）**：承接方 `tracker/arg-contract/issues/03-required-on-omittable-slot.md`。本票作为审查记录保留（文件不移动）

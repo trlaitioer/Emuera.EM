@@ -40,7 +40,7 @@ Blocked by: 07, 08, 09, 10, 11, 12
 
 以下警告在当前 `annotations` 模式下已存在,翻转 `enable` 后不会消失,不作为本票验收障碍:
 
-- **CS8981**:小写 alias 声明(`trerror`/`trsl`/`trmb`/`trmk`/`treer`,共 64 条)。决策见 `.scratch/performance-optimization/issues/06-cs8981-alias.md`:暂不重命名(避免与 upstream 合并冲突);如成为干扰,优先在 csproj 用 NoWarn 抑制
+- **CS8981**:小写 alias 声明(`trerror`/`trsl`/`trmb`/`trmk`/`treer`,共 64 条)。决策见 `tracker/performance-optimization/issues/06-cs8981-alias.md`:暂不重命名(避免与 upstream 合并冲突);如成为干扰,优先在 csproj 用 NoWarn 抑制
 - **CS4014**:`MainWindow.cs` 中未 await 的 `console.ReloadPartialErb` 调用(1 条,是否为有意 fire-and-forget 待人工确认)
 - **CS0472**(已消除,不再列为既有警告):`WebPWrapper.cs` 内 6 处恒为 false 的 `nint` 判空已由 `feea60c`(`fix(ui): 修复 WebP 解码失败检查恒不生效`)改为与 `nint.Zero` 比较;本分支实测 `Debug-NAudio` 的默认与 `-p:Nullable=enable` 两种构建均不再出现
 - **CA1069**(13 条)、**CA2208**(4 条)、**CA1806**(2 条)、**CA1816**(1 条)、**CA2019**(1 条,`Process.cs` 的 `[ThreadStatic]` 内联初始化)、**WFO0003**(1 条):分析器与 WinForms 分析器既有警告,与可空无关

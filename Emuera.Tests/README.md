@@ -1,6 +1,6 @@
 # Emuera.Tests
 
-Emuera 解释器核心的单元测试工程(xUnit v3 + Microsoft.Testing.Platform)。对应 `.scratch/` 中"测试基础设施"方向。
+Emuera 解释器核心的单元测试工程(xUnit v3 + Microsoft.Testing.Platform)。对应 `tracker/` 中"测试基础设施"方向。
 
 ## 运行
 

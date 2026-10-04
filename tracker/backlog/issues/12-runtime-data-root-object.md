@@ -32,8 +32,8 @@ Status: needs-triage
 
 ## 影响
 
-- **对审查结论的一处更正**：审查曾把 `GlobalStatic.Reset()`（`:80-93`）记为「不可达的死代码 ⇒ 进程内无法构造第二份运行时」。已核实：`Reset()` 是 `public static`，所在类 `internal` 而 `Emuera.csproj` 有 `InternalsVisibleTo("Emuera.Tests")`，故**测试侧可调用**；准确的说法是「产品内无调用点」——唯一调用点 `Program.cs:339` 位于 `:308-345` 的 `/* VVII版マージ前の起動処理 */` 注释块内，现役重启走 `MainWindow.cs:1262 Reboot()`（不调 `Reset`）。`.scratch/test-infrastructure/issues/03-phase2-beyond.md:33` 本就计划「`GlobalStatic.Reset()` + 重建做隔离」，实际 `TestBootstrap.cs:19` 改用了 `static bool initialized`。故本票的前置不是「让 Reset 可达」，而是「顺序有类型」；`Reset()` 该删还是该成为新根对象的正常生命周期终点，随本票定
-- **与既有决策的关系（非冲突）**：`.scratch/nullable-migration/issues/06-nullability-contracts.md` 定了「初始化前不可达即保持非空 + 声明处 `null!`」，`.scratch/nullable-migration/issues/11-process-loader-chain.md:77` 据此为这 9 个字段保留了非空声明。本票**不要求**把这些字段改为可空——它要求把**顺序**搬进构造函数，字段的不可空声明可以原样保留，故与那两张票的结论不冲突
+- **对审查结论的一处更正**：审查曾把 `GlobalStatic.Reset()`（`:80-93`）记为「不可达的死代码 ⇒ 进程内无法构造第二份运行时」。已核实：`Reset()` 是 `public static`，所在类 `internal` 而 `Emuera.csproj` 有 `InternalsVisibleTo("Emuera.Tests")`，故**测试侧可调用**；准确的说法是「产品内无调用点」——唯一调用点 `Program.cs:339` 位于 `:308-345` 的 `/* VVII版マージ前の起動処理 */` 注释块内，现役重启走 `MainWindow.cs:1262 Reboot()`（不调 `Reset`）。`tracker/test-infrastructure/issues/03-phase2-beyond.md:33` 本就计划「`GlobalStatic.Reset()` + 重建做隔离」，实际 `TestBootstrap.cs:19` 改用了 `static bool initialized`。故本票的前置不是「让 Reset 可达」，而是「顺序有类型」；`Reset()` 该删还是该成为新根对象的正常生命周期终点，随本票定
+- **与既有决策的关系（非冲突）**：`tracker/nullable-migration/issues/06-nullability-contracts.md` 定了「初始化前不可达即保持非空 + 声明处 `null!`」，`tracker/nullable-migration/issues/11-process-loader-chain.md:77` 据此为这 9 个字段保留了非空声明。本票**不要求**把这些字段改为可空——它要求把**顺序**搬进构造函数，字段的不可空声明可以原样保留，故与那两张票的结论不冲突
 - **测试面**：`TestBootstrapTests.cs:31-41` 专门断言 `GlobalStatics_AreWired`——在测试里验证装配顺序，这本身就是顺序没有类型的代价。`TestBootstrap.cs` 只能一次性初始化（`:19`），`Program` 的目录静态是进程级（`GameRootScope.cs:5-8` 明确写下「用例不得假设另一个游戏根」）
 - 改动量估计：中到大（装配链 + 3 处反向写入/读取）。**建议先只做根对象，不动 `Reset` 与读点命名**
 - 相关票：issues/15（`StrForm` 符号绑定）、issues/07（解析期开关）、issues/14（装载会话对象）

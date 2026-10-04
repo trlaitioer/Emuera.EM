@@ -7,7 +7,7 @@ Status: ready-for-human
 
 对 `Emuera/UI/` 的 WinForms 层按 winforms skill 各场景做升级评估(2026-08-30 实测扫描),给出分区域现状与建议。完成标准:评估结论写入本文,提交 triage 定案。
 
-范围说明:UI 代码在 `Emuera/UI/`(7 个窗体 + 各自 Designer 文件 + 自定义控件 `EraPictureBox`),Framework 时代迁移而来;与 `.scratch/dotnet-modernization/` 既有票的重叠不重复评估——同步网络 I/O 阻塞 UI 线程(其 issues/01)、`Process.Start(url)` 死路径(其 issues/03)已单独立票。
+范围说明:UI 代码在 `Emuera/UI/`(7 个窗体 + 各自 Designer 文件 + 自定义控件 `EraPictureBox`),Framework 时代迁移而来;与 `tracker/dotnet-modernization/` 既有票的重叠不重复评估——同步网络 I/O 阻塞 UI 线程(其 issues/01)、`Process.Start(url)` 死路径(其 issues/03)已单独立票。
 
 ## 方案
 
@@ -18,7 +18,7 @@ Status: ready-for-human
 - **跨线程更新**:仅 4 处 `window.Invoke(...)`——3 处在 `tickTimer`(`System.Timers.Timer` 10ms 刻度回调,刷新剩余时间显示),1 处在 `RefreshStrings`;UI 层无 `new Thread`。
 - **模态框**:10 处活动 `ShowDialog()`(另有 1 处注释残留),均为文件/文件夹/颜色选择器与小型对话框。
 - **渲染/自定义控件**:`EraPictureBox` 的 `SetStyle` 双缓冲配置完整(历史试错以注释保留);无 WebBrowser/ActiveX 遗留控件;定时器用法(WinForms Timer 管按键宏、`System.Timers.Timer` 管通用刻度)恰当。
-- UI 事件处理路径中另有若干 `Application.DoEvents()`(`MainWindow.update_lastinput`、`EmueraConsole.Await` / `RefreshStrings` 等),不在装载循环内,不并入 `.scratch/performance-optimization/` 的解析并行化票;本票不改动。
+- UI 事件处理路径中另有若干 `Application.DoEvents()`(`MainWindow.update_lastinput`、`EmueraConsole.Await` / `RefreshStrings` 等),不在装载循环内,不并入 `tracker/performance-optimization/` 的解析并行化票;本票不改动。
 
 ### 评估结论(建议,待 triage)
 

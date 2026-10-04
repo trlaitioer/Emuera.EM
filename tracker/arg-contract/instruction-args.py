@@ -7,7 +7,7 @@
       - 槽位轴 `argumentTypeArray[i]`：`null!` = 该槽可省**且不做类型检查**（`continue` 跳过），
         `typeof(void)` = 必填、类型由 builder 自检，具体 Type = 必填且类型固定。
     不走 `checkArgumentType` 的 builder（自校验）不受这两轴支配，其逐槽结论引
-    `.scratch/nullable-migration/issues/15-omitted-args-null-consumers.md` 的决策表。
+    `tracker/nullable-migration/issues/15-omitted-args-null-consumers.md` 的决策表。
   · 「读取点」= builder 类体内对 `terms[i]`/`terms.Required(i)`/`args[...]`/`param[...]` 的字面量下标读取；
     `getChangeableVariable(terms, i, line)` 读的是 `terms[i-1]`，按下标 `i-1` 记账。
   · 「数量轴结论」由脚本机械判定：保证最少实参数 `min` 与最大**无守卫**读取下标比较
@@ -16,8 +16,8 @@
   · 对齐结论（与规则表 `OmitStart`/`ArgType.NotNull` 的关系）写在票内片 6，脚本只负责把
     「指令侧的编码形状」与「读取点」摆出来供复核。
 
-用法：python3.14 .scratch/arg-contract/instruction-args.py
-产物：.scratch/arg-contract/instruction-args.md（UTF-8 BOM，可逐字节复现）
+用法：python3.14 tracker/arg-contract/instruction-args.py
+产物：tracker/arg-contract/instruction-args.md（UTF-8 BOM，可逐字节复现）
 """
 
 import re
@@ -25,7 +25,7 @@ import re
 from _scan import METHOD_SIG_RE_PLAIN, class_spans, method_marks, strip_keep_lines
 
 SRC = r"Emuera/Runtime/Script/Statements/ArgumentBuilder.cs"
-DST = r".scratch/arg-contract/instruction-args.md"
+DST = r"tracker/arg-contract/instruction-args.md"
 
 src = open(SRC, encoding="utf-8-sig").read()
 

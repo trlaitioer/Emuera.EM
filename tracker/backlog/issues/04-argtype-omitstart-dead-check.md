@@ -62,7 +62,7 @@ if (arguments[i] == null)
 
 ## 影响
 
-- 失败模式按构建时机分叉（与 `.scratch/nullable-migration/issues/15-omitted-args-null-consumers.md:28` 记录的形态一致）：装载期 NRE 由 `ErbLoader.ParseFunctionWithCatch` 的宽 catch 兜成「函数分析失败」并附栈；首次执行的懒构建或 `DoInstruction` 内则冒泡到 `Process.DoScript` → `handleException`，脚本以 NullReferenceException 中止
+- 失败模式按构建时机分叉（与 `tracker/nullable-migration/issues/15-omitted-args-null-consumers.md:28` 记录的形态一致）：装载期 NRE 由 `ErbLoader.ParseFunctionWithCatch` 的宽 catch 兜成「函数分析失败」并附栈；首次执行的懒构建或 `DoInstruction` 内则冒泡到 `Process.DoScript` → `handleException`，脚本以 NullReferenceException 中止
 - 相关票：issues/02（实参契约表兑现）、issues/03（维度标志位）
 - 改动量估计：1 行 + 用例；23 个规则块的逐块意图复核已完成（23/23 均为「不允许省略」），风险已消除
-- **已转出（2026-09-27）**：承接方 `.scratch/arg-contract/issues/02-argtype-omitstart-dead-check.md`。本票作为审查记录保留（文件不移动）
+- **已转出（2026-09-27）**：承接方 `tracker/arg-contract/issues/02-argtype-omitstart-dead-check.md`。本票作为审查记录保留（文件不移动）

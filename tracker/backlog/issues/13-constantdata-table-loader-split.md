@@ -34,8 +34,8 @@ Status: needs-triage
 
 - **测试面**：`ConstantDataTests.cs` 只有 4 例，全部集中在角色模板查询，且必须写真实临时文件 + `Preload.Load` + 传 `null!` console（`:18-34`）——为一个纯查表断言付了「文件系统 + 预读缓存 + UI 依赖」三重装配。`isDefined`/`isUserDefined`/`TryKeywordToInteger`/`TryIntegerToKeyword`/`GetKeywordDictionary`/`IsDefinedCsvVar`/ERD 多维别名这一大片**零直接覆盖**
 - **与既有票的关系**：
-  - `GetKeywordDictionary` 的可空契约已由 `.scratch/nullable-migration/issues/10-variable-data-chain.md:70` 与 `issues/29` 拆分定案（`TryGetKeywordDictionary` + 抛 `CodeEE` 的非空入口），本票不动该契约
-  - `.scratch/performance-optimization/issues/05-csv-dictionary.md` 已就两个角色模板查询做了等价性重构并新增 4 例。本票与该票同域，但目标是构造器形状与表所有权，不是查询复杂度
-  - `GetCharacterTemplate*` 的返回可空契约见 `issues/10`、消费点收尾见 `.scratch/nullable-migration/issues/03-csproj-enable-cleanup.md`
+  - `GetKeywordDictionary` 的可空契约已由 `tracker/nullable-migration/issues/10-variable-data-chain.md:70` 与 `issues/29` 拆分定案（`TryGetKeywordDictionary` + 抛 `CodeEE` 的非空入口），本票不动该契约
+  - `tracker/performance-optimization/issues/05-csv-dictionary.md` 已就两个角色模板查询做了等价性重构并新增 4 例。本票与该票同域，但目标是构造器形状与表所有权，不是查询复杂度
+  - `GetCharacterTemplate*` 的返回可空契约见 `issues/10`、消费点收尾见 `tracker/nullable-migration/issues/03-csproj-enable-cleanup.md`
 - **删除测试判决**：删掉 `ConstantData`，csv → 名称/别名/角色模板/数组长度这整套复杂度会回到每一个查询点（`ArgumentBuilder.cs:2485`、`Instraction.Child.cs:2082`、`CharacterData.cs:651`、`VariableData` 默认值设置、`ErhLoader`）→ 在挣饭钱且不可替代。真正的 pass-through 是它的**构造器**形状
 - 改动量估计：大。建议排在 issues/07、issues/08 之后

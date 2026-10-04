@@ -102,7 +102,7 @@ internal sealed class StringMeasure : IDisposable
 
 			// The advance width of the text, which is the quantity the layout is built on. Drawing uses GDI+
 			// without padding, so the pen it starts from is the same one the layout computed
-			// (see .scratch/ui-modernization/issues/04).
+			// (see tracker/ui-modernization/issues/04).
 			return GraphicsTextRenderer.MeasureAdvance(measuringGraphics, s, font, layoutSize);
 		}
 		else if (textDrawingMode == TextDrawingMode.TEXTRENDERER)

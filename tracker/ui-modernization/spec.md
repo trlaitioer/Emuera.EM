@@ -5,7 +5,7 @@ Status: in-progress
 
 ## 问题/背景
 
-UI 代码在 `Emuera/UI/`,由 Framework 时代迁移而来。本 tracker 跟踪 WinForms API 采纳与显示质量(DPI 缩放、字体排版)相关的评估与改造;.NET 运行时/API 的迁移残留类议题不在此列,见 `.scratch/dotnet-modernization/`。
+UI 代码在 `Emuera/UI/`,由 Framework 时代迁移而来。本 tracker 跟踪 WinForms API 采纳与显示质量(DPI 缩放、字体排版)相关的评估与改造;.NET 运行时/API 的迁移残留类议题不在此列,见 `tracker/dotnet-modernization/`。
 
 ## 整体方案
 

@@ -13,7 +13,7 @@ Status: needs-triage
 
 - `LoadErbDir`（`:47-163`，用户运行游戏用）有顺序策略
 - `LoadErbList`（`:169-218`，`--analysis` / `RunERBFromMemory` 用）**没有任何顺序策略**
-- 相位切换（`Initialized = false` → `setLabelsArg` → `Initialized = true` → `ParseScript`）在两个入口里被抄了两遍（`:52/127` 与 `:175/210`）——相位本身就是 interface 的一部分（见 `.scratch/nullable-migration/issues/11-process-loader-chain.md` 涉及的 `LabelDictionary.Initialized`），却只由方法的语句顺序维持
+- 相位切换（`Initialized = false` → `setLabelsArg` → `Initialized = true` → `ParseScript`）在两个入口里被抄了两遍（`:52/127` 与 `:175/210`）——相位本身就是 interface 的一部分（见 `tracker/nullable-migration/issues/11-process-loader-chain.md` 涉及的 `LabelDictionary.Initialized`），却只由方法的语句顺序维持
 
 结果：同一份「装载」语义有两个 implementation，只有一个实现了 EE 扩展；修一个顺序 bug 时不知道要改几处。想验证「`#` 目录真的先加载」只有端到端跑真实目录或读代码——**leverage 为零**，没有调用方或测试能复用「给我一个按 EE 规则排好序的文件列表」。
 
@@ -37,6 +37,6 @@ Status: needs-triage
 
 - **删除测试判决**：删掉 `:54-114` 的顺序策略，`#` 目录优先会回到调用方（`Process`/`Program` 启动链必须自己排好文件）或回到用例里（`ErbLoaderNestCheckTests` 已在自造单文件 fixture）→ 这份行为在挣饭钱，但它是**内联代码而不是 module**：没有可被调用或被测试的 interface，也就没办法判断它什么时候坏了。删掉 `LoadErbList` 则是纯亏损——它承载 analysis 模式这条真实入口
 - **测试面**：本领域只有 `nestCheck` 配对不变量（4 例，走 `LoadErbList` + 单文件 fixture）有覆盖。**顺序策略、`#` 目录规则、`LoadErbDir` 的相位切换、`useCallForm`/`IgnoreUncalledFunction` 的输出全部零覆盖**。根因是可测面太大：真实目录树 + `Preload` 缓存 + `GlobalStatic` 全套 + `null!` console，且 `Program` 目录静态是进程级（`GameRootScope.cs:5-8`）
-- **这块别动**：`ErbLoader.cs:882-946`（`ReconcileLayerErrors`）与 `:948-991`（Depth 分层并行）是本仓库**深度最好**的一段——分层屏障、并发写同值的论证、同层 read-before-write 边的重决、`CallFunc` 不回填的理由都写成了可验证的注释，且 `ErbLoaderNestCheckTests` 用「读 `JumpTo` 的行必须带 `IsError`」这条不变量把它网住。`.scratch/performance-optimization/issues/04-parse-parallel.md` 是它的定案记录，本票不改并行边界
+- **这块别动**：`ErbLoader.cs:882-946`（`ReconcileLayerErrors`）与 `:948-991`（Depth 分层并行）是本仓库**深度最好**的一段——分层屏障、并发写同值的论证、同层 read-before-write 边的重决、`CallFunc` 不回填的理由都写成了可验证的注释，且 `ErbLoaderNestCheckTests` 用「读 `JumpTo` 的行必须带 `IsError`」这条不变量把它网住。`tracker/performance-optimization/issues/04-parse-parallel.md` 是它的定案记录，本票不改并行边界
 - 改动量估计：顺序 module 那一刀为小到中；含会话对象为中到大
 - 相关票：issues/08（枚举 module，本票消费它）、issues/11（诊断返回值化，同一文件）、issues/12（装载会话对象）

@@ -72,7 +72,7 @@ Status: implemented
 - **文件归宿**：阶段 A 之后 `Creator.Method.cs` 只剩 `FunctionMethodCreator` 的 partial 外壳（184 类与 10 个成员全部迁出）；收尾时该文件已删除、`Creator.cs` 里的 `FunctionMethodCreator` 去掉 `partial`，`Creator.cs` 顶部的合并配方随之改为「保持该文件处于删除状态」
 - **证明方式**：namespace 不变 ⇒ `Creator.cs` 的 266 行字面量**一个字不改**就继续编译（非限定名照旧解析）；再加上编译通过 + 全量测试绿 + 键集/实例数与今天一字不差。这是"纯搬家"的判据
 - 前置已核：184 个类名在文件外无同名类型；文件外没有生产代码按类型名引用它们（唯一真实引用是上面那 2 处 `ReadGraphics`）
-- 同步 `.scratch/arg-contract/` 的三个扫描脚本（`arg-slots.py`/`builtin-contract.py`/`slots-worklist.py`：`SRC` 改 `BuiltinMethod/*.cs` 通配，`_scan.py` 的 `CLASS_RE` 改顶层声明）——它们自带的 266 名 / 114 块 / 183 子类自校验正好当第二重无损证明
+- 同步 `tracker/arg-contract/` 的三个扫描脚本（`arg-slots.py`/`builtin-contract.py`/`slots-worklist.py`：`SRC` 改 `BuiltinMethod/*.cs` 通配，`_scan.py` 的 `CLASS_RE` 改顶层声明）——它们自带的 266 名 / 114 块 / 183 子类自校验正好当第二重无损证明
 
 **阶段 A 实施补记**（方案落地时的三处必要细化，均属"纯搬家"范围内）：
 
@@ -89,7 +89,7 @@ Status: implemented
 
 **阶段 C 收尾补记**：`builtin-contract.py` 的工厂正则当时只认表达式体单行工厂（`() => new(...);`），而 266 个工厂实际都是块体（`{ return new X(...); }`），实测匹配 **0/266**——该状态下复跑会写出空表（`write_doc` 无条件执行）。已改为「attribute 与工厂签名相邻」+ 括号配对取构造实参（两种体形都收），并在 `main()` 加 attribute 处数交叉校验，漏匹配不再只剩 `EXPECTED_NAMES` 一个总数兜底。修好后复跑 `docs/builtin-functions.md` 与改动前**逐字节相同**，自校验打印 266 名 / 183 类 / 114 规则段、可省略 96 / 拒绝显式空槽 54。
 
-**文档同步补记**：长期文档已同步——`docs/architecture.md`、`docs/csv-erb-syntax.md`、`docs/builtin-functions.md`（生成器 LEGEND）、`AGENTS.md` 第 6 条的合并配方。`.scratch/` 下未结票与冻结工件（`slots-consumption.md`、`slots-worklist.md` 两处路径文案）里指向 `Creator.Method.cs` 的死引用改指 `BuiltinMethod/` 目录（按类定位，旧行号不照搬；生成器仍用 `BuiltinMethod/*.cs` 通配，而通配不是合格的「代码位置」口径，见「复核补记」）；已结票按「过程靠 git」不动。
+**文档同步补记**：长期文档已同步——`docs/architecture.md`、`docs/csv-erb-syntax.md`、`docs/builtin-functions.md`（生成器 LEGEND）、`AGENTS.md` 第 6 条的合并配方。`tracker/` 下未结票与冻结工件（`slots-consumption.md`、`slots-worklist.md` 两处路径文案）里指向 `Creator.Method.cs` 的死引用改指 `BuiltinMethod/` 目录（按类定位，旧行号不照搬；生成器仍用 `BuiltinMethod/*.cs` 通配，而通配不是合格的「代码位置」口径，见「复核补记」）；已结票按「过程靠 git」不动。
 
 **复核补记（代码复核后修订）**：
 
@@ -127,11 +127,11 @@ Status: implemented
 ## 影响
 
 - **与 backlog/issues/06 是同一病的两张表**：06 是指令表（`FunctionIdentifier` 的两条 `addFunction` 路径 + `Process.ScriptProc.cs` 的两个 switch），本票是内建函数表（`methodDic`）。两者都缺「一处声明」，但 seam 不同，宜各自独立评估
-- **与 `arg-contract` effort 正交**：该 effort 明确不改 `argumentTypeArrayEx` 的声明式方向与 184 个子类的扁平结构（`.scratch/arg-contract/spec.md` 的「影响」节末条）；本票只动注册与命名，不动规则表。若将来上源生成器，`[BuiltinMethod]` 可与该 effort 的「角色化访问器」合并为同一笔投资
+- **与 `arg-contract` effort 正交**：该 effort 明确不改 `argumentTypeArrayEx` 的声明式方向与 184 个子类的扁平结构（`tracker/arg-contract/spec.md` 的「影响」节末条）；本票只动注册与命名，不动规则表。若将来上源生成器，`[BuiltinMethod]` 可与该 effort 的「角色化访问器」合并为同一笔投资
 - **名字复写全景（35 个名字、41 处命中）**：`Creator.Method.cs` 内 38 处 = 22 处 `case "NAME"` 行为分派 + 16 处普通字面量（`funcName = "MAXARRAY"`/`"MAXCARRAY"`/`"GETCONFIG(S)"`、`funcName = isLast ? "FINDLASTELEMENT" : "FINDELEMENT"`、`p.IsArrayRangeValid(…, "SUMARRAY"/"MATCH"/"INRANGEARRAY"/"STRJOIN", …)`、`ParserMediator.Warn(…, "MESSKIP")`、两条 `CodeEE(…, "GETCONFIG(S)")`）；文件外 3 处 = `Process.CalledFunction.cs:252` 的 `GetMethodList()["TOSTR"]`（本票口径内的按名访问）+ `VariableData.cs:343` 的变量 token `"RAND"`、`EmueraConsole.cs:1967` 的指令名 `"OUTPUTLOG"`（同名不同物）。本票只把「注册名」收敛为一处声明；22 处 `case` 的一致性已由闸门覆盖（`BuiltinMethodRegistryTests` 的 Gate D：`case` 标签集合 == 该类注册名集合；今天 7/7 类相等，做过一次改名变异验证；闸门本体、边界与退役安排见「完成标准」的 Gate D 条），16 处 `funcName`/文案属 `Name` 退役那一笔
 - **与上游的关系（合并配方）**：实测本仓库的 266 个注册名与 `upstream/master` **完全相同**（双向差集为空），186 个类声明也相同；上游确实会新增内建函数（历史上 `Creator.cs` 9 次提交、`Creator.Method.cs` 36 次提交，新增一条 = `Creator.cs` 一行 + 一个类）。阶段 C 之后这类改动会与本仓库重写过的 `Creator.cs` 冲突，固定解法写进 `Creator.cs` 顶部注释：**不恢复字面量表，把名字搬成对应类体内的 attribute 工厂（2 行）**
 - **Gate B 的口径依赖命名空间**：`OperatorMethod`（`…Statements.Expression`）与 `StrForm` 的 `FormattedStringMethod` 族（`…Script.Data`）是注册在别处、不碰 `Name` 的族，按命名空间 `MinorShift.Emuera.GameData.Function` 圈定即天然排除
-- **顺带发现（归属 `arg-contract`，已回填）**：`.scratch/arg-contract/spec.md` 的「问题/背景」节原写「184 个**活的**子类 / 270 个注册名」——前半句口径正确（188 个 `: FunctionMethod` 命中减去 2 处注释掉的类声明与 2 个抽象基类），后半句是宽松口径（含 4 条注释注册），活注册名实为 266；spec.md 已按 266 改写。该偏差不影响 `slots-worklist.py` 的计数：它按**类**计数，而 4 条注释注册里 3 条的类（`CheckdataStrMethod`/`CheckdataMethod`/`FindFilesMethod`）另有活注册名（`CHKCHARADATA`/`CHKDATA`/`FIND_CHARADATA`），余下 1 条的类（`GraphicsRotateMethod`）整段被注释、不进解析
+- **顺带发现（归属 `arg-contract`，已回填）**：`tracker/arg-contract/spec.md` 的「问题/背景」节原写「184 个**活的**子类 / 270 个注册名」——前半句口径正确（188 个 `: FunctionMethod` 命中减去 2 处注释掉的类声明与 2 个抽象基类），后半句是宽松口径（含 4 条注释注册），活注册名实为 266；spec.md 已按 266 改写。该偏差不影响 `slots-worklist.py` 的计数：它按**类**计数，而 4 条注释注册里 3 条的类（`CheckdataStrMethod`/`CheckdataMethod`/`FindFilesMethod`）另有活注册名（`CHKCHARADATA`/`CHKDATA`/`FIND_CHARADATA`），余下 1 条的类（`GraphicsRotateMethod`）整段被注释、不进解析
 - **本票留下的后续（已各自落票）**：「`Name` 退役」→ [issues/19](19-name-retirement.md)；「建表时机改为显式初始化调用」→ [issues/20](20-builtin-registration-init-timing.md)
 - **不在本票范围**：`PluginManager` 的 `methods` 表（`PluginManager.GetMethod`，仅由 `CALLSHARP` 经 `Instraction.Child.cs` 调用）与内建、UDF 均无交集，无优先级问题；UDF（`@FOO`）是另一套机制
 - **改动量**：中（阶段 A 是最大 diff：184 类搬家 + 10 个成员落位 + 3 个脚本同步；阶段 B 266 处纯新增；阶段 C 一处替换）。风险集中在 `Name` 语义与建表时机，不在反射本身

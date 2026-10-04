@@ -47,7 +47,7 @@ ERB 加载解析目前串行(已评估、未实施):`Preload` 已并行(`Preload
 三阶段管线（解析签名 → 确定 label → 解析函数体）与并行化是**两个独立的问题**，本票只对前者作如下界定：
 
 - **并行化本身不需要拆分**。`ParseScript` 内的 per-function 循环今天就能按 `Depth` 层并行（边界见下节）；`setLabelsArg` + `SortLabels` 已在 `ParseScript` 之前完成，label 确定先于 body 解析这一前提本就成立。
-- **拆分的收益来自 `tl/` 的函数级覆盖**（见 `.scratch/multilingual-translation/spec.md` §2.2/§2.5），三条都指向同一结构：
+- **拆分的收益来自 `tl/` 的函数级覆盖**（见 `tracker/multilingual-translation/spec.md` §2.2/§2.5），三条都指向同一结构：
   1. 覆盖表必须在加载原 `.erb` **之前**建成（§2.2 主机制为「跳过」）；
   2. 签名校验（§2.5）必须**解析被覆盖原函数的头部**（`@NAME,ARGS` + `#FUNCTION`/`#DIM` 等属性行）才能与覆盖版比对；
   3. 阶段 2 确定覆盖名单后，阶段 3 **无需解析被覆盖函数的函数体**——这是对 `ParseScript` 的直接节省，量级即本票测得的 39%–61%。
