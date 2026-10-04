@@ -7,7 +7,7 @@ using static Emuera.Tests.Runtime.Script.Statements.Function.BuiltinFunctionTest
 namespace Emuera.Tests.Runtime.Script.Statements.Function;
 
 /// <summary>
-/// arg-contract/issues/05 阶段 B 切片② 的 pilot 用例:DataTableRowSetMethod(DT_ROW_ADD/DT_ROW_SET)。
+/// arg-contract-05 阶段 B 切片② 的 pilot 用例:DataTableRowSetMethod(DT_ROW_ADD/DT_ROW_SET)。
 /// 该类是规则表里唯一同时踩到「双规则段(定长数组形态 / MatchVariadicGroup 变长对形态)+ 动态基址 b +
 /// 三态(显式空槽 = 写 DBNull)+ 裸句柄转发」的类,故用它钉住迁移到 <c>ArgumentSlots</c> 访问器后的执行期语义:
 /// 数组形态走 <c>Var</c>,变长对形态走 <c>Str</c>/<c>TermOrNull</c>。<c>DT_ROW_ADD</c> 原先只有检查器用例,

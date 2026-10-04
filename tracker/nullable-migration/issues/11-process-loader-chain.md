@@ -3,7 +3,7 @@
 id: nullable-migration-11
 Status: implemented
 
-Blocked by: 07, 10
+Blocked by: nullable-migration-07, nullable-migration-10
 
 ## 任务
 

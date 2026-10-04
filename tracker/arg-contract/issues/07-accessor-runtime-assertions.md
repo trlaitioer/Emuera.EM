@@ -5,7 +5,7 @@ Status: needs-triage
 
 ## 任务
 
-承接 [issues/05](05-argument-slots-type.md) 的「未决」节：`Int`/`Str`/`Var` 等访问器**不做运行期断言**，与旧 `ArgumentListExtensions.Required(i)` 的「调用方担保」同强度（可省略槽为空时仍由函数体先判、`Var` 仍是转型）。于是「函数体不再自证非空、不再 cast」这句话只由**守卫纪律 + 脚本期核对 + 访问器的契约报错**兜住，**不是由类型兜住**。
+承接 `arg-contract-05` 的「未决」节：`Int`/`Str`/`Var` 等访问器**不做运行期断言**，与旧 `ArgumentListExtensions.Required(i)` 的「调用方担保」同强度（可省略槽为空时仍由函数体先判、`Var` 仍是转型）。于是「函数体不再自证非空、不再 cast」这句话只由**守卫纪律 + 脚本期核对 + 访问器的契约报错**兜住，**不是由类型兜住**。
 
 同源的零散残留（issues/05 第五轮实测，均仍成立）：
 
@@ -16,7 +16,7 @@ Status: needs-triage
 完成标准（待评估后细化）：
 
 - 二选一并落地：① 访问器改断言式（契约被破坏时抛带 `RoleAt` 的文案），并在 183 个类上补/校验守卫；② 明确「类型不兜非空」是长期约定，写进 `docs/architecture.md` 后关掉这个方向
-- 3 处可迁移的判别拆到 [issues/10](10-variable-term-discriminant-migration.md)（纯替换，与本票的裁定解耦）
+- 3 处可迁移的判别拆到 `arg-contract-10`（纯替换，与本票的裁定解耦）
 - 门禁脚本（`arg-slots.py` 的「访问器前置核对」）与新判据保持一致，`slots-progress.md` 自校验随之更新
 
 ## 方案
@@ -25,5 +25,5 @@ Status: needs-triage
 
 ## 影响
 
-- 与 [backlog/issues/19](../../backlog/issues/19-name-retirement.md) 无耦合，但同样落在 `BuiltinMethod/*.cs`
+- 与 `backlog-19` 无耦合，但同样落在 `BuiltinMethod/*.cs`
 - 走 ① 时，`IsMissing` 与 `SlotRole` 的类型位要么被消费、要么一并裁定去留

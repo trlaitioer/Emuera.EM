@@ -5,7 +5,7 @@ Status: needs-triage
 
 ## 任务
 
-[issues/18](18-builtin-method-registration.md) 把注册名收敛成类体上的 `[BuiltinMethod("NAME")]` 工厂，但没动「名字是不是行为的一部分」。本票承接该票「曾考虑的替代方案」7 与「影响」节留下的这一笔。
+`backlog-18` 把注册名收敛成类体上的 `[BuiltinMethod("NAME")]` 工厂，但没动「名字是不是行为的一部分」。本票承接该票「曾考虑的替代方案」7 与「影响」节留下的这一笔。
 
 现象（2026-10 实测，口径 = `Emuera/Runtime/Script/Statements/Function/BuiltinMethod/`）：
 

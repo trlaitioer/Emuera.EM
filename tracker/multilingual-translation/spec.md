@@ -42,8 +42,8 @@ eraBasic 游戏由 `csv/`（数据）与 `erb/`（脚本）构成，**文本是�
 - **全量替换**：当 `.erbx` 定义了 `@FUNCTION_NAME`，则原 `.erb` 中的同名函数被**完全替换**，其函数体**不再注册/不再解析**（翻译版全权接管）。
 - **主机制 = 「跳过」**：先加载 `.erbx` 覆盖函数的标签，建一张「覆盖表：函数名 → 覆盖标签」。加载 `.erb` 时，凡函数名命中覆盖表 → **跳过该原函数的注册与解析**；未命中 → 照常注册。覆盖表中存在、但原 `.erb` 中不存在的函数名不是覆盖——按普通函数注册（允许的翻译辅助函数，见 §2.4）。跳过是唯一充分机制，对**事件函数（`@EVENT*`）也必须生效**——事件函数走 `eventLabelDic`（`#PRI`/`#LATER` 分桶并列执行，没有「覆盖」语义），不靠跳过就会与原版同时运行。
 - **统一插入点**（关键，已被源码证实）：CALL/跳转解析在 parse-time（`ErbLoader.setJumpTo` 逐指令调用 CALL 系指令的 `SetJumpTo`，`Instraction.Child.cs` 中的实现内调用 `GetFunctionMethod(GlobalStatic.LabelDictionary, ...)`）与运行时（`Process.CalledFunction.CallFunction`）**都走** `IdentifierDictionary.GetFunctionMethod` → `GetNonEventLabel` → `noneventLabelDic[name]`。因此只要让覆盖标签成为 `noneventLabelDic[name]` 的**唯一项**，CALL/跳转就会自动定向到覆盖版。
-- **作用域与裁决**：覆盖**按名全局**生效——eraBasic 函数命名空间本身就是全局按名（`noneventLabelDic` 单一扁平字典、大小写不敏感比较），「按文件限定」在语言语义中没有对应物，镜像树只是译者侧的组织约定。覆盖裁决**不依赖加载顺序**：并行装载（含 `tl/`）下只按「是否存在覆盖」判定；`.erbx` 之间的重复覆盖定义固定按**重复定义报错**处理，不走同名兼容配置（翻译包内部冲突属于内容错误，无兼容语义）；原 `.erb` 侧同名处理受同名兼容配置影响（`performance-optimization/issues/04-parse-parallel.md`）。`*#*` 目录先加载（`FileIndex` 更小）对覆盖无影响——主机制是跳过，不依赖顺序。
-- 附带说明（非机制依赖）：非事件函数的同名处理是「先加载生效」（`LabelDictionary.SortLabels` 取排序后 `list[0]`，排序首键为 `FunctionLabelLine.CompareTo` 的 `FileIndex`）。跳过落实后 `LabelDictionary` **无需任何改动**（并行装载对同名处理的收紧属 `performance-optimization/issues/04-parse-parallel` 范围）。
+- **作用域与裁决**：覆盖**按名全局**生效——eraBasic 函数命名空间本身就是全局按名（`noneventLabelDic` 单一扁平字典、大小写不敏感比较），「按文件限定」在语言语义中没有对应物，镜像树只是译者侧的组织约定。覆盖裁决**不依赖加载顺序**：并行装载（含 `tl/`）下只按「是否存在覆盖」判定；`.erbx` 之间的重复覆盖定义固定按**重复定义报错**处理，不走同名兼容配置（翻译包内部冲突属于内容错误，无兼容语义）；原 `.erb` 侧同名处理受同名兼容配置影响（`performance-optimization-04`）。`*#*` 目录先加载（`FileIndex` 更小）对覆盖无影响——主机制是跳过，不依赖顺序。
+- 附带说明（非机制依赖）：非事件函数的同名处理是「先加载生效」（`LabelDictionary.SortLabels` 取排序后 `list[0]`，排序首键为 `FunctionLabelLine.CompareTo` 的 `FileIndex`）。跳过落实后 `LabelDictionary` **无需任何改动**（并行装载对同名处理的收紧属 `performance-optimization-04` 范围）。
 
 #### 2.3 语言选择与持久化
 
@@ -67,7 +67,7 @@ eraBasic 游戏由 `csv/`（数据）与 `erb/`（脚本）构成，**文本是�
 
 - **问题**：原函数被完全跳过后，其参数声明、`#DIM`、`#FUNCTION` 返回类型不再参与解析；覆盖版若签名不一致（参数个数/类型、`#FUNCTION` 返回类型），调用方会在 parse 或运行期报错且无法自动回退（见 §2.4 已知限制）。
 - **方案（v1，串行等价实现）**：装载期对被覆盖原函数解析头部（`@NAME,ARGS` 头行 + 其后的 `#FUNCTION`/`#DIM` 等属性行）并与覆盖版比对。比对对象只需「调用方可见契约」（参数个数/类型、`#FUNCTION` 返回类型、BYREF）；LOCAL/ARG 等函数内局部尺寸无需比对（原函数被跳过后由覆盖版自行决定）。只对被覆盖函数各解析一次头部，开销可忽略。
-- **与并行装载的衔接**：函数级并行装载采用「解析签名 → 确定 label（覆盖裁决、签名校验）→ 解析函数体（含 CALL 跳转处理）」三阶段管线，`tl/` 复用同一管线；本节方案即阶段①/②逻辑的串行等价实现，迁移时直接搬入。管线设计详见 `performance-optimization/issues/04-parse-parallel.md`。
+- **与并行装载的衔接**：函数级并行装载采用「解析签名 → 确定 label（覆盖裁决、签名校验）→ 解析函数体（含 CALL 跳转处理）」三阶段管线，`tl/` 复用同一管线；本节方案即阶段①/②逻辑的串行等价实现，迁移时直接搬入。管线设计详见 `performance-optimization-04`。
 
 #### 2.6 与 Rikai 词典弹窗的互操作
 
@@ -135,7 +135,7 @@ eraBasic 游戏由 `csv/`（数据）与 `erb/`（脚本）构成，**文本是�
 - 运行期存在 ERB 重载：`Process.ReloadErb`（走 `LoadErbDir`）与 `Process.ReloadPartialErb`（走 `ErbLoader.LoadErbList`）；`LoadErbList` 与 `LoadErbDir` 最终都汇入 per-file 的 `ErbLoader.loadErb`，覆盖跳过门控应实现在 `loadErb` 内，使所有装载路径（含 AnalysisMode 走的 `LoadErbList`）一致生效。
 - ERB/CSV 走 `Preload` 内存缓存（启动与重载各一处 `Preload.Load(Program.ErbDir/CsvDir)`：`EmueraConsole` 初始化路径与 `Process.ReloadErb`），`tl/` 树需同样纳入。
 - 语言选择须先于 ERB 装载完成。
-- 覆盖裁决按名跳过、不依赖加载顺序（见 §2.2），天然兼容并行装载；`tl/` 树届时同样并行装载并复用函数级管线（见 §2.5 与 `performance-optimization/issues/04-parse-parallel.md`）。原 `.erb` 内同名函数在并行装载下的裁决（同名兼容配置）属该 issue 范围，与覆盖机制无关。
+- 覆盖裁决按名跳过、不依赖加载顺序（见 §2.2），天然兼容并行装载；`tl/` 树届时同样并行装载并复用函数级管线（见 §2.5 与 `performance-optimization-04`）。原 `.erb` 内同名函数在并行装载下的裁决（同名兼容配置）属该 issue 范围，与覆盖机制无关。
 
 ##### 3.8.2 片段级 hash 键基准（3.1 启动时定）
 

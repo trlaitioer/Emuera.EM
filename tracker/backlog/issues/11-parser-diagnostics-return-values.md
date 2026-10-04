@@ -29,7 +29,7 @@ Status: needs-triage
 ## 影响
 
 - **现象已被记录，本票不重复立题**：`tracker/performance-optimization/issues/07-chara-duplicate-warning.md:9` 已写明「告警条数差异无法经现有单测断言（`ParserMediator.Warn` 在 console 为 null 时不落 warningList）」，并把「不做脚本冒烟」写进该票完成标准；`tracker/test-infrastructure/issues/03-phase2-beyond.md:29` 也记了同一现象。两者的处置都是「绕开」，本票是结构性解法
-- **与既有决策的边界**：`tracker/performance-optimization/issues/04-parse-parallel.md` 已就 `ParserMediator` 告警列表的并发纪律（`warningListLock`、「worker 线程收集、UI 线程 flush」）与 `DeferParseErrorSound` 的现有语义逐项定案，并明确 `ParserMediator.RenameDic`「确认只读，无需处理」。本票若把告警改为返回值，须保留该票已定的并发边界（返回值化会让「锁内 add、锁外打印」自然退化，但不能在新形状里引入数据竞争）；返回值化**不推翻**该票的结论
+- **与既有决策的边界**：`performance-optimization-04` 已就 `ParserMediator` 告警列表的并发纪律（`warningListLock`、「worker 线程收集、UI 线程 flush」）与 `DeferParseErrorSound` 的现有语义逐项定案，并明确 `ParserMediator.RenameDic`「确认只读，无需处理」。本票若把告警改为返回值，须保留该票已定的并发边界（返回值化会让「锁内 add、锁外打印」自然退化，但不能在新形状里引入数据竞争）；返回值化**不推翻**该票的结论
 - **测试面**：`OmittedArgumentTests.cs:23-30` 手动抑制 `DeferParseErrorSound`（否则 `ParserMediator.cs:64` 播系统提示音）——这正是该耦合的证据；`LexicalAnalyzerTests.cs:179` 只能断言 `Assert.ThrowsAny<Exception>`（NRE 也算过，注释已承认可能是 `GetConfigName` NRE），返回值化后可收窄
 - 改动量估计：中（`ParserMediator` + `ErbLoader` 的 85 个调用点的消费方式）
 - 相关票：issues/05（console seam 的另一半）、issues/14（`ErbLoader` 装载顺序）

@@ -36,6 +36,6 @@ public static StringComparer StrComper = StringComparer.OrdinalIgnoreCase;
 ## 影响
 
 - **测试面**：只有 `ConfigGetFilesTests`(4)、`ConfigGetValueInErbTests`、`ConfigTextEditorLoadTests` 直接碰 `Config`，且都因「不能安全地调 `SetConfig`」而绕行。4 个用例文件用 `typeof(Config).GetProperty(...).SetValue(null, …)` 反射改单个静态（`StringMeasureTests.cs:296-311`、`StBarTests.cs:194-203`、`SaveTextMethodTests.cs:81-93`、`FontMetricsTests.cs:131-139`，共 7 处、helper 还被复制 4 份）；`SaveTextMethodTests.cs:82` 的注释写明理由是 `SetConfig` 会连带改写别的静态。`CallformCacheTests.cs:141-143` 断言的 `Config.StrComper` 实际取决于哪个用例先跑——`TestBootstrap.cs:35` 只调 `SetReplace`，从不调 `SetConfig`。`IgnoreCase=false` 分支**完全没覆盖**
-- **与既有票的关系**：`Config.getFiles` 的选项问题另见 issues/08；`path-utils` 系列已把 `getFiles` 的路径前缀改经 `PurePath.TryRelativeTo`（`tracker/path-utils/issues/01-engine-path-prefix.md`），本票不重复那部分
+- **与既有票的关系**：`Config.getFiles` 的选项问题另见 issues/08；`path-utils` 系列已把 `getFiles` 的路径前缀改经 `PurePath.TryRelativeTo`（`path-utils-01`），本票不重复那部分
 - 改动量估计：中到大。小口（`StrComper`/`nameDic`）为小
 - 相关票：issues/05（console seam）、issues/12（运行时数据根对象）

@@ -5,7 +5,7 @@ Status: needs-triage
 
 ## 任务
 
-承接 [issues/05](05-argument-slots-type.md) 的「快照语义定案」与「未决」节——该票把这条语义写进代码注释与票面，但明确不动它：要不要保留须单独立项裁定。
+承接 `arg-contract-05` 的「快照语义定案」与「未决」节——该票把这条语义写进代码注释与票面，但明确不动它：要不要保留须单独立项裁定。
 
 现象：`FunctionMethod.ArgumentSlots` 的访问器读**检查期快照**（ctor 里的 `terms = [.. arguments]`），而原地折叠只改活体表 `FoldTarget`（`FunctionMethodTerm.Restructure`）。外层不可折叠时（`CanRestructure = false` 的 `XML_GET`/`DT_*`/`GDRAW*` 等），访问器读到的是内层调用的原项 ⇒ **每次调用都重新求值那个已被折叠的内层调用**。对纯表达式只是白算一次；对**状态相关的可折叠调用**（如 `VARSIZE`：长度随 `DIM` 变）读到的是「调用时的值」，而旧的活体读法会一直用「首次执行时的常量」。
 
@@ -23,4 +23,4 @@ Status: needs-triage
 
 - 行为面：状态相关的可折叠调用取值随之为「调用时的值」，这是**有意的语义变更**而非回归（issues/05 第四轮 review 已把这一维写进票面与类注释）
 - 现有用例钉住的是当前语义：`ArgumentSlotsTests` 的 `FoldedCall_StillReadsTheRightValueThroughTheAccessors`、`UnfoldableCall_ReEvaluatesItsFoldedArgumentsAtCallTime`、`Slots_DoNotFollowTheInPlaceFold`
-- 与 [issues/09](09-uniquerestructure-argument-copy.md) 同属折叠面，但改的是**读**的一侧，两者可各自独立裁定
+- 与 `arg-contract-09` 同属折叠面，但改的是**读**的一侧，两者可各自独立裁定

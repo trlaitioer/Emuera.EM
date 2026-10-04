@@ -3,7 +3,7 @@
 id: nullable-migration-08
 Status: implemented
 
-Blocked by: 05, 06, 10
+Blocked by: nullable-migration-05, nullable-migration-06, nullable-migration-10
 
 ## 任务
 
@@ -47,7 +47,7 @@ Blocked by: 05, 06, 10
 
 | 成员 | 决策 | 依据 |
 | --- | --- | --- |
-| `arguments[i]` 解引用(全链统一规则) | 必填槽位以 `!` 断言;省略槽位按方法体既有语义判空 | `CheckArgumentType`/`CheckArgumentTypeEx` 在类型检查阶段拒绝必填位置的 null(`argumentTypeArray` 路径全部槽位、`argumentTypeArrayEx` 路径下 `i < OmitStart`),故 `!` 是可证的注解层断言;**`arg-contract/issues/03` 回填**:`i >= OmitStart` 只说明「可以少写尾实参」（列表更短、不产生 null），**不等于该槽可以为 null**——`f(a,b,,)` 这类显式空槽在同一位置会带着 null 进入函数体，故「省略槽位按方法体既有语义判空」必须在该槽上真的判空或标 `ArgType.NotNull`，不能由 `OmitStart` 推出；`OmitStart` 实测取值为 0/1/2/3/6/10，方法体里存在 `arguments.Count > n` 之后才取值的分支(如 `XmlGetMethod` 的 `tooltip`)，一律 `!` 会抹掉省略语义 |
+| `arguments[i]` 解引用(全链统一规则) | 必填槽位以 `!` 断言;省略槽位按方法体既有语义判空 | `CheckArgumentType`/`CheckArgumentTypeEx` 在类型检查阶段拒绝必填位置的 null(`argumentTypeArray` 路径全部槽位、`argumentTypeArrayEx` 路径下 `i < OmitStart`),故 `!` 是可证的注解层断言;**`arg-contract-03` 回填**:`i >= OmitStart` 只说明「可以少写尾实参」（列表更短、不产生 null），**不等于该槽可以为 null**——`f(a,b,,)` 这类显式空槽在同一位置会带着 null 进入函数体，故「省略槽位按方法体既有语义判空」必须在该槽上真的判空或标 `ArgType.NotNull`，不能由 `OmitStart` 推出；`OmitStart` 实测取值为 0/1/2/3/6/10，方法体里存在 `arguments.Count > n` 之后才取值的分支(如 `XmlGetMethod` 的 `tooltip`)，一律 `!` 会抹掉省略语义 |
 | 判空后仍被索引的 `arguments[i]` | 就地 `!` | 索引器解引用不会被同一索引上的空判断收窄(`FunctionMethod.CheckArgumentTypeEx` 中 `if (arguments[i] == null) continue;` 之后的 `GetOperandType()` 即此类),此处 `!` 有刚判空的直接依据,不必为此重构 |
 | `FunctionMethod.argumentTypeArrayEx` | 改 `ArgTypeList[]?`,在 `CheckArgumentTypeEx` 内以局部变量一次性收窄 | 180 个类只设 `argumentTypeArray`、92 个只设 `argumentTypeArrayEx`,`CheckArgumentType` 显式以 `!= null` 分流,且 `argumentTypeArray` 已是 `Type[]?`;声明非空会把多数类的真实状态藏起来,并需要在方法体内多处 `!` |
 | `FunctionMethod.Name` | 保持非空,声明处 `= null!` | 由 `Creator` 的注册表经 `SetMethodName` 在注册期赋值,之后不可达 null;186 个内置类均不自行赋值(口径同 issues/06 的 GlobalStatic 规则) |
@@ -100,7 +100,7 @@ Blocked by: 05, 06, 10
 - 默认构建(不加 `-p:Nullable=enable`)CS86xx 为 0,已启用文件无回归(`StrForm.cs`、`IdentifierDictionary.cs`、`LogicalLine.cs`、`LexicalAnalyzer.cs`、`LogicalLineParser.cs`、`EraStreamReader.cs`、`VariableToken.cs`、`ConstantData.cs`、`VariableData.cs` 均 0)。
 - `dotnet test`(`Debug-NAudio`,x64)全通过:144/144。
 - `Emuera.Tests` 的 CS86xx 现为 19 条,清尾仍归 issues/03。
-- `!` 口径:`Creator.Method.cs` 新增 390 处、`OperatorMethod.cs` 71 处,依据是 `CheckArgumentType`/`CheckArgumentTypeEx` 已在类型检查阶段拒绝必填槽位的 null;省略槽位(`OmitStart` 之后)按方法体既有分支处理,未被一律断言。**`arg-contract/issues/03` 回填**:后半句只对「函数体真的判过空」的槽成立——该票逐槽核出 41 个可省略槽的函数体没有这种分支(直接 NRE),故这批 `!` 的合法性不能由「`OmitStart` 之后」推出,只能逐槽核(见该票的 A/B 表)。
+- `!` 口径:`Creator.Method.cs` 新增 390 处、`OperatorMethod.cs` 71 处,依据是 `CheckArgumentType`/`CheckArgumentTypeEx` 已在类型检查阶段拒绝必填槽位的 null;省略槽位(`OmitStart` 之后)按方法体既有分支处理,未被一律断言。**`arg-contract-03` 回填**:后半句只对「函数体真的判过空」的槽成立——该票逐槽核出 41 个可省略槽的函数体没有这种分支(直接 NRE),故这批 `!` 的合法性不能由「`OmitStart` 之后」推出,只能逐槽核(见该票的 A/B 表)。
 - 唯一非注解改动:`Creator.Method.cs` 的 ENUMFILES 方法类内把两个 `List.CopyTo` 换成逐元素拷贝(`VariableData.DataStringArray` 元素为 `string?`,BCL 的 `CopyTo` 不接受可空元素目标;截断长度与原先的 if/else 一致,口径同 issues/10 的 `copyListToArray*`)。
 
 下游落点(全量构建,按文件去重):

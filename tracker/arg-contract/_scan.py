@@ -213,7 +213,7 @@ NOT_NULL_EXPECTED = (88, 77, 81, 70)
 FREEZE_NOTE_CONSUMPTION = [
     "> **冻结声明（2026-10 补）**：本文件是**阶段 A 片 0 的冻结快照**（`arg-slots.py --phase-a` 的产物）。默认运行",
     "> `arg-slots.py` 不写本文件；重生成只应在阶段 A 的 HEAD 上进行，否则「读取形态」那批表必然漂移——阶段 B",
-    "> （[issues/05](issues/05-argument-slots-type.md)）已把消费面全部换成 `ArgumentSlots` 访问器。阶段 B 的验收口径见",
+    "> （`arg-contract-05`）已把消费面全部换成 `ArgumentSlots` 访问器。阶段 B 的验收口径见",
     "> [slots-progress.md](slots-progress.md)。",
 ]
 

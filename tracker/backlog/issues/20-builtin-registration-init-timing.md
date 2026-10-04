@@ -5,7 +5,7 @@ Status: needs-triage
 
 ## 任务
 
-[issues/18](18-builtin-method-registration.md) 的「一个已知边界」：`FunctionMethodCreator` 的静态构造（`Emuera/Runtime/Script/Statements/Function/Creator.cs`）里扫 `[BuiltinMethod]` 建表，任何逃出去的异常都会被 CLR 包成 `TypeInitializationException`（该一层，再经 `IdentifierDictionary.cs` 一层），而 `Process.cs` 的报错路径只打印 `type + Message + StackTrace`、**不打印 `InnerException`** ⇒ 启动期失败的可读性不能靠异常消息，目前完全依赖闸门用例在编译/测试期暴露。
+`backlog-18` 的「一个已知边界」：`FunctionMethodCreator` 的静态构造（`Emuera/Runtime/Script/Statements/Function/Creator.cs`）里扫 `[BuiltinMethod]` 建表，任何逃出去的异常都会被 CLR 包成 `TypeInitializationException`（该一层，再经 `IdentifierDictionary.cs` 一层），而 `Process.cs` 的报错路径只打印 `type + Message + StackTrace`、**不打印 `InnerException`** ⇒ 启动期失败的可读性不能靠异常消息，目前完全依赖闸门用例在编译/测试期暴露。
 
 完成标准（待评估后细化）：
 
@@ -21,4 +21,4 @@ Status: needs-triage
 ## 影响
 
 - 改动面：`Creator.cs`、启动链（`Process` / `IdentifierDictionary`）、`Emuera.Tests` 的 `TestBootstrap` 与全部 `GetMethodList()` 调用点
-- 与 [issues/18](18-builtin-method-registration.md) 的分工：18 号票只保证「非法工厂在测试期必红」，本票解决「游戏内能否看到原因」；若不做，就须承认启动期诊断只有测试期一条路径
+- 与 `backlog-18` 的分工：18 号票只保证「非法工厂在测试期必红」，本票解决「游戏内能否看到原因」；若不做，就须承认启动期诊断只有测试期一条路径

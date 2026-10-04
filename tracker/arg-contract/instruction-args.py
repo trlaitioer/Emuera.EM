@@ -7,7 +7,7 @@
       - 槽位轴 `argumentTypeArray[i]`：`null!` = 该槽可省**且不做类型检查**（`continue` 跳过），
         `typeof(void)` = 必填、类型由 builder 自检，具体 Type = 必填且类型固定。
     不走 `checkArgumentType` 的 builder（自校验）不受这两轴支配，其逐槽结论引
-    `tracker/nullable-migration/issues/15-omitted-args-null-consumers.md` 的决策表。
+    `nullable-migration-15` 的决策表。
   · 「读取点」= builder 类体内对 `terms[i]`/`terms.Required(i)`/`args[...]`/`param[...]` 的字面量下标读取；
     `getChangeableVariable(terms, i, line)` 读的是 `terms[i-1]`，按下标 `i-1` 记账。
   · 「数量轴结论」由脚本机械判定：保证最少实参数 `min` 与最大**无守卫**读取下标比较
@@ -284,7 +284,7 @@ out = []
 out.append("# arg-contract/issues/03 片 6：指令侧实参契约（`ArgumentBuilder`）机械预筛 + 裁定")
 out.append("")
 out.append("本文件由 [instruction-args.py](instruction-args.py) 生成，口径见脚本头注释；票见 "
-           "[arg-contract/issues/03](issues/03-required-on-omittable-slot.md)。")
+           "`arg-contract-03`。")
 out.append("")
 out.append("## 计数")
 out.append("")

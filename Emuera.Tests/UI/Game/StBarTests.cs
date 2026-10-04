@@ -24,7 +24,7 @@ namespace Emuera.Tests.UI.Game;
 /// rejected before the builder by printCustomBar and GETLINESTR, and the configured DRAWLINE
 /// character falls back to a printable default, so the non-terminating combinations are not reachable
 /// from the product and are not invoked here. See the getStBar entry of
-/// tracker/performance-optimization/issues/04-parse-parallel.md for the residual case.
+/// performance-optimization-04 for the residual case.
 /// </para>
 /// </summary>
 public class StBarTests

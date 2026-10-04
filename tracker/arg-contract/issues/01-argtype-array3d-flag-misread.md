@@ -52,4 +52,4 @@ public bool Array3D => (type & ArgType.Array2D) != 0;
 - 与本票同型的一处已在 `tracker/nullable-migration/issues/17-container-member-guards.md:20` 记录（`ArgumentBuilder.cs` 的 `SP_COPY_ARRAY_Arguments` 第 2 实参 `IsArray1D/IsArray2D/IsArray3D` 检查缺 `return null`）——同属「维度校验写漏」，站点不同
 - 相关票：issues/02（省略判据）、issues/03（可省略槽上的 `Required`）、issues/04（阶段 A 止血）、issues/05（槽位类型深化）
 - 改动量估计：1 行 + 用例。但若不先裁定二维实参的合法形态，可能把「本就错误的规则块」当成「写错的属性」修
-- 原始审查记录：`tracker/backlog/issues/03`
+- 原始审查记录：`backlog-03`

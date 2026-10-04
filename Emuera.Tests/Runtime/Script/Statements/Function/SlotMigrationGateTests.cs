@@ -7,7 +7,7 @@ using Xunit;
 namespace Emuera.Tests.Runtime.Script.Statements.Function;
 
 /// <summary>
-/// arg-contract/issues/05 阶段 B 切片④ 的门禁用例:旧签名
+/// arg-contract-05 阶段 B 切片④ 的门禁用例:旧签名
 /// (<c>(ExpressionMediator, List&lt;AExpression?&gt;)</c>) 的取值入口不再是虚方法、也不允许任何子类声明它——
 /// 编译期由 CS0115 拦,这里再机械枚举一遍,免得哪天把 virtual 加回去而没人发现;槽位入口必须仍是虚方法,
 /// 否则函数体无从覆写。检查入口同理:只允许声明带命中段的那个重载,否则

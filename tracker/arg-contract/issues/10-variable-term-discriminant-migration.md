@@ -5,7 +5,7 @@ Status: needs-triage
 
 ## 任务
 
-承接 [issues/05](05-argument-slots-type.md) 的「完成标准」② 与第五轮 review 的实读结论：消费面迁到 `ArgumentSlots` 访问器后，计数口径（`arguments.Required(`/`arguments[...]` 文本锚定）看不到藏在 `slots.Term(i)` 或局部量之后的 `VariableTerm` 判别，今天仍有 4 处：
+承接 `arg-contract-05` 的「完成标准」② 与第五轮 review 的实读结论：消费面迁到 `ArgumentSlots` 访问器后，计数口径（`arguments.Required(`/`arguments[...]` 文本锚定）看不到藏在 `slots.Term(i)` 或局部量之后的 `VariableTerm` 判别，今天仍有 4 处：
 
 | # | 位置（类） | 形态 | 处置 |
 | --- | --- | --- | --- |
@@ -28,5 +28,5 @@ Status: needs-triage
 
 ## 影响
 
-- 与 [issues/07](07-accessor-runtime-assertions.md) 同源但可独立完成：本票是纯替换，不牵动「访问器要不要做运行期断言」这个裁定
+- 与 `arg-contract-07` 同源但可独立完成：本票是纯替换，不牵动「访问器要不要做运行期断言」这个裁定
 - 第 4 处若被当成同类改动一起替换，会把脚本级 `CodeEE` 降级为内部 `ExeEE`——上表单列它就是为了防这一手

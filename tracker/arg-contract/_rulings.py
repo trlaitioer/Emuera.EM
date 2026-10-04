@@ -1,4 +1,4 @@
-"""arg-contract 裁定表的**跨脚本**单一来源：4 个硬转型槽（`arg-contract/issues/04` 阶段 A 的收口）。
+"""arg-contract 裁定表的**跨脚本**单一来源：4 个硬转型槽（`arg-contract-04` 阶段 A 的收口）。
 
 用途：这 4 条裁定 `arg-slots.py` 的 `RULINGS` 与 `slots-worklist.py` 的 `SUPPLEMENT_RULINGS` 都要写，
 此前各写一份，文案已经漂移——处置句一边写「本片标 `ArgType.NotNull`（显式空槽应拒绝；输出数组）」，

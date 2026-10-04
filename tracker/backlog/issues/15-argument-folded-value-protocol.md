@@ -38,7 +38,7 @@ Status: needs-triage
 
 ## 影响
 
-- **与本分支主题重合**：`Argument.cs:112-120` 现有的 `null!` 注释只说明「读取点永不为 null」，没有说明「哪个 builder 填哪个字段」——正是 `nullable-migration` 断言审计（`tracker/nullable-migration/issues/14-null-assertion-audit.md`、`issues/22-rationale-comments-and-contracts.md`）留白的形状。该契约的属性登记见 `tracker/nullable-migration/issues/09-argument-instruction-chain.md:117`（`Argument.ConstStr` 以声明处 `null!` 表达）
+- **与本分支主题重合**：`Argument.cs:112-120` 现有的 `null!` 注释只说明「读取点永不为 null」，没有说明「哪个 builder 填哪个字段」——正是 `nullable-migration` 断言审计（`nullable-migration-14`、`nullable-migration-22`）留白的形状。该契约的属性登记见 `tracker/nullable-migration/issues/09-argument-instruction-chain.md:117`（`Argument.ConstStr` 以声明处 `null!` 表达）
 - **测试面**：今天「哪些 builder 填哪些字段」无任何测试；`OmittedArgumentTests` 只钉形状
 - 改动量估计：中（30 个写入点 + 43 个读取点 + `Argument` 家族的形态调整）
 - 相关票：issues/02（实参契约表）、issues/15 之外的 issues/06（命令表一处声明）

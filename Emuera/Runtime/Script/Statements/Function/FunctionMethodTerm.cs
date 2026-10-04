@@ -38,7 +38,7 @@ internal sealed class FunctionMethodTerm : AExpression
 		if (Method.HasUniqueRestructure)
 		{
 			// UniqueRestructure receives a copy, so a fold it performs on that copy is discarded
-			// (tracker/arg-contract/issues/04).
+			// (arg-contract-04).
 			if (Method.UniqueRestructure(exm, [.. arguments]) && Method.CanRestructure)
 			{
 				return GetValue(exm);

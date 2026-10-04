@@ -15,7 +15,7 @@ using static Emuera.Tests.Runtime.Script.Statements.Function.BuiltinFunctionTest
 namespace Emuera.Tests.Runtime.Script.Statements.Function;
 
 /// <summary>
-/// 无保护的 as 转换(issues/18)回归网。缝是函数方法的公开入口:
+/// 无保护的 as 转换(nullable-migration-18)回归网。缝是函数方法的公开入口:
 /// FunctionMethod.GetIntValue(运行期)与 IdentifierDictionary.GetFunctionMethod(解析期契约);
 /// 常量数组那一类走 ErbLoader 装载真实脚本 + InstructionLine.DoInstruction。
 /// 旧行为:转换失败时 as 返回 null,! 只压住编译期警告,运行期在此解引用

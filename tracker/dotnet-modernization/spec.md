@@ -17,7 +17,7 @@ Status: in-progress
 5. DllImport → LibraryImport 决策(issues/05):无 AOT 需求,维持现状
 6. C# 语言特性现代化策略决策(issues/06):C# 14 已随 TFM 默认生效,建议整体不立项、按需(on-touch)采纳
 
-范围切分:UI 层的 WinForms 升级评估与显示改造(DPI 缩放、等宽网格渲染)已于 2026-08-30 切至独立 tracker `tracker/ui-modernization/`,本 tracker 不再跟踪;`Application.DoEvents()`(ErhLoader / ErbLoader 装载解析循环内泵 UI)不单独立票,并入 `performance-optimization/issues/04`(解析并行化)处理,该票正文已列为本票风险点。
+范围切分:UI 层的 WinForms 升级评估与显示改造(DPI 缩放、等宽网格渲染)已于 2026-08-30 切至独立 tracker `tracker/ui-modernization/`,本 tracker 不再跟踪;`Application.DoEvents()`(ErhLoader / ErbLoader 装载解析循环内泵 UI)不单独立票,并入 `performance-optimization-04`(解析并行化)处理,该票正文已列为本票风险点。
 
 各项按各自 ticket 验收;决策记录票以文档定案。
 

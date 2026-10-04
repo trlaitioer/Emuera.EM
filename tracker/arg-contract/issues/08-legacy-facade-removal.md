@@ -5,7 +5,7 @@ Status: needs-triage
 
 ## 任务
 
-承接 [issues/05](05-argument-slots-type.md) 的「未决」节。该票把原完成标准的「迁移完成后删除适配器」降级为**非虚门面**并留在代码里：
+承接 `arg-contract-05` 的「未决」节。该票把原完成标准的「迁移完成后删除适配器」降级为**非虚门面**并留在代码里：
 
 - `FunctionMethod.GetIntValue`/`GetStrValue`/`GetReturnValue` 的 `(ExpressionMediator, List<AExpression?>)` 三个取值入口（`FunctionMethod.cs`，非虚）
 - 两参 `FunctionMethod.CheckArgumentType(string, List<AExpression?>)`（同文件，非虚）

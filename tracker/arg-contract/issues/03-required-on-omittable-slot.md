@@ -10,10 +10,10 @@ Type: bug
 
 这条错误假设的书面出处有两处，均已核实：
 
-- `tracker/nullable-migration/issues/13-null-forgiving-cleanup.md` 的**提案代码块**把该访问器的注释写成「The parser rejects an omitted slot before an implementation reads it」；
-- `tracker/nullable-migration/issues/08-expression-method-chain.md` 写「`i >= OmitStart` 的槽位允许省略」，却据此把 `!` 论证为「可证的注解层断言」——缺口就在这两句之间。
+- `nullable-migration-13` 的**提案代码块**把该访问器的注释写成「The parser rejects an omitted slot before an implementation reads it」；
+- `nullable-migration-08` 写「`i >= OmitStart` 的槽位允许省略」，却据此把 `!` 论证为「可证的注解层断言」——缺口就在这两句之间。
 
-落地版注释（`ArgumentListExtensions.Required` 的注释）已按 `nullable-migration/issues/13` 的结论改写，**不再断言那条不变量**，改为「担保只对规则表标为必填的槽成立」（无 `OmitStart` 的块 / `i < OmitStart` / `ArgType.NotNull`；变长尾部的标志由下标落到的那个变长规则决定）；而该不变量对 `i >= OmitStart` 的槽本就不成立（检查器只拒绝 `OmitStart` 未写的整块、`i < OmitStart` 及带 `NotNull` 的槽）。故本票要更正的是「调用方担保」这一措辞——对设计上可省略的槽，调用方担保不了。`nullable-migration/issues/13` 与 `nullable-migration/issues/08` 两票已回填（见「回填」）。
+落地版注释（`ArgumentListExtensions.Required` 的注释）已按 `nullable-migration-13` 的结论改写，**不再断言那条不变量**，改为「担保只对规则表标为必填的槽成立」（无 `OmitStart` 的块 / `i < OmitStart` / `ArgType.NotNull`；变长尾部的标志由下标落到的那个变长规则决定）；而该不变量对 `i >= OmitStart` 的槽本就不成立（检查器只拒绝 `OmitStart` 未写的整块、`i < OmitStart` 及带 `NotNull` 的槽）。故本票要更正的是「调用方担保」这一措辞——对设计上可省略的槽，调用方担保不了。`nullable-migration-13` 与 `nullable-migration-08` 两票已回填（见「回填」）。
 
 ### 已核实可达的三例
 
@@ -54,7 +54,7 @@ A/B 表只建模「显式空槽 → null」。与它正交的还有一类：**�
 已对 A 表（42 项 / 47 个站点）逐点核过（判据：读该 `Required(i)` 时是否存在保证 `Count >= i + 1` 的守卫），只有两处属这一类，均已抬 `OmitStart` 修掉（这两槽不再落在可省略区间；站点数按工作表 A 表「站点」列合计，同一方法内多处记 `×N`）：
 
 `HOTKEY_STATE`（`HotkeyStateMethod`，规则 `{Int, Int}`、原 `OmitStart = 1`；体 `HotkeyStateMethod.GetIntValue`）：
-- 函数体无条件读 `Required(0)`/`Required(1)`，第二参是要写入的热键状态，没有可代的默认值 ⇒ `OmitStart` 改 **2**（与槽数相等即不可省略；类里 `HotkeyStateInitMethod` 的 `{Int}` + `OmitStart = 1` 就是这个形状）。不删 `OmitStart` 是有意的：删掉会让「114 个块 / 91 个带 `OmitStart` / 23 个未写」这组 `arg-contract/issues/02` 的审计数字失效，而 `OmitStart = 2` 与删掉在「`Count >= 2` 且 `<= 2`、全槽 `i < OmitStart` 拒 null」上等价，**报错文案不同**：删掉（`OmitStart = -1`）走 `ArgsCountNotMatches`，`= 2`（等于槽数）走 `NotEnoughArgs`（`FunctionMethod.CheckArgumentTypeEx` 里对应的两条计数分支）。
+- 函数体无条件读 `Required(0)`/`Required(1)`，第二参是要写入的热键状态，没有可代的默认值 ⇒ `OmitStart` 改 **2**（与槽数相等即不可省略；类里 `HotkeyStateInitMethod` 的 `{Int}` + `OmitStart = 1` 就是这个形状）。不删 `OmitStart` 是有意的：删掉会让「114 个块 / 91 个带 `OmitStart` / 23 个未写」这组 `arg-contract-02` 的审计数字失效，而 `OmitStart = 2` 与删掉在「`Count >= 2` 且 `<= 2`、全槽 `i < OmitStart` 拒 null」上等价，**报错文案不同**：删掉（`OmitStart = -1`）走 `ArgsCountNotMatches`，`= 2`（等于槽数）走 `NotEnoughArgs`（`FunctionMethod.CheckArgumentTypeEx` 里对应的两条计数分支）。
 - 修前 `HOTKEY_STATE(0)` → `[0]`（Count 1）→ 检查器放行（`Count >= OmitStart`）→ 函数体越界。
 
 `GSETFONT`（`GraphicsSetFontMethod`，规则 `{Int, String, Int, Int}`、原 `OmitStart = 2`；体 `GraphicsSetFontMethod.GetIntValue`）：
@@ -103,7 +103,7 @@ else
 | 有据：`i < OmitStart`（规则块路径） | 132 | 首段口径；按「任一段」为 133，见下 |
 | 有据：类只设 `argumentTypeArray`（无规则块），`FunctionMethod.CheckArgumentType` 对全部槽拒 null | 107 | 已复现 |
 | 索赔未证：`i >= OmitStart` 且非 `DisallowVoid`（今 `NotNull`；设计上可省略） | 76 | 首段口径；按「任一段可省略」为 77，见下 |
-| 索赔未证：所属类含 `OmitStart == -1` 的块（即 arg-contract/issues/02 的 16 个类） | 57 | 已复现（16 个类与 `arg-contract/issues/02` 列的 23 个块一致） |
+| 索赔未证：所属类含 `OmitStart == -1` 的块（即 arg-contract/issues/02 的 16 个类） | 57 | 已复现（16 个类与 `arg-contract-02` 列的 23 个块一致） |
 | 合计 | 372 = 405 − 33 | 未证 132–134，约 36% |
 
 **表内 132 / 76 是「按各类首段规则块 + 忽略 `DisallowVoid`」这一口径的记账值**（本节数字已含「附」的两处 `OmitStart` 附修）。同一首段口径下把标志计入必填即 135 / 73。多段类里同一个槽可能「被某段允许、被另一段拒绝」，故另有两种口径，且复算确认浮动只由两处站点决定——`XmlGetMethod` 的 `Required(2)`（`XmlGetMethod.GetIntValue` 读该槽处，段 `OmitStart = [2,3,2,3]`）与 `DataTableColumnManagementMethod` 的 `Required(1)`（`DataTableColumnManagementMethod.GetIntValue` 读该槽处，段 `OmitStart = [2,1]`）：
@@ -139,7 +139,7 @@ else
 
 片 1 与片 2/3/4（含片 2-C 的变长尾部定案、片 2-D 的补车道 20 项）均已落地，含片 4 的 A10 位置形态与数量省略两轴。
 
-**与 `arg-contract/issues/02` 的区别要在实现时守住**：02 修检查器（把设计上不可省略的槽拦住），本票修函数体（在设计上可省略的槽上不要假装非空）。02 **已落地**（`Status: implemented`，判据即 `FunctionMethod.CheckArgumentTypeEx` 里那句 `list.OmitStart < 0 || i < list.OmitStart || rule.NotNull`），故 `SETVAR("TARGET", )` 已由 02 拒绝，`RAND(1,,)` 仍归本票。
+**与 `arg-contract-02` 的区别要在实现时守住**：02 修检查器（把设计上不可省略的槽拦住），本票修函数体（在设计上可省略的槽上不要假装非空）。02 **已落地**（`Status: implemented`，判据即 `FunctionMethod.CheckArgumentTypeEx` 里那句 `list.OmitStart < 0 || i < list.OmitStart || rule.NotNull`），故 `SETVAR("TARGET", )` 已由 02 拒绝，`RAND(1,,)` 仍归本票。
 
 本票的裁定结果**是 arg-contract/issues/05（阶段 B 槽位类型）的设计输入**（访问器必须显式选 null 语义）。
 
@@ -149,7 +149,7 @@ else
 2. **判据落点唯一**：`FunctionMethod.CheckArgumentTypeEx` 的判空分支。
 3. **空槽来源唯一**：`ExpressionParser.ReduceArguments` 只吞单个尾逗号（`f(a,b,)` → `[a,b]`、`f(a,b,,)` → `[a,b,null]`），已由既有用例 `CheckArgumentTypeEx.Shape_*` 钉住。
 4. **折叠期跳过 null 已有两个范本**：`FunctionMethodTerm.Restructure`（`FunctionMethodTerm.cs`）、`UserDefinedFunctionArgument.Restructure`；UDF 的默认值代入在 `CalledFunction.TryConvertArg`。⇒ 内建槽若裁定为「有意可空」，折叠与取值两侧都要照此跳过；UDF 活路径两侧已具备，无需改动。
-5. **`Required` 是本票的口径，不是函数体唯一的取值入口**：54 处活 `arguments[<字面量>]` 里 24 处是硬转型解引用（18 处 `(arguments[i] as VariableTerm)!`、6 处 `(VariableTerm)arguments[i]`），其余才是判空或传参。这些 `arguments[i]` 站点走的同样是「null 放行 + 直接解引用」，但归 cast 车道（spec.md 的 33 处活 cast）：可省略槽上的 4 处已由 [issues/04](04-argument-slots.md) 阶段 A 标 `NotNull`，其余 20 处的类型化移除归该 effort 的 [issues/05](05-argument-slots-type.md)，且与「数量省略」那把尺子也有交叉（见风险 7）；两个车道的槽集合不同，落地时要对齐，不能用本票的 42/34 覆盖 cast 车道的结论。
+5. **`Required` 是本票的口径，不是函数体唯一的取值入口**：54 处活 `arguments[<字面量>]` 里 24 处是硬转型解引用（18 处 `(arguments[i] as VariableTerm)!`、6 处 `(VariableTerm)arguments[i]`），其余才是判空或传参。这些 `arguments[i]` 站点走的同样是「null 放行 + 直接解引用」，但归 cast 车道（spec.md 的 33 处活 cast）：可省略槽上的 4 处已由 `arg-contract-04` 阶段 A 标 `NotNull`，其余 20 处的类型化移除归该 effort 的 `arg-contract-05`，且与「数量省略」那把尺子也有交叉（见风险 7）；两个车道的槽集合不同，落地时要对齐，不能用本票的 42/34 覆盖 cast 车道的结论。
 
 ### 工作面（已量）
 
@@ -270,7 +270,7 @@ new ArgTypeList { ArgTypes = { ArgType.String, ArgType.String, ArgType.Int | Arg
 - **`DataTableRowSetMethod[2]` 是形态分裂的槽，故不标 `NotNull`**：`DT_ROW_ADD` 的变长对形态里它是 value 位，空槽经 `SetValue(..., AExpression v)` 的 `v == null` 分支写成 `DBNull`（**有意**）；4 实参数组形态共用该槽，但同类第二段（无 `OmitStart`）拒绝一切空槽，函数体在数组形态下读不到 null。标 `NotNull` 会连带拒掉变长形态的 DBNull 写法 → 只补注释。这条也是「同一槽在不同调用形态里语义不同」的首个实例，是 arg-contract/issues/05 槽位三态（缺失/显式留空/有值）的现成用例。
 - **数量省略尺子**：20 项逐项核过（E 段「尺子」列），**无一处**「少写尾实参即越界」，故本片没有第三处 `OmitStart` 附修。
 - 用例（落在既有 seam `CheckArgumentTypeEx`）：`OmittableSlot_WithExplicitEmptySlot_IsRejected` 追加 11 行（7 槽的必要注册名/形态）、`IntentionalEmptySlot_IsAccepted` 追加 2 行、`CountOmittedArgument_IsAccepted_AndYieldsNoEmptySlot` 追加 3 行（新收紧的三个注册名）、正控制 `SupplementalSlots_WithFilledArgs_AreAccepted`（9 条填满形态）。
-- 计数（由 `slots-worklist.py` 复核）：`ArgType.NotNull` **88 处 / 77 行**（含注释；剥注释 81 处 / 70 行）——唯一口径是 [_scan.py](../_scan.py) 的 `NOT_NULL_EXPECTED`；阶段 B 起步后 `DataTableRowSetMethod` 的规则段注释提到该标志，含注释口径由 87/76 上调 1，剥注释口径未动（见 [issues/05](05-argument-slots-type.md)）。拒绝侧共 **54** 个 (类,槽) = A 表 41 + 片 2-C 的 2（消费型变长尾）+ 本片 7 + [issues/04](04-argument-slots.md) 阶段 A 的 4（`EnumNameMethod[1]`、`EnumFilesMethod[3]`、`DataTableSelectMethod[3]`、`DataTableToXmlMethod[1]`）；可省略 (类,槽) 全集 96 = A/B 两段 76 + 本片 20。**这两个数不再由本票维护**：现行值以 [builtin-contract.py](../builtin-contract.py) 的自校验输出为准（`python3.14 tracker/arg-contract/builtin-contract.py` 会打印「可省略 (类,槽) 96（其中拒绝显式空槽 54）」），本票与各片中出现的 96/54 是落地当时的记账值。
+- 计数（由 `slots-worklist.py` 复核）：`ArgType.NotNull` **88 处 / 77 行**（含注释；剥注释 81 处 / 70 行）——唯一口径是 [_scan.py](../_scan.py) 的 `NOT_NULL_EXPECTED`；阶段 B 起步后 `DataTableRowSetMethod` 的规则段注释提到该标志，含注释口径由 87/76 上调 1，剥注释口径未动（见 `arg-contract-05`）。拒绝侧共 **54** 个 (类,槽) = A 表 41 + 片 2-C 的 2（消费型变长尾）+ 本片 7 + `arg-contract-04` 阶段 A 的 4（`EnumNameMethod[1]`、`EnumFilesMethod[3]`、`DataTableSelectMethod[3]`、`DataTableToXmlMethod[1]`）；可省略 (类,槽) 全集 96 = A/B 两段 76 + 本片 20。**这两个数不再由本票维护**：现行值以 [builtin-contract.py](../builtin-contract.py) 的自校验输出为准（`python3.14 tracker/arg-contract/builtin-contract.py` 会打印「可省略 (类,槽) 96（其中拒绝显式空槽 54）」），本票与各片中出现的 96/54 是落地当时的记账值。
 
 ### 片 3：机制收尾——取 B（已定），A 留作收尾条件
 
@@ -339,7 +339,7 @@ public void OmittableSlot_WithExplicitEmptySlot_IsRejected(string name, string i
 
 余项 6 问的是「`ArgumentBuilder` 这一侧是否需要与规则表的 `OmitStart`/`ArgType.NotNull` 对齐」。机械预筛 + 逐 builder 裁定的产物是新工件：[instruction-args.py](../instruction-args.py) → [instruction-args.md](../instruction-args.md)（口径与校验同 `slots-worklist.py`：走模型/自校验的分类、缺项与多项一律报警）。
 
-- **编码形状已量清**：50 个 `ArgumentBuilder` 子类里 **28** 个走 `checkArgumentType`（受两轴支配）、**22** 个在 `CreateArgument` 里自建解析（两轴不生效，逐槽处置引 `nullable-migration/issues/15` 的决策表）。数量轴 = `minArg`（未设 = -1 时判据是「少于类型表长度即报错」，等价于整表必填）+ `argAny`（数量不限，尾部取末位类型位）；槽位轴 = `argumentTypeArray[i]`：`null!` = 该槽可省**且不做类型检查**，`typeof(void)` = 必填、类型由 builder 自检，具体 `Type` = 必填且类型固定
+- **编码形状已量清**：50 个 `ArgumentBuilder` 子类里 **28** 个走 `checkArgumentType`（受两轴支配）、**22** 个在 `CreateArgument` 里自建解析（两轴不生效，逐槽处置引 `nullable-migration-15` 的决策表）。数量轴 = `minArg`（未设 = -1 时判据是「少于类型表长度即报错」，等价于整表必填）+ `argAny`（数量不限，尾部取末位类型位）；槽位轴 = `argumentTypeArray[i]`：`null!` = 该槽可省**且不做类型检查**，`typeof(void)` = 必填、类型由 builder 自检，具体 `Type` = 必填且类型固定
 - **全库唯一 `null!` 位**：`SP_FOR_NEXT` 槽 1（`FOR_NEXT` 的 start），调用点判空后取默认 0——即「可省 + 可空」在指令侧只此一处
 - **数量轴逐点核过**：机械预筛标出 18 个「读取下标 ≥ 保证最少实参数」的 builder，逐条落到裁定表后全部安全——各有 `Count > i`/`Count >= i+1`/循环上界一类守卫，或走 `Count == 0` 早退分支（`VAR_INT`/`VAR_STR`/`SP_GETINT`/`INT_EXPRESSION`/`EXPRESSION` 的默认值填充）；**未发现「少写尾实参即越界」的可达站点**，即本票「附」那一类缺陷在指令侧不存在
 - **null 轴**：类型位非空即拒 null（`CanNotRecognizeArg`），放行面比函数侧小得多；本片未发现新的可达 null 站点。唯一由 builder **主动构造** null 的地方是 `SP_SWAP_ArgumentBuilder` 的 `[terms[0], null]`（省略形），该分支的指令引用为空、不可达（issues/15 已记）
@@ -358,7 +358,7 @@ public void OmittableSlot_WithExplicitEmptySlot_IsRejected(string name, string i
 4. **工作表原先只覆盖「被 `Required`(字面量) 读取」这一条车道**（76 / 全集 96），缺口已由片 2-D 补齐：那 20 项里 5 项有意可空、2 项转发槽、4 项硬转型解引用（今天 NRE，归 04）、7 项标 `NotNull`、2 项消费型变长尾已标。**裁定表与代码现状的一致性靠脚本校验**（裁定为需标而未标全、或裁定为可空却被误标时 `slots-worklist.py` 报警）；B 的残余风险因此从「漏标一段」变成「E 段裁定本身判断错」——那 7 项的可达性都靠函数体读取路径逐点核过，且都有对应用例
 5. **原「`IndexOutOfRangeException`」疑点不成立**：`UserDefinedRefMethodTerm.Restructure` 的循环上界 `srcArgs.Count` 与 `reffunc.ArgTypeList[i]` 确实不同源，但该类从不被构造（见「UDF 族」），随死代码一并失效；该特性若复活需重新核。
 6. **拒绝侧是硬错误，失败时机比「装载期」复杂**：默认配置（`ReduceArgumentOnLoad = NO`、非 `AnalysisMode`）下实参在**首次执行**该行时构建（`Process.ScriptProc.cs` 的 `ArgumentParser.SetArgumentTo`），故含显式空槽（或数量省略）的写法**只有被执行到才会失败**——「位于从不执行分支」的脚本不受影响。提前到装载/解析期的是四种情形：`AnalysisMode`（命令行传入待解析文件时置位，见 `Program.cs`，失败由 `ErbLoader.ParseFunctionWithCatch` 兜成「函数分析失败」警告）、`ReduceArgumentOnLoad = YES/ONCE`、指令声明了 `FORCE_SETARG`（四者同见 `ErbLoader.cs` 里那个 `NeedReduceArgumentOnLoad || AnalysisMode || IsForceSetArg` 的条件），以及 `FOR` 行（同文件的 `FOR` 分支无条件调 `ArgumentParser.SetArgumentTo`）。片 1 三处已举证修前必 NRE（执行到即崩溃）；A 表其余槽的实际使用面没有量化数据可用，故按片 2 逐槽裁定推进。
-7. **数量省略越界这把尺子已核到 A 表 + 补车道 20 项**（A 表见「附」，补车道见片 2-D），两处都只有「附」里那 2 处 `OmitStart` 附修，无新增。**仍未过尺子的只剩机制事实 5 的 24 处硬转型站点里落在非可省略槽上的部分**——那些槽满足 `i < OmitStart`，检查器要求 `Count >= OmitStart > i`，故「列表短于下标」在构造上就不可能，实际只剩 null 维度（类型化移除归 [issues/05](05-argument-slots-type.md)）。片 2-C 已先按这把尺子核过变长尾三处：`MAX()`/`ARRAYMSORT()` 由计数判据拒，`MAX(1)`/`ARRAYMSORT(DA:0)` 的列表长度足够函数体读取（循环/遍历都从 1 或 0 起且不越界）。
+7. **数量省略越界这把尺子已核到 A 表 + 补车道 20 项**（A 表见「附」，补车道见片 2-D），两处都只有「附」里那 2 处 `OmitStart` 附修，无新增。**仍未过尺子的只剩机制事实 5 的 24 处硬转型站点里落在非可省略槽上的部分**——那些槽满足 `i < OmitStart`，检查器要求 `Count >= OmitStart > i`，故「列表短于下标」在构造上就不可能，实际只剩 null 维度（类型化移除归 `arg-contract-05`）。片 2-C 已先按这把尺子核过变长尾三处：`MAX()`/`ARRAYMSORT()` 由计数判据拒，`MAX(1)`/`ARRAYMSORT(DA:0)` 的列表长度足够函数体读取（循环/遍历都从 1 或 0 起且不越界）。
 8. **检查器自身隐含「`SameAsFirst` 规则的首槽必非 null」**：`FunctionMethod.CheckArgumentTypeEx` 在该规则上用 `arguments.Required(0)` 取 operand type——若某天的 `SameAsFirst`/`VariadicSameAsFirst` 块带上 `OmitStart = 0`，0 号槽的显式空槽会被判据放行，随后**检查器自己 NRE**。现状无此形态（`Creator.Method.cs` 内 7 处该规则的 `OmitStart` 均为 -1 或 >= 2），且该形态已在检查器里就地拦住：`FunctionMethod.CheckArgumentTypeEx` 对「`OmitStart == 0` 且块内有 `SameAsFirst`」的块把 0 号槽按必填处理（判据来自 `ArgTypeList.UsesSameAsFirst`），报 `CodeEE(ArgCanNotBeNull)` 而非 NRE。这一支没有可达用例（7 处现有块都够不到 `OmitStart == 0`），故只由代码与注释承载
 
 ### 余项（不在本票）
@@ -367,9 +367,9 @@ public void OmittableSlot_WithExplicitEmptySlot_IsRejected(string name, string i
    - 口径同工作表：该槽在某段满足 `OmitStart <= i < ArgTypes.Count`，且类内没有 `arguments.Required(<i 的字面量>)` 站点
    - **有意可空 5 项**：`DataTableSelectMethod[1]`/`[2]`（DT_SELECT 的 filter/sort，空槽 = 不筛 / 不排序）、`GraphicsDrawGMethod[10]`（空槽 = 不带颜色矩阵）——规则段注释已补齐（见余项 5）；`DataTableRowSetMethod[2]`、`DataTableCellSetMethod[3]`——片 2-D 补注释 + 用例（空槽 = 写 DBNull）
    - **转发 2 项**：`GetMethMethod[2]`、`GetMethsMethod[2]`（变长尾交给下游，规则段旁已有注释，片 2-C）
-   - **硬转型解引用 4 项**：`EnumNameMethod[1]`、`EnumFilesMethod[3]`、`DataTableSelectMethod[3]`、`DataTableToXmlMethod[1]`（当时 NRE，与 24 处活 cast 同车道）。已由 [arg-contract/issues/04](04-argument-slots.md) 的阶段 A 在四处标了 `ArgType.NotNull`，显式空槽改由 `CodeEE(ArgCanNotBeNull)` 拒绝；cast 本身的类型化移除归该 effort 的 [issues/05](05-argument-slots-type.md)
+   - **硬转型解引用 4 项**：`EnumNameMethod[1]`、`EnumFilesMethod[3]`、`DataTableSelectMethod[3]`、`DataTableToXmlMethod[1]`（当时 NRE，与 24 处活 cast 同车道）。已由 `arg-contract-04` 的阶段 A 在四处标了 `ArgType.NotNull`，显式空槽改由 `CodeEE(ArgCanNotBeNull)` 拒绝；cast 本身的类型化移除归该 effort 的 `arg-contract-05`
    - **其余 9 项**：`XmlAddNodeMethod[4]`/`[5]`、`GraphicsDrawStringMethod[2]`/`[3]`、`GraphicsDrawGWithRotateMethod[3]`/`[4]`、`GraphicsDrawSpriteMethod[6]` 由片 2-D 裁定为「无意且可达」并标 `NotNull` + 补用例；`MaxMethod[1]`/`ArrayMultiSortMethod[1]` 已由片 2-C 标 `NotNull`
-2. 活 `arguments[i]` 站点（24 处硬转型解引用）→ cast 车道（机制事实 5）：可省略槽上的 4 处由 [issues/04](04-argument-slots.md) 阶段 A 收口，其余 20 处归 [issues/05](05-argument-slots-type.md)。落在可省略槽上的 4 处（`EnumNameMethod[1]`、`EnumFilesMethod[3]`、`DataTableSelectMethod[3]`、`DataTableToXmlMethod[1]`）本票当时不标 `NotNull`、留给 04；已由 04 的阶段 A 标上（显式空槽被检查器拒绝），其余 20 处的 cast 类型化移除归 [issues/05](05-argument-slots-type.md)——显式空槽与 cast 是同一根因（`arguments[i]` 直接解引用），故最终由槽位类型统一收口
+2. 活 `arguments[i]` 站点（24 处硬转型解引用）→ cast 车道（机制事实 5）：可省略槽上的 4 处由 `arg-contract-04` 阶段 A 收口，其余 20 处归 `arg-contract-05`。落在可省略槽上的 4 处（`EnumNameMethod[1]`、`EnumFilesMethod[3]`、`DataTableSelectMethod[3]`、`DataTableToXmlMethod[1]`）本票当时不标 `NotNull`、留给 04；已由 04 的阶段 A 标上（显式空槽被检查器拒绝），其余 20 处的 cast 类型化移除归 `arg-contract-05`——显式空槽与 cast 是同一根因（`arguments[i]` 直接解引用），故最终由槽位类型统一收口
 3. 变量下标 `Required(i)` 与 helper 传参路径**已随片 2-D 并入**：这 20 项就是由这两条路读取的槽（如 `XmlAddNodeMethod` 的 `methodPos`/`setAllPos`、`DataTableRowSetMethod.SetValue`、`ReadPoint`/`ReadColormatrix`）；片 2-A 另有一条例外记录——`DT_ROW_ADD` 的槽 1 虽由变量下标读取，但已举证 `DT_ROW_ADD("t",,"c")` 修前 NRE，故在片 2-A 一并补标 `NotNull`
 4. **（见片 5）** B 表执行期语义抽查：34 槽覆盖 **27**（46 条用例：24 行等价断言 + 18 条绝对值断言 + 4 行「无兜底」断言；覆盖的 27 槽里 21 项钉住默认值，另 4 项只证「空槽 ≡ 缺席」、2 项为「无兜底」），未覆盖的 7 个槽（CSV 数据 / 角色数据 / 游戏根 / `ARRAYMSORTEX` 的变量名表）与 `GDRAWG` 的 10 实参形态逐槽写明原因，只能人工抽查。「每一段都标了标志」这条另由 `slots-worklist.py` 的 `已带标志` 列机械校验（A 表逐行 + E 段逐槽，缺标即报警），不只靠用例
 5. **（已落地）完成标准第 1 类点名的「另加未被 `Required` 读取的同类 3 项」**：3 项即余项 1 清单里的 `DataTableSelectMethod[1]`/`[2]` 与 `GraphicsDrawGMethod[10]`；已按片 2-B 的落地形态在各自规则段旁补英文语义注释（此前全库含 `empty slot`/`omitted slot` 的 32 行注释里没有这两个类）。`DataTableSelectMethod[3]`（输出数组的硬转型）**不在此列**，它属余项 2 的 cast 车道
@@ -384,7 +384,7 @@ public void OmittableSlot_WithExplicitEmptySlot_IsRejected(string name, string i
 
 ## 影响
 
-- `tracker/nullable-migration/issues/08-expression-method-chain.md` 与 `13-null-forgiving-cleanup.md` 是本票所纠的书面假设的出处；`nullable-migration/issues/13` 引入 `Required` 并把「调用方担保」写进注释，本票不改该结论但更正措辞（落地注释已自行改写过一次，见「任务」）；`nullable-migration/issues/14` 的断言审计扫的是 `!`，本票扫的是 `Required`，口径相关但站点集合不同
+- `nullable-migration-08` 与 `nullable-migration-13` 是本票所纠的书面假设的出处；`nullable-migration-13` 引入 `Required` 并把「调用方担保」写进注释，本票不改该结论但更正措辞（落地注释已自行改写过一次，见「任务」）；`nullable-migration-14` 的断言审计扫的是 `!`，本票扫的是 `Required`，口径相关但站点集合不同
 - 失败模式同 arg-contract/issues/02：`AnalysisMode` / `ReduceArgumentOnLoad` / `FOR` 行下的装载期异常由 `ErbLoader.ParseFunctionWithCatch` 兜成「函数分析失败」；其余在首次执行该行时冒泡到 `Process.DoScript` → `handleException`（时机见风险 6）
 - UDF 侧本票**不改动**：`UserDefinedRefMethodTerm` 一行是死代码，活路径在 `CalledFunction.TryConvertArg` 已把省略实参换成默认值（默认值由 `ErbLoader.parseLabel` 建立，见「UDF 族」）
 - 片 1 已落地（3 处 NRE + 2 处数量省略越界 + 用例）。两处 `OmitStart` 改动后，工作表 A 表 42 项、全集 96 项、涉及函数 52 个
@@ -393,13 +393,13 @@ public void OmittableSlot_WithExplicitEmptySlot_IsRejected(string name, string i
 - 片 2-D 已落地（补车道 20 项）：7 处「无意且可达」标 `NotNull`（`XmlAddNodeMethod[4]`/`[5]`、`GraphicsDrawStringMethod[2]`/`[3]`、`GraphicsDrawGWithRotateMethod[3]`/`[4]`、`GraphicsDrawSpriteMethod[6]`）、2 处「有意可空」补注释（`DataTableRowSetMethod[2]`、`DataTableCellSetMethod[3]`）、20 项逐项过数量省略尺子（无一处越界）。改动面：`Creator.Method.cs` 的 6 个类规则表 + `CheckArgumentTypeEx.cs` 18 条用例 + 工作表生成器 E 段
 - 片 5/6 已落地：片 5 = `Emuera.Tests/Runtime/Script/Statements/Function/IntentionalEmptySlotExecutionTests.cs`（46 条执行期语义用例，覆盖 B 表 27/34 槽，其中 21 项钉住默认值——其余 7 槽与 `GDRAWG` 的 10 实参形态逐槽写明人工抽查原因）；片 6 = 指令侧两轴模型定案（50 个子类 / 28 走模型 / 22 自校验 / 唯一 `null!` 位，数量轴与 null 轴逐 builder 核过，定案「不对齐」），产物 `instruction-args.py` + `instruction-args.md`，结论同步进 `docs/architecture.md`（`Statements/ArgumentParser.cs` 一行）与 `docs/csv-erb-syntax.md` §10 第 9 条。本票余项只剩 7（`docs/` 侧内建函数契约表）
 - 改动量估计：中——未证合计 134 处（口径 131 / 77）→ 槽级 96 个（A/B 两段 76 个已裁定；补车道 20 个已由片 2-D 裁定），拒绝侧 54 个 (类,槽) + 52 个函数的用例表 + 5 处改名（另 3 处是片 1 的新增标注）。片 1 的 3 处与两处数量省略越界已落地，其余**裁定工作可独立于 arg-contract/issues/04 先行开展**，且其结论正是 05 设计槽位类型时需要的输入
-- **待办：无**。余项 7（`docs/` 侧内建函数契约表）已落地为 [docs/builtin-functions.md](../../../docs/builtin-functions.md)；余项 1/2/3 的补车道裁定与余项 5 的 3 项注释、余项 4（片 5：B 表执行期语义，46 条用例）、余项 6（片 6：指令侧两轴模型定案 + `instruction-args.py`/`.md`）均已落地；原「回填 `nullable-migration/issues/13` 与 `nullable-migration/issues/08`」也已落地（含 08 的**影响段**）
+- **待办：无**。余项 7（`docs/` 侧内建函数契约表）已落地为 [docs/builtin-functions.md](../../../docs/builtin-functions.md)；余项 1/2/3 的补车道裁定与余项 5 的 3 项注释、余项 4（片 5：B 表执行期语义，46 条用例）、余项 6（片 6：指令侧两轴模型定案 + `instruction-args.py`/`.md`）均已落地；原「回填 `nullable-migration-13` 与 `nullable-migration-08`」也已落地（含 08 的**影响段**）
 - 相关票：arg-contract/issues/04（阶段 A 止血）、arg-contract/issues/02（检查器侧的省略判据）、arg-contract/issues/01（维度标志位）
-- 原始审查记录：`tracker/backlog/issues/16`
+- 原始审查记录：`backlog-16`
 
 ### 回填
 
-- `nullable-migration/issues/13`：提案注释「The parser rejects an omitted slot before an implementation reads it」已就地标注为**不成立**（`i >= OmitStart` 的槽会带 null 进函数体），并指向落地版注释
-- `nullable-migration/issues/08`：把「`i >= OmitStart` 的槽位允许省略」更正为「**数量上可省略 ≠ 该槽可以为 null**」——显式空槽是另一维，需该槽判空或标 `ArgType.NotNull`。该文件的**影响段**（「省略槽位(`OmitStart` 之后)按方法体既有分支处理」）是同一条被证伪的前提，已随本票一并补齐
+- `nullable-migration-13`：提案注释「The parser rejects an omitted slot before an implementation reads it」已就地标注为**不成立**（`i >= OmitStart` 的槽会带 null 进函数体），并指向落地版注释
+- `nullable-migration-08`：把「`i >= OmitStart` 的槽位允许省略」更正为「**数量上可省略 ≠ 该槽可以为 null**」——显式空槽是另一维，需该槽判空或标 `ArgType.NotNull`。该文件的**影响段**（「省略槽位(`OmitStart` 之后)按方法体既有分支处理」）是同一条被证伪的前提，已随本票一并补齐
 - `ArgumentListExtensions.Required` 的注释改为「担保只对规则表标记必填的槽成立（无 `OmitStart` 的块 / `i < OmitStart` / `ArgType.NotNull`，外加 `SameAsFirst` 块里 `OmitStart == 0` 时必填的 0 号槽；变长尾部的标志由下标落到的那个变长规则决定）」
 - `docs/architecture.md` 的 `Statements/Expression/` 一行（原「提供参数槽位的非空读取(省略实参以 null 承载)」）是被本票推翻的同一措辞，已改为「具名非空读取 `Required(i)`，担保只对规则表标为必填的槽成立；数量省略不产生 null，显式空槽以 null 元素进入函数体」

@@ -33,7 +33,7 @@ Status: needs-triage
 
 - **删除测试判决**：删 `Preload` → 三处 `OpenOnCache` 都要自己同步读盘（并行预读 + 编码探测 + BOM 分支约 85 行/份），复杂度回到 3 个调用方，**在挣饭钱**；但删 `OpenOnCache` 这层**入口**、改成调用方交行集合时复杂度**不会重现**——真正的 pass-through 是这个入口，不是 `Preload`。删 `Config.GetFiles` → 枚举 + key 前缀 + 排序 + 递归会回到 `ErbLoader`/`ErhLoader`/`ConstantData` 三处，**在挣饭钱**，问题是 interface 藏了一半输入
 - **失败模式已记录，不重复立题**：`tracker/nullable-migration/issues/28-bad-input-nulls.md:14` 已记 `OpenOnCache` 恒返回 true（`_fileLines = Preload.GetFileLines(path)!`）致死 `FailedOpenFile` 分支，并给出「缓存值可为 null」的成因（`readAllLinesDetectEncoding` 的内层 catch）。本票的「交行集合」改法会同时消掉该缺陷，落地时应回填该票
-- **与既有票的关系**：`Config.getFiles` 的路径前缀逻辑已由 `tracker/path-utils/issues/01-engine-path-prefix.md` 改为经 `PurePath.TryRelativeTo`；`tracker/path-utils/spec.md:51` 也记了这条。本票只搬选项，不重复路径处理
+- **与既有票的关系**：`Config.getFiles` 的路径前缀逻辑已由 `path-utils-01` 改为经 `PurePath.TryRelativeTo`；`tracker/path-utils/spec.md:51` 也记了这条。本票只搬选项，不重复路径处理
 - **测试面**：`Preload`/`EraStreamReader` 零直接用例；`ErbLoaderNestCheckTests.cs:35-36` 与 `ConstantDataTests.cs:26-27` 只在注释里解释「必须 Preload」——测试被迫复刻生产启动顺序。`ConfigGetFilesTests` 的 4 例只能覆盖「不递归、不排序」一种组合
 - 改动量估计：小到中（提升一个已存在的 private 方法 + 换一次 reader 的喂食方式）
 - 相关票：issues/07（解析期开关）、issues/14（`ErbLoader` 装载顺序，消费本票的枚举 module）

@@ -10,7 +10,7 @@ using Xunit;
 namespace Emuera.Tests.Runtime.Script.Statements.Variable;
 
 /// <summary>
-/// SORTCHARA 以字符串角色二维变量为键时的回归网(issues/14 认定的 CharacterData.temp_SortKey 站点)。
+/// SORTCHARA 以字符串角色二维变量为键时的回归网(nullable-migration-14 认定的 CharacterData.temp_SortKey 站点)。
 /// 缝是 SORTCHARA 实际调用的入口 VariableEvaluator.SortChara,观察点是角色列表次序。
 /// 字符串二维数组按 new string[n, m] 分配、未赋值的元素是 null;旧实现把它经 ! 写进非空的
 /// temp_SortKey,而比较器是以该角色为接收者调用 CompareTo,故排序期抛 NullReferenceException

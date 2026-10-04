@@ -726,7 +726,7 @@ internal sealed partial class MainWindow : Form
 	/// <summary>
 	/// Replaces the font of the input box and disposes the previously created one. The size handed in is the
 	/// configured one; the input box follows the console, so it is built at the derived render size instead
-	/// (see tracker/ui-modernization/issues/03).
+	/// (see ui-modernization-03).
 	/// </summary>
 	private void SetInputFont(int fontSize)
 	{

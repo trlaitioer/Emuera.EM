@@ -8,7 +8,7 @@ using Xunit;
 namespace Emuera.Tests.Runtime.Script.Statements;
 
 /// <summary>
-/// 省略实参(issues/15)测试。seam 是解析期边界:
+/// 省略实参(nullable-migration-15)测试。seam 是解析期边界:
 /// LogicalLineParser.ParseLine → ArgumentParser.SetArgumentTo,断言 InstructionLine.IsError(解析报错)
 /// 或构造出的 Argument 形态。指令的 DoInstruction 需要 EmueraConsole,不在本用例集覆盖。
 /// </summary>

@@ -1,10 +1,10 @@
 # arg-contract/issues/04 阶段 A 片 0：实参消费面重新基线
 
-本文件由 [arg-slots.py](arg-slots.py) 生成，口径见脚本头注释；票见 [arg-contract/issues/04](issues/04-argument-slots.md)。
+本文件由 [arg-slots.py](arg-slots.py) 生成，口径见脚本头注释；票见 `arg-contract-04`。
 
 > **冻结声明（2026-10 补）**：本文件是**阶段 A 片 0 的冻结快照**（`arg-slots.py --phase-a` 的产物）。默认运行
 > `arg-slots.py` 不写本文件；重生成只应在阶段 A 的 HEAD 上进行，否则「读取形态」那批表必然漂移——阶段 B
-> （[issues/05](issues/05-argument-slots-type.md)）已把消费面全部换成 `ArgumentSlots` 访问器。阶段 B 的验收口径见
+> （`arg-contract-05`）已把消费面全部换成 `ArgumentSlots` 访问器。阶段 B 的验收口径见
 > [slots-progress.md](slots-progress.md)。
 
 扫描范围是**规则表族**（`BuiltinMethod/*.cs` 的 183 个子类，经 `FunctionMethod.CheckArgumentTypeEx` 校验）。
@@ -61,7 +61,7 @@ A 段 6 项里，本片（阶段 A 片 1）标了 **4** 个 `ArgType.NotNull`，
 ## A2. 可空、无判空、机械未见硬解引用
 
 这些槽的读取路径不在「字面量下标」车道（走非字面量下标 / 整表转发），或函数体根本不读；
-裁定来自 [arg-contract/issues/03](issues/03-required-on-omittable-slot.md) 的片 2-C/2-D，本片不改。
+裁定来自 `arg-contract-03` 的片 2-C/2-D，本片不改。
 
 | 类[槽] | 可省略段 | 读取形态 | 类级读取路径（D 段） | 类别 | 裁定依据 |
 | --- | --- | --- | --- | --- | --- |
@@ -71,7 +71,7 @@ A 段 6 项里，本片（阶段 A 片 1）标了 **4** 个 `ArgType.NotNull`，
 
 ## B. 可空但有判空写法（人工核「判空是否守住解引用」）
 
-本段与 [arg-contract/issues/03](issues/03-required-on-omittable-slot.md) 的 B 表逐项对应：34 项「有意可空」
+本段与 `arg-contract-03` 的 B 表逐项对应：34 项「有意可空」
 （裁定见该票片 2-B） + 片 2-D 补判的 `DT_SELECT[1]`/`[2]`、`GDRAWG[10]`（有意可空），共 37 项。
 另两条「有意可空」按本工件 A 段的判据（无判空写法 ∧ 读取形态在解引用车道）落在 A 段，不在此列：
 `DataTableCellSetMethod[3]`、`DataTableColumnManagementMethod[1]`（跨构造器，Names 段空槽 = 写 RESULTS）。

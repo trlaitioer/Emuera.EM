@@ -21,14 +21,14 @@
 
   <ItemGroup>
     <!--
-      Gate C 的黄金名单快照(backlog/issues/18):266 行、按序数排序的内建函数注册名。
+      Gate C 的黄金名单快照(backlog-18):266 行、按序数排序的内建函数注册名。
       改名/删名/加名都必须显式改这个文件,故它要随测试产物一起拷贝。
     -->
     <Content Include="Runtime/Script/Statements/Function/BuiltinMethodNames.snapshot.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <!--
-      Gate D 的源码输入(backlog/issues/18):7 个靠运行期 `Name` 分派的类,其 `switch (Name)` 的
+      Gate D 的源码输入(backlog-18):7 个靠运行期 `Name` 分派的类,其 `switch (Name)` 的
       `case` 标签集合要与该类注册名集合相等。反射看不到 switch 标签,故闸门读源码比对,
       源码必须随测试产物一起拷贝(否则闸门只能靠工作目录定位)。
     -->

@@ -11,7 +11,7 @@ using static Emuera.Tests.Runtime.Script.Statements.Function.BuiltinFunctionTest
 namespace Emuera.Tests.Runtime.Script.Statements.Function;
 
 /// <summary>
-/// arg-contract/issues/05 阶段 B 的机制用例:检查期的槽位角色投影(单次
+/// arg-contract-05 阶段 B 的机制用例:检查期的槽位角色投影(单次
 /// <see cref="FunctionMethod.CheckAndResolveSlots"/>)、槽位访问器契约(<see cref="FunctionMethod.ArgumentSlots"/>),
 /// 以及「检查期快照不跟随检查之后的原地折叠」这条定案。缝与 <see cref="CheckArgumentTypeEx"/> 同一处
 /// (解析期契约入口),但只问投影与访问器,不重复该校验判据。

@@ -11,7 +11,7 @@ using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 namespace Emuera.Tests.Runtime.Script.Statements.Function;
 
 /// <summary>
-/// arg-contract/issues/03 片 5:B 表「有意可空」槽的**执行期**语义回归网。
+/// arg-contract-03 片 5:B 表「有意可空」槽的**执行期**语义回归网。
 /// 片 4 只钉住检查器放行显式空槽(解析期,见 <see cref="CheckArgumentTypeEx.IntentionalEmptySlot_IsAccepted"/>),
 /// 本文件钉住函数体把该 null 读成规则段注释声明的默认值——空槽形态与「显式写默认值」或「数量省略」
 /// 两种写法必须给出同一结果,另用 DAY/SAVESTR 的确定值断言默认值本身(start = 0、end = 数组长度、

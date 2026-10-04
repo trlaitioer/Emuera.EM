@@ -5,7 +5,7 @@ Status: needs-triage
 
 ## 任务
 
-承接 [issues/04](04-argument-slots.md) 的「核对」#2/#3 与 [issues/05](05-argument-slots-type.md) 的「未决」节（两票都明确不顺手改）。
+承接 `arg-contract-04` 的「核对」#2/#3 与 `arg-contract-05` 的「未决」节（两票都明确不顺手改）。
 
 现象：`FunctionMethodTerm.Restructure` 把活体实参表 `Slots.FoldTarget` 拷一份再交给 `UniqueRestructure`（`FunctionMethodTerm.cs` 的 `arguments = Slots.FoldTarget;` 后 `[.. arguments]`；阶段 B 前写作 `[.. Arguments]`），那 14 个 `UniqueRestructure` override 里的写回全部被丢弃；折叠期的写回实际只走基类的原地路径。全仓该副本分配仅此 1 处（issues/04 核对 #9）。
 
@@ -24,4 +24,4 @@ Status: needs-triage
 ## 影响
 
 - 触碰折叠面，是本 effort 里最需要回归网的一块；折叠期在稳态每调用 0 次（`ReduceArgumentOnLoad` 默认 `NO`），风险在装载/首次执行的语义而非热路径
-- 与 [issues/06](06-slot-snapshot-eval-timing.md) 同属折叠面，但改的是**写**的一侧，两者可各自独立裁定
+- 与 `arg-contract-06` 同属折叠面，但改的是**写**的一侧，两者可各自独立裁定

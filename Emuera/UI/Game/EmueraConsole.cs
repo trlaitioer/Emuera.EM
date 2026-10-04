@@ -2599,7 +2599,7 @@ internal sealed partial class EmueraConsole : IDisposable
 
 	private string tooltip_fontname = Config.FontName;
 
-	//The tooltip follows the console, which draws at the derived render size (see tracker/ui-modernization/issues/03).
+	//The tooltip follows the console, which draws at the derived render size (see ui-modernization-03).
 	private long tooltip_fontsize = Config.RenderFontSizePx;
 	private TextFormatFlags tooltip_format;
 	private bool tooltip_img;

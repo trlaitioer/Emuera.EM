@@ -9,7 +9,7 @@ using Xunit;
 namespace Emuera.Tests.Runtime.Script.Statements;
 
 /// <summary>
-/// DT_COLUMN_OPTIONS 指令的守卫测试(issues/17)。seam 是解析期入口
+/// DT_COLUMN_OPTIONS 指令的守卫测试(nullable-migration-17)。seam 是解析期入口
 /// (LogicalLineParser.ParseLine → ArgumentParser.SetArgumentTo)构造出的 Argument,
 /// 加 AInstruction.DoInstruction 的执行期入口;求值上下文用 TestBootstrap 的 GlobalStatic.EMediator。
 /// 旧行为:表不存在时 RESULT=-1 后不 return,下一行 dict[key] 抛 KeyNotFoundException;

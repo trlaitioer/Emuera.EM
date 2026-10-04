@@ -13,7 +13,7 @@ using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 namespace Emuera.Tests.Runtime.Script.Statements.Function;
 
 /// <summary>
-/// FunctionMethod.CheckArgumentTypeEx 的实参契约校验(arg-contract/issues/01、arg-contract/issues/02、arg-contract/issues/03)回归网。缝是解析期契约入口:
+/// FunctionMethod.CheckArgumentTypeEx 的实参契约校验(arg-contract-01、arg-contract-02、arg-contract-03)回归网。缝是解析期契约入口:
 /// IdentifierDictionary.GetFunctionMethod 校验不过即抛 CodeEE(用法同 UnguardedAsCastTests)。
 /// 覆盖四处已核实的判据缺陷:
 /// 1) ArgType.Array3D 读成 Array2D ⇒ RefInt3D 槽维度不校验,标量/一维变量被放行
@@ -71,7 +71,7 @@ public class CheckArgumentTypeEx
 		Assert.Null(args[0]);
 	}
 
-	// ── arg-contract/issues/02:OmitStart 未写时省略检查恒假 ──────────────────────────────
+	// ── arg-contract-02:OmitStart 未写时省略检查恒假 ──────────────────────────────
 
 	/// <summary>SETVAR 规则 {String, Any} 未写 OmitStart,故第 2 槽不可空(SetVarMethod.GetIntValue 直接 Required(1))。</summary>
 	[Fact]
@@ -106,7 +106,7 @@ public class CheckArgumentTypeEx
 	public void HtmlStringLen_WithLengthOnly_IsAccepted()
 		=> AssertAccepted("HTML_STRINGLEN", new SingleStrTerm("x"));
 
-	// ── arg-contract/issues/03:设计上可省略 ≠ 该槽可以为 null(片 1 的三处可达 NRE) ────────
+	// ── arg-contract-03:设计上可省略 ≠ 该槽可以为 null(片 1 的三处可达 NRE) ────────
 
 	/// <summary>
 	/// OmitStart 只表达「最少传几个」;显式空槽(第二个逗号起)是另一回事,原先在可省略区间内被放行,
@@ -199,7 +199,7 @@ public class CheckArgumentTypeEx
 	[InlineData("FLOWINPUT", "1,1,,1", 3)]
 	[InlineData("OUTPUTLOG", ",1", 1)]
 	// —— A10 同槽的「更长实参表」形态:上两处(REGEXPMATCH、MAP_GETKEYS)的可省略段里该槽**就是末槽**,
-	// 不存在中位形态;它们的 4/3 实参写法只落在同一规则表的另一段(无 OmitStart)上,由 arg-contract/issues/02 的判据
+	// 不存在中位形态;它们的 4/3 实参写法只落在同一规则表的另一段(无 OmitStart)上,由 arg-contract-02 的判据
 	// (而非本票新铺的 NotNull)拒 null。此处单列,不与中位形态混计。
 	[InlineData("REGEXPMATCH", "\"a\",\"b\",,STR:0", 3)]
 	[InlineData("MAP_GETKEYS", "\"m\",,1", 2)]
@@ -216,7 +216,7 @@ public class CheckArgumentTypeEx
 	[InlineData("XML_ADDATTRIBUTE_BYNAME", "\"a\",\"b\",\"c\",\"d\",,1", 5)]
 	[InlineData("XML_ADDATTRIBUTE", "1,\"a\",\"b\",\"c\",1,,", 6)] // setAllPos 读槽 5(Attribute 段)
 	[InlineData("XML_ADDATTRIBUTE_BYNAME", "\"a\",\"b\",\"c\",\"d\",1,,", 6)]
-	// —— arg-contract/issues/04 阶段 A 片 1:四条「读输出数组」的硬转型槽。它们落在可省略区间里
+	// —— arg-contract-04 阶段 A 片 1:四条「读输出数组」的硬转型槽。它们落在可省略区间里
 	//(数量省略合法),而函数体在该槽非空时用 `(arguments[i] as VariableTerm)!` 直接取数组变量;
 	// 修前 `f(a,,)` 形态由规则表放行 null ⇒ 运行期 NRE。标志只拒显式空槽,数量省略照旧(见下面的用例表)。
 	// ENUMNAME 族的 9 个注册名共用同一规则形状,此处只列一个名。
@@ -294,7 +294,7 @@ public class CheckArgumentTypeEx
 	public void Replace_WithThreeArgs_IsAccepted()
 		=> AssertAccepted("REPLACE", new SingleStrTerm("a"), new SingleStrTerm("b"), new SingleStrTerm("c"));
 
-	// ── arg-contract/issues/03 片 2-B:B 表 34 个槽裁定为「有意可空」,逐槽钉子 ──────────────
+	// ── arg-contract-03 片 2-B:B 表 34 个槽裁定为「有意可空」,逐槽钉子 ──────────────
 	// 空槽与「不传该实参」同义:函数体把它读成默认值(或走明确分支),故规则表不加 ArgType.NotNull,
 	// 这些形态今天就能求值,标了反而会把可用写法变成 CodeEE。各槽的默认语义写在规则段注释里。
 
@@ -374,7 +374,7 @@ public class CheckArgumentTypeEx
 	}
 
 	/// <summary>
-	/// 正控制:arg-contract/issues/04 阶段 A 片 1 收紧的四个槽填满后仍通过(数量省略由
+	/// 正控制:arg-contract-04 阶段 A 片 1 收紧的四个槽填满后仍通过(数量省略由
 	/// <see cref="CountOmittedArgument_IsAccepted_AndYieldsNoEmptySlot"/> 逐名钉住)。
 	/// Ref 槽按生产路径解析变量书式:`STR:0` 是字符串一维数组、`CFLAG:0` 是整数一维数组、
 	/// `RESULTS:0` 是字符串标量变量。
@@ -415,7 +415,7 @@ public class CheckArgumentTypeEx
 		AssertAccepted("REGEXPMATCH", new SingleStrTerm("a"), new SingleStrTerm("b"));
 	}
 
-	// ── arg-contract/issues/03 片 4(A10):数量省略 ≠ 显式空槽 ──────────────────────────────
+	// ── arg-contract-03 片 4(A10):数量省略 ≠ 显式空槽 ──────────────────────────────
 
 	/// <summary>
 	/// 第三种写法 `f(a,)`(写足最小实参数后跟一个尾逗号):它**不产生空槽**——ReduceArguments 只吞单个尾逗号,
@@ -493,7 +493,7 @@ public class CheckArgumentTypeEx
 	[InlineData("GDRAWTEXT", "0,\"t\",", 2)]
 	[InlineData("GDRAWGWITHROTATE", "0,1,90,", 3)]
 	[InlineData("GDRAWSPRITE", "0,\"i\",", 2)]
-	// —— arg-contract/issues/04 片 1 新收紧的三处(ENUMFILES 已在上面)。
+	// —— arg-contract-04 片 1 新收紧的三处(ENUMFILES 已在上面)。
 	[InlineData("ENUMFUNCBEGINSWITH", "\"a\",", 1)]
 	[InlineData("DT_SELECT", "\"t\",", 1)]
 	[InlineData("DT_TOXML", "\"t\",", 1)]
@@ -529,7 +529,7 @@ public class CheckArgumentTypeEx
 			new SingleStrTerm("c2"), new SingleLongTerm(2));
 	}
 
-	// ── arg-contract/issues/03 附:OmitStart 写得比函数体小的两处(数量省略即可越界) ──────
+	// ── arg-contract-03 附:OmitStart 写得比函数体小的两处(数量省略即可越界) ──────
 
 	/// <summary>
 	/// 另一类缺陷:函数体无条件读取某槽,而规则表把它划进了可省略区间 ⇒ 少写尾实参也让列表短于该下标,
@@ -564,7 +564,7 @@ public class CheckArgumentTypeEx
 	public void HotkeyState_WithStateOnly_IsRejected()
 		=> AssertRejectedWith("HOTKEY_STATE", trerror.NotEnoughArgs, 2, new SingleLongTerm(0));
 
-	/// <summary>显式空槽:两槽都落回必填区间(i &lt; OmitStart = 2),由 arg-contract/issues/02 的判据拒绝。</summary>
+	/// <summary>显式空槽:两槽都落回必填区间(i &lt; OmitStart = 2),由 arg-contract-02 的判据拒绝。</summary>
 	[Fact]
 	public void HotkeyState_WithOmittedState_IsRejected()
 		=> AssertRejectedWith("HOTKEY_STATE", trerror.ArgCanNotBeNull, 2,
@@ -575,7 +575,7 @@ public class CheckArgumentTypeEx
 	public void HotkeyState_WithBothArgs_IsAccepted()
 		=> AssertAccepted("HOTKEY_STATE", new SingleLongTerm(0), new SingleLongTerm(1));
 
-	// ── arg-contract/issues/03 片 2-C:变长尾部按「转发型 / 消费型」分型定案(风险 3) ──────────
+	// ── arg-contract-03 片 2-C:变长尾部按「转发型 / 消费型」分型定案(风险 3) ──────────
 	// 转发型(尾部整段交给下游,见 GETMETH/GETMETHS)保持可空;消费型(函数体把尾部整条读完)没有默认值
 	// 可代,整条标 ArgType.NotNull。两类的数量省略(少写尾实参)都继续合法,故 OmitStart 不动。
 
@@ -633,7 +633,7 @@ public class CheckArgumentTypeEx
 		AssertAccepted("ARRAYMSORT", Variable("CFLAG:0"), Variable("STR:0"), Variable("DA:0:0"));
 	}
 
-	// ── arg-contract/issues/01:ArgType.Array3D 读错标志位 ───────────────────────────────
+	// ── arg-contract-01:ArgType.Array3D 读错标志位 ───────────────────────────────
 
 	/// <summary>
 	/// 二维在三段结构里是**有意支持**的:GraphicsDrawGMethod 构造器之后那段被注释掉的旧手工检查要求

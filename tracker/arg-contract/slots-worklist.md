@@ -1,6 +1,6 @@
 ﻿# arg-contract/issues/03 逐槽清单（机械预筛 + 片 2 裁定结果）
 
-本文件由 [slots-worklist.py](slots-worklist.py) 生成，口径见脚本头注释；票见 [arg-contract/issues/03](issues/03-required-on-omittable-slot.md)。
+本文件由 [slots-worklist.py](slots-worklist.py) 生成，口径见脚本头注释；票见 `arg-contract-03`。
 
 > **冻结声明（2026-10 补）**：本文件是**阶段 A 的冻结快照**（口径见 [slots-worklist.py](slots-worklist.py) 头注释的「冻结提示」）。
 > 在当前 HEAD 上重跑该脚本会**覆盖**本文件、且数字必然漂移——已知漂移：`arguments.Required(` 405→26、

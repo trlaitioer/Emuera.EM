@@ -7,7 +7,7 @@ using Xunit;
 namespace Emuera.Tests.Runtime.Script.Statements.Function;
 
 /// <summary>
-/// 内建函数注册机制的闸门(backlog/issues/18)。注册表由 <see cref="BuiltinMethodAttribute"/> 扫描而来,
+/// 内建函数注册机制的闸门(backlog-18)。注册表由 <see cref="BuiltinMethodAttribute"/> 扫描而来,
 /// 四条闸门分别钉住「恰好注册一次」「无死类/无死注册」「名字不腐烂」「按名字分派的类覆盖到自己的每个名字」:
 /// Gate A 管机制自洽(工厂数 = 注册数 = 名字去重数,且一名一实例——`Name` 参与行为分派,共享实例即错乱);
 /// Gate B 管实现类与注册实例的全域对应(命名空间圈定,排除 OperatorMethod/StrForm 两族);
@@ -20,7 +20,7 @@ public class BuiltinMethodRegistryTests
 
 	// 266 / 183 的权威副本在 tracker/arg-contract/builtin-contract.py(EXPECTED_NAMES / EXPECTED_CLASSES);
 	// 这里各留一份是有意的:闸门要能在脚本被改坏时独立报警,而不是跟着脚本一起漂。
-	private const int ExpectedNames = 266;      // == 改动前 Creator.cs 的 266 条活注册(issues/18 的 provenance)
+	private const int ExpectedNames = 266;      // == 改动前 Creator.cs 的 266 条活注册(backlog-18 的 provenance)
 	private const int ExpectedClasses = 183;    // 汇编里该命名空间下的具体 FunctionMethod 子类数(BuiltinMethod/ 目录内 186 处 `: FunctionMethod` 声明 - 3 处注释掉的)
 	private const int ExpectedDispatchClasses = 7;   // 按运行期 `Name` 分派(`switch (Name)`)的类数
 	private const int ExpectedDispatchCases = 22;    // 上述类 `case` 标签总数(权威副本在票面:7 个类、22 个 `case`)
@@ -94,7 +94,7 @@ public class BuiltinMethodRegistryTests
 		// 反空跑:扫到的具体子类必须够 ExpectedClasses 这个量级——命名空间或子类判据写坏时先在这里红。
 		// 为什么是 183 而 BuiltinMethod/ 目录里有 186 处 `: FunctionMethod` 声明:其中 3 处是注释掉的声明
 		// (`GetRefMethod`、`GraphicsRotateMethod`、`GraphicsGetBrushMethod`,后者所在的 EE_失敗作 region 整段
-		// 包在 `/** **/` 里),不进汇编(issues/18 实施结论)。故这里**不设白名单**——白名单里放一个永不出现的
+		// 包在 `/** **/` 里),不进汇编(backlog-18 实施结论)。故这里**不设白名单**——白名单里放一个永不出现的
 		// 名字,只会掩盖真正的死类;它哪天被解注释,下面的差集断言就会红,那正是要发现的东西。
 		Assert.True(concrete.Count >= ExpectedClasses,
 			$"命名空间 {BuiltinNamespace} 下只扫到 {concrete.Count} 个具体 FunctionMethod 子类(期望 ≥ {ExpectedClasses})");

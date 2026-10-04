@@ -42,7 +42,7 @@ public class CalledFunctionTests
 			LexicalAnalyzer.Analyse(new CharStream(text), LexEndWith.EoL, LexAnalyzeFlag.None), TermEndWith.EoL)!);
 
 	/// <summary>
-	/// arg-contract/issues/03:UDF 的空槽取函数标签声明的默认值(默认表达式由 ErbLoader.parseLabel 建成
+	/// arg-contract-03:UDF 的空槽取函数标签声明的默认值(默认表达式由 ErbLoader.parseLabel 建成
 	/// FunctionLabelLine.Def),代入点是 TryConvertArg。这是 UDF 活路径既有的 null 语义,
 	/// 与内建函数侧「可省略槽不放行 null」的裁定无关,此处只钉住它。
 	/// </summary>

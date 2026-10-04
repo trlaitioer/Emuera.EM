@@ -11,7 +11,7 @@ namespace MinorShift.Emuera.UI;
 /// changes how many characters fit into the same em sized panel. Building the font at the size whose full
 /// width advance matches the baseline font's keeps the columns where they were, with the em baseline and
 /// therefore every em sized panel, indent and image left untouched
-/// (see tracker/ui-modernization/issues/03).
+/// (see ui-modernization-03).
 /// </summary>
 internal static class FontMetrics
 {

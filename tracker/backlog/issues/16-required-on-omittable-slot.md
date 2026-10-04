@@ -98,9 +98,9 @@ for (int i = 0; i < srcArgs.Count; i++)
 ## 影响
 
 - 与 `tracker/nullable-migration/issues/08-expression-method-chain.md:49` 的关系：该票为 `!` 断言给出的理由是「`i >= OmitStart` 的槽位允许省略」——本票证明这句话与函数体的实际写法不一致。落地时应回填该票，或在该票正文标注本票承接
-- 与 `tracker/nullable-migration/issues/13-null-forgiving-cleanup.md` 的关系：该票把散落的 `!` 收成 `Required` 具名入口，判据是「把不可见的 `!` 变成可检索的具名声明」。本票不改该结论，但要指出该入口的注释把「调用方担保」写成了「解析器担保」（`ArgumentListExtensions.cs:11-13`）
-- 与 `tracker/nullable-migration/issues/14-null-assertion-audit.md`：其断言审计按「可达/不可达」分类，本票的 135 处属该口径的延伸，但站点集合不同（审计扫的是 `!`，本票扫的是 `Required`）
+- 与 `nullable-migration-13` 的关系：该票把散落的 `!` 收成 `Required` 具名入口，判据是「把不可见的 `!` 变成可检索的具名声明」。本票不改该结论，但要指出该入口的注释把「调用方担保」写成了「解析器担保」（`ArgumentListExtensions.cs:11-13`）
+- 与 `nullable-migration-14`：其断言审计按「可达/不可达」分类，本票的 135 处属该口径的延伸，但站点集合不同（审计扫的是 `!`，本票扫的是 `Required`）
 - 失败模式同 issues/04：装载期 NRE 由 `ErbLoader.ParseFunctionWithCatch` 兜成「函数分析失败」；执行期冒泡到 `Process.DoScript` → `handleException`
 - 改动量估计：中（135 处逐点裁定 + 用例）。**裁定工作可独立于 02 的深化先行开展**，且裁定结果正是 02 设计槽位类型时需要的输入
 - 相关票：issues/02（实参契约表兑现）、issues/04（检查器侧的省略判据）、issues/03（维度标志位）
-- **已转出（2026-09-27）**：承接方 `tracker/arg-contract/issues/03-required-on-omittable-slot.md`。本票作为审查记录保留（文件不移动）
+- **已转出（2026-09-27）**：承接方 `arg-contract-03`。本票作为审查记录保留（文件不移动）

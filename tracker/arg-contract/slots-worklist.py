@@ -223,7 +223,7 @@ if unflagged_need != RULED_NULLABLE:
 out = []
 out.append("# arg-contract/issues/03 逐槽清单（机械预筛 + 片 2 裁定结果）")
 out.append("")
-out.append("本文件由 [slots-worklist.py](slots-worklist.py) 生成，口径见脚本头注释；票见 [arg-contract/issues/03](issues/03-required-on-omittable-slot.md)。")
+out.append("本文件由 [slots-worklist.py](slots-worklist.py) 生成，口径见脚本头注释；票见 `arg-contract-03`。")
 out.append("")
 out.extend(FREEZE_NOTE_WORKLIST)
 out.append("")

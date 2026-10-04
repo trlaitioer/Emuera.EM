@@ -11,7 +11,7 @@ namespace Emuera.Tests.UI;
 /// The reverse lookup is what keeps a font swap from changing the column layout, so what has to hold is that
 /// the baseline font stays where it is and that every other font lands on the baseline font's cell. Advances
 /// are quantized snapshots of the fonts installed on the machine, so the assertions are those invariants and
-/// never a concrete derived size (see tracker/ui-modernization/issues/03).
+/// never a concrete derived size (see ui-modernization-03).
 /// </summary>
 public class FontMetricsTests
 {
