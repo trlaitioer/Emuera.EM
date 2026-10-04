@@ -3,7 +3,8 @@
 产物：`docs/builtin-functions.md`（每个注册名的实参形状/返回/合法实数/空槽语义/说明）+ 控制台的缺口报告。
 
 口径：
-  · 注册名 = `Creator.cs` 里行首 `["NAME"] = new XxxMethod(...)` 的表项（live 计数 266，脚本自校验）。
+  · 注册名 = `BuiltinMethod/` 目录下各类体上的 `[BuiltinMethod("NAME")]` 工厂（live 计数 266，脚本自校验）；
+    每个注册名的构造实参取自同一行的工厂体（阶段 A/C 之前这里读的是 `Creator.cs` 的字面量表）。
   · 每个注册名经**构造器实参**解析到该名字真正使用的规则表：`BuiltinMethod/` 的构造器体被当作
     一小段可执行代码走一遍（if/else-if/else、switch/case 落空贯穿、`a ? b : c` 三元），条件里的
     `type == Operation.Add` 与注册点名传入的 `XxxMethod.Operation.Add` 按最后一段比较。这样
@@ -29,16 +30,15 @@ import sys
 
 from _scan import class_spans, load_sources, parse_blocks, strip_keep_lines
 
-# 阶段 A（backlog/issues/18）把 183 个活子类按原区域顺序搬出 Creator.Method.cs、分居 BuiltinMethod/，
-# 故规则表/函数体一律由 `_scan.load_sources()` 扫描（顺序见 `_scan.BUILTIN_METHOD_SRC`）；注册名此刻仍读
-# `Creator.cs` 的字面量表（搬成类体上的 attribute 工厂是阶段 C 的事）。
-CREATOR_SRC = "Emuera/Runtime/Script/Statements/Function/Creator.cs"
+# 阶段 A/C（backlog/issues/18）把 183 个活子类搬出 Creator.Method.cs、把注册名搬成类体上的 attribute 工厂，
+# 故注册名与规则表/函数体一律由 `_scan.load_sources()` 扫描（顺序 = 拆分前的区域顺序，
+# 见 `_scan.BUILTIN_METHOD_SRC`）；`Creator.cs` 只剩建表逻辑，不再有字面量可读。
 FUNCTION_SRC = "Emuera/Runtime/Script/Statements/Function/FunctionMethod.cs"
 NOTES_SRC = ".scratch/arg-contract/builtin-notes.json"
 FRAGMENT_DIRS = (".temp/notes", ".temp/notes2")   # 第一轮（按 upstream 页面分桶）/ 第二轮（索引命不中的补漏）
 DST = "docs/builtin-functions.md"
 
-EXPECTED_NAMES = 266         # Creator.cs 的注册条目数（改动即在此同步）
+EXPECTED_NAMES = 266         # [BuiltinMethod] 工厂数 == 注册名数（改动即在此同步）
 EXPECTED_CLASSES = 183       # 被注册的 FunctionMethod 子类数
 EXPECTED_BLOCKS = 114        # BuiltinMethod/ 内 `new ArgTypeList` 总数
 # 拒绝侧不变量（arg-contract/issues/03 的裁定值）。这两个数字的权威副本就是这里：
@@ -185,16 +185,43 @@ def eval_bits(expr, vals):
     return total
 
 
-# ── Creator.cs 的注册表 ───────────────────────────────────────────────────────
+# ── 注册名：`[BuiltinMethod("NAME")]` 工厂（阶段 C 之后名字只写在这里）──────────────────
+#     [BuiltinMethod("MIN")]
+#     private static MaxMethod CreateMIN()
+#     {
+#         return new MaxMethod(false);
+#     }
+# 只钉住「attribute 与工厂签名相邻」这一条形态约定：缩进、工厂可见性（private/internal 皆可，见
+# BuiltinMethodAttribute.cs）与工厂体写法（表达式体 `=> new(...)` 或块体 `{ return new(...); }`）都不进匹配，
+# 构造实参用括号配对从 `new(` 取出。任何漏匹配由 main() 的 attribute 处数交叉校验报出来。
+_FACTORY_RE = re.compile(
+    r'(?m)^\t*\[BuiltinMethod\("([^"]+)"\)\]\n'
+    r'\t*(?:private|internal|public) static (\w+) \w+\(\)')
+# 工厂签名与 `new(` 之间只允许：空白、`=> `、或块体的 `{` + 可选 `return`
+_FACTORY_GAP_RE = re.compile(r'^\s*(?:=>[ \t]*|\{[ \t]*\n[ \t]*(?:return[ \t]+)?)?$')
+# 构造调用：`new Xxx(...)`（`new` 与类型名、类型名与 `(` 之间都可能有空白）
+_FACTORY_NEW_RE = re.compile(r'\bnew\s+[\w.]+(?:<[^<>()]*>)?[ \t]*\(')
+
+
 def parse_registrations(text):
+    """按工厂方法解析注册名 → (名字, 实现类, 构造实参)：与注册层扫描的是同一处声明。"""
     out = []
-    for m in re.finditer(r'(?m)^\s*\["([^"]+)"\]\s*=\s*new\s+(\w+)\s*\(', text):
-        o = text.index("(", m.end() - 1)
-        c = match_paren(text, o)
+    for m in _FACTORY_RE.finditer(text):
+        start = m.end()
+        call = _FACTORY_NEW_RE.search(text, start)
+        if not call:
+            continue
+        # `new(` 必须紧接工厂签名（中间只允许 `=>` 或块体开头），否则它属于工厂后面的构造器/方法体
+        if not _FACTORY_GAP_RE.match(text[start:call.start()]):
+            continue
+        paren = call.end() - 1
+        c = match_paren(text, paren)
+        if not re.match(r'[ \t]*;', text[c + 1:]):
+            continue
         out.append({
             "name": m.group(1),
             "cls": m.group(2),
-            "args": split_top(text[o + 1:c]),
+            "args": split_top(text[paren + 1:c]),
             "line": text.count("\n", 0, m.start()) + 1,
         })
     return out
@@ -590,9 +617,9 @@ def note_of(notes, name):
 def merge_fragments():
     notes = load_notes()
     funcs = notes.setdefault("functions", {})
-    # 注册名以 Creator.cs 为准：交回的片段可能写 upstream 的拼写（例如把 CBGREMOVEBMAP 写成 CBGREMOVEMAPB），
+    # 注册名以 `[BuiltinMethod]` 工厂为准：交回的片段可能写 upstream 的拼写（例如把 CBGREMOVEBMAP 写成 CBGREMOVEMAPB），
     # 这类名字直接拒收并报出来，免得产物里出现查不到的名字。
-    live = {r["name"] for r in parse_registrations(open(CREATOR_SRC, encoding="utf-8-sig").read())}
+    live = {r["name"] for r in parse_registrations(load_sources())}
     # 片段是文本的唯一来源，notes 是它的派生物：同名条目以片段为准改写，
     # 否则「改正片段后重跑 --merge」不会生效（旧版本这里对同名条目直接 continue）。
     # 同一名字出现在多个片段时按路径序「先到先得」，后来者不影响产物，文本不同则报冲突——
@@ -636,7 +663,7 @@ def merge_fragments():
     if changed:
         print(f"改写 {len(changed)} 条（片段覆盖旧文本）：{'、'.join(changed)}")
     if rejected:
-        print(f"拒收 {len(rejected)} 条（不是 Creator.cs 里的注册名）：{', '.join(rejected)}")
+        print(f"拒收 {len(rejected)} 条（不是 [BuiltinMethod] 工厂里的注册名）：{', '.join(rejected)}")
     if conflicts:
         print(f"!! 冲突 {len(conflicts)} 条（同一名字多份片段且文本不同，已取先到者）：{'、'.join(conflicts)}")
 
@@ -647,7 +674,7 @@ LEGEND = """## 凡例
 **实参形状**（逐个槽位，逗号分隔；按代码里 `ArgTypeList` / `argumentTypeArray` 的声明推出）：
 
 本表引用的代码位置（相对仓库根）：注册表 `Emuera/Runtime/Script/Statements/Function/Creator.cs`、
-规则表与函数体 `Emuera/Runtime/Script/Statements/Function/Creator.Method.cs`、
+规则表与函数体 `Emuera/Runtime/Script/Statements/Function/BuiltinMethod/` 目录（每个注册名的实现文件与工厂 = `grep -rnF '[BuiltinMethod("NAME")]'` 的命中处）、
 检查器 `Emuera/Runtime/Script/Statements/Function/FunctionMethod.cs`。
 
 | 记号 | 含义 |
@@ -724,7 +751,6 @@ def say(text):
 
 def main():
     global CODE
-    creator = open(CREATOR_SRC, encoding="utf-8-sig").read()
     raw = load_sources()
     func_src = open(FUNCTION_SRC, encoding="utf-8-sig").read()
     CODE = strip_keep_lines(raw)
@@ -734,9 +760,14 @@ def main():
         merge_fragments()
         return
 
-    regs = parse_registrations(creator)
+    regs = parse_registrations(raw)
+    # 交叉校验：正则只认「attribute + 工厂签名」的相邻两行形态，漏掉的工厂必须在这里报出来，
+    # 否则只剩 EXPECTED_NAMES 一个总数兜底（漏一个、多一个也可能凑巧相等）。
+    attr_count = raw.count('[BuiltinMethod("')
+    if len(regs) != attr_count:
+        problems.append(f"扫到 {len(regs)} 个工厂，但文本里有 {attr_count} 处 [BuiltinMethod(（工厂形态变了？）")
     if len(regs) != EXPECTED_NAMES:
-        problems.append(f"注册名 {len(regs)} != 期望 {EXPECTED_NAMES}（Creator.cs 改了要同步本脚本）")
+        problems.append(f"注册名 {len(regs)} != 期望 {EXPECTED_NAMES}（BuiltinMethod/ 目录改了要同步本脚本）")
     classes = sorted(set(r["cls"] for r in regs))
     if len(classes) != EXPECTED_CLASSES:
         problems.append(f"注册类 {len(classes)} != 期望 {EXPECTED_CLASSES}")
@@ -849,7 +880,7 @@ def write_doc(rows, flags, notes):
     lines = []
     lines.append("# 内建函数（式中関数）契约表")
     lines.append("")
-    lines.append("本表覆盖 `Emuera/Runtime/Script/Statements/Function/Creator.cs` 里注册的全部 "
+    lines.append("本表覆盖 `Emuera/Runtime/Script/Statements/Function/BuiltinMethod/` 目录下 `[BuiltinMethod]` 工厂注册的全部 "
                  "**%d 个式中関数注册名**（%d 个 `FunctionMethod` 子类）的实参契约。"
                  % (len(rows), len(set(e["reg"]["cls"] for e in rows))))
     lines.append("形状、合法实参数与返回类型由代码机械推出（生成器 [`.scratch/arg-contract/builtin-contract.py`]"
