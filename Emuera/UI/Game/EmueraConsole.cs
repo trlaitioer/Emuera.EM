@@ -2507,7 +2507,7 @@ internal sealed partial class EmueraConsole : IDisposable
 	{
 		if (tooltip_img && int.TryParse(e.ToolTipText, out int i))
 		{
-			GraphicsImage g = GameData.Function.FunctionMethodCreator.ReadGraphics(i);
+			GraphicsImage g = GameData.Function.BuiltinArgReaders.ReadGraphics(i);
 			if (g.IsCreated)
 			{
 				Image img = g.Bitmap;
@@ -2542,7 +2542,7 @@ internal sealed partial class EmueraConsole : IDisposable
 		// the handlers are registered on this console's ToolTip
 		if (tooltip_img && int.TryParse((sender as ToolTip)!.GetToolTip(e.AssociatedControl), out int i))
 		{
-			GraphicsImage g = GameData.Function.FunctionMethodCreator.ReadGraphics(i);
+			GraphicsImage g = GameData.Function.BuiltinArgReaders.ReadGraphics(i);
 			if (g.IsCreated)
 			{
 				e.ToolTipSize = new Size(g.Width, g.Height);

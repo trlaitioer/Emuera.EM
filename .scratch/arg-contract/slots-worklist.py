@@ -1,7 +1,7 @@
 """arg-contract/issues/03 的逐槽清单生成器。
 
 口径(与票内「范围」一致)：
-  · 站点 = `Creator.Method.cs` 内 `arguments.Required(<字面量>)` 的出现处数（归并到 (类,槽) 后由 A/B 表「站点」列按方法名列出，同一方法里多处记 `×N`）；
+  · 站点 = `BuiltinMethod/*.cs` 内 `arguments.Required(<字面量>)` 的出现处数（归并到 (类,槽) 后由 A/B 表「站点」列按方法名列出，同一方法里多处记 `×N`；阶段 A 之前这些类都在单文件 `Creator.Method.cs` 里）；
   · 「可省略」= 该槽在某段规则里满足 OmitStart >= 0 且 OmitStart <= i < ArgTypes.Count；
   · 「未证」= 该槽不存在 i < OmitStart 的段（即检查器不拒该槽的 null）；
   · 「null 处理」在**剥注释后**的文本上做，识别三种写法：
@@ -34,10 +34,11 @@ import re
 import sys
 
 from _rulings import DISPOSITION as HARDCAST_DISPOSITION, worklist_rulings
-from _scan import (class_spans, line_of, method_of, methods_of, not_null_counts,
+from _scan import (class_spans, line_of, load_sources, method_of, methods_of, not_null_counts,
                    null_handling_points, parse_blocks, strip_keep_lines)
 
-SRC = r"Emuera/Runtime/Script/Statements/Function/Creator.Method.cs"
+# 扫描源 = `_scan.BUILTIN_METHOD_SRC`（阶段 A 之后 183 个子类分居 BuiltinMethod/*.cs；此前是单文件
+# Creator.Method.cs，拼接顺序与拆分前的区域顺序一致）。
 DST = r".scratch/arg-contract/slots-worklist.md"
 # 片 5 的用例数从测试文件机械数出（不把数字硬编码进产物：用例增删要跟着变；数不到即报警并以非零码退出）。
 TEST_SRC = r"Emuera.Tests/Runtime/Script/Statements/Function/IntentionalEmptySlotExecutionTests.cs"
@@ -55,7 +56,7 @@ if test_src is not None and not case_n:
 # 成文：核到就写数字，否则写明未核（problems 非空时脚本末尾以非零码退出）
 case_txt = f"{case_n} 条用例" if case_n else "用例数未核"
 
-src = open(SRC, encoding="utf-8-sig").read()
+src = load_sources()
 lines = src.split("\n")
 
 code = strip_keep_lines(src)
@@ -267,7 +268,7 @@ out.append("## B. 有意候选（片 2-B 裁定：34 项全部为「显式留空
 out.append("")
 out.append("判空若是防御性写法或注释残留，归 A 表；片 2-B 逐槽取证后**无一项**归 A——34 项的函数体都把 null 与「不传该实参」读成同一个默认值（或走明确分支，如 `GETMETH` 无兜底值时抛 `CodeEE`）。")
 out.append("")
-out.append("各槽的空槽语义写在 `Creator.Method.cs` 对应规则段旁，由 `CheckArgumentTypeEx.IntentionalEmptySlot_IsAccepted` 逐槽钉住；A 表里的 `DataTableColumnManagementMethod[1]` 同判（NAMES 的空槽 = 写入 RESULTS 数组），故它是 A 表唯一不带 `NotNull` 的行。")
+out.append("各槽的空槽语义写在 `BuiltinMethod/*.cs` 对应规则段旁，由 `CheckArgumentTypeEx.IntentionalEmptySlot_IsAccepted` 逐槽钉住；A 表里的 `DataTableColumnManagementMethod[1]` 同判（NAMES 的空槽 = 写入 RESULTS 数组），故它是 A 表唯一不带 `NotNull` 的行。")
 out.append("")
 out.append("| 类[槽] | 站点（类内方法） | 可省略段 | 必填段 | 类内 null 处理（方法） |")
 out.append("| --- | --- | --- | --- | --- |")

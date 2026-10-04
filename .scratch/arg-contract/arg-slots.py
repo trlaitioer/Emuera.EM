@@ -1,8 +1,9 @@
 """arg-contract 的实参消费面生成器：issues/04 阶段 A 片 0 的重新基线 + issues/05 阶段 B 的验收口径。
 
 口径：
-  · 扫描范围 = `Emuera/Runtime/Script/Statements/Function/Creator.Method.cs`（**规则表族**：183 个子类
-    经 `FunctionMethod.CheckArgumentTypeEx` 校验）。另三族绕过规则表，不在本表：运算符族在
+  · 扫描范围 = `Emuera/Runtime/Script/Statements/Function/BuiltinMethod/*.cs`（**规则表族**：183 个子类
+    经 `FunctionMethod.CheckArgumentTypeEx` 校验；阶段 A 之前这些类都在单文件 `Creator.Method.cs` 里，
+    现已按原区域顺序分居该目录，扫描顺序见 `_scan.BUILTIN_METHOD_SRC`）。另三族绕过规则表，不在本表：运算符族在
     `OperatorMethod.cs`（`CheckArgumentType` 抛 ExeEE）、StrForm 族在 `StrForm.cs`、TOSTR 包装在
     `Process.CalledFunction.cs`（都由调用点担保，见 G 段的 `Trusted` 计数）。
   · live = 剥注释后的文本（沿用 slots-worklist.py 的朴素逐行剥离；本文件无逐字字符串/原始字符串，
@@ -30,7 +31,7 @@
     `[.. Slots.FoldTarget]`）1、`ArgumentSlots` 快照的 ctor 复制 1；候选集与裁定表一致；
     以及**与 [slots-worklist.py](slots-worklist.py) 同函数同口径**的 `ArgType.NotNull` 计数
     （计数函数在 `_scan.not_null_counts`，现行预期值是 `_scan.NOT_NULL_EXPECTED` 这一个常量——
-    数字不写在这里，改 `Creator.Method.cs` 时只同步 `_scan.py` 一处即可同时约束两个产物）。
+    数字不写在这里，改 `BuiltinMethod/*.cs` 时只同步 `_scan.py` 一处即可同时约束两个产物）。
   · G 段（issues/05 阶段 B 的验收口径，见产物 G 段）：站点全集 = 全文件 live `arguments.Required(<任意下标>)`
     （含文件作用域 helper 内部的读取，如 `ReadPoint`）。**形态**按站点后随成员归类（词表与 `read_forms`
     一致，前缀窗 24 字符以容纳 `(VariableTerm)arguments.Required(n)` 这一写法）；**面**按花括号配对归属：
@@ -53,10 +54,11 @@ import sys
 from collections import Counter
 
 from _rulings import consumption_rulings
-from _scan import (NOT_NULL_EXPECTED, class_spans, methods_of, not_null_counts,
+from _scan import (NOT_NULL_EXPECTED, class_spans, load_sources, methods_of, not_null_counts,
                    null_handling_points, parse_blocks, strip_keep_lines)
 
-SRC = r"Emuera/Runtime/Script/Statements/Function/Creator.Method.cs"
+# 扫描源 = `_scan.BUILTIN_METHOD_SRC`（阶段 A 之后 183 个子类分居 BuiltinMethod/*.cs；此前是单文件
+# Creator.Method.cs，拼接顺序与拆分前的区域顺序一致）。
 DST = r".scratch/arg-contract/slots-consumption.md"
 PROGRESS_DST = r".scratch/arg-contract/slots-progress.md"
 REPO = r"Emuera"
@@ -65,7 +67,7 @@ REPO = r"Emuera"
 # 需要重生成阶段 A 快照时显式加 --phase-a（只应在阶段 A 的 HEAD 上跑）。
 PHASE_A = "--phase-a" in sys.argv
 
-src = open(SRC, encoding="utf-8-sig").read()
+src = load_sources()
 
 code = strip_keep_lines(src)
 lines = src.split("\n")
@@ -782,7 +784,7 @@ out.append("# arg-contract/issues/04 阶段 A 片 0：实参消费面重新基�
 out.append("")
 out.append("本文件由 [arg-slots.py](arg-slots.py) 生成，口径见脚本头注释；票见 [arg-contract/issues/04](issues/04-argument-slots.md)。")
 out.append("")
-out.append("扫描范围是**规则表族**（`Creator.Method.cs` 的 183 个子类，经 `FunctionMethod.CheckArgumentTypeEx` 校验）。")
+out.append("扫描范围是**规则表族**（`BuiltinMethod/*.cs` 的 183 个子类，经 `FunctionMethod.CheckArgumentTypeEx` 校验）。")
 out.append("运算符族（`OperatorMethod.cs`）、StrForm 族（`StrForm.cs`）、TOSTR 包装（`Process.CalledFunction.cs`）")
 out.append("都绕过规则表、由调用点担保，不在本表。")
 out.append("")

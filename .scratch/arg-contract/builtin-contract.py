@@ -4,7 +4,7 @@
 
 口径：
   · 注册名 = `Creator.cs` 里行首 `["NAME"] = new XxxMethod(...)` 的表项（live 计数 266，脚本自校验）。
-  · 每个注册名经**构造器实参**解析到该名字真正使用的规则表：`Creator.Method.cs` 的构造器体被当作
+  · 每个注册名经**构造器实参**解析到该名字真正使用的规则表：`BuiltinMethod/` 的构造器体被当作
     一小段可执行代码走一遍（if/else-if/else、switch/case 落空贯穿、`a ? b : c` 三元），条件里的
     `type == Operation.Add` 与注册点名传入的 `XxxMethod.Operation.Add` 按最后一段比较。这样
     「一个类多个构造器/多段规则」的类不必手工登记映射（形状全部来自代码）。
@@ -27,10 +27,12 @@ import os
 import re
 import sys
 
-from _scan import class_spans, parse_blocks, strip_keep_lines
+from _scan import class_spans, load_sources, parse_blocks, strip_keep_lines
 
+# 阶段 A（backlog/issues/18）把 183 个活子类按原区域顺序搬出 Creator.Method.cs、分居 BuiltinMethod/，
+# 故规则表/函数体一律由 `_scan.load_sources()` 扫描（顺序见 `_scan.BUILTIN_METHOD_SRC`）；注册名此刻仍读
+# `Creator.cs` 的字面量表（搬成类体上的 attribute 工厂是阶段 C 的事）。
 CREATOR_SRC = "Emuera/Runtime/Script/Statements/Function/Creator.cs"
-METHOD_SRC = "Emuera/Runtime/Script/Statements/Function/Creator.Method.cs"
 FUNCTION_SRC = "Emuera/Runtime/Script/Statements/Function/FunctionMethod.cs"
 NOTES_SRC = ".scratch/arg-contract/builtin-notes.json"
 FRAGMENT_DIRS = (".temp/notes", ".temp/notes2")   # 第一轮（按 upstream 页面分桶）/ 第二轮（索引命不中的补漏）
@@ -38,14 +40,14 @@ DST = "docs/builtin-functions.md"
 
 EXPECTED_NAMES = 266         # Creator.cs 的注册条目数（改动即在此同步）
 EXPECTED_CLASSES = 183       # 被注册的 FunctionMethod 子类数
-EXPECTED_BLOCKS = 114        # Creator.Method.cs 内 `new ArgTypeList` 总数
+EXPECTED_BLOCKS = 114        # BuiltinMethod/ 内 `new ArgTypeList` 总数
 # 拒绝侧不变量（arg-contract/issues/03 的裁定值）。这两个数字的权威副本就是这里：
 # 票据/文档不再各自维护一份，改为引用本脚本自校验打印的那一行。
 EXPECTED_OMITTABLE = 96      # 可省略 (类,槽) 全集（不论是否被 Required 读取）
 EXPECTED_REJECT_EMPTY = 54   # 其中「全部可省略段都带 ArgType.NotNull」的 (类,槽) 数
 
 # 没有规则表、由类自己 override `CheckArgumentType` 的注册名：逐槽形状读不出来，只能人工裁定。
-# 依据 `MesSkipMethod`（Creator.Method.cs）：`argumentTypeArray = null`，自写的检查只做「实参多于 0 个报 TooManyFuncArgs」。
+# 依据 `MesSkipMethod`：`argumentTypeArray = null`，自写的检查只做「实参多于 0 个报 TooManyFuncArgs」。
 # 将来又多出/少掉这类名字，自校验会报，届时补这里。
 NO_TABLE_RULED = {
     "MESSKIP": {"shape": "（无实参）", "count": "恰好 0"},
@@ -349,7 +351,8 @@ def class_ctors(code, cls):
     pos, end = spans[cls]
     body = code[pos:end]
     ctors = []
-    for m in re.finditer(r"^\t\t(?:public|private|internal)\s+%s\s*\(" % re.escape(cls), body, re.M):
+    # 类成员缩进随族的布局（阶段 A 之后 BuiltinMethod/ 是 1 个 Tab，此前是 2 个）
+    for m in re.finditer(r"^\t+(?:public|private|internal)\s+%s\s*\(" % re.escape(cls), body, re.M):
         o = body.index("(", m.end() - 1)
         c = match_paren(body, o)
         params = split_top(body[o + 1:c])
@@ -722,7 +725,7 @@ def say(text):
 def main():
     global CODE
     creator = open(CREATOR_SRC, encoding="utf-8-sig").read()
-    raw = open(METHOD_SRC, encoding="utf-8-sig").read()
+    raw = load_sources()
     func_src = open(FUNCTION_SRC, encoding="utf-8-sig").read()
     CODE = strip_keep_lines(raw)
     flags = parse_argtype(func_src)

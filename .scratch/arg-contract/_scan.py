@@ -16,22 +16,46 @@
   · 所有函数的字符位置都指向**传入文本**的坐标系（剥注释不改长度，故位置可与原文互认）。
 """
 
+import os
 import re
 
-# ── 类签名：三族的嵌套类都是 `\t` 缩进的 `sealed class` ──────────────────────────────
-CLASS_RE = re.compile(r"^\t(?:public |private |internal )?sealed class (\w+)\s*:", re.M)
+# ── 扫描源：阶段 A（backlog/issues/18）之后 183 个子类分居 BuiltinMethod/*.cs 的顶层 `internal sealed
+#    class`。顺序 = 拆分前 Creator.Method.cs 的区域顺序，产物行序才不随文件布局漂移。 ──────────────
+BUILTIN_METHOD_DIR = "Emuera/Runtime/Script/Statements/Function/BuiltinMethod"
+BUILTIN_METHOD_SRC = [os.path.join(BUILTIN_METHOD_DIR, name) for name in (
+    "PrivateAdditions.cs", "CsvData.cs", "GeneralPurpose.cs", "Constants.cs", "MathMethods.cs",
+    "ArrayOperations.cs", "StringOperations.cs", "Html.cs",
+    # 6 个图形实参 helper 随搬迁落进 BuiltinArgReaders.cs（原在 FunctionMethodCreator 里、包在
+    # Graphics 区域开头），G 段要把它们当**文件作用域 helper** 扫到，故位置与原顺序一致。
+    "BuiltinArgReaders.cs", "Graphics.cs", "EeAndPatches.cs")]
 
-# ── 方法签名：只认「<\t\t> 访问修饰符 … 名字 (」形态，否则 `throw new CodeEE(` 一类语句也会命中 ──
+
+def load_sources(paths=None):
+    """按给定顺序拼接多份源文件（阶段 A 之前这里是单文件 `Creator.Method.cs`）。
+
+    位置沿用**拼接文本**坐标系：类不跨文件，故类边界与类内方法归因不受影响；`parse_blocks` 的 `line`
+    只在拼接文本内有意义，产物里不输出它（`slots-worklist.py` 的 `sites` 也不进表）。
+    """
+    return "".join(open(p, encoding="utf-8-sig").read() for p in (paths or BUILTIN_METHOD_SRC))
+
+
+# ── 类签名：缩进不敏感，同时覆盖两族布局 —— 阶段 A（backlog/issues/18）之后 183 个内建函数子类是
+#    BuiltinMethod/*.cs 的顶层 `internal sealed class`，而 `ArgumentBuilder.cs` 一族仍是
+#    `\t` 缩进的嵌套类。 ────────────────────────────────────────────────────────────────
+CLASS_RE = re.compile(r"^\t*(?:public |private |internal )?sealed class (\w+)\s*:", re.M)
+
+# ── 方法签名：只认「<\t+> 访问修饰符 … 名字 (」形态（成员缩进随族的布局分别是 1 或 2 个 Tab），否则
+#    `throw new CodeEE(` 一类语句也会命中 —— 语句不可能以访问修饰符开头 ──
 _METHOD_SIG_BODY = (
     r"(?:(?:static|override|virtual|sealed|async|partial|new|unsafe|extern)\s+)*"
     r"(?:[\w<>\[\],?.]+\s+)?(\w+)\s*\("
 )
 METHOD_SIG_RE = re.compile(
-    r"^\t\t(?:\[[^\]]*\]\s*)?(?:public|private|protected|internal)\s+" + _METHOD_SIG_BODY
+    r"^\t+(?:\[[^\]]*\]\s*)?(?:public|private|protected|internal)\s+" + _METHOD_SIG_BODY
 )
 # 供 `finditer` 在类体上扫（`^` 需 `re.M` 才逐行生效；上面那份是逐行 `match`，不需要）
 METHOD_SIG_RE_PLAIN = re.compile(
-    r"^\t\t(?:public|private|protected|internal)\s+" + _METHOD_SIG_BODY, re.M
+    r"^\t+(?:public|private|protected|internal)\s+" + _METHOD_SIG_BODY, re.M
 )
 METHOD_KEYWORDS = {"if", "for", "while", "switch", "return", "throw", "catch", "using", "lock",
                    "foreach", "else", "new", "get", "set"}
@@ -85,7 +109,7 @@ def method_marks(text, regex=METHOD_SIG_RE):
 
 
 def method_of(text, lines, pos):
-    """pos 所属的类内方法名（本族文件的类成员均为两个 Tab 缩进）。
+    """pos 所属的类内方法名（类成员缩进 1 或 2 个 Tab，正则不敏感；类体的字段区会继续向前找到上个方法）。
 
     产物里的定位一律写方法名而不写行号：行号会随任何插入整体失效。
     """
@@ -174,8 +198,8 @@ def parse_blocks(src, pos, end):
 
 # ── `ArgType.NotNull` 计数（issues/04 的自校验项之一）─────────────────────────────────
 NOT_NULL_FLAG = "ArgType.NotNull"
-# `Creator.Method.cs` 的期望值：(含注释 处数, 含注释 行数, 剥注释 处数, 剥注释 行数)。
-# 两套口径不同是因为注释里也提到过该标志；数值变化只在改 `Creator.Method.cs` 时发生，届时同步此处与票面。
+# `BuiltinMethod/*.cs` 的期望值：(含注释 处数, 含注释 行数, 剥注释 处数, 剥注释 行数)。
+# 两套口径不同是因为注释里也提到过该标志；数值变化只在改 `BuiltinMethod/*.cs` 时发生，届时同步此处与票面。
 NOT_NULL_EXPECTED = (88, 77, 81, 70)
 
 

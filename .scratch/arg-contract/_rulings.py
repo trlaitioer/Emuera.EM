@@ -21,7 +21,7 @@
   · `flagged` = 该槽的**全部**可省略段是否都已在**该槽位**带 `ArgType.NotNull`（只有 `worklist_rulings()`
     需要这一列；`arg-slots.py` 的标志由脚本机械判定，不进裁定表）。
 
-代码侧取证：`Emuera/Runtime/Script/Statements/Function/Creator.Method.cs` 的 `EnumNameMethod.GetIntValue`、
+代码侧取证：`Emuera/Runtime/Script/Statements/Function/BuiltinMethod/PrivateAdditions.cs` 的 `EnumNameMethod.GetIntValue`、
 `EnumFilesMethod.GetIntValue`、`DataTableSelectMethod.GetIntValue`、`DataTableToXmlMethod.GetStrValue`。
 """
 
