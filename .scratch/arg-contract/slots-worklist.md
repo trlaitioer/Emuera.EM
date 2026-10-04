@@ -2,6 +2,11 @@
 
 本文件由 [slots-worklist.py](slots-worklist.py) 生成，口径见脚本头注释；票见 [arg-contract/issues/03](issues/03-required-on-omittable-slot.md)。
 
+> **冻结声明（2026-10 补）**：本文件是**阶段 A 的冻结快照**（口径见 [slots-worklist.py](slots-worklist.py) 头注释的「冻结提示」）。
+> 在当前 HEAD 上重跑该脚本会**覆盖**本文件、且数字必然漂移——已知漂移：`arguments.Required(` 405→26、
+> 「被 `Required`(字面量) 读取」76→2、E 段补车道 20→94、`ArgType.NotNull` 含注释口径 87/76→88/77。
+> 阶段 B 的验收口径改用 [slots-progress.md](slots-progress.md)。
+
 ## 计数
 
 | 量 | 数 |

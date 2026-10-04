@@ -29,7 +29,7 @@ if (arguments[i] == null)
 **23/23 全部是「不允许省略」；无一块该补 `OmitStart`；无一块永不收到 null。** 依据：
 
 - 23/23 的函数体对**每一个**槽都做了 `Required(i)` / `as VariableTerm` 解引用（含 ReadGraphics/ReadColor/ReadPoint/ReadRectangle 等共享 helper），没有一块把某槽的 null 当作「省略」处理
-- `DisallowVoid` 全库仅出现在 `Creator.Method.cs:478-479`（`ArrayMultiSortExMethod`，`OmitStart = 2`）——该标志的用途正是「在可省略区间内单独标注某槽不可省略」，反证未写 `OmitStart` 的块整体不可省略
+- `DisallowVoid`（今名 `ArgType.NotNull`）全库仅出现在 `ArrayMultiSortExMethod` 的两段（审计时 `Creator.Method.cs:478-479`，现 `BuiltinMethod/PrivateAdditions.cs`；`OmitStart = 2`）——该标志的用途正是「在可省略区间内单独标注某槽不可省略」，反证未写 `OmitStart` 的块整体不可省略
 - 旁证：`GroupMatchMethod`/`NosamesMethod`/`AllsamesMethod` 被注释掉的旧 `CheckArgumentType`（`:4717-4732`、`:4776-4791`、`:4840-4855`）逐槽拒绝 null，文案为「引数の1番目は省略できません」
 - 计数复核：`Creator.Method.cs` 内 `new ArgTypeList` 114 处、`OmitStart` 91 处；每块独占一行且 `OmitStart` 为 init-only，故 114 − 91 = 23 成立
 

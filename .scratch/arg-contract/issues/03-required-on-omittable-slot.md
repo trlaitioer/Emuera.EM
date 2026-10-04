@@ -166,7 +166,7 @@ else
 
 上表随「附」的两处 `OmitStart` 附修更新（`HotkeyStateMethod` 不再有可省略槽、`GraphicsSetFontMethod` 只剩槽 3）。另有一把与 null 正交的尺子——「读该槽时是否保证 `Count >= i + 1`」——已对 A 表（42 项）与补车道的 20 项（片 2-D）逐点核过：只有「附」里那 2 处属数量省略越界，其余站点都有保证 `Count >= i + 1` 的守卫。
 
-逐槽清单见 [slots-worklist.md](../slots-worklist.md)（生成器 [slots-worklist.py](../slots-worklist.py)，可复跑；口径见其头注释）。
+逐槽清单见 [slots-worklist.md](../slots-worklist.md)（生成器 [slots-worklist.py](../slots-worklist.py)，可复跑；口径见其头注释）。该工件是阶段 A 的冻结快照：头部声明与已知漂移清单自 2026-10 起由生成器写出（`_scan.FREEZE_NOTE_WORKLIST`），不手工维护 ⇒ 产物仍是生成器的完整输出，「可复跑」这条口径不再有无法复现的头部例外（正文仍只在其基线 HEAD 上可复现）。
 
 ### 片 1：止血——已举证的 3 处可达 NRE + 2 处数量省略越界（已落地）
 

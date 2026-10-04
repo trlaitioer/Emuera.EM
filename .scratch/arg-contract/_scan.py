@@ -203,6 +203,28 @@ NOT_NULL_FLAG = "ArgType.NotNull"
 NOT_NULL_EXPECTED = (88, 77, 81, 70)
 
 
+# ── 冻结声明：由 `arg-slots.py` / `slots-worklist.py` 写进各自产物的头部 ──────────────────
+# 两份产物都是阶段 A 的快照：正文（读取形态 / 被 `Required` 读取的车道）只在阶段 A 的 HEAD 上
+# 可逐字节复现，在当前 HEAD 上重跑必然漂移（已知漂移量写在下面的声明里）。
+#
+# 声明放生成器、不手工插进产物：手工插的会被下一次重生成吞掉，且会让「产物 = 生成器输出」这条
+# 复现口径在头部出现无法复现的例外。改这两段文本会改产物字节，故须同步重跑生成器（各自的票面
+# 记有该口径）。
+FREEZE_NOTE_CONSUMPTION = [
+    "> **冻结声明（2026-10 补）**：本文件是**阶段 A 片 0 的冻结快照**（`arg-slots.py --phase-a` 的产物）。默认运行",
+    "> `arg-slots.py` 不写本文件；重生成只应在阶段 A 的 HEAD 上进行，否则「读取形态」那批表必然漂移——阶段 B",
+    "> （[issues/05](issues/05-argument-slots-type.md)）已把消费面全部换成 `ArgumentSlots` 访问器。阶段 B 的验收口径见",
+    "> [slots-progress.md](slots-progress.md)。",
+]
+
+FREEZE_NOTE_WORKLIST = [
+    "> **冻结声明（2026-10 补）**：本文件是**阶段 A 的冻结快照**（口径见 [slots-worklist.py](slots-worklist.py) 头注释的「冻结提示」）。",
+    "> 在当前 HEAD 上重跑该脚本会**覆盖**本文件、且数字必然漂移——已知漂移：`arguments.Required(` 405→26、",
+    "> 「被 `Required`(字面量) 读取」76→2、E 段补车道 20→94、`ArgType.NotNull` 含注释口径 87/76→88/77。",
+    "> 阶段 B 的验收口径改用 [slots-progress.md](slots-progress.md)。",
+]
+
+
 def not_null_counts(text, strip_regions=False):
     """`ArgType.NotNull` 的计数：含注释与剥注释两套，各给 (处数, 行数)。
 

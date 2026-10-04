@@ -25,8 +25,9 @@
 
 **冻结提示**：本表建模的是阶段 A 的「被 `Required`(字面量) 读取」这条车道。arg-contract/issues/05 的阶段 B
 把这些消费点全换成了 `ArgumentSlots` 访问器，迁移后再跑本脚本会**覆盖冻结产物**：口径数字必然漂移
-（`arguments.Required(` 405 → 26、A/B 两段 76 项 → 2 项、E 段 20 → 94），并打出「E 段存在未裁定的可省略槽」等
-WARN。故只在阶段 A 的 HEAD 上跑；阶段 B 的验收口径改用 [arg-slots.py](arg-slots.py) 的默认产物
+（`arguments.Required(` 405 → 26、A/B 两段 76 项 → 2 项、E 段 20 → 94、`ArgType.NotNull` 含注释口径 87/76 → 88/77），
+并打出「E 段存在未裁定的可省略槽」等 WARN。产物 .md 头部的冻结声明与上列漂移清单由生成器写出
+（`_scan.FREEZE_NOTE_WORKLIST`），不手工维护。故只在阶段 A 的 HEAD 上跑；阶段 B 的验收口径改用 [arg-slots.py](arg-slots.py) 的默认产物
 [slots-progress.md](slots-progress.md)。
 """
 
@@ -34,8 +35,8 @@ import re
 import sys
 
 from _rulings import DISPOSITION as HARDCAST_DISPOSITION, worklist_rulings
-from _scan import (class_spans, line_of, load_sources, method_of, methods_of, not_null_counts,
-                   null_handling_points, parse_blocks, strip_keep_lines)
+from _scan import (FREEZE_NOTE_WORKLIST, class_spans, line_of, load_sources, method_of, methods_of,
+                   not_null_counts, null_handling_points, parse_blocks, strip_keep_lines)
 
 # 扫描源 = `_scan.BUILTIN_METHOD_SRC`（阶段 A 之后 183 个子类分居 BuiltinMethod/*.cs；此前是单文件
 # Creator.Method.cs，拼接顺序与拆分前的区域顺序一致）。
@@ -223,6 +224,8 @@ out = []
 out.append("# arg-contract/issues/03 逐槽清单（机械预筛 + 片 2 裁定结果）")
 out.append("")
 out.append("本文件由 [slots-worklist.py](slots-worklist.py) 生成，口径见脚本头注释；票见 [arg-contract/issues/03](issues/03-required-on-omittable-slot.md)。")
+out.append("")
+out.extend(FREEZE_NOTE_WORKLIST)
 out.append("")
 out.append("## 计数")
 out.append("")

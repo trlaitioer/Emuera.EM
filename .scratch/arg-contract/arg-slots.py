@@ -45,7 +45,8 @@
       python3.14 .scratch/arg-contract/arg-slots.py --phase-a  # 另写阶段 A 快照（只应在阶段 A 的 HEAD 上跑）
 产物：.scratch/arg-contract/slots-progress.md（默认：G 段 + 阶段 B 自校验；UTF-8 BOM，可逐字节复现）
       .scratch/arg-contract/slots-consumption.md（--phase-a：阶段 A 的 A–F 与 E 段快照。阶段 B 重写消费面后
-      那批表的「读取形态」扫描不到访问器调用、必然漂移，故该文件已冻结在基线 HEAD 30686cf4，不再默认重写）
+      那批表的「读取形态」扫描不到访问器调用、必然漂移，故该文件已冻结在基线 HEAD 30686cf4，不再默认重写；
+      产物 .md 头部的冻结声明由生成器写出（`_scan.FREEZE_NOTE_CONSUMPTION`），不手工维护）
 """
 
 import os
@@ -54,8 +55,8 @@ import sys
 from collections import Counter
 
 from _rulings import consumption_rulings
-from _scan import (NOT_NULL_EXPECTED, class_spans, load_sources, methods_of, not_null_counts,
-                   null_handling_points, parse_blocks, strip_keep_lines)
+from _scan import (FREEZE_NOTE_CONSUMPTION, NOT_NULL_EXPECTED, class_spans, load_sources, methods_of,
+                   not_null_counts, null_handling_points, parse_blocks, strip_keep_lines)
 
 # 扫描源 = `_scan.BUILTIN_METHOD_SRC`（阶段 A 之后 183 个子类分居 BuiltinMethod/*.cs；此前是单文件
 # Creator.Method.cs，拼接顺序与拆分前的区域顺序一致）。
@@ -783,6 +784,8 @@ out = []
 out.append("# arg-contract/issues/04 阶段 A 片 0：实参消费面重新基线")
 out.append("")
 out.append("本文件由 [arg-slots.py](arg-slots.py) 生成，口径见脚本头注释；票见 [arg-contract/issues/04](issues/04-argument-slots.md)。")
+out.append("")
+out.extend(FREEZE_NOTE_CONSUMPTION)
 out.append("")
 out.append("扫描范围是**规则表族**（`BuiltinMethod/*.cs` 的 183 个子类，经 `FunctionMethod.CheckArgumentTypeEx` 校验）。")
 out.append("运算符族（`OperatorMethod.cs`）、StrForm 族（`StrForm.cs`）、TOSTR 包装（`Process.CalledFunction.cs`）")

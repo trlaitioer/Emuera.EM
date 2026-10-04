@@ -2,6 +2,11 @@
 
 本文件由 [arg-slots.py](arg-slots.py) 生成，口径见脚本头注释；票见 [arg-contract/issues/04](issues/04-argument-slots.md)。
 
+> **冻结声明（2026-10 补）**：本文件是**阶段 A 片 0 的冻结快照**（`arg-slots.py --phase-a` 的产物）。默认运行
+> `arg-slots.py` 不写本文件；重生成只应在阶段 A 的 HEAD 上进行，否则「读取形态」那批表必然漂移——阶段 B
+> （[issues/05](issues/05-argument-slots-type.md)）已把消费面全部换成 `ArgumentSlots` 访问器。阶段 B 的验收口径见
+> [slots-progress.md](slots-progress.md)。
+
 扫描范围是**规则表族**（`BuiltinMethod/*.cs` 的 183 个子类，经 `FunctionMethod.CheckArgumentTypeEx` 校验）。
 运算符族（`OperatorMethod.cs`）、StrForm 族（`StrForm.cs`）、TOSTR 包装（`Process.CalledFunction.cs`）
 都绕过规则表、由调用点担保，不在本表。
