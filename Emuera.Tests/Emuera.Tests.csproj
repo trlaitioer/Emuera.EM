@@ -27,6 +27,15 @@
     <Content Include="Runtime/Script/Statements/Function/BuiltinMethodNames.snapshot.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <!--
+      Gate D 的源码输入(backlog/issues/18):7 个靠运行期 `Name` 分派的类,其 `switch (Name)` 的
+      `case` 标签集合要与该类注册名集合相等。反射看不到 switch 标签,故闸门读源码比对,
+      源码必须随测试产物一起拷贝(否则闸门只能靠工作目录定位)。
+    -->
+    <Content Include="..\Emuera\Runtime\Script\Statements\Function\BuiltinMethod\*.cs"
+             Link="BuiltinMethodSources/%(Filename)%(Extension)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
