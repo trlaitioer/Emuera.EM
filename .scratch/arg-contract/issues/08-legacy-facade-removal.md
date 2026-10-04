@@ -1,5 +1,6 @@
 # 旧签名的四个入口作为非虚门面长期保留，测试是它唯一的消费者
 
+id: arg-contract-08
 Status: needs-triage
 
 ## 任务

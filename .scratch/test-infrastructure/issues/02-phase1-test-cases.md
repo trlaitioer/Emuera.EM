@@ -1,5 +1,6 @@
 # Phase 1 测试用例
 
+id: test-infrastructure-02
 Status: implemented
 
 ## 任务

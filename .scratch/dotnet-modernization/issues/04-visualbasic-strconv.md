@@ -1,5 +1,6 @@
 # 决策:保留 Microsoft.VisualBasic 的 StrConv 依赖
 
+id: dotnet-modernization-04
 Status: ready-for-human
 
 ## 任务

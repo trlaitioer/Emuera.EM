@@ -1,5 +1,6 @@
 # 67 条命令的实参形状与行为分居两个 module，只靠 FunctionCode 名字相连
 
+id: backlog-06
 Status: needs-triage
 
 ## 任务

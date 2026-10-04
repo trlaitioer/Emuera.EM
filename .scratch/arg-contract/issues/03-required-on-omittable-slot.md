@@ -1,5 +1,6 @@
 # 函数体在「设计上可省略」的实参槽上解引用 null
 
+id: arg-contract-03
 Status: implemented
 Type: bug
 

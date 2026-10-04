@@ -1,5 +1,6 @@
 # 决策:C# 语言特性现代化策略
 
+id: dotnet-modernization-06
 Status: ready-for-human
 
 ## 任务

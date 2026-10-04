@@ -1,5 +1,6 @@
 # 决策:WinForms 层升级需求评估
 
+id: ui-modernization-01
 Status: ready-for-human
 
 ## 任务

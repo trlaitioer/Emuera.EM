@@ -1,5 +1,6 @@
 # UniqueRestructure 收到的是副本，14 个类的写回被静默丢弃
 
+id: arg-contract-09
 Status: needs-triage
 
 ## 任务

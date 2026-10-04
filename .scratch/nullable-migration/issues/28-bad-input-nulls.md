@@ -1,5 +1,6 @@
 # Nullable:坏输入路径解引用 null（配置/脚本/存档）
 
+id: nullable-migration-28
 Status: ready-for-agent
 
 ## 任务

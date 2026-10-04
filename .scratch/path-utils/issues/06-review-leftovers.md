@@ -1,5 +1,6 @@
 # 路径:审查遗留问题(四处修复 + 一处伪回归核实)
 
+id: path-utils-06
 Status: implemented
 
 ## 任务

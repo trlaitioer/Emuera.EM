@@ -1,5 +1,6 @@
 # UPDATECHECK 换用 HttpClient
 
+id: dotnet-modernization-01
 Status: implemented
 
 ## 任务

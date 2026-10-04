@@ -1,5 +1,6 @@
 # 实参契约表（阶段 A）：可省略槽的硬转型止血
 
+id: arg-contract-04
 Status: implemented
 
 ## 任务

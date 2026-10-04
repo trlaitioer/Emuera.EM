@@ -1,5 +1,6 @@
 # 存档读取:畸形文本序列检出加固
 
+id: dotnet-modernization-02
 Status: needs-triage
 
 ## 任务

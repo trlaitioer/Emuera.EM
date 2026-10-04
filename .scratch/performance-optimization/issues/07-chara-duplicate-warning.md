@@ -1,5 +1,6 @@
 # 告警:重复角色 No 收敛为每组一条
 
+id: performance-optimization-07
 Status: ready-for-human
 
 ## 任务

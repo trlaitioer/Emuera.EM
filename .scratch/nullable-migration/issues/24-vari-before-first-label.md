@@ -1,5 +1,6 @@
 # Nullable:首个 `@函数` 之前的 VARI/VARS 语句解引用 null 的 parentLine
 
+id: nullable-migration-24
 Status: ready-for-agent
 
 ## 任务

@@ -1,5 +1,6 @@
 # Nullable:UI 与外围启用
 
+id: nullable-migration-12
 Status: implemented
 
 Blocked by: 06, 07, 10

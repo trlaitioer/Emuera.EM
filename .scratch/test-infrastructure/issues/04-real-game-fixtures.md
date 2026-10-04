@@ -1,5 +1,6 @@
 # 测试用例扩展:FORM 字符串 / 表达式 / 常用函数
 
+id: test-infrastructure-04
 Status: implemented
 
 ## 任务

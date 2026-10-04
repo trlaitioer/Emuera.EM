@@ -1,5 +1,6 @@
 # Nullable:变量与数据链启用
 
+id: nullable-migration-10
 Status: implemented
 
 Blocked by: 07

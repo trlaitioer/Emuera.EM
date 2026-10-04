@@ -1,5 +1,6 @@
 # 平台守卫:清理 Windows-only 目标下的恒真判断
 
+id: dotnet-modernization-07
 Status: ready-for-agent
 
 ## 任务

@@ -1,5 +1,6 @@
 # GlobalStatic 的装配顺序只写在注释里
 
+id: backlog-12
 Status: needs-triage
 
 ## 任务

@@ -1,5 +1,6 @@
 # 文件枚举策略藏在 Config 静态里，读取入口的缓存路径没有失败模式
 
+id: backlog-08
 Status: needs-triage
 
 ## 任务

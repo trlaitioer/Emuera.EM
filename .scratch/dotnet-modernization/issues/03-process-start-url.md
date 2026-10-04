@@ -1,5 +1,6 @@
 # URL 打开:移除依赖 Framework 默认值的死路径
 
+id: dotnet-modernization-03
 Status: implemented
 
 ## 任务

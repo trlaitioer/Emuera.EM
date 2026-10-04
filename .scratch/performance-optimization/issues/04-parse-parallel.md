@@ -1,5 +1,6 @@
 # 性能:解析并行化
 
+id: performance-optimization-04
 Status: implemented
 
 ## 任务

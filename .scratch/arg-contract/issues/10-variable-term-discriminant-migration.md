@@ -1,5 +1,6 @@
 # 迁移后残留的 4 处 VariableTerm 判别：3 处可改走 `Var(i)`，1 处不能换
 
+id: arg-contract-10
 Status: needs-triage
 
 ## 任务

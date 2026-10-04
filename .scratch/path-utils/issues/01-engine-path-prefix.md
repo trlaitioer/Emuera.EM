@@ -1,5 +1,6 @@
 # 路径:引擎与 UI 侧的前缀判断、相对化与剥前缀收敛
 
+id: path-utils-01
 Status: implemented
 
 ## 任务

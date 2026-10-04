@@ -1,5 +1,6 @@
 # Nullable:ERD 变量码的键索引在 KeywordToInteger 处解引用 null
 
+id: nullable-migration-23
 Status: wontfix
 
 ## 任务

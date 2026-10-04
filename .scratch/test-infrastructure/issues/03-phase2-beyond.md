@@ -1,5 +1,6 @@
 # Phase 2+:StrForm 与后续
 
+id: test-infrastructure-03
 Status: implemented
 
 ## 任务

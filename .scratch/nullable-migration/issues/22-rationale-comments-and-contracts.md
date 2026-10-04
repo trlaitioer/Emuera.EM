@@ -1,5 +1,6 @@
 # Nullable:保留断言的理由注释与契约诚实化
 
+id: nullable-migration-22
 Status: ready-for-agent
 
 ## 任务

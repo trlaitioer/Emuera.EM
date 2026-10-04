@@ -1,5 +1,6 @@
 # 槽位访问器与旧 Required 同强度：非空没有被类型兜住，守卫纪律是唯一防线
 
+id: arg-contract-07
 Status: needs-triage
 
 ## 任务

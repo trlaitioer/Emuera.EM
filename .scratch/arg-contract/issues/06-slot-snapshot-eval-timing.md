@@ -1,5 +1,6 @@
 # 槽位快照不跟随原地折叠：不可折叠外层会重新求值已折叠的内层实参
 
+id: arg-contract-06
 Status: needs-triage
 
 ## 任务
