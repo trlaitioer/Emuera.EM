@@ -1,0 +1,15 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+    -   id: check-merge-conflict
+    -   id: check-added-large-files
+    -   id: check-yaml
+-   repo: local
+    hooks:
+    -   id: restore-bom
+        name: restore UTF-8 BOM
+        entry: uv run --script scripts/restore_bom.py
+        language: system
+        pass_filenames: true
+        files: ^Emuera(\.Tests)?/.*\.cs$
