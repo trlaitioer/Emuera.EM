@@ -98,6 +98,43 @@ internal abstract class EraBinaryDataReader : IDisposable
 	protected readonly int version;
 	protected readonly uint[] data = null!;
 
+	/// <summary>
+	/// UTF-16 that throws on malformed text: net9's <see cref="BinaryReader.ReadString"/> stopped throwing and
+	/// returned U+FFFD instead, which silently mangled a corrupt save's text segments.
+	/// </summary>
+	private static readonly Encoding SaveTextEncoding = EncodingHandler.GetEncoding(Encoding.Unicode.CodePage);
+
+	/// <summary>
+	/// The one reader every construction site uses. Every text-decode entry is wrapped so a malformed sequence
+	/// becomes <see cref="FileEE"/> (the save/load error type) instead of a raw decoder exception: <see cref="ReadString"/>
+	/// for saved text, <see cref="PeekChar"/>/<see cref="ReadChar"/> for the character-level EOF checks (a bare
+	/// decoder exception there would float past the save/load error handling as an internal error).
+	/// </summary>
+	private sealed class SaveTextReader : BinaryReader
+	{
+		public SaveTextReader(Stream stream, bool leaveOpen)
+			: base(stream, SaveTextEncoding, leaveOpen)
+		{ }
+
+		public override string ReadString() => Decode(() => base.ReadString());
+
+		public override int PeekChar() => Decode(() => base.PeekChar());
+
+		public override char ReadChar() => Decode(() => base.ReadChar());
+
+		private static T Decode<T>(Func<T> read)
+		{
+			try
+			{
+				return read();
+			}
+			catch (DecoderFallbackException e)
+			{
+				throw new FileEE($"{trerror.CorruptedSaveData.Text} ({e.Message})");
+			}
+		}
+	}
+
 	public abstract int ReaderVersion { get; }
 
 	/// <summary>
@@ -124,7 +161,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 
 			#region EM_私家版_セーブ圧縮
 
-			BinaryReader reader = new(fs, Encoding.Unicode, true);
+			SaveTextReader reader = new(fs, true);
 
 			//if (reader.ReadUInt64() != EraBDConst.Header)
 			//	return null;
@@ -153,11 +190,11 @@ internal abstract class EraBinaryDataReader : IDisposable
 				gzips.CopyTo(ms);
 				gzips.Close();
 				ms.Seek(0, SeekOrigin.Begin);
-				reader = new BinaryReader(ms, Encoding.Unicode);
+				reader = new SaveTextReader(ms, false);
 			}
 			else
 			{
-				reader = new BinaryReader(reader.BaseStream, Encoding.Unicode);
+				reader = new SaveTextReader(reader.BaseStream, false);
 			}
 
 			#endregion
