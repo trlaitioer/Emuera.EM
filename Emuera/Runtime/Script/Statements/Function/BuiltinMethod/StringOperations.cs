@@ -610,6 +610,8 @@ internal sealed class ReplaceMethod : FunctionMethod
 			{
 				case 1:
 				{
+					// The type discriminant stays: the four predicates below are script-level rejections
+					// (CodeEE with the argument-shaped message), while Var(2) would fail first as ExeEE.
 					if (slots.Term(2) is not VariableTerm varTerm || varTerm.Identifier.IsCalc || !varTerm.Identifier.IsArray1D ||
 					    !varTerm.Identifier.IsString || varTerm.Identifier.IsConst)
 					{

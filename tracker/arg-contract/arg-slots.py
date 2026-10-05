@@ -27,7 +27,8 @@
     `_rulings.py`（slots-worklist.py 的 E 段引用同一条），避免两边文案各自漂移。
   · 自校验（复跑即报警，逐项见产物 E 段）：本文件 live `arguments.Required(` <= 404（404 是阶段 A 基线，
     阶段 B 迁移中递减，超出即 WARN）；`HasUniqueRestructure = true;`
-    语句 17 / 类 13；`UniqueRestructure` override 14；全仓整表复制（`[.. Arguments]` / 切片④ 后的
+    语句 17 / 类 13；`UniqueRestructure` override 13（14 是 arg-contract-09 删死 override 前的值）；
+    全仓整表复制（`[.. Arguments]` / 切片④ 后的
     `[.. Slots.FoldTarget]`）1、`ArgumentSlots` 快照的 ctor 复制 1；候选集与裁定表一致；
     以及**与 [slots-worklist.py](slots-worklist.py) 同函数同口径**的 `ArgType.NotNull` 计数
     （计数函数在 `_scan.not_null_counts`，现行预期值是 `_scan.NOT_NULL_EXPECTED` 这一个常量——
@@ -682,8 +683,9 @@ if has_unique_stmts != 17:
     checks.append(f"`HasUniqueRestructure = true;` 语句数 = {has_unique_stmts}，预期 17")
 if has_unique_classes != 13:
     checks.append(f"带该标志的类数 = {has_unique_classes}，预期 13")
-if unique_overrides != 14:
-    checks.append(f"`UniqueRestructure` override 数 = {unique_overrides}，预期 14")
+if unique_overrides != 13:
+    checks.append(f"`UniqueRestructure` override 数 = {unique_overrides}，预期 13（14 是 arg-contract-09 "
+                  "删掉 ArrayMultiSortExMethod 的死 override 之前的值）")
 if copy_arguments != 1:
     checks.append(f"全仓整表复制 `[.. Arguments]`/`[.. Slots.FoldTarget]` = {copy_arguments}，"
                   "预期 1（FunctionMethodTerm.cs 的 unique 分支）")
@@ -727,7 +729,7 @@ for root, _dirs, files in os.walk("Emuera.Tests"):
             test_factory_total += live_count(r"ArgumentSlots\.(?:Trusted|Checked)\(", strip_keep_lines(txt))
 
 # 阶段 B 的自校验：结构不变量 + 相对基线不增 + 构造路径不增 + 终态一致性。
-# 这里也重申「折叠面不动」的三项（17/13/14/1/NotNull）——迁移不该碰它们，故两边都查。
+# 这里也重申「折叠面不动」的三项（17/13/13/1/NotNull）——迁移不该碰它们，故两边都查。
 # b_rows 同时喂「报警」与进度工件的自校验表，避免两处各写一份判据。
 b_rows = [
     ("G 段站点全集 == 本文件 live `arguments.Required(`",
@@ -753,8 +755,8 @@ b_rows = [
     ("动态下标站点划分 == 全文件扫描（函数体内 + helper 内）",
      len(accessor_dyn) + len(accessor_dyn_helper) == len(dyn_all)),
     ("`ArgumentSlots` 快照的整表复制 == 1（ctor 的 `terms = [.. arguments]`）", copy_snapshot == 1),
-    ("折叠面不变量（17/13、override 14、整表复制 1）",
-     (has_unique_stmts, has_unique_classes, unique_overrides, copy_arguments) == (17, 13, 14, 1)),
+    ("折叠面不变量（17/13、override 13、整表复制 1）",
+     (has_unique_stmts, has_unique_classes, unique_overrides, copy_arguments) == (17, 13, 13, 1)),
     (f"`ArgType.NotNull` 计数 == {NOT_NULL_EXPECTED}（与 slots-worklist.py 同函数同口径）", nn_ok),
     ("全仓 live 计数 >= 本文件", repo_live >= live_required),
     ("issues/18 不变量（`AllowConstRef` ⇒ `HasUniqueRestructure`）无违例", not invariant_violations),
@@ -914,7 +916,7 @@ out.append("## G. 阶段 B 验收口径：访问器覆盖（issues/05）")
 out.append("")
 out.append(f"站点全集 = 本文件 live `arguments.Required(<任意下标>)` **{cov_total}** 处（含文件作用域 helper 内部的读取，")
 out.append("如 `ReadPoint`/`ReadColormatrix`）。形态按站点后随成员归类（词表同 `read_forms`，前缀窗 24 字符），")
-out.append("面按花括号配对归属到方法体。**阶段 B 只迁消费面**：14 个 `UniqueRestructure` 保持旧签名")
+out.append("面按花括号配对归属到方法体。**阶段 B 只迁消费面**：13 个 `UniqueRestructure` 保持旧签名")
 out.append("（旧签名收 `List<AExpression?>`，写回被丢弃），故门禁目标是**消费面归零**，不是全文件归零。")
 out.append("")
 g_forms = ["Int", "Str", "IsInt", "IsStr", "term", "as Var", "cast Var", "折叠"]
@@ -986,7 +988,8 @@ out.append(f"| `arguments.Count` | 119 | {count_faces.get('消费面', 0)} | 0�
 out.append(f"| `arguments.Skip(` / `Cast<` | 2 / 1 | {live_skip} / {live_cast_loop} | 0 / 0 |")
 out.append(f"| 旧签名 override（规则表族 {old_sig_rule_table} + Trusted 三族 "
            f"{old_sig_total - old_sig_rule_table}） | 229 | {old_sig_total} | 0 |")
-out.append("| 折叠面 `arguments.Required(` | 25 | " + str(cov_faces["折叠面"]) + " | 25（**不变**，旧签名保留） |")
+out.append("| 折叠面 `arguments.Required(` | 25 | " + str(cov_faces["折叠面"]) + " | 24（**不变**，旧签名保留；"
+           "arg-contract-09 删掉 `ArrayMultiSortExMethod` 的死 override 后由 25 减 1） |")
 out.append(f"| `ArgumentSlots` 快照整表复制（ctor 的 `terms = [.. arguments]`） | 0 | {copy_snapshot} | 1（类型落地时即应有；与上面那条折叠面副本理由不同） |")
 out.append("")
 out.append("### 访问器前置核对（切片④）")
@@ -1070,7 +1073,7 @@ out.append(f"| 与 [slots-worklist.py](slots-worklist.py) 同函数同口径的 
            f"（含注释 {NOT_NULL_EXPECTED[0]} 处/{NOT_NULL_EXPECTED[1]} 行、剥注释 {NOT_NULL_EXPECTED[2]} 处/{NOT_NULL_EXPECTED[3]} 行） | "
            f"{'通过' if nn_ok else '**不符：%d 处/%d 行、%d 处/%d 行**' % nn_actual} |")
 out.append(f"| `HasUniqueRestructure = true;` 语句/类 == 17/13 | {'通过' if (has_unique_stmts, has_unique_classes) == (17, 13) else '**不符：%d/%d**' % (has_unique_stmts, has_unique_classes)} |")
-out.append(f"| `UniqueRestructure` override == 14 | {'通过' if unique_overrides == 14 else '**不符：' + str(unique_overrides) + '**'} |")
+out.append(f"| `UniqueRestructure` override == 13 | {'通过' if unique_overrides == 13 else '**不符：' + str(unique_overrides) + '**'} |")
 out.append(f"| unique 分支的整表副本 == 1 | {'通过' if copy_arguments == 1 else '**不符：' + str(copy_arguments) + '**'} |")
 out.append(f"| 候选集裁定（未裁定 {len(unruled)} / 已落地 {len(done)} / 过期 {len(stale)}） | {'通过' if not unruled and not stale and len(done) == 4 else '**不符**'} |")
 out.append(f"| A2 段与裁定表一致 | {'通过' if not unruled2 and not stale2 else '**未裁定 %d / 过期 %d**' % (len(unruled2), len(stale2))} |")

@@ -6,17 +6,17 @@
 
 ## G. 阶段 B 验收口径：访问器覆盖（issues/05）
 
-站点全集 = 本文件 live `arguments.Required(<任意下标>)` **25** 处（含文件作用域 helper 内部的读取，
+站点全集 = 本文件 live `arguments.Required(<任意下标>)` **24** 处（含文件作用域 helper 内部的读取，
 如 `ReadPoint`/`ReadColormatrix`）。形态按站点后随成员归类（词表同 `read_forms`，前缀窗 24 字符），
-面按花括号配对归属到方法体。**阶段 B 只迁消费面**：14 个 `UniqueRestructure` 保持旧签名
+面按花括号配对归属到方法体。**阶段 B 只迁消费面**：13 个 `UniqueRestructure` 保持旧签名
 （旧签名收 `List<AExpression?>`，写回被丢弃），故门禁目标是**消费面归零**，不是全文件归零。
 
 | 面 | `Int` | `Str` | `IsInt` | `IsStr` | `term` | `as Var` | `cast Var` | `折叠` | 合计 | 四访问器覆盖 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 折叠面 | 1 | 2 | — | — | — | — | 2 | 20 | 25 | 3 |
-| 合计 | 1 | 2 | — | — | — | — | 2 | 20 | 25 | 3 |
+| 折叠面 | 1 | 2 | — | — | — | — | 2 | 19 | 24 | 3 |
+| 合计 | 1 | 2 | — | — | — | — | 2 | 19 | 24 | 3 |
 
-全文件四访问器覆盖 **3/25**（= 12.0%）：`Int` 1 + `Str` 2 + `IsInt` 0 + `IsStr` 0；剔除折叠面后的**消费面覆盖 0/0**。基线见「归零目标」表——迁移中站点数递减，故这两个比值只描述当前未迁移的部分。
+全文件四访问器覆盖 **3/24**（= 12.5%）：`Int` 1 + `Str` 2 + `IsInt` 0 + `IsStr` 0；剔除折叠面后的**消费面覆盖 0/0**。基线见「归零目标」表——迁移中站点数递减，故这两个比值只描述当前未迁移的部分。
 
 | 访问器 | 站点数（当前） | 说明 |
 | --- | --- | --- |
@@ -24,7 +24,7 @@
 | `Var` | 5 | as Var 1 + cast Var 2 + is Var 2（全文件；其中消费面 0、折叠面 5，切片④只归零消费面） |
 | `Term`/`TermOrNull` | 0 | 消费面里的裸句柄逃生口 |
 | `Tail` | 0 | `arguments.Skip(k)` 整段转发（GETMETH/GETMETHS） |
-| `Count` | 13 | `arguments.Count` 13 + 列表模式 0 + `Cast<>` 0 |
+| `Count` | 12 | `arguments.Count` 12 + 列表模式 0 + `Cast<>` 0 |
 | `Has`/`IsEmpty`/`IsMissing` | 7 | 判空写法 7（`==/!= null` 7） + 列表模式 0 |
 
 ### Trusted 三族（绕过规则表、由调用点担保，issues/05 的 A 边界）
@@ -48,10 +48,10 @@
 | 消费面 `Var` 家族（`as`/cast/`is VariableTerm`） | 32 | 0 | 0（迁到 `Var(i)`） |
 | 消费面硬转型（`as` + cast） | 29 | 0 | 0 |
 | 列表模式 `arguments is […]` | 16 | 0 | 0（迁到 `Has`/`IsEmpty`/`IsMissing`） |
-| `arguments.Count` | 119 | 0 | 0（消费面）；折叠面 12 处、检查面 1 处 保留 |
+| `arguments.Count` | 119 | 0 | 0（消费面）；折叠面 11 处、检查面 1 处 保留 |
 | `arguments.Skip(` / `Cast<` | 2 / 1 | 0 / 0 | 0 / 0 |
 | 旧签名 override（规则表族 0 + Trusted 三族 0） | 229 | 0 | 0 |
-| 折叠面 `arguments.Required(` | 25 | 25 | 25（**不变**，旧签名保留） |
+| 折叠面 `arguments.Required(` | 25 | 24 | 24（**不变**，旧签名保留；arg-contract-09 删掉 `ArrayMultiSortExMethod` 的死 override 后由 25 减 1） |
 | `ArgumentSlots` 快照整表复制（ctor 的 `terms = [.. arguments]`） | 0 | 1 | 1（类型落地时即应有；与上面那条折叠面副本理由不同） |
 
 ### 访问器前置核对（切片④）
@@ -70,7 +70,7 @@
 | `CsvStrDataMethod` | 1 | `Int` | 是 | 通过 |
 | `CsvcstrMethod` | 2 | `Int` | 是 | 通过 |
 | `DataTableColumnManagementMethod` | 1 | `Str` | 是 | 通过 |
-| `DataTableColumnManagementMethod` | 1 | `Term` | 是 | 通过 |
+| `DataTableColumnManagementMethod` | 1 | `Var` | 是 | 通过 |
 | `DataTableSelectMethod` | 1 | `Str` | 是 | 通过 |
 | `DataTableSelectMethod` | 2 | `Str` | 是 | 通过 |
 | `EncodeToUniMethod` | 1 | `Int` | 是 | 通过 |
@@ -164,7 +164,7 @@ helper 内明细：
 | 访问器前置：动态下标站点所在的函数体都有守卫（弱判据：体内出现 `Count`/`Has`/`IsEmpty`/`IsMissing`） | 通过 |
 | 动态下标站点划分 == 全文件扫描（函数体内 + helper 内） | 通过 |
 | `ArgumentSlots` 快照的整表复制 == 1（ctor 的 `terms = [.. arguments]`） | 通过 |
-| 折叠面不变量（17/13、override 14、整表复制 1） | 通过 |
+| 折叠面不变量（17/13、override 13、整表复制 1） | 通过 |
 | `ArgType.NotNull` 计数 == (88, 77, 81, 70)（与 slots-worklist.py 同函数同口径） | 通过 |
 | 全仓 live 计数 >= 本文件 | 通过 |
 | issues/18 不变量（`AllowConstRef` ⇒ `HasUniqueRestructure`）无违例 | 通过 |

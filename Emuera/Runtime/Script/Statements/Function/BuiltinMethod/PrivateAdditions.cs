@@ -159,11 +159,10 @@ internal sealed class XmlGetMethod : FunctionMethod
 
 		if (slots.Count >= 3)
 		{
-			AExpression outputArg = slots.Term(2);
-			if (outputArg.IsInteger)
+			if (slots.IsInteger(2))
 			{
 				// Form 1/3 takes doOutput: 0 (or omitted) means the result count only
-				if (outputArg.GetIntValue(exm) != 0)
+				if (slots.Int(exm, 2) != 0)
 				{
 					for (int i = 0; i < Math.Min(nodes.Count, exm.VEvaluator.RESULTS_ARRAY.Length); i++)
 					{
@@ -173,9 +172,9 @@ internal sealed class XmlGetMethod : FunctionMethod
 			}
 			else
 			{
-				// Form 2/4 takes an output array; argument rule 2 (RefString1D) guarantees a
-				// VariableTerm backed by string[]
-				string[] arr = ((outputArg as VariableTerm)!.Identifier.GetArray() as string[])!;
+				// Form 2/4 takes an output array; the matched rule block declares this slot as
+				// RefString1D, so the role says the slot is a variable entity
+				string[] arr = (slots.Var(2).Identifier.GetArray() as string[])!;
 				for (int i = 0; i < Math.Min(nodes.Count, arr.Length); i++)
 				{
 					OutPutNode(nodes[i]!, arr, i, outputStyle);
@@ -636,6 +635,8 @@ internal sealed class ArrayMultiSortExMethod : FunctionMethod
 			return 0;
 		}
 
+		// Slot 0 stays a type discriminant on purpose: its rule block accepts ArgType.String as well
+		// (the variable name as text, see the ctor), and Var(0) would reject that form as ExeEE.
 		VariableTerm varTerm = slots.Term(0) is VariableTerm argVar
 			? argVar
 			: GetConvertedTerm(exm, slots.Str(exm, 0));
@@ -797,16 +798,6 @@ internal sealed class ArrayMultiSortExMethod : FunctionMethod
 		}
 
 		return 1;
-	}
-
-	public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression?> arguments)
-	{
-		for (int i = 0; i < arguments.Count; i++)
-		{
-			arguments[i] = arguments.Required(i).Restructure(exm);
-		}
-
-		return false;
 	}
 }
 
@@ -2294,9 +2285,10 @@ internal sealed class DataTableColumnManagementMethod : FunctionMethod
 		if (op == Operation.Names)
 		{
 			string?[] output;
-			if (slots.Has(1) && slots.Term(1) is VariableTerm v)
+			// The rule declares slot 1 as RefString1D, so a present slot 1 is a variable entity
+			if (slots.Has(1))
 			{
-				output = (v.Identifier.GetArray() as string[])!;
+				output = (slots.Var(1).Identifier.GetArray() as string[])!;
 			}
 			else
 			{
