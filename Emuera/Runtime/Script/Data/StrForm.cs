@@ -331,10 +331,6 @@ internal sealed class StrForm
 			throw new ExeEE(trerror.TypeCheckIsCallersResponsibility.Text);
 		}
 
-		// Tells the list-based facade the same thing: the roles come from the construction sites above, not from a
-		// checker that only refuses.
-		internal override bool CallerOwnsCheck => true;
-
 		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 		{
 			throw new ExeEE(trerror.ReturnTypeMismatch.Text);

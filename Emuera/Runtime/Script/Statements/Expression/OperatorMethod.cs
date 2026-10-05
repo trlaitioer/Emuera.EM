@@ -19,16 +19,12 @@ internal abstract class OperatorMethod : FunctionMethod
 		argumentTypeArray = null;
 	}
 
-	// The caller owns the type check for operators, so the checking overload is the one to refuse: overriding the
-	// list-based facade instead would let CheckAndResolveSlots' virtual dispatch slip past this refusal.
+	// The caller owns the type check for operators, so the checking overload is the one to refuse: the roles come
+	// from the construction sites (<see cref="TrustedRoles"/>), never from a checker that only refuses.
 	internal override string CheckArgumentType(string name, List<AExpression?> arguments, out int matchedIdx)
 	{
 		throw new ExeEE(trerror.TypeCheckIsCallersResponsibility.Text);
 	}
-
-	// Says the same thing to the facade, which must not ask a checker that only refuses. Needed as its own flag
-	// because "has a rule table" is not the same question: `PlusStrStr` carries an argumentTypeArray as well.
-	internal override bool CallerOwnsCheck => true;
 
 	/// <summary>
 	/// Caller-declared slot roles for the operand list an operator term is built with: every slot is filled, the

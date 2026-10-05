@@ -520,15 +520,6 @@ internal abstract class FunctionMethod
 	}
 
 	/// <summary>
-	/// Legacy checker entry, kept as a <b>non-virtual facade</b>: it forwards to the pass that also reports the
-	/// matched rule block. Subclasses check for themselves by overriding
-	/// <see cref="CheckArgumentType(string, List{AExpression?}, out int)"/> instead - overriding this overload would
-	/// be silently bypassed, because <see cref="CheckAndResolveSlots"/> dispatches on that one.
-	/// </summary>
-	public string? CheckArgumentType(string name, List<AExpression?> arguments)
-		=> CheckArgumentType(name, arguments, out _);
-
-	/// <summary>
 	/// The one checker pass. <paramref name="matchedIdx"/> reports the rule block that passed (-1 when none did),
 	/// which the slot projection then reads: a caller resolves both the message and the roles from one call instead
 	/// of asking the checker twice. Subclasses that check for themselves override this overload, so the resolution
@@ -576,14 +567,6 @@ internal abstract class FunctionMethod
 
 		return null;
 	}
-
-	/// <summary>
-	/// True when this class refuses <see cref="CheckArgumentType(string, List{AExpression?}, out int)"/> on purpose
-	/// (the operator / StrForm families) and the call site owns the argument contract. The list-based facade branches
-	/// on this rather than on "has a rule table": one caller-checked class (`PlusStrStr`) does carry an
-	/// <c>argumentTypeArray</c> while its checker only refuses, so the table alone is not the criterion.
-	/// </summary>
-	internal virtual bool CallerOwnsCheck => false;
 
 	/// <summary>
 	/// Runs the checker and resolves the term's slot view from that same pass: the rule-table family gets the roles
@@ -695,44 +678,6 @@ internal abstract class FunctionMethod
 		{
 			return new SingleStrTerm(GetStrValue(exm, slots));
 		}
-	}
-
-	/// <summary>
-	/// Legacy list-based entry, kept as a <b>non-virtual facade</b>: it resolves the check-time roles and forwards to
-	/// the slot-based entry. Its only consumers are the tests in `ArgumentSlotsTests`, and a subclass override is a
-	/// compile error (CS0115; see arg-contract-05). A class that refuses the checker, or one without a
-	/// rule table, resolves without one: see <see cref="ResolveSlots(List{AExpression?})"/>.
-	/// </summary>
-	public long GetIntValue(ExpressionMediator exm, List<AExpression?> arguments)
-		=> GetIntValue(exm, ResolveSlots(arguments));
-
-	/// <inheritdoc cref="GetIntValue(ExpressionMediator, List{AExpression?})"/>
-	public string GetStrValue(ExpressionMediator exm, List<AExpression?> arguments)
-		=> GetStrValue(exm, ResolveSlots(arguments));
-
-	/// <inheritdoc cref="GetIntValue(ExpressionMediator, List{AExpression?})"/>
-	public SingleTerm GetReturnValue(ExpressionMediator exm, List<AExpression?> arguments)
-		=> GetReturnValue(exm, ResolveSlots(arguments));
-
-	// The facade cannot invent a role it was not given. Two shapes reach it without a checker worth asking: a class
-	// that refuses the checker on purpose (<see cref="CallerOwnsCheck"/> - operator / StrForm) and a class with no
-	// rule table at all (`MesSkipMethod` checks for itself). Neither has a matched block, so the facade claims nothing
-	// except where a fixed-count table still describes every slot (a caller-checked class may carry one). Every other
-	// class runs the same single check the construction points run, and the failure is thrown as the checker's message.
-	private ArgumentSlots ResolveSlots(List<AExpression?> arguments)
-	{
-		if (CallerOwnsCheck || (argumentTypeArrayEx == null && argumentTypeArray == null))
-		{
-			return ResolveSlots(arguments, -1);
-		}
-
-		string? errmes = CheckArgumentType(Name, arguments, out int matchedIdx);
-		if (errmes != null)
-		{
-			throw new CodeEE(errmes);
-		}
-
-		return ResolveSlots(arguments, matchedIdx);
 	}
 
 	/// <summary>

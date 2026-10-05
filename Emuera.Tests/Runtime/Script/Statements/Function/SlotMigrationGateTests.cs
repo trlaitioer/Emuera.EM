@@ -7,10 +7,10 @@ using Xunit;
 namespace Emuera.Tests.Runtime.Script.Statements.Function;
 
 /// <summary>
-/// arg-contract-05 阶段 B 切片④ 的门禁用例:旧签名
-/// (<c>(ExpressionMediator, List&lt;AExpression?&gt;)</c>) 的取值入口不再是虚方法、也不允许任何子类声明它——
-/// 编译期由 CS0115 拦,这里再机械枚举一遍,免得哪天把 virtual 加回去而没人发现;槽位入口必须仍是虚方法,
-/// 否则函数体无从覆写。检查入口同理:只允许声明带命中段的那个重载,否则
+/// arg-contract-05 阶段 B 切片④ / arg-contract-08 的门禁用例:旧签名
+/// (<c>(ExpressionMediator, List&lt;AExpression?&gt;)</c>) 的取值入口与两参检查入口都已删除,这里机械断言它们
+/// 不在基类上、也没有任何子类声明——免得哪天被当成兼容层加回来而没人发现。槽位入口必须仍是虚方法,
+/// 否则函数体无从覆写;检查入口只允许声明带命中段的那个重载,否则
 /// <see cref="FunctionMethod.CheckAndResolveSlots"/> 的虚分派会绕过子类的自检。第三项补上编译期拦不住的
 /// 那一半:函数体被删掉(而签名未被改写)不会报错,只会静默回落到基类抛 ExeEE,故逐个子类核对实现是否存在。
 /// </summary>
@@ -22,6 +22,8 @@ public class SlotMigrationGateTests
 	private static readonly Type[] CheckSignature = [typeof(string), typeof(List<AExpression?>), typeof(int).MakeByRefType()];
 	private static readonly string[] Entries = ["GetIntValue", "GetStrValue", "GetReturnValue"];
 	private const BindingFlags Declared = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
+	/// <summary>「旧入口必须不存在」这一侧的查法:兼容层不设可见性前提,public/internal/protected 都算残留。</summary>
+	private const BindingFlags AnyInstance = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
 	/// <summary>程序集里的全部 <see cref="FunctionMethod"/> 子类(基类自己不算)。</summary>
 	private static List<Type> Subclasses()
@@ -63,26 +65,26 @@ public class SlotMigrationGateTests
 		Assert.True(operatorFamily >= 39, $"运算符族只扫到 {operatorFamily} 个");
 	}
 
-	/// <summary>旧入口是门面(非虚),槽位入口是本体(虚)。</summary>
+	/// <summary>旧取值入口已删除,槽位入口是本体(虚)。</summary>
 	[Fact]
-	public void LegacyEntriesAreFacadesAndSlotEntriesAreOverridable()
+	public void LegacyEntriesAreGoneAndSlotEntriesAreOverridable()
 	{
 		foreach (string entry in Entries)
 		{
-			MethodInfo legacy = typeof(FunctionMethod).GetMethod(entry,
-				BindingFlags.Instance | BindingFlags.Public, null, OldSignature, null)!;
+			MethodInfo? legacy = typeof(FunctionMethod).GetMethod(entry, AnyInstance, null, OldSignature, null);
 			MethodInfo slots = typeof(FunctionMethod).GetMethod(entry,
 				BindingFlags.Instance | BindingFlags.Public, null, SlotSignature, null)!;
 
-			Assert.False(legacy.IsVirtual, $"{entry}(List) 必须是不可覆写的门面");
+			Assert.Null(legacy); // List 版入口已由 arg-contract-08 移除,任何可见性都不应再出现
 			Assert.True(slots.IsVirtual, $"{entry}(ArgumentSlots) 必须可覆写");
 		}
 	}
 
 	/// <summary>检查入口只允许声明带命中段的重载:去 override 旧的两参门面会让
-	/// <see cref="FunctionMethod.CheckAndResolveSlots"/> 的虚分派绕过它,自检与角色解析一起失效。</summary>
+	/// <see cref="FunctionMethod.CheckAndResolveSlots"/> 的虚分派绕过它,自检与角色解析一起失效。两参门面本身
+	/// 已由 arg-contract-08 删除,故这里连同基类一起断言它不存在。</summary>
 	[Fact]
-	public void NoSubclassOverridesTheLegacyCheckFacade()
+	public void NoLegacyCheckEntryExists()
 	{
 		List<string> offenders = [];
 		foreach (Type type in Subclasses())
@@ -94,11 +96,7 @@ public class SlotMigrationGateTests
 		}
 
 		Assert.Empty(offenders);
-		// 基类的两参门面必须存在且**不可覆写**:留着 virtual,覆写它同样会被 CheckAndResolveSlots 的虚分派绕过,
-		// 而 CS0115 是唯一能替反射用例兜住这条的编译期门禁。带命中段的重载是唯一的检查入口。
-		MethodInfo legacy = typeof(FunctionMethod).GetMethod("CheckArgumentType",
-			BindingFlags.Instance | BindingFlags.Public, null, OldCheckSignature, null)!;
-		Assert.False(legacy.IsVirtual, "CheckArgumentType(两参) 必须是不可覆写的门面");
+		Assert.Null(typeof(FunctionMethod).GetMethod("CheckArgumentType", AnyInstance, null, OldCheckSignature, null));
 		Assert.NotNull(typeof(FunctionMethod).GetMethod("CheckArgumentType",
 			BindingFlags.Instance | BindingFlags.NonPublic, null, CheckSignature, null));
 	}

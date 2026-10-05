@@ -267,95 +267,42 @@ public class ArgumentSlotsTests
 		Assert.Equal(live[2]!.GetIntValue(GlobalStatic.EMediator), term.Slots.Int(GlobalStatic.EMediator, 2));
 	}
 
-	/// <summary>切片④ 的旧入口门面:它解析检查期角色后转发到槽位入口,故「直接传 List 调用函数体」的既有写法
-	/// 不必改;同一组实参经门面与经槽位入口必须给出同一结果。</summary>
+	// ── 转交路径(GETMETH / GETMETHS) ──────────────────────────────────────────
+
+	/// <summary>arg-contract-06 的转交路径用例:GETMETH 不整体折叠,而它的 <c>Tail(2)</c> 是交给下游查找的那一段。
+	/// 真走解析 → <c>Restructure</c>(尾部实参就地折叠成常量) → 函数体转发,断言**转交源**仍是检查期那一项,
+	/// 不是活体表里的常量;未定义目标的回落分支照常取 1 号槽。<b>未覆盖</b>:下游对转交段的消费(需一个能执行的
+	/// 已注册 UDF 目标,本仓测试夹具没有可运行的脚本状态),故这里只钉住「转交给下游的是什么」。</summary>
 	[Fact]
-	public void LegacyFacade_ResolvesRolesAndMatchesTheSlotEntry()
-	{
-		FunctionMethod max = Method("MAX");
-		List<AExpression?> args = [new SingleLongTerm(3), new SingleLongTerm(7)];
-
-		long viaFacade = max.GetIntValue(null!, args);
-		long viaSlots = max.GetIntValue(null!, Slots(max, args));
-
-		Assert.Equal(7L, viaFacade);
-		Assert.Equal(viaSlots, viaFacade);
-	}
-
-	/// <summary>门面在无规则表的类上不问检查器(「调用点担保族」的检查重载故意抛 ExeEE,问了就等于禁用门面),
-	/// 但走规则表族时照样把检查失败报成检查器的文案——不能带着 Loose 角色进函数体。</summary>
-	[Fact]
-	public void LegacyFacade_SplitsOnWhetherACheckExists()
-	{
-		Assert.Equal(5L, new CallerCheckedMethod().GetIntValue(null!, [new SingleLongTerm(5)]));
-
-		FunctionMethod max = Method("MAX");
-		CodeEE ex = Assert.Throws<CodeEE>(() => max.GetIntValue(null!, []));
-		Assert.Contains("MAX", ex.Message);
-	}
-
-	/// <summary>运算符族(真实生产路径)同样不能因为门面而被禁用:先经工厂造出一个运算符 term,
-	/// 再用它自己的实参走旧签名入口,结果必须与走槽位入口一致——迁移前那正是函数体本身。</summary>
-	[Fact]
-	public void LegacyFacade_WorksForTheOperatorFamily()
+	public void ForwardingCall_HandsTheSnapshotTailToTheDownstreamLookup()
 	{
 		FunctionMethodTerm term = Assert.IsType<FunctionMethodTerm>(
-			OperatorMethodManager.ReduceBinaryTerm(OperatorCode.Plus, Variable("TFLAG:0"), new SingleLongTerm(1)));
-		List<AExpression?> args = [Variable("TFLAG:0"), new SingleLongTerm(1)];
+			Parse("GETMETH(\"NOT_REGISTERED\", 3, MAX(1, 2))"));
+		AExpression forwarded = Assert.Single(term.Slots.Tail(2));
+		List<AExpression?> live = term.Slots.FoldTarget;
 
-		long viaSlots = term.Method.GetIntValue(GlobalStatic.EMediator, term.Slots);
-		long viaFacade = term.Method.GetIntValue(GlobalStatic.EMediator, args);
+		term.Restructure(GlobalStatic.EMediator);
 
-		Assert.Equal(viaSlots, viaFacade);
+		Assert.IsType<SingleLongTerm>(live[2]); // 活体表里的尾部实参已被就地折叠
+		Assert.IsType<FunctionMethodTerm>(forwarded); // 转交的仍是检查期那个内层调用
+		Assert.Same(forwarded, Assert.Single(term.Slots.Tail(2)));
+		Assert.Equal(3L, term.GetIntValue(GlobalStatic.EMediator));
 	}
 
-	/// <summary>运算符族的另一半:带规则表(<c>argumentTypeArray</c>)而检查重载照样拒绝的类——生产实例是 PLUS 的
-	/// 字符串重载 <c>PlusStrStr</c>,全运算符族唯一一个带表的。门面若按「有没有规则表」分流,这里会撞上那句故意的
-	/// ExeEE;判据必须是「检查器由调用点担保」。</summary>
+	/// <summary>GETMETHS 是同一形状的字符串侧:转交源同样取检查期快照,回落分支取 1 号槽的字符串(未覆盖项同上一用例)。</summary>
 	[Fact]
-	public void LegacyFacade_WorksForACallerCheckedClassThatHasARuleTable()
+	public void ForwardingStringCall_HandsTheSnapshotTailToTheDownstreamLookup()
 	{
-		// 先钉住生产实例的形状:PLUS 的字符串分支确实带表,否则下面的合成类就没有原型。
-		FunctionMethodTerm plus = Assert.IsType<FunctionMethodTerm>(
-			OperatorMethodManager.ReduceBinaryTerm(OperatorCode.Plus, Variable("RESULTS:0"), new SingleStrTerm("x")));
-		Assert.Equal(FunctionMethod.SlotRole.Required | FunctionMethod.SlotRole.String, plus.Slots.RoleAt(0));
-		Assert.Equal(FunctionMethod.SlotRole.Required | FunctionMethod.SlotRole.String, plus.Slots.RoleAt(1));
+		FunctionMethodTerm term = Assert.IsType<FunctionMethodTerm>(
+			Parse("GETMETHS(\"NOT_REGISTERED\", \"fallback\", MAX(1, 2))"));
+		AExpression forwarded = Assert.Single(term.Slots.Tail(2));
+		List<AExpression?> live = term.Slots.FoldTarget;
 
-		Assert.Equal(6L, new CallerCheckedWithTableMethod().GetIntValue(null!, [new SingleLongTerm(5)]));
-	}
+		term.Restructure(GlobalStatic.EMediator);
 
-	/// <summary>「调用点担保族」的最小复刻:无规则表(两处都是 null)且带命中段的检查重载照运算符族那样拒绝调用。</summary>
-	private sealed class CallerCheckedMethod : FunctionMethod
-	{
-		public CallerCheckedMethod() => ReturnType = typeof(long);
-
-		internal override string? CheckArgumentType(string name, List<AExpression?> arguments, out int matchedIdx)
-		{
-			matchedIdx = -1;
-			throw new ExeEE("caller owns the check");
-		}
-
-		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots) => slots.Int(exm, 0);
-	}
-
-	/// <summary>「调用点担保 + 带规则表」的最小复刻(生产实例:PLUS 的字符串重载):表照旧声明,检查重载拒绝,
-	/// 故 <see cref="FunctionMethod.CallerOwnsCheck"/> 必须为真,否则门面会去问那个只抛 ExeEE 的检查器。</summary>
-	private sealed class CallerCheckedWithTableMethod : FunctionMethod
-	{
-		public CallerCheckedWithTableMethod()
-		{
-			ReturnType = typeof(long);
-			argumentTypeArray = [typeof(long)];
-		}
-
-		internal override bool CallerOwnsCheck => true;
-
-		internal override string? CheckArgumentType(string name, List<AExpression?> arguments, out int matchedIdx)
-		{
-			matchedIdx = -1;
-			throw new ExeEE("caller owns the check");
-		}
-
-		public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots) => slots.Int(exm, 0) + 1;
+		Assert.IsType<SingleLongTerm>(live[2]);
+		Assert.IsType<FunctionMethodTerm>(forwarded);
+		Assert.Same(forwarded, Assert.Single(term.Slots.Tail(2)));
+		Assert.Equal("fallback", term.GetStrValue(GlobalStatic.EMediator));
 	}
 }
