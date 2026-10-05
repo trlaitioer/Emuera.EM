@@ -1,7 +1,7 @@
 # 决策:C# 语言特性现代化策略
 
 id: dotnet-modernization-06
-Status: ready-for-human
+Status: wontfix
 
 ## 任务
 
@@ -34,6 +34,8 @@ Phase 0(C# 编译器破坏性变更)为空:无 LangVersion 变更,现有代码�
 - 整体不立项全量语法现代化(wontfix);采纳 on-touch 策略:改动某文件时顺手使用现代写法,不做专门扫描。
 - `LangVersion` 维持不显式设置,随 TFM 默认(当前 C# 14)。
 
+2026-10-05 定案:`wontfix`,采纳上面的 on-touch 策略,无代码改动。
+
 ## 影响
 
-待拍板的不一致:`Emuera/.editorconfig` 声明 `csharp_style_namespace_declarations = block_scoped`,与现状(80% file-scoped)矛盾。若要统一需另立票,余下 22 个块作用域文件集中在 `UI/Framework/Forms`(含 Designer)、`Runtime/Utils/PluginSystem` 与 NAudio 后端;不统一则现状维持。
+原记的「待拍板的不一致」已不存在:`Emuera/.editorconfig` 现为 `csharp_style_namespace_declarations = file_scoped:silent`(`19ffcf59 style: 清理 .editorconfig`),全仓无 `block_scoped` 残留,故不再需要另立统一票。

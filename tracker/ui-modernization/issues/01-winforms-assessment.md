@@ -1,7 +1,7 @@
 # 决策:WinForms 层升级需求评估
 
 id: ui-modernization-01
-Status: ready-for-human
+Status: wontfix
 
 ## 任务
 
@@ -28,6 +28,8 @@ Status: ready-for-human
 - 入口清理(删除注释死代码块、收敛 `SetCompatibleTextRenderingDefault` 时机):**可选的低价值清理**,随其它改动顺手做,不单独立票。
 
 预期以 wontfix 定案并记录。
+
+2026-10-05 定案:`wontfix`——`InvokeAsync`/`ShowDialogAsync`/流式布局三项均不立项,入口死代码清理随其它改动顺手做(单列的高分屏过小由 issues/02 承接,已 implemented)。无代码改动。
 
 ## 影响
 

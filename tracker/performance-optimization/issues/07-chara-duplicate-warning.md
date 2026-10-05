@@ -1,7 +1,7 @@
 # 告警:重复角色 No 收敛为每组一条
 
 id: performance-optimization-07
-Status: ready-for-human
+Status: implemented
 
 ## 任务
 
@@ -24,6 +24,7 @@ Status: ready-for-human
 
 - 05 告警块已按方案就地改写,构建 0 错误,测试套件 81/81 通过。
 - 文案已携带定义次数(`{1}` 占位,方案第 4 条),`Lang.cs` 源文案与 eng/zhs 内嵌翻译同步更新;告警条数差异留待人工观察验收。
+- 2026-10-05:人工观察验收通过(重复定义的角色 No 每组仅一条告警,条数符合预期),本票转 `implemented`。
 
 ## 影响
 

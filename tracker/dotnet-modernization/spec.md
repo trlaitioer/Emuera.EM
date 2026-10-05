@@ -1,7 +1,7 @@
 # 迁移方案:.NET 10 现代化收尾
 
 Date: 2026-08-30
-Status: in-progress
+Status: implemented
 
 ## 问题/背景
 
@@ -19,7 +19,7 @@ Status: in-progress
 
 范围切分:UI 层的 WinForms 升级评估与显示改造(DPI 缩放、等宽网格渲染)已于 2026-08-30 切至独立 tracker `tracker/ui-modernization/`,本 tracker 不再跟踪;`Application.DoEvents()`(ErhLoader / ErbLoader 装载解析循环内泵 UI)不单独立票,并入 `performance-optimization-04`(解析并行化)处理,该票正文已列为本票风险点。
 
-各项按各自 ticket 验收;决策记录票以文档定案。
+各项按各自 ticket 验收;决策记录票以文档定案。7 票已于 2026-10-05 全部终态(01/02/03/07 implemented,04/05/06 定为保留/wontfix),本 spec 随之收尾。
 
 ### 已核查无接触面(2026-08-30 扫描,避免重复排查)
 

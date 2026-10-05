@@ -1,7 +1,7 @@
 # 决策:保留 Microsoft.VisualBasic 的 StrConv 依赖
 
 id: dotnet-modernization-04
-Status: ready-for-human
+Status: wontfix
 
 ## 任务
 
@@ -15,6 +15,8 @@ net10.0-windows 的 Windows Desktop runtime 自带 VB runtime,依赖 NLS,在当�
 ## 方案
 
 保留:自实现假名/全半角映射成本高,且易引入与 NLS 结果不一致的行为差异;替换收益仅"摆脱 Framework 时代依赖"本身。预期以 wontfix 定案并记录。
+
+2026-10-05 定案:`wontfix`,两处 `Strings.StrConv` 维持现状,无代码改动。
 
 ## 影响
 
