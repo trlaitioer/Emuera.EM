@@ -935,11 +935,6 @@ internal sealed partial class ConfigDialog : Form
 			return;
 		}
 
-		if (!OperatingSystem.IsWindows())
-		{
-			return;
-		}
-
 		foreach (FontFamily ff in new InstalledFontCollection().Families)
 		{
 			if (ff.IsStyleAvailable(FontStyle.Regular) &&

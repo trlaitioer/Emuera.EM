@@ -1,7 +1,7 @@
 # 平台守卫:清理 Windows-only 目标下的恒真判断
 
 id: dotnet-modernization-07
-Status: ready-for-agent
+Status: implemented
 
 ## 任务
 
@@ -19,7 +19,9 @@ Status: ready-for-agent
 ## 方案
 
 - `ConfigDialog.button2_Click`:删除守卫。该处后续代码在 Windows 上本就执行,删除属行为等价清理。
-- 三条字体指令:待定。清理即保持现状;保留则把"指令携带平台语义"作为已知事实记录。取舍依据是是否存在非 Windows 宿主预期——目前无该预期(原生互操作面见下),倾向清理,但需确认脚本层是否要求这三条指令具备跨平台语义。
+- 三条字体指令:**一并删除**。项目目标为 Windows-only,不承诺这三条指令的跨平台语义;守卫只会在一个到不了的分支里静默失效,留着反而让「指令带平台语义」这句话看似成立。删除后 `SetStringStyle` 调用保持原样。
+
+2026-10-05 落地:4 处守卫全部删除(`ConfigDialog.cs` 1 处 + `Instraction.Child.cs` 3 处),全仓 `OperatingSystem.IsWindows` 命中数为 0;`Debug-NAudio` 构建与 689 条测试、`Debug`(WMP)重建均通过。
 
 ### 参考:原生互操作面(不可达判断的依据)
 
@@ -27,4 +29,4 @@ Status: ready-for-agent
 
 ## 影响
 
-`ConfigDialog` 处为等价清理;字体指令处若清理,eraBasic 脚本的字体样式行为不变,仅移除不可达分支。
+`ConfigDialog` 处为等价清理;三条字体指令处已按「Windows-only 不承诺跨平台语义」一并删除,eraBasic 脚本的字体样式行为不变,仅移除不可达分支。
