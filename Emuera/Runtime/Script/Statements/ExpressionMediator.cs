@@ -71,8 +71,8 @@ internal sealed class ExpressionMediator
 
 	public string ConvertStringType(string str)
 	{
-		// TODO: Strings.StrConv may return null for an unsupported conversion; consider handling that instead of asserting a non-null result.
-		// Its only callers consume the result as non-null on the print path.
+		// The `!` below only suppresses CS8603 from StrConv's `string?` return, which exists for a null
+		// input; str is non-null here, and an unsupported conversion throws ArgumentException.
 		if (!(forceHiragana | forceKatakana | halftoFull))
 		{
 			return str;

@@ -44,7 +44,7 @@ internal sealed partial class FunctionIdentifier
 			privateVar.ScopeIn();
 			if (privateVar.GetLength(0) == 1)
 			{
-				privateVar.SetValue(arg.Exp!.GetIntValue(exm), [0]);
+				privateVar.SetValue(arg.Exp.GetIntValue(exm), [0]);
 			}
 		}
 
@@ -1538,6 +1538,8 @@ internal sealed partial class FunctionIdentifier
 
 			// SP_CALLSHARP_ArgumentBuilder rejects an omitted argument, so every element here is present.
 			PluginMethodParameter[] pluginArgs = [.. arg.RowArgs.Select((term) => PluginMethodParameterBuilder.ConvertTerm(term!, exm))];
+			// The parser only skips SetJumpTo's HasMethod check when the call form is used, and the
+			// not-found path marks the line as an error, which blocks execution before this point.
 			arg.CallFunc!.Execute(pluginArgs);
 			for (int i = 0; i < pluginArgs.Length; ++i)
 			{
@@ -4257,7 +4259,7 @@ internal sealed partial class FunctionIdentifier
 
 			if (func.Argument != null)
 			{
-				AExpression term = ((ExpressionArgument)func.BuiltArgument).Term!;
+				AExpression? term = ((ExpressionArgument)func.BuiltArgument).Term;
 				if (term != null)
 				{
 					if (label.MethodType != term.GetOperandType())
@@ -4277,7 +4279,7 @@ internal sealed partial class FunctionIdentifier
 
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
-			AExpression term = ((ExpressionArgument)func.BuiltArgument).Term!;
+			AExpression? term = ((ExpressionArgument)func.BuiltArgument).Term;
 			SingleTerm? ret = null;
 			if (term != null)
 			{

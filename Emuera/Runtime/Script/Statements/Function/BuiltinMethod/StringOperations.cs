@@ -506,7 +506,8 @@ internal sealed class StrChangeStyleMethod : FunctionMethod
 			return "";
 		}
 
-		// TODO: Strings.StrConv may return null for an unsupported conversion; consider handling that instead of asserting a non-null result.
+		// The `!` below only suppresses CS8603 from StrConv's `string?` return, which exists for a null
+		// input; str is non-null here, and an unsupported conversion throws ArgumentException.
 		switch (strType)
 		{
 			case StrFormType.Upper:

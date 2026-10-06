@@ -586,7 +586,7 @@ internal sealed class ArrayMultiSortExMethod : FunctionMethod
 		CanRestructure = false;
 	}
 
-	private string? CheckVariableTerm(AExpression arg, string v)
+	private string? CheckVariableTerm(AExpression? arg, string v)
 	{
 		string vname = v == null ? trerror.FirstArg.Text : v;
 		if (!(arg is VariableTerm varTerm) || varTerm.Identifier.IsCalc || varTerm.Identifier.IsConst)
@@ -616,7 +616,7 @@ internal sealed class ArrayMultiSortExMethod : FunctionMethod
 	{
 		WordCollection wc = LexicalAnalyzer.Analyse(new CharStream(name), LexEndWith.EoL, LexAnalyzeFlag.None);
 		AExpression? term = ExpressionParser.ReduceExpressionTerm(wc, TermEndWith.EoL);
-		string? err = CheckVariableTerm(term!, name);
+		string? err = CheckVariableTerm(term, name);
 		if (err != null)
 		{
 			throw new CodeEE(err);

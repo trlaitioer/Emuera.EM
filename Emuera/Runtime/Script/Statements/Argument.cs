@@ -909,7 +909,7 @@ internal sealed class IntAsignArgument : Argument
 {
 	public int[]? Lengths;
 
-	public readonly AExpression? Exp;
+	public readonly AExpression Exp;
 
 	public IntAsignArgument(string name, int[] lengths, AExpression exp)
 	{
