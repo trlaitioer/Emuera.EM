@@ -67,7 +67,7 @@ issues/14 判定 `(x as T)!` 中 49 处有前置类型检查，需逐点注明�
 
 ### 2026-10-06,分支 `nullable/assertion-rationale`
 
-§5/§6 按用户决定并入本票(不再另开票);§2、§3 已落地,§1、§4 待落地。
+§5/§6 按用户决定并入本票(不再另开票);§2~§4 已落地,§1 待落地。
 
 **§2 冗余 `!` 清理(完成)**
 
@@ -99,6 +99,10 @@ issues/14 判定 `(x as T)!` 中 49 处有前置类型检查，需逐点注明�
 | `GraphicsImage` 的 `brush`/`pen`/`font`、`ConstImage` 的 `RealBitmap`、`HtmlManager` 的 `ButtonValueStr`、换行哨兵 `buttonList.Add(null!)` | 断言内容确为假,但可空化会沿消费链牵动迁移清单外的非空消费方(`BuiltinMethod/Graphics.cs`、`ConsoleDisplayLine.buttons` 的消费方),且需先定报错语义或哨兵设计 → 移交 [issues/31](31-assertion-honesty-nonnull-consumers.md) |
 | `ConsoleButtonString` 构造器的 `parent = console!` | 保留:`parent` 类内 9 处读取,改可空净亏;原注释与事实不符,已改写为真实不变量 |
 | `Process.scaningLine` 的唯一读取点(`UnicodeMethod.GetStrValue`) | 字段已诚实化,该处保留断言:三种改法中有两种改行为(改告警指向的行 / NRE 变静默);并行解析走线程本地值,断言并不可证 → 记入 issues/19 的 B 类清单 |
+
+**§4 常量折叠实参的具名入口(完成)**
+
+按「让『此处无求值上下文』只表达一次」落地:新增 `AExpression.GetIntValue()`/`GetStrValue()` 与 `StrForm.GetString()` 三个无参入口(每个内部就是 `GetXxx(null!)`,`!` 从 19 处收敛到 3 处),19 个调用点改为无参形态——`ArgumentBuilder.cs`(14:其中 `GetIntValue` 8、`GetStrValue` 6)、`ExpressionParser.cs`(1)、`VariableEvaluator.cs`(4)。语义完全等价(无参入口只是转发 `null`),故运行行为不变;同口径计数 `Emuera` 后缀断言 838 → 822。
 
 ## 影响
 

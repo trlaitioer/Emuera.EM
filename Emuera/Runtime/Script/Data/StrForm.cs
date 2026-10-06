@@ -297,6 +297,15 @@ internal sealed class StrForm
 		terms = [.. termList];
 	}
 
+	/// <summary>
+	/// Reads a form whose parts cannot reach the context (an unfoldable one would have been handled by
+	/// the caller); kept next to <see cref="GetString(ExpressionMediator)"/> for the constant-fold path.
+	/// </summary>
+	public string GetString()
+	{
+		return GetString(null!);
+	}
+
 	public string GetString(ExpressionMediator exm)
 	{
 		if (strs.Length == 1)

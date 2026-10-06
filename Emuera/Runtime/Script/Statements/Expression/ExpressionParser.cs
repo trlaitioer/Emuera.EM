@@ -223,7 +223,7 @@ internal static class ExpressionParser
 		StrForm strf = StrForm.FromWordToken(sfw);
 		if (strf.IsConst)
 		{
-			return new SingleStrTerm(strf.GetString(null!));
+			return new SingleStrTerm(strf.GetString());
 		}
 
 		return new StrFormTerm(strf);
