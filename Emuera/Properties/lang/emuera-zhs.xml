@@ -194,8 +194,8 @@ Emuera的历史版本有效的内容变得无效等等现象而设置的。
     <tr id="Error.NotExistColorSpecifier"><![CDATA[无法被解析为颜色名的值]]></tr>
     <tr id="Error.ContainsNonNumericCharacters"><![CDATA[包含非数字的文字]]></tr>
     <tr id="Error.InvalidSpecification"><![CDATA[非法的值]]></tr>
-    <tr id="Error.DoesNotMatchCdflagElements"><![CDATA[CDFLAG数组大小度与CDFLAGNAME1以及CDFLAGNAME2的数组大小不匹配]]></tr>
-    <tr id="Error.TooManyCdflagElements"><![CDATA[CDFLAG数组大小过大（CDFLAGNAME1与CDFLAGNAME2的数组大小的成绩超过100）]]></tr>
+    <tr id="Error.DoesNotMatchCdflagElements"><![CDATA[CDFLAG的元素数量与CDFLAGNAME1以及CDFLAGNAME2的元素数量不一致]]></tr>
+    <tr id="Error.TooManyCdflagElements"><![CDATA[CDFLAG的元素数量过多（CDFLAGNAME1与CDFLAGNAME2的元素数量乘积超过100万）]]></tr>
     <tr id="Error.DuplicateErdKey"><![CDATA[变量"{0}"的替换名"{1}"的定义重复。（文件1 - {2}）（文件2 - {3}）]]></tr>
     <tr id="Error.DuplicateVariableDefine"><![CDATA[变量{0}的定义重复]]></tr>
     <tr id="Error.NotDefinedErdKey"><![CDATA[变量"{0}"没有"{1}"的定义]]></tr>
