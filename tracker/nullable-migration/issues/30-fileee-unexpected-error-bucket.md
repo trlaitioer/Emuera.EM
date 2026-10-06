@@ -41,12 +41,30 @@ Type: bug
 - `Emuera.Tests/Runtime/Utils/EraDataStreamTests.cs` 的截断存档用例补两条断言:抛出的 `FileEE` 文案是 `UnexpectedSaveDataEnd`,且分级为 `SaveData`——把「真实坏输入抛出的异常」与「它被报成哪一档」接上。
 - 全量构建 0 错误、CS86xx 0 条;`Emuera.Tests` 784 全绿。
 
-残留(须人工验收):两处 handler 里**剩下的只有打印调用本身**——`handleException` 的入口需要 `EmueraConsole`,其构造器要 `MainWindow`,测试工程构造不出来(与 `arg-contract-05` 记的「`DoInstruction` 需要 `EmueraConsole`」同一边界)。分级、文案与堆栈策略已由用例钉住,实机确认随 issues/19 的人工验收一起做(真实游戏目录 + 坏输入存档)。
+残留(须人工验收):两处 handler 里**剩下的只有打印调用本身**——`handleException` 的入口需要 `EmueraConsole`,其构造器要 `MainWindow`,测试工程构造不出来(与 `arg-contract-05` 记的「`DoInstruction` 需要 `EmueraConsole`」同一边界)。分级、文案与堆栈策略已由用例钉住,实机确认随 `nullable-migration-19` 的人工验收一起做(真实游戏目录 + 坏输入存档;二进制档需先以 `SystemSaveInBinary=true` 存一份再截断数据区,压缩档不走本修法)。
 
 存档侧(本票未覆盖):写入路径抛出的 `FileEE` 到不了 `ErrorReport`——`Emuera/Runtime/Script/Statements/Variable/VariableEvaluator.cs` 的 `SaveTo` 以 `catch (Exception) { return false; }` 收尾,失败由 `Emuera/Runtime/Script/Process.ScriptProc.cs` 的 `SAVEDATA` 分支打成 `UnexpectedErrorInSavedata`(「…予期しないエラーが発生しました」),这 18 处(`EraDataWriter`)因此仍是旧观感。故完成标准「存档/装载类错误有明确的报错分级」只落地装载半边;写入侧须另立票承接(判据与用例同装载侧:一个写不进去的目标或写入期异常,钉住 `SaveTo` 之后那一步的文案分级)。
+
+### 二进制格式的截断(2026-10-07 补充)
+
+上面的分级与用例只覆盖**文本档**:`EraDataStream` 的 `EraDataReader` 在每个 `ReadLine()` 为 null 的 EOF 检查处抛 `FileEE(UnexpectedSaveDataEnd)`,二进制档不是——`EraBinaryDataReader` 只用裸 `BinaryReader` 的 `ReadByte/ReadUInt32/ReadUInt64/ReadInt16/ReadInt32/ReadInt64/ReadString/PeekChar` 取值,读越界抛 BCL 的 `EndOfStreamException`(继承 `IOException`,与 `EmueraException` 无亲缘),按 `Classify` 的 `_` 分支落 `Unexpected`:玩家拿到 `System.IO.EndOfStreamException: Unable to read beyond the end of the stream.` + CLR 堆栈,本票要消掉的观感原样复现。原 `SaveTextReader` 只包 `DecoderFallbackException`,而 `BinaryReader` 的整型读不是 virtual、一个 override 拦不住,故「每次读存档流都从同一个出口过」当时并不成立。触发条件:`Config.SystemSaveInBinary` 默认 `false`,但 `CreateReader` 按文件头自动判别,存档目录里存在一份二进制存档即会走到;压缩档(`ZipHeader`)例外——gzip 解压失败被 `CreateReader` 的 catch-all 吞成 `null`、回退文本读取,预检即给出可读结果。
+
+修法:`SaveTextReader : BinaryReader` 换成持有 `BinaryReader` 的 `SaveDataReader`(组合而非继承),全部读取入口经同一个 `Guarded`:越界转 `FileEE(予期しないセーブデータの終端です)`(与文本档同文案);**值级**损坏——解码失败(`DecoderFallbackException`)、长度前缀畸形或负长度(`FormatException`,以及 `BinaryReader.ReadString` 对负长度抛的 `IOException`)——转 `FileEE(セーブデータが壊れています (类型名: 细节))`,类型名留在文案里是因为该档不打堆栈,否则介质级 I/O 故障与 framing 损坏无从区分。读取调用点一行未动;`CreateReader` 的 3 个构造点与基类 ctor 形参只换了类型名,`reader` 字段与基类 ctor 的可见性因可访问性规则(ctor 为 `CS0051`,字段同规则是 `CS0052`)一并收回 `private`(唯一子类嵌套在类内)。包装只暴露本文件用到的 10 个成员(8 个读 + `BaseStream` + `Close`;无人调用的 `ReadChar` 随之删除)。
+
+用例:`EraBinaryDataReaderTests` 补 5 条——扩展数组块截断、文本段正文截断、头部定长字段截断(这三条钉 `FileEE` + `UnexpectedSaveDataEnd` 文案 + `Classify == SaveData`)、长度前缀畸形与长度前缀为负(这两条钉 `FileEE` + `CorruptedSaveData` 前缀 + `SaveData`)。
+
+验证:`Emuera` 构建 0 错误、97 条既有分析器警告(无 CS86xx);`Emuera.Tests` 784 → **789** 全绿。
+
+仍未覆盖(`nullable-migration-34` 承接):`CreateReader` 的 catch-all 与 `LoadGlobal` 自己的 `catch { return false; }` 把存档错误吞成 `null`/`false`,故读不出来的存档不产生任何存档错误(`LOADDATA` 此前还过预检,`LOADCHARA` 无预检则静默返回);`ReadXml`/`ReadDataTable` 的 XML 侧 BCL 异常、`ReadMap` 重复键的 `ArgumentException`、`ReadIntArray*` 按存档内容推进的索引与分配长度造成的越界/OOM 属内容级与健壮性缺陷,各有各的裁定。
+
+## 曾考虑的替代方案
+
+1. 二进制档的修法改为在 `ErrorReport.Classify` 里把 `EndOfStreamException`(或 `IOException` 整个分支)并入 `SaveData` 档:一行改动,但只改分级不改消息——用户看到的仍是 BCL 的英文文本,离完成标准「可读错误」还差一步;且「IO 异常即存档错误」会把非存档来源的 IO 异常写进唯一判据。故取在读取器出口收敛(见「二进制格式的截断」)
+2. 只在两个 `LoadFrom` 调用点转 `CodeEE(LoadCorruptedData)`:只覆盖两条路径且丢掉具体损坏原因,放弃(同上,见「实施结果」)
 
 ## 影响
 
 - 触及 `Process.handleException` 与 `Process.handleExceptionInSystemProc` 两处 handler（两个 `LoadFrom` 调用点一行未动）；正常读档路径不变
+- 2026-10-07 补充：触及 `Runtime/Utils/EraBinaryDataReader.cs` 的读取出口（包装类型、字段与基类 ctor 的可见性）；各 `LoadFrom` 调用点仍未动
 - 与 `nullable-migration-28` 分列：那张票的范围是「读取点解引用 null」的四处站点，本票是这些站点改抛的异常**如何被报出来**；28 的「影响」节已注明本票承接
 - 本票为复核 28 完成标准时发现，缺陷本身早于该票存在（旧行为是 `NullReferenceException`，同样落兜底分支）
