@@ -1,7 +1,7 @@
 # Nullable:保留断言的理由注释与契约诚实化
 
 id: nullable-migration-22
-Status: ready-for-agent
+Status: in-progress
 
 ## 任务
 
@@ -62,6 +62,43 @@ issues/14 判定 `(x as T)!` 中 49 处有前置类型检查，需逐点注明�
 ### 6. `ExpressionArrayArgument.TermList` 的契约诚实化（issues/17 审计移交）
 
 `Argument.cs` 的 `ExpressionArrayArgument` 声明 `AExpression[] TermList`，却由 `List<AExpression?>` 经 `CopyTo` 填充，把元素可空性在类型上洗掉。两条构造路径当前都已拒绝 null 元素（`ArgumentBuilder.cs` 的 `INT_ANY_ArgumentBuilder` 经 `checkArgumentType` 拒绝、`FORM_STR_ANY_ArgumentBuilder` 自建非空 term），故非缺陷；但读取侧（`Process.ScriptProc.cs` 的 `INT_ANY` 消费、`Instraction.Child.cs` 的 `ExpressionArrayArgument` 取值）依赖的是这条不写在类型上的不变量。处置二选一：构造函数改收 `List<AExpression>`（调用点各自收窄），或字段改 `AExpression?[]` 并由消费点处理。
+
+## 实施结果
+
+### 2026-10-06,分支 `nullable/assertion-rationale`
+
+§5/§6 按用户决定并入本票(不再另开票);§2、§3 已落地,§1、§4 待落地。
+
+**§2 冗余 `!` 清理(完成)**
+
+| 位置 | 结果 |
+| --- | --- |
+| `Strings.StrConv` 5 处 | 保留(判定成立:只承担 CS8603);两处 TODO 改写为理由注释 |
+| `DataColumnCollection` 整型索引 | 已由 `e70ec779` 完成,复核确认全仓无整型索引断言 |
+| `ArrayMultiSortExMethod` 的 `(term as VariableTerm)!` | 保留(已有理由注释);同方法的 `CheckVariableTerm(term!)` 已消除——形参改 `AExpression?`(实现以 `is` 模式对 null 安全) |
+| `Instraction.Child.cs` 的 `VARI_Instruction` 对 `IntAsignArgument.Exp` | **判定更正**:该字段本可非空(两条构造路径都传表达式)→ 字段改非可空、删除 `!` |
+| `Instraction.Child.cs` 的 `CALLSHARP_Instruction` 对 `arg.CallFunc` | 保留并注明:真实保证来自 `SetJumpTo` 的 `isError` 标记,不是 `IsConst` |
+| `RETURNF_Instruction` 对 `((ExpressionArgument)…).Term` | 两处读取点本就判空 → 局部改 `AExpression?`、删除 `!` |
+
+**§3 契约诚实化(已实施)**
+
+- `AInstruction.SetJumpTo` 的 `ref string` → `ref string?`(8 处 override 同步;`ErbLoader` 局部随之去 `= null!`)
+- `ProcessState.IntoFunction` 的 `exm` 参数、`Process.SetScaningLineForThread` 的 `line` 参数、`Process.scaningLine` 字段改可空(`IntoFunction(call, null, null!)` 两处随之改 `null`)
+- `XmlGetMethod`/`XmlSetMethod` 的 `nodes` 局部去掉 `= null!`:**判定更正**——实测 `try { nodes = …; } catch { throw …; }` 之后的读取由「catch 必抛」证明,编译器本就无 CS0165/CS86xx,故无需提取方法
+- `CircularBuffer<T>` 元素类型改 `T?[]`:槽位可空是事实;`Enqueue` 的读取在缓冲未满时读的是死槽(票面「槽位在下次 Enqueue 前不被读」只对活槽成立,已在写点与字段处注明),故该处 `!` 是断言而非冗余
+- `Utils.CreateIfNull(ref int[]?)` 与 `ParseMixedNum`/`TryParseStyledBoxModel`/`CreateIfNull<T>` 形参改可空并补 `[NotNull]` 真实后置条件 → `HtmlManager` 删 13 处 `ref x!`、`box!`/`color!` 3 处
+- `HtmlAnalzeStateFontTag.FontName` 与 `StringStyle` 构造器改 `string?`;`RefArgument` 两个构造器的 `name` 形参改 `AExpression?`
+- `DataTableRowSetMethod.CheckName` 补「列存在」的后置条件注释(覆盖 5 处 `dt.Columns[name]!`)
+
+**§3 判定更正 / 未实施(移出本票)**
+
+| 项 | 结论 |
+| --- | --- |
+| `MainWindow.console` 改 `readonly` | **不成立**:`MainWindow_FormClosing` 有 `console.Dispose(); console = null;`,`readonly` 不可能;26 处 `if (console == null)` 也不是死代码(构造器先 `InitializeComponent()` 接线、后赋值) |
+| `VariableToken` 构造函数「未使用的 `VariableData` 参数」 | **不成立**:该字段在 Chara/CHARANUM/LASTLOAD 等分支被读 60+ 处;真正的假断言只在 `: base(varCode, null!)`(`UserDefinedVariableToken` 分支),两种诚实化代价都是净亏 |
+| `GraphicsImage` 的 `brush`/`pen`/`font`、`ConstImage` 的 `RealBitmap`、`HtmlManager` 的 `ButtonValueStr`、换行哨兵 `buttonList.Add(null!)` | 断言内容确为假,但可空化会沿消费链牵动迁移清单外的非空消费方(`BuiltinMethod/Graphics.cs`、`ConsoleDisplayLine.buttons` 的消费方),且需先定报错语义或哨兵设计 → 移交 [issues/31](31-assertion-honesty-nonnull-consumers.md) |
+| `ConsoleButtonString` 构造器的 `parent = console!` | 保留:`parent` 类内 9 处读取,改可空净亏;原注释与事实不符,已改写为真实不变量 |
+| `Process.scaningLine` 的唯一读取点(`UnicodeMethod.GetStrValue`) | 字段已诚实化,该处保留断言:三种改法中有两种改行为(改告警指向的行 / NRE 变静默);并行解析走线程本地值,断言并不可证 → 记入 issues/19 的 B 类清单 |
 
 ## 影响
 

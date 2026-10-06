@@ -47,6 +47,7 @@ issues/21 的断言审计（批次 1/2/3）与 issues/14 复核表第 4 项另�
 | `EmueraConsole.GetDebugTraceLog` 的 `line.ParentLabelLine!` | 该行的理由注释「有 Position 就是从文件解析来的行」对内存行失效（默认 `ScriptPosition` 非 null），`Position == null` 的判空挡不住 `ParentLabelLine == null` | 调试窗口打开时 `Process.GetScaningLine()` 指向内存行（插件/调试命令解析过 `VARI` 一类会写 `scaningLine` 的行） |
 | `BuiltinMethod/StringOperations.cs` 的 `UnicodeMethod.GetStrValue` 对 `getCurrentLine.Position!` | 只判 `getCurrentLine != null`，未判 `Position`；由 issues/14 复核表第 4 项移交（B） | 出现 `Position` 为 null 的当前行（现无该形态的构造点） |
 | `UserDefinedMethodTerm.cs` 的 `UserDefinedRefMethodTerm.Restructure` 对 `srcArgs.Required(i)` | `srcArgs` 的元素可空（省略实参），此处按非空读取；由 issues/14 复核表第 4 项移交（该 `Restructure` 现无调用点，B） | 该 `Restructure` 重新接回调用链 |
+| `BuiltinMethod/StringOperations.cs` 的 `UnicodeMethod.GetStrValue` 对 `GlobalStatic.Process.scaningLine!` | 该处把可空字段断言成非空传给 `ParserMediator.Warn(string, LogicalLine, …)`，而 `Warn` 记录告警时会读 `line.Position`。字段本身已由 issues/22 诚实化为 `LogicalLine?`（`ErbLoader` 三处赋 null、`GetScaningLine()` 全判空），但该读取点的可空化必然改行为：改传 `?.Position` 会改告警指向的行，判空跳过则把 NRE 变静默；且并行解析走的是线程本地值（`SetScaningLineForThread`），此处读字段，两者可能不一致——故断言不可证 | 解析期在该分支记录告警，且字段与线程本地值不一致（当前不可达，未取证到构造点）；`Program.AnalysisMode` 下该告警必然走到记录路径 |
 
 ### 相关发现(不在本票)
 
