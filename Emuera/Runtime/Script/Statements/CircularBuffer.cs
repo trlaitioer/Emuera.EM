@@ -20,7 +20,9 @@ public interface ICircularBuffer<T>
 public class CircularBuffer<T> : ICircularBuffer<T>, IEnumerable<T>
 
 {
-	private T[] _buffer;
+	// The slots inside [tail, tail + Count) are the only live elements; Dequeue clears the slot it
+	// leaves behind. Reads guarded by Count therefore land on live slots.
+	private T?[] _buffer;
 	private int _head;
 	private int _tail;
 
@@ -69,7 +71,10 @@ public class CircularBuffer<T> : ICircularBuffer<T>, IEnumerable<T>
 	public T Enqueue(T item)
 	{
 		_head = (_head + 1) % Capacity;
-		T overwritten = _buffer[_head];
+		// Reads the slot before overwriting it: while the buffer has room to spare that slot is dead
+		// (default(T), or an element evicted in an earlier round), so the value only means anything
+		// once the buffer is full.
+		T overwritten = _buffer[_head]!;
 		_buffer[_head] = item;
 		if (Count == Capacity)
 		{
@@ -90,8 +95,8 @@ public class CircularBuffer<T> : ICircularBuffer<T>, IEnumerable<T>
 			throw new InvalidOperationException("queue exhausted");
 		}
 
-		T dequeued = _buffer[_tail];
-		_buffer[_tail] = default!; //default(T) is null for reference type arguments, which only releases the slot's reference
+		T dequeued = _buffer[_tail]!;
+		_buffer[_tail] = default; // releases the reference the slot held
 		_tail = (_tail + 1) % Capacity;
 		--Count;
 		return dequeued;
@@ -113,7 +118,7 @@ public class CircularBuffer<T> : ICircularBuffer<T>, IEnumerable<T>
 				throw new ArgumentOutOfRangeException(nameof(index));
 			}
 
-			return _buffer[(_tail + index) % Capacity];
+			return _buffer[(_tail + index) % Capacity]!;
 		}
 		set
 		{

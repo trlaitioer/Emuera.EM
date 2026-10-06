@@ -115,7 +115,8 @@ internal sealed class XmlGetMethod : FunctionMethod
 	public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
 	{
 		XmlDocument? doc = null;
-		XmlNodeList nodes = null!;
+		// Assigned by the try below; the catch throws, so every path past it has a value.
+		XmlNodeList nodes;
 		if (slots.IsInteger(0) || (byName && slots.IsString(0)))
 		{
 			string idx = slots.IsString(0)
@@ -1368,7 +1369,8 @@ internal sealed class XmlSetMethod : FunctionMethod
 		}
 
 		string path = slots.Str(exm, 1);
-		XmlNodeList nodes = null!;
+		// Assigned by the try below; the catch throws, so every path past it has a value.
+		XmlNodeList nodes;
 		try
 		{
 			nodes = doc.SelectNodes(path)!;
@@ -2422,6 +2424,8 @@ internal sealed class DataTableRowSetMethod : FunctionMethod
 
 	private readonly Operation op;
 
+	// Returns only for a column that exists, which is what lets the SetValue overloads read
+	// dt.Columns[name]! (the string indexer is nullable for the miss case).
 	private void CheckName(DataTable dt, string name, string key)
 	{
 		if (name == "id")

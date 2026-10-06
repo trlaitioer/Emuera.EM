@@ -13,7 +13,7 @@ internal abstract class AInstruction
 	// (VARI/VARS) or take no argument at all (CUSTOMDRAWLINE).
 	public ArgumentBuilder? ArgBuilder { get; protected init; }
 
-	public virtual void SetJumpTo(ref bool useCallForm, InstructionLine func, int currentDepth, ref string FunctionoNotFoundName)
+	public virtual void SetJumpTo(ref bool useCallForm, InstructionLine func, int currentDepth, ref string? FunctionoNotFoundName)
 	{ }
 
 	public virtual void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)

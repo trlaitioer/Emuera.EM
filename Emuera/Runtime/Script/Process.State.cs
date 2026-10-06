@@ -520,7 +520,7 @@ internal sealed class ProcessState
 		//ShfitNextLine();
 	}
 
-	public void IntoFunction(CalledFunction call, UserDefinedFunctionArgument? srcArgs, ExpressionMediator exm)
+	public void IntoFunction(CalledFunction call, UserDefinedFunctionArgument? srcArgs, ExpressionMediator? exm)
 	{
 		if (call.IsEvent)
 		{

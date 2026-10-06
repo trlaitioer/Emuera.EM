@@ -550,14 +550,15 @@ internal sealed partial class Process(EmueraConsole view)
 	/// </summary>
 	public LogicalLine scaningLine = null!;
 
-	[ThreadStatic] private static LogicalLine scaningLineForThread = null!;
+	[ThreadStatic] private static LogicalLine? scaningLineForThread;
 	[ThreadStatic] private static bool scaningLineForThreadInitialized;
 
 	/// <summary>
 	/// Sets the "current line" for a parsing thread. Parallel workers are pooled threads, so this
 	/// must always be used to be sure the thread-local side is owned rather than inherited.
 	/// </summary>
-	internal void SetScaningLineForThread(LogicalLine line)
+	/// <remarks>Null is passed by a parsing worker that is done with the line.</remarks>
+	internal void SetScaningLineForThread(LogicalLine? line)
 	{
 		if (!scaningLineForThreadInitialized)
 		{

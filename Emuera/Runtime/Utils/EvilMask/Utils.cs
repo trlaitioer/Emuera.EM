@@ -3,6 +3,7 @@ using MinorShift.Emuera.UI.Game;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.IO;
 using System.Text;
@@ -120,7 +121,7 @@ internal sealed class Utils
 		return obj;
 	}
 
-	public static int[] CreateIfNull(ref int[]? obj, int len = 4)
+	public static int[] CreateIfNull([NotNull] ref int[]? obj, int len = 4)
 	{
 		if (obj == null)
 		{
@@ -336,7 +337,7 @@ internal sealed class Utils
 			CreateIfNull(ref nums);
 			for (int i = 0; i < 4; i++)
 			{
-				nums![i] = MixedNum.ToPixel(mnums[i]);
+				nums[i] = MixedNum.ToPixel(mnums[i]);
 			}
 		}
 	}

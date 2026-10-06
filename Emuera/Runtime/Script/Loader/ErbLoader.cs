@@ -1247,7 +1247,7 @@ internal sealed class ErbLoader(EmueraConsole output, ExpressionMediator exm, Pr
 		}
 		finally
 		{
-			parentProcess.SetScaningLineForThread(null!);
+			parentProcess.SetScaningLineForThread(null);
 		}
 	}
 
@@ -1987,7 +1987,8 @@ internal sealed class ErbLoader(EmueraConsole output, ExpressionMediator exm, Pr
 
 			if (func.Function.Instruction != null)
 			{
-				string FunctionNotFoundName = null!;
+				// Left null unless the instruction reports a function it could not resolve.
+				string? FunctionNotFoundName = null;
 				try
 				{
 					func.Function.Instruction.SetJumpTo(ref useCallForm, func, depth, ref FunctionNotFoundName);

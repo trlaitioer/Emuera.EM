@@ -1427,7 +1427,7 @@ internal sealed partial class FunctionIdentifier
 			flag = EXTENDED | METHOD_SAFE | FORCE_SETARG;
 		}
 
-		public override void SetJumpTo(ref bool useCallForm, InstructionLine func, int currentDepth, ref string FunctionoNotFoundName)
+		public override void SetJumpTo(ref bool useCallForm, InstructionLine func, int currentDepth, ref string? FunctionoNotFoundName)
 		{
 			if (!func.BuiltArgument.IsConst)
 			{
@@ -1512,7 +1512,7 @@ internal sealed partial class FunctionIdentifier
 			return ret;
 		}
 
-		public override void SetJumpTo(ref bool useCallForm, InstructionLine func, int currentDepth, ref string FunctionoNotFoundName)
+		public override void SetJumpTo(ref bool useCallForm, InstructionLine func, int currentDepth, ref string? FunctionoNotFoundName)
 		{
 			if (!func.BuiltArgument.IsConst)
 			{
@@ -1577,7 +1577,7 @@ internal sealed partial class FunctionIdentifier
 			flag = EXTENDED | METHOD_SAFE | FORCE_SETARG;
 		}
 
-		public override void SetJumpTo(ref bool useCallForm, InstructionLine func, int currentDepth, ref string FunctionoNotFoundName)
+		public override void SetJumpTo(ref bool useCallForm, InstructionLine func, int currentDepth, ref string? FunctionoNotFoundName)
 		{
 			if (!func.BuiltArgument.IsConst)
 			{
@@ -3716,7 +3716,7 @@ internal sealed partial class FunctionIdentifier
 			flag = METHOD_SAFE | FLOW_CONTROL | PARTIAL | FORCE_SETARG;
 		}
 
-		public override void SetJumpTo(ref bool useCallForm, InstructionLine func, int currentDepth, ref string FunctionoNotFoundName)
+		public override void SetJumpTo(ref bool useCallForm, InstructionLine func, int currentDepth, ref string? FunctionoNotFoundName)
 		{
 			LogicalLine jumpto = func.NextLine;
 			if (jumpto == null || jumpto.NextLine == null ||
@@ -4249,7 +4249,7 @@ internal sealed partial class FunctionIdentifier
 			flag = METHOD_SAFE | EXTENDED | FLOW_CONTROL;
 		}
 
-		public override void SetJumpTo(ref bool useCallForm, InstructionLine func, int currentDepth, ref string FunctionoNotFoundName)
+		public override void SetJumpTo(ref bool useCallForm, InstructionLine func, int currentDepth, ref string? FunctionoNotFoundName)
 		{
 			FunctionLabelLine label = func.ParentLabelLine!;
 			if (!label.IsMethod)
@@ -4326,7 +4326,7 @@ internal sealed partial class FunctionIdentifier
 		private readonly bool isJump;
 		private readonly bool isTry;
 
-		public override void SetJumpTo(ref bool useCallForm, InstructionLine func, int currentDepth, ref string FunctionoNotFoundName)
+		public override void SetJumpTo(ref bool useCallForm, InstructionLine func, int currentDepth, ref string? FunctionoNotFoundName)
 		{
 			if (!func.BuiltArgument.IsConst)
 			{
@@ -4429,7 +4429,7 @@ internal sealed partial class FunctionIdentifier
 			flag = FLOW_CONTROL | EXTENDED;
 		}
 
-		public override void SetJumpTo(ref bool useCallForm, InstructionLine func, int currentDepth, ref string FunctionoNotFoundName)
+		public override void SetJumpTo(ref bool useCallForm, InstructionLine func, int currentDepth, ref string? FunctionoNotFoundName)
 		{
 			//EVENT関数からCALLされた先でCALLEVENTされるようなパターンはIntoFunctionで捕まえる
 			FunctionLabelLine label = func.ParentLabelLine!;
@@ -4448,7 +4448,7 @@ internal sealed partial class FunctionIdentifier
 				return;
 			}
 
-			state.IntoFunction(call, null, null!);
+			state.IntoFunction(call, null, null);
 		}
 	}
 
@@ -4480,7 +4480,7 @@ internal sealed partial class FunctionIdentifier
 
 		private readonly bool isTry;
 
-		public override void SetJumpTo(ref bool useCallForm, InstructionLine func, int currentDepth, ref string FunctionoNotFoundName)
+		public override void SetJumpTo(ref bool useCallForm, InstructionLine func, int currentDepth, ref string? FunctionoNotFoundName)
 		{
 			GotoLabelLine? jumpto;
 			func.JumpTo = null;
