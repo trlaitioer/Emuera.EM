@@ -517,6 +517,8 @@ internal static class ExpressionParser
 		int ternaryCount = 0;
 		OperatorCode formerOp = OperatorCode.NULL;
 		bool varArg = varCode != VariableCode.__NULL__;
+		// Word.Type is the discriminator for the concrete Word subclass, so each iteration below
+		// only has to cast, not test.
 		do
 		{
 			Word token = wc.Current;
@@ -594,6 +596,8 @@ internal static class ExpressionParser
 					{
 						if (op is OperatorCode.Equal or OperatorCode.Greater or OperatorCode.Less or OperatorCode.GreaterEqual or OperatorCode.LessEqual or OperatorCode.NotEqual)
 						{
+							// Always called from the parser, which runs inside ErbLoader's file/name
+							// passes with a current line set; the thread-local side covers fresh workers.
 							ParserMediator.Warn(trerror.ComparisonOpContinuous.Text, GlobalStatic.Process.GetScaningLine()!, 0, false, false);
 						}
 					}

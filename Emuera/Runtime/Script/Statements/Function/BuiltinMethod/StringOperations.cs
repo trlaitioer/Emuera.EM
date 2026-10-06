@@ -590,6 +590,9 @@ internal sealed class ReplaceMethod : FunctionMethod
 	public override string GetStrValue(ExpressionMediator exm, ArgumentSlots slots)
 	{
 		string baseString = slots.Str(exm, 0);
+		// reg stays null only when type == 2, and that type value can only come from a 4-argument call, which
+		// returns inside the count == 4 block below; every other path assigns it here, with a bad pattern turned
+		// into CodeEE. Both `reg!` reads rest on this.
 		Regex? reg = null;
 		int type = slots.Count == 4 ? (int)slots.Int(exm, 3) : 0;
 		if (type != 2)

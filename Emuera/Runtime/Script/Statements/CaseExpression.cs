@@ -14,8 +14,9 @@ internal sealed class CaseExpression
 {
 	public CaseExpressionType CaseType = CaseExpressionType.Normal;
 
-	// Both terms are filled by ExpressionParser before the case is used; a null term is
-	// only possible for a case the parser has already rejected.
+	// Both terms are filled by ExpressionParser.reduceCaseExpression, which raises CodeEE (NothingAfterIs /
+	// CanNotOmitCaseArg / NoExpressionAfterTo) instead of leaving one null; the readers below reach RightTerm
+	// only under CaseType.To, which is the only type the parser assigns it for.
 	public AExpression? LeftTerm;
 	public AExpression? RightTerm;
 

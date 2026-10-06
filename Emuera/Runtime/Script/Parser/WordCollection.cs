@@ -89,6 +89,7 @@ internal sealed class WordCollection
 				return nullToken;
 			}
 
+			// index < Count implies Pointer is a real node, and a further node exists.
 			return Pointer!.Next!.Value;
 		}
 	}
@@ -148,6 +149,7 @@ internal sealed class WordCollection
 
 	public void Remove()
 	{
+		// Private to the parser, which only removes while !EOL
 		LinkedListNode<Word>? next = Pointer!.Next;
 		Collection.Remove(Pointer);
 		Pointer = next;

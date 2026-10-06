@@ -40,6 +40,8 @@ internal sealed partial class FunctionIdentifier
 			IntAsignArgument arg = (IntAsignArgument)func.BuiltArgument;
 			string varName = arg.ConstStr;
 
+			// The label and the variable both come from this statement: LogicalLineParser's VARI branch builds the
+			// line only with a parent label and registers that same name on it.
 			UserDefinedVariableToken privateVar = func.ParentLabelLine!.GetPrivateVariable(varName)!;
 			privateVar.ScopeIn();
 			if (privateVar.GetLength(0) == 1)
@@ -61,6 +63,8 @@ internal sealed partial class FunctionIdentifier
 			StrAsignArgument arg = (StrAsignArgument)func.BuiltArgument;
 			string varName = arg.ConstStr;
 
+			// The label and the variable both come from this statement: LogicalLineParser's VARS branch builds the
+			// line only with a parent label and registers that same name on it.
 			UserDefinedVariableToken privateVar = func.ParentLabelLine!.GetPrivateVariable(varName)!;
 			privateVar.ScopeIn();
 			if (privateVar.GetLength(0) == 1)
@@ -208,6 +212,7 @@ internal sealed partial class FunctionIdentifier
 				List<AExpression?> terms = ((SpPrintVArgument)func.BuiltArgument).Terms;
 				foreach (AExpression? termV in terms)
 				{
+					// SP_PRINTV_ArgumentBuilder refuses the line when a slot is omitted, so no element is null.
 					if (termV!.IsInteger)
 					{
 						builder.Append(termV.GetIntValue(exm));
@@ -222,6 +227,8 @@ internal sealed partial class FunctionIdentifier
 			}
 			else
 			{
+				// Every builder this instruction selects stores a non-null term: STR_/FORM_STR_ substitute an
+				// empty SingleStrTerm for an omitted argument, and the nullable variants only relax minArg.
 				str = ((ExpressionArgument)func.BuiltArgument).Term!.GetStrValue(exm);
 				if (isForms)
 				{
@@ -762,6 +769,10 @@ internal sealed partial class FunctionIdentifier
 		{
 			if (func.Argument is SpSetArrayArgument arg)
 			{
+				// SP_SET_ArgumentBuilder always fills the const list of the array argument (each ctor gets one);
+				// IsConst only says whether it may be used, and TermList holds no null because that builder refuses
+				// an omitted element. The scalar paths below reach Term! only where IsConst is false, which the
+				// same builder sets true exactly when it folded the source into ConstInt/ConstStr.
 				if (arg.VariableDest.IsInteger)
 				{
 					if (arg.IsConst)
@@ -848,6 +859,9 @@ internal sealed partial class FunctionIdentifier
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
 			ExpressionArgument intExpArg = (ExpressionArgument)func.BuiltArgument;
+			// INT_EXPRESSION never stores a null term: it warns about an omitted argument but still folds it
+			// into 0. The same holds for the VAR_INT element read by PRINTDATA (rejected when null) and for the
+			// STR_/FORM_STR_NULLABLE reader further down, which substitutes an empty string.
 			int delNum = (int)intExpArg.Term!.GetIntValue(exm);
 			exm.Console.deleteLine(delNum);
 			exm.Console.RefreshStrings(false);
@@ -1294,6 +1308,8 @@ internal sealed partial class FunctionIdentifier
 			SpTInputsArgument tinputarg = (SpTInputsArgument)func.BuiltArgument;
 
 			InputRequest req = new() { InputType = InputType.IntValue, HasDefValue = true, OneInput = isOne };
+			// SP_TINPUT_ArgumentBuilder and SP_TINPUTS_ArgumentBuilder both set minArg = 2, so Time and Def
+			// are always supplied; the CanSkip block below additionally reads Mouse, filled on that same path.
 			long x = tinputarg.Time!.GetIntValue(exm);
 			long y = tinputarg.Def!.GetIntValue(exm);
 			//TODO:ONEINPUTと標準の値を統一
@@ -1363,6 +1379,7 @@ internal sealed partial class FunctionIdentifier
 		{
 			SpTInputsArgument tinputarg = (SpTInputsArgument)func.BuiltArgument;
 			InputRequest req = new() { InputType = InputType.StrValue, HasDefValue = true, OneInput = isOne };
+			// Same minArg = 2 guarantee as TINPUT; the CanSkip block below reads the Mouse slot that path fills.
 			long x = tinputarg.Time!.GetIntValue(exm);
 			string strs = tinputarg.Def!.GetStrValue(exm);
 
@@ -2102,6 +2119,8 @@ internal sealed partial class FunctionIdentifier
 			}
 			else
 			{
+				// INT_EXPRESSION_NULLABLE only relaxes minArg: an omitted argument is still folded into 0,
+				// so no builder path leaves the term null.
 				iValue = ((ExpressionArgument)func.BuiltArgument).Term!.GetIntValue(exm);
 			}
 
@@ -2296,6 +2315,7 @@ internal sealed partial class FunctionIdentifier
 			}
 			else
 			{
+				// STR_EXPRESSION substitutes an empty SingleStrTerm for an omitted argument.
 				datFilename = arg.Term!.GetStrValue(exm);
 			}
 
@@ -2361,6 +2381,7 @@ internal sealed partial class FunctionIdentifier
 			}
 			else
 			{
+				// INT_EXPRESSION folds an omitted argument into 0 instead of storing a null term.
 				target = ((ExpressionArgument)func.BuiltArgument).Term!.GetIntValue(exm);
 			}
 
@@ -2528,6 +2549,7 @@ internal sealed partial class FunctionIdentifier
 			}
 			else
 			{
+				// INT_EXPRESSION substitutes a SingleLongTerm(0) when the argument is omitted.
 				delay = arg.Term!.GetIntValue(exm);
 			}
 
@@ -2558,6 +2580,7 @@ internal sealed partial class FunctionIdentifier
 			}
 			else
 			{
+				// INT_EXPRESSION substitutes a SingleLongTerm(0) when the argument is omitted.
 				duration = arg.Term!.GetIntValue(exm);
 			}
 
@@ -3278,6 +3301,7 @@ internal sealed partial class FunctionIdentifier
 			}
 			else
 			{
+				// STR_EXPRESSION substitutes an empty SingleStrTerm for an omitted argument.
 				datFilename = arg.Term!.GetStrValue(exm);
 			}
 
@@ -3327,6 +3351,7 @@ internal sealed partial class FunctionIdentifier
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
 			ExpressionArgument intExpArg = (ExpressionArgument)func.BuiltArgument;
+			// INT_EXPRESSION substitutes a SingleLongTerm(0) when the argument is omitted.
 			int vol = (int)intExpArg.Term!.GetIntValue(exm);
 			for (int i = 0; i < sound.Length; i++)
 			{
@@ -3351,6 +3376,7 @@ internal sealed partial class FunctionIdentifier
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
 			ExpressionArgument intExpArg = (ExpressionArgument)func.BuiltArgument;
+			// INT_EXPRESSION substitutes a SingleLongTerm(0) when the argument is omitted.
 			int vol = (int)intExpArg.Term!.GetIntValue(exm);
 			bgm.setVolume(vol);
 		}
@@ -3457,6 +3483,8 @@ internal sealed partial class FunctionIdentifier
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
 			ExpressionArgument fn = (ExpressionArgument)func.BuiltArgument;
+			// The TOOLTIP_SET* readers all take STR_EXPRESSION/INT_EXPRESSION, which substitute an empty
+			// string or a zero term for an omitted argument, so no builder path leaves the term null.
 			exm.Console.SetToolTipFontName(fn.Term!.GetStrValue(exm));
 		}
 	}
@@ -3699,6 +3727,7 @@ internal sealed partial class FunctionIdentifier
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
 			ExpressionArgument expArg = (ExpressionArgument)func.BuiltArgument;
+			// INT_EXPRESSION substitutes a SingleLongTerm(0) when the condition is omitted.
 			if (expArg.Term!.GetIntValue(exm) != 0) //式が真
 			{
 				return; //そのまま中の処理へ
@@ -3754,6 +3783,7 @@ internal sealed partial class FunctionIdentifier
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
 			ExpressionArgument expArg = (ExpressionArgument)func.BuiltArgument;
+			// INT_EXPRESSION substitutes a SingleLongTerm(0) when the condition is omitted.
 			if (expArg.Term!.GetIntValue(exm) == 0) //評価式が真ならそのまま流れ落ちる
 			{
 				state.ShiftNextLine(); //偽なら一行とばす。順に来たときと同じ扱いにする
@@ -3836,6 +3866,8 @@ internal sealed partial class FunctionIdentifier
 				}
 				else
 				{
+					// ELSEIF_Instruction builds this line too, with the same INT_EXPRESSION builder and its
+					// SingleLongTerm(0) substitute for omitted conditions.
 					value = ((ExpressionArgument)line.BuiltArgument).Term!.GetIntValue(exm);
 				}
 
@@ -3866,6 +3898,8 @@ internal sealed partial class FunctionIdentifier
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
 			LogicalLine caseJumpto = func.JumpTo!; //ENDSELECT
+			// EXPRESSION_ArgumentBuilder keeps the non-nullable EXPRESSION wiring for this instruction's
+			// argument type, so an omitted expression never reaches here as null.
 			AExpression selectValue = ((ExpressionArgument)func.BuiltArgument).Term!;
 			string? sValue = null;
 			long iValue = 0;
@@ -3916,6 +3950,8 @@ internal sealed partial class FunctionIdentifier
 				}
 				else
 				{
+					// sValue was filled by the GetStrValue call in the branch above, entered under the same
+					// IsInteger test as this one.
 					string Is = sValue!;
 					foreach (CaseExpression caseExp in caseArg.CaseExps)
 					{
@@ -3958,6 +3994,7 @@ internal sealed partial class FunctionIdentifier
 			//if (state.ScriptEnd)
 			//    return;
 			//int termnum = 0;
+			// FORM_STR substitutes an empty SingleStrTerm for an omitted argument.
 			CharStream aSt = new(((ExpressionArgument)func.BuiltArgument).Term!.GetStrValue(exm));
 			List<long> termList = [];
 			while (!aSt.EOS)
@@ -4126,6 +4163,8 @@ internal sealed partial class FunctionIdentifier
 
 			if (jumpTo.FunctionCode == FunctionCode.WHILE)
 			{
+				// WHILE_Instruction builds this line with INT_EXPRESSION, whose builder substitutes a
+				// SingleLongTerm(0) for an omitted condition.
 				if (((ExpressionArgument)jumpTo.BuiltArgument).Term!.GetIntValue(exm) != 0)
 				{
 					state.JumpTo(func.JumpTo!);
@@ -4215,6 +4254,8 @@ internal sealed partial class FunctionIdentifier
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
 			InstructionLine jumpTo = (InstructionLine)func.JumpTo!;
+			// WEND pairs with WHILE, whose INT_EXPRESSION builder substitutes a SingleLongTerm(0) for an
+			// omitted condition.
 			if (((ExpressionArgument)jumpTo.BuiltArgument).Term!.GetIntValue(exm) != 0)
 			{
 				state.JumpTo(func.JumpTo!);
@@ -4233,6 +4274,7 @@ internal sealed partial class FunctionIdentifier
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
 			ExpressionArgument expArg = (ExpressionArgument)func.BuiltArgument;
+			// INT_EXPRESSION substitutes a SingleLongTerm(0) when the condition is omitted.
 			if (expArg.Term!.GetIntValue(exm) != 0) //式が真
 			{
 				state.JumpTo(func.JumpTo!);

@@ -441,7 +441,8 @@ internal sealed partial class VariableData : IDisposable
 			ParserMediator.Warn(string.Format(trerror.IsDefinedCsvVariable.Text, data.Name), dimline.SC, 1);
 		}
 
-		// The only caller passes CHARADATA declarations, so ret is set here
+		// Its only caller (ErhLoader.analyzeSharpDimLines) enters this method only when
+		// data.CharaData holds, and the dimension switches above throw for anything but 1D/2D.
 		UserDefinedCharaVarList.Add(ret!);
 		return ret!;
 	}

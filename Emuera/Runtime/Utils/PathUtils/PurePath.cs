@@ -72,6 +72,7 @@ public class PurePath : IEquatable<PurePath>
 	/// </summary>
 	public virtual PurePath ChangeExtension(string? extension)
 	{
+		// Path.ChangeExtension returns null only for a null path; value is the non-null normalized field.
 		return new PurePath(Normalize(Path.ChangeExtension(value, extension)!));
 	}
 

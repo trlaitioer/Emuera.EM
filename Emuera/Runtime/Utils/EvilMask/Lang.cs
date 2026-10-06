@@ -1513,6 +1513,8 @@ internal sealed partial class Lang
 		XmlNodeList nodes = xml.SelectNodes("/lang/tr")!;
 		for (int i = 0; i < nodes.Count; i++)
 		{
+			// i is bounded by nodes.Count and every /lang/tr hit is an element, so the item and its (possibly
+			// empty) attribute collection are both non-null - and the InnerText read below relies on the same.
 			XmlAttribute? attr = nodes[i]!.Attributes!["id"];
 			if (attr != null && trItems.TryGetValue(attr.Value, out TranslatableString? value))
 			{

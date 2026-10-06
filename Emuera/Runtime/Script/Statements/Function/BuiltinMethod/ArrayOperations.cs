@@ -962,6 +962,8 @@ internal sealed class FindElementMethod : FunctionMethod
 	public override bool UniqueRestructure(ExpressionMediator exm, List<AExpression?> arguments)
 	{
 		arguments.Required(0).Restructure(exm);
+		// This hook is reached only after the checker matched the class's rule, which declares slot 0 as a
+		// reference slot; HasUniqueRestructure exists here because that rule carries AllowConstRef.
 		VariableTerm varToken = (arguments[0] as VariableTerm)!;
 		bool isConst = varToken.Identifier.IsConst;
 		for (int i = 1; i < arguments.Count; i++)

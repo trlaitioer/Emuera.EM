@@ -131,6 +131,8 @@ internal static class BuiltinArgReaders
 	internal static float[][] ReadColormatrix(string Name, ExpressionMediator exm, FunctionMethod.ArgumentSlots slots, int argNo)
 	{
 		//数値型二次元以上配列変数のはず
+		// The rule of the caller's slot declares it RefInt2D or RefInt3D, and the IsArray2D/IsArray3D guards
+		// below select the matching array, so GetArray() is the array type each cast names.
 		FixedVariableTerm p = slots.Var(argNo).GetFixedVariableTerm(exm);
 		long e1, e2;
 		float[][] cm = new float[5][];

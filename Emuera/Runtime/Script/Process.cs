@@ -239,6 +239,7 @@ internal sealed partial class Process(EmueraConsole view)
 			ErbLoader loader = new(console, exm, this);
 			if (Program.AnalysisMode)
 			{
+				// Program.cs fills AnalysisFiles exactly when it turns AnalysisMode on, so it is non-null here.
 				noError = await loader.LoadErbList(Program.AnalysisFiles!, labelDic);
 			}
 			else
@@ -610,6 +611,7 @@ internal sealed partial class Process(EmueraConsole view)
 		{
 			console.PrintError(string.Format(trerror.FuncEndUnexpectedError.Text, AssemblyData.EmueraVersionText));
 			console.PrintError(exc.GetType() + ":" + exc.Message);
+			// Exception.StackTrace is null only for an exception that was never thrown; this one was caught.
 			string[] stack = exc.StackTrace!.Split('\n');
 			for (int i = 0; i < stack.Length; i++)
 			{
@@ -695,6 +697,7 @@ internal sealed partial class Process(EmueraConsole view)
 		{
 			console.PrintError(string.Format(trerror.HasUnexpectedError.Text, posString, AssemblyData.EmueraVersionText));
 			console.PrintError(exc.GetType() + ":" + exc.Message);
+			// Exception.StackTrace is null only for an exception that was never thrown; this one was caught.
 			string[] stack = exc.StackTrace!.Split('\n');
 			for (int i = 0; i < stack.Length; i++)
 			{

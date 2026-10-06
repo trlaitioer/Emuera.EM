@@ -11,7 +11,9 @@ internal abstract class AConsoleDisplayNode
 {
 	public bool Error { get; protected set; }
 
-	// Unset text is a valid state: ToString/BuildString and the derived constructors fall back to ""
+	// Declared nullable only because the base has no constructor: every concrete part assigns a
+	// non-null value in its constructor (str / "" / AltText / errMes) and nothing clears it later,
+	// so readers of a part that has been built may assert.
 	public string? Text { get; protected set; }
 	public string? AltText { get; protected set; }
 

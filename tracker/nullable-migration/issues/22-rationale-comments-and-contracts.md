@@ -67,7 +67,7 @@ issues/14 判定 `(x as T)!` 中 49 处有前置类型检查，需逐点注明�
 
 ### 2026-10-06,分支 `nullable/assertion-rationale`
 
-§5/§6 按用户决定并入本票(不再另开票);§2~§4 已落地,§1 待落地。
+§5/§6 按用户决定并入本票(不再另开票);§1~§4 已落地,§5/§6 待落地。
 
 **§2 冗余 `!` 清理(完成)**
 
@@ -103,6 +103,25 @@ issues/14 判定 `(x as T)!` 中 49 处有前置类型检查，需逐点注明�
 **§4 常量折叠实参的具名入口(完成)**
 
 按「让『此处无求值上下文』只表达一次」落地:新增 `AExpression.GetIntValue()`/`GetStrValue()` 与 `StrForm.GetString()` 三个无参入口(每个内部就是 `GetXxx(null!)`,`!` 从 19 处收敛到 3 处),19 个调用点改为无参形态——`ArgumentBuilder.cs`(14:其中 `GetIntValue` 8、`GetStrValue` 6)、`ExpressionParser.cs`(1)、`VariableEvaluator.cs`(4)。语义完全等价(无参入口只是转发 `null`),故运行行为不变;同口径计数 `Emuera` 后缀断言 838 → 822。
+
+**§1 保留断言的理由注释(完成)**
+
+按「一个不变量一条注释、写在不变量的建立点」分五个区域落地,合计 **141 条注释**(新增约 128 / 改写 13 条既有注释),覆盖 `(x as T)!` 的前置检查组、issues/21 判定表的 A 类组,以及 issues/14 复核对象 1 的 `Argument` 可选字段桶(该桶不在 `bang-sites.md` 的站点表内,此前无人承接):
+
+| 区域 | 注释 | 覆盖 |
+| --- | --- | --- |
+| `Statements/Function/**` | 21 | `(…Identifier.GetArray() as T)!` 全组的组判据写在 `ArgumentSlots.Var` 的 doc 上;`SelectNodes(path)!` 6 条、`DocumentElement`/`Attributes`、`VarSetEx` 的数组形状各按构造点 |
+| `Loader`+`Parser`+`Data`+`Statements/Expression`+`Statements/Variable` | 34 | 7 处 `(x as T)!` 归到各自 builder(如 `SP_FOR_NEXT`/`INT_EXPRESSION`/`CASE_`/`SP_CALL`)、`Word.Type` 分派一条覆盖 5 处、`this.sizes!` 6 处与 `.Position` 族各一条 |
+| `UI/**` | 12 | 覆盖 40 处:`AConsoleDisplayNode.Text` 13 处一条、`MainWindow.console` 13 处一条(含 `FormClosing` 置 null 的真不变量);约 28 处迁移期已有达标注释,复核未动 |
+| `Config`+`Utils`+`Statements` 顶层+`Process*` | 37 | 覆盖约 110 处:`.Position!` 族 23 处在 `LogicalLine.Position` 声明处一条、`CaseExpression` 14 处、`Clipboard` 10 处、`CurrentLabel` 8 处、`WebPWrapper` 的 `bmp!` 4 处各一条 |
+| `Argument` 可选字段桶(issues/14 复核对象 1) | 37 | 覆盖 91 处(`Instraction.Child.cs` 30 / `Process.ScriptProc.cs` 7),依据逐条回到各指令的 `CreateArgument` 分支 |
+
+判定更正与上报(均只报告、未在 §1 内改动):
+
+- 两处先前疑为「可删冗余」的断言经取证**并非冗余**:`WordCollection.Next` 的第二个 `!`(`LinkedListNode<T>.Next` 本身可空,守卫只保证节点存在)、`ReferenceToken.IsArrayRangeValid` 的「第二处读取」——该处本就没有 `!`,首处 `array!` 的收窄已覆盖后续
+- 三处疑似缺陷与一处产品不一致移交 [issues/32](32-assertion-audit-findings.md):`XML_ADDATTRIBUTE` method 0 的 `node.Attributes!` 解引用非元素节点、`DATATABLE_TO_XML` 的 `(… as string[])!` 与规则声明的形状不一致、`PrintStringBuffer.getDivideIndex` 的 `if (part == null)` 疑为 `css == null` 笔误、`SP_SPLIT_ArgumentBuilder` 的 `term!` 与姊妹 `SP_HTMLSPLIT` 的回退行为不一致
+- `bang-sites.md` 中已被实施提交删除的站点行(issues/29、`59cd307e`、§3 所删)与该表「已失效站点」节的口径需在收尾时统一
+
 
 ## 影响
 

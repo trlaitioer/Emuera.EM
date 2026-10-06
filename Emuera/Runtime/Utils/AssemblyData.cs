@@ -8,8 +8,10 @@ public static class AssemblyData
 {
 	static AssemblyData()
 	{
+		// Environment.ProcessPath is null only where the OS cannot report it; on Windows it names the running exe.
 		ExePath = Environment.ProcessPath!;
 		ExeName = Path.GetFileName(ExePath);
+		// AssemblyName.Version is null only for an assembly built without a version attribute, which the SDK always emits.
 		emueraVer = typeof(AssemblyData).Assembly.GetName().Version!;
 
 		EmueraVersionText = "Emuera.NET " + Application.ProductVersion;

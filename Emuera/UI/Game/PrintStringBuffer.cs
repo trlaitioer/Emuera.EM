@@ -685,6 +685,7 @@ internal sealed class PrintStringBuffer
 			return -1;
 		}
 
+		// ConsoleStyledString is the only part that reports CanDivide, which the guard above required
 		// int widthLimit = Config.DrawableWidth - css.PointX;
 		int widthLimit = divWidth - css!.PointX;
 

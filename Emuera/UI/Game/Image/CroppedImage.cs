@@ -72,6 +72,8 @@ internal abstract class ASpriteSingle : ASprite
 	/// </summary>
 	public readonly Rectangle SrcRectangle;
 
+	// Non-null while the sprite reports IsCreated: a created image loads its bitmap, and Dispose
+	// clears BaseImage, so IsCreated turns false together with the bitmap
 	private Bitmap? Bitmap
 	{
 		get
@@ -155,6 +157,8 @@ internal sealed class SpriteG : ASpriteSingle
 		: base(name, gra, rect)
 	{ }
 
+	// SpriteG is only ever constructed from a GraphicsImage, so the cast holds while the sprite is
+	// alive; Dispose clears BaseImage together with the created state
 	public bool useImgList => (BaseImage as GraphicsImage)!.useImgList;
 	public List<Tuple<ASprite, Rectangle>> drawImgList => (BaseImage as GraphicsImage)!.drawImgList;
 

@@ -147,6 +147,9 @@ internal sealed class XmlGetMethod : FunctionMethod
 		}
 
 		string path = slots.Str(exm, 1);
+		// The nullable return is the base XmlNode signature: XmlDocument's own override has no null path (its
+		// navigator always exists), and an unusable XPath throws XPathException - the catch below reports it.
+		// This is the group statement for the XML_* methods below, which assert the same contract.
 		try
 		{
 			nodes = doc.SelectNodes(path)!;
@@ -909,6 +912,8 @@ internal sealed class VarSetExMethod : FunctionMethod
 				: var.Identifier.IsArray2D ? var.Identifier.GetLength(1)
 				: var.Identifier.IsArray2D ? var.Identifier.GetLength(2) : 0);
 			bool setAllDims = slots.Count < 3 || slots.Int(exm, 2) != 0;
+			// var.Identifier's IsArray2D/IsArray3D flags and the IsString branch below fix both the rank and the
+			// element type, so every GetArray() cast in this dispatch is the array type its branch names.
 			if (var.IsString)
 			{
 				string val = string.Empty;
@@ -1373,6 +1378,7 @@ internal sealed class XmlSetMethod : FunctionMethod
 		XmlNodeList nodes;
 		try
 		{
+			// XmlDocument.SelectNodes never returns null; a bad XPath throws XPathException (see XmlGetMethod).
 			nodes = doc.SelectNodes(path)!;
 		}
 		catch (System.Xml.XPath.XPathException e)
@@ -1631,6 +1637,8 @@ internal sealed class XmlAddNodeMethod : FunctionMethod
 					return false;
 				}
 
+				// Method 1/2 only gets past the guard above when node is an XmlAttribute, and an attribute node
+				// selected by XPath is attached to its element, so attr and its OwnerElement are both non-null.
 				XmlAttribute? attr = method == 0 ? null : node as XmlAttribute;
 				switch (method)
 				{
@@ -1691,6 +1699,7 @@ internal sealed class XmlAddNodeMethod : FunctionMethod
 		XmlNodeList nodes;
 		try
 		{
+			// XmlDocument.SelectNodes never returns null; a bad XPath throws XPathException (see XmlGetMethod).
 			nodes = doc.SelectNodes(path)!;
 		}
 		catch (System.Xml.XPath.XPathException e)
@@ -1716,6 +1725,8 @@ internal sealed class XmlAddNodeMethod : FunctionMethod
 					throw new CodeEE(string.Format(trerror.XmlParseError.Text, Name, xml, e.Message));
 				}
 
+				// LoadXml above throws for a document without a root element, which is the only way DocumentElement
+				// stays null on a parsed document.
 				XmlElement newNode = childNode.DocumentElement!;
 				child = doc.CreateNode(newNode.NodeType, newNode.Name, newNode.NamespaceURI);
 				for (int i = 0; i < newNode.Attributes.Count; i++)
@@ -1723,6 +1734,8 @@ internal sealed class XmlAddNodeMethod : FunctionMethod
 					XmlAttribute xattr = newNode.Attributes[i];
 					XmlAttribute attr = doc.CreateAttribute(xattr.Name);
 					attr.Value = xattr.Value;
+					// child was created with the root element's NodeType, so it is an XmlElement - the node kind
+					// that always exposes an attribute collection (XmlNode.Attributes is null for the others).
 					child.Attributes!.Append(attr);
 				}
 
@@ -1824,6 +1837,7 @@ internal sealed class XmlRemoveNodeMethod : FunctionMethod
 		{
 			if (node is XmlAttribute attr)
 			{
+				// node is an XPath-selected attribute, and such a node is attached to its element.
 				attr.OwnerElement!.Attributes.Remove(attr);
 				return true;
 			}
@@ -1885,6 +1899,7 @@ internal sealed class XmlRemoveNodeMethod : FunctionMethod
 		XmlNodeList nodes;
 		try
 		{
+			// XmlDocument.SelectNodes never returns null; a bad XPath throws XPathException (see XmlGetMethod).
 			nodes = doc.SelectNodes(path)!;
 		}
 		catch (System.Xml.XPath.XPathException e)
@@ -2023,6 +2038,7 @@ internal sealed class XmlReplaceMethod : FunctionMethod
 		XmlNodeList nodes;
 		try
 		{
+			// XmlDocument.SelectNodes never returns null; a bad XPath throws XPathException (see XmlGetMethod).
 			nodes = doc.SelectNodes(path)!;
 		}
 		catch (System.Xml.XPath.XPathException e)
@@ -2032,6 +2048,8 @@ internal sealed class XmlReplaceMethod : FunctionMethod
 
 		if (nodes.Count > 0)
 		{
+			// LoadXml above throws for a document without a root element, which is the only way DocumentElement
+			// stays null on a parsed document.
 			XmlElement newNode = newXml.DocumentElement!;
 			XmlNode child = doc.CreateNode(newNode.NodeType, newNode.Name, newNode.NamespaceURI);
 			for (int i = 0; i < newNode.Attributes.Count; i++)
@@ -2039,6 +2057,8 @@ internal sealed class XmlReplaceMethod : FunctionMethod
 				XmlAttribute xattr = newNode.Attributes[i];
 				XmlAttribute attr = doc.CreateAttribute(xattr.Name);
 				attr.Value = xattr.Value;
+				// child was created with the root element's NodeType, so it is an XmlElement - the node kind
+				// that always exposes an attribute collection (XmlNode.Attributes is null for the others).
 				child.Attributes!.Append(attr);
 			}
 
@@ -2780,6 +2800,8 @@ internal sealed class DataTableCellGetMethod : FunctionMethod
 				object v = dt.Rows[(int)idx][name];
 				if (v != DBNull.Value)
 				{
+					// Suppresses CS8603 from object.ToString()'s nullable signature: no value a DataTable cell
+					// can hold (script long/string, XML-imported primitives) returns null from ToString.
 					return v.ToString()!;
 				}
 			}
@@ -3373,6 +3395,8 @@ internal sealed class MapFromXmlMethod : FunctionMethod
 		try
 		{
 			doc.LoadXml(xml);
+			// The paths are literals ("/map/p", "./k", "./v") and XmlDocument.SelectNodes has no null return
+			// path of its own, so all three calls in this method yield a (possibly empty) list.
 			nodes = doc.SelectNodes("/map/p")!;
 		}
 		catch (XmlException e)

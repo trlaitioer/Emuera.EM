@@ -340,6 +340,8 @@ internal sealed class MesSkipMethod : FunctionMethod
 		if (warn)
 			// ParserMediator.Warn("関数MOUSESKIP()は推奨されません。代わりに関数MESSKIP()を使用してください", GlobalStatic.Process.GetScaningLine(), 1, false, false, null);
 		{
+			// The checker runs from the parser (ArgumentBuilder/IdentifierDictionary), where the loader has
+			// registered the line being scanned, so GetScaningLine names the line the warning belongs to.
 			ParserMediator.Warn(string.Format(trerror.FuncDeprecated.Text, name, "MESSKIP"), GlobalStatic.Process.GetScaningLine()!, 1, false,
 				false, null);
 		}

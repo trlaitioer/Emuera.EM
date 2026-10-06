@@ -177,6 +177,8 @@ internal sealed class StrForm
 				continue;
 			}
 
+			// TripleSymbolSubWord and YenAtSubWord are handled above, and their own branches do not
+			// reach here; the remaining %/{} subwords are built from an analysed WordCollection.
 			wc = SWT.Words!;
 			operand = ExpressionParser.ReduceExpressionTerm(wc, TermEndWith.Comma);
 			if (operand == null)

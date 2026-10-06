@@ -17,7 +17,8 @@ internal sealed class SpInputsArgument : Argument
 {
 	// A non-null CanSkip implies non-null Def and Mouse - the reasoning lives with the builders
 	// (Runtime/Script/Statements/ArgumentBuilder.cs, SP_INPUT_ArgumentBuilder.CreateArgument and
-	// SP_INPUTS_ArgumentBuilder.CreateArgument).
+	// SP_INPUTS_ArgumentBuilder.CreateArgument). The instruction sites in Instraction.Child.cs read
+	// Def/Mouse under this invariant.
 	public SpInputsArgument(AExpression? def, AExpression? mouse, AExpression? canskip)
 	{
 		Def = def;
@@ -147,7 +148,9 @@ internal sealed class ExpressionArgument : Argument
 		Term = termSrc;
 	}
 
-	// Null for the empty argument the parser builds when the instruction was given no expression.
+	// Null only for the EXPRESSION_NULLABLE instructions, whose builder stores null for an omitted expression:
+	// the STR_/FORM_STR_ builders, nullable variants included, substitute an empty SingleStrTerm, and every other
+	// builder fails the line instead of storing null. The PRINT/DRAWLINE/SELECTCASE readers assert on that split.
 	public readonly AExpression? Term;
 }
 

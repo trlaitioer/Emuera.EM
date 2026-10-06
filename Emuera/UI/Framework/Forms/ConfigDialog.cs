@@ -689,6 +689,7 @@ internal sealed partial class ConfigDialog : Form
 		int nameIndex = comboBox2.SelectedIndex;
 		if (nameIndex >= 0)
 		{
+			// The list holds font family names only, so a selected index implies a selected string
 			config.GetRequiredConfigItem(ConfigCode.FontName).SetValue((string)comboBox2.SelectedItem!);
 		}
 		else
@@ -796,6 +797,8 @@ internal sealed partial class ConfigDialog : Form
 
 		#region EM_私家版_多言語化改造
 
+		// comboBox7 holds strings only (the seeded first entry and the language list from SetupLang),
+		// so a non-zero selection is a language name
 		string language = comboBox7.SelectedIndex == 0 ? Lang.DefaultLanguage : (comboBox7.SelectedItem as string)!;
 		if (language != Config.EmueraLang)
 		{

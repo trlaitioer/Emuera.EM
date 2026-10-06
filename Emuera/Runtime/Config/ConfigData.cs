@@ -390,9 +390,9 @@ internal sealed class ConfigData
 		#endregion
 	}
 
-	// Accessors for call sites whose lookup is known to hit. They keep the current behaviour: on a miss the null
-	// from GetItem/GetConfigItem/GetDebugItem is used exactly as before, so "Required" asserts the result rather
-	// than introducing a new exception.
+	// Accessors for call sites whose lookup is known to hit: each of them passes a ConfigCode that the constructor
+	// registered in configArray/replaceArray/debugArray, so the Get*Item lookup cannot miss there. A miss still uses
+	// the null exactly as before, so "Required" asserts the result rather than introducing a new exception.
 	internal AConfigItem GetRequiredItem(ConfigCode code)
 	{
 		return GetItem(code)!;

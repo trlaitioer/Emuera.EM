@@ -98,6 +98,8 @@ public sealed class WebP : IDisposable
 		finally
 		{
 			//Unlock the pixels
+			// bmpData is assigned only by bmp.LockBits on the freshly created bmp, so "bmpData != null" also proves
+			// bmp != null; the other three decoders in this file pair the two the same way.
 			if (bmpData != null)
 			{
 				bmp!.UnlockBits(bmpData);

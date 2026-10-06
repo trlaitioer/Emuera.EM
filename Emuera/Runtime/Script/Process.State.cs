@@ -146,6 +146,8 @@ internal sealed class ProcessState
 
 	public void ShiftNextLine()
 	{
+		// Both callers (runScriptProc's loop and SIF's skip) run only while a line is current, so the state
+		// always has one to advance from.
 		currentLine = currentLine!.NextLine;
 		//nextLine = nextLine.NextLine;
 		//RunningLine = null;
@@ -538,6 +540,7 @@ internal sealed class ProcessState
 			FunctionLabelLine label = call.CurrentLabel!;
 			if (exm != null)
 			{
+				// exm != null means a script-driven call, so the line being executed is the call site.
 				long line = exm.Process.getCurrentLine!.Position!.Value.LineNo;
 				if (call.IsJump)
 				{

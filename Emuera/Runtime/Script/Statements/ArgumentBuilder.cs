@@ -596,6 +596,8 @@ internal static partial class ArgumentParser
 			while (!wc.EOL)
 			{
 				AExpression? v = null;
+				// WordCollection.Current substitutes a nullToken for the end of the line and every Word's ToString
+				// returns a concrete string; `!` only covers the nullable signature of object.ToString().
 				string keyword = wc.Current.ToString()!.ToLower();
 				wc.ShiftNext(); // keyword
 				wc.ShiftNext(); // ,
@@ -1179,6 +1181,8 @@ internal static partial class ArgumentParser
 				args = [];
 			}
 
+			// A null subNames means the optional bracket was not given; it is normalised to an empty list above,
+			// so the loop below dereferences it without a guard.
 			for (int i = 0; i < subNames!.Count; i++)
 			{
 				subNames?[i] = subNames.Required(i).Restructure(exm);
@@ -1273,6 +1277,8 @@ internal static partial class ArgumentParser
 				args = [];
 			}
 
+			// A null subNames means the optional bracket was not given; it is normalised to an empty list above,
+			// so the loop below dereferences it without a guard.
 			for (int i = 0; i < subNames!.Count; i++)
 			{
 				subNames?[i] = subNames.Required(i).Restructure(exm);
@@ -1591,6 +1597,7 @@ internal static partial class ArgumentParser
 		{
 			List<AExpression?> args = popTerms(line);
 			// Same single-pass path as IdentifierDictionary.GetFunctionMethod: the checker resolves the slot roles.
+			// Method is the very registration that made this the line's builder, so it is non-null here.
 			string? errmes = line.Function.Method!.CheckAndResolveSlots(line.Function.Name, args,
 				out FunctionMethod.ArgumentSlots slots);
 			if (errmes != null)
@@ -2600,6 +2607,8 @@ internal static partial class ArgumentParser
 				return null;
 			}
 
+			// The first arm can return null, but getChangeableVariable then warns, which marks the line as an
+			// error - and an error line is refused before it can be executed.
 			VariableTerm? term = terms.Count >= 4
 				? getChangeableVariable(terms, 4, line)
 				: new VariableTerm(GlobalStatic.VariableData.GetSystemVariableToken("RESULT"), [new SingleLongTerm(0)]);
@@ -3018,6 +3027,8 @@ internal static partial class ArgumentParser
 					return null;
 				}
 
+				// refVar is the reference variable resolved above when refm was null, and this else branch is
+				// exactly that case.
 				return new RefArgument(refVar!, srcVar);
 			}
 		}

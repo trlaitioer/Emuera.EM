@@ -30,7 +30,7 @@ internal sealed partial class Process
 			}
 
 			LogicalLine? line = state.CurrentLine;
-			//これがNULLになる様な処理は現状ないはず
+			//CurrentLine is never null here: no path in the interpreter clears it while the loop continues.
 			//if (line == null)
 			//	throw new ExeEE("Emuera.exeは次に実行する行を見失いました");
 			if (line!.IsError)
@@ -252,6 +252,8 @@ internal sealed partial class Process
 				}
 
 				ExpressionArgument intExpArg = (ExpressionArgument)func.BuiltArgument;
+				// INT_EXPRESSION folds an omitted argument into 0 instead of storing a null term; the
+				// PRINT_*/CUPCHECK/LOADDATA/CALLTRAIN readers below rely on the same builder contract.
 				long target = intExpArg.Term!.GetIntValue(exm);
 				exm.Console.Print(vEvaluator.GetCharacterDataString(target, func.FunctionCode));
 				exm.Console.NewLine();
@@ -553,6 +555,8 @@ internal sealed partial class Process
 				}
 				else
 				{
+					// SpColorArgument's two ctors are exclusive: SP_COLOR_ArgumentBuilder takes this branch only
+					// when it built the argument from one RGB term, so R/G/B are the ones that were filled.
 					colorR = colorArg.R!.GetIntValue(exm);
 					colorG = colorArg.G!.GetIntValue(exm);
 					colorB = colorArg.B!.GetIntValue(exm);
@@ -654,6 +658,8 @@ internal sealed partial class Process
 				}
 				else
 				{
+					// INT_EXPRESSION_NULLABLE only relaxes minArg: an omitted argument is still folded into
+					// a zero term, and SETFONT's STR_EXPRESSION_NULLABLE substitutes an empty string.
 					iValue = ((ExpressionArgument)func.BuiltArgument).Term!.GetIntValue(exm);
 				}
 
@@ -719,6 +725,8 @@ internal sealed partial class Process
 
 			case FunctionCode.REDRAW:
 			{
+				// REDRAW/RESET_STAIN/FORCEKANA/SKIPDISP all select INT_EXPRESSION, which substitutes a
+				// SingleLongTerm(0) for an omitted argument.
 				if (func.BuiltArgument.IsConst)
 				{
 					iValue = func.BuiltArgument.ConstInt;
@@ -860,6 +868,8 @@ internal sealed partial class Process
 					break;
 				}
 
+				// Num3 is declared nullable but SP_SHIFT_ARRAY_ArgumentBuilder always supplies it (term4
+				// defaults to 0 below its minArg); Num4 is the genuinely optional slot.
 				int start = (int)arrayArg.Num3!.GetIntValue(exm);
 				if (start < 0)
 				{
@@ -930,6 +940,8 @@ internal sealed partial class Process
 				}
 
 				FixedVariableTerm p = arrayArg.VarToken.GetFixedVariableTerm(exm);
+				// Num1 is declared nullable but SP_SORT_ARRAY_ArgumentBuilder initialises term3 to
+				// SingleLongTerm(0) and only replaces it with a non-null term; Num2 is the optional slot.
 				int start = (int)arrayArg.Num1!.GetIntValue(exm);
 				if (start < 0)
 				{
@@ -963,6 +975,9 @@ internal sealed partial class Process
 				SpCopyArrayArgument arrayArg = (SpCopyArrayArgument)func.BuiltArgument;
 				AExpression varName1 = arrayArg.VarName1;
 				AExpression varName2 = arrayArg.VarName2;
+				// Both names come from SingleTerm.GetStrValue, and SP_COPY_ARRAY_Arguments already resolved them
+				// at build time: a failed lookup warns and marks the line as an error, which blocks execution.
+				// The names[] slots below are filled by those same non-null GetStrValue results.
 				VariableToken?[] vars = [null, null];
 				if (!(varName1 is SingleTerm) || !(varName2 is SingleTerm))
 				{
@@ -1059,6 +1074,9 @@ internal sealed partial class Process
 			}
 			case FunctionCode.ASSERT:
 			{
+				// ASSERT, THROW, ENCODETOUNI, STRDATA, SKIPLOG and DOTRAIN read an ExpressionArgument term
+				// through builders that substitute a value for an omitted argument (a zero term for the
+				// INT_/EXPRESSION wiring, an empty string for STR_/FORM_STR), so the term is never null.
 				if (((ExpressionArgument)func.BuiltArgument).Term!.GetIntValue(exm) == 0)
 				{
 					throw new CodeEE(trerror.AssertArgIs0.Text);

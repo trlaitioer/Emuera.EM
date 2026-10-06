@@ -157,6 +157,8 @@ internal sealed class Shape
 		{
 			SmoothingMode backUp = graph.SmoothingMode;
 			graph.SmoothingMode = SmoothingMode.AntiAlias;
+			// Assigned only inside the hasInnerEllipse branch and read only under that same flag, which is what
+			// the two assertions on it rely on.
 			GraphicsPath? innerEllipse = null;
 			int corner = flipX ? flipY ? Corner.RightBottom : Corner.RightTop : flipY ? Corner.LeftBottom : Corner.LeftTop;
 			Rectangle cornerRect = new(

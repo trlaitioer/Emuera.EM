@@ -842,6 +842,8 @@ internal sealed partial class Process
 
 	private void endAutoSaveCallSaveInfo()
 	{
+		// saveTarget == AutoSaveIndex only after beginAutoSave, which is also the only writer of SAVEDATA_TEXT
+		// before the SaveInfo state is entered.
 		if (saveTarget == AutoSaveIndex)
 		{
 			if (!vEvaluator.SaveTo(saveTarget, vEvaluator.SAVEDATA_TEXT!))
@@ -1233,6 +1235,8 @@ internal sealed partial class Process
 
 	private void endCallSaveInfo()
 	{
+		// Reached only through SaveGame_CallSaveInfo, which saveGameWaitInputOverwrite enters right after
+		// assigning SAVEDATA_TEXT.
 		if (!vEvaluator.SaveTo(saveTarget, vEvaluator.SAVEDATA_TEXT!))
 		{
 			console.PrintError(trerror.UnexpectedSaveError.Text);

@@ -16,7 +16,9 @@ internal partial class ClipboardProcessor
 
 	private bool postWaiting; //Is there text waiting to be sent to clipboard?
 
-	//minTimer, OldText and lineBuffer are created by Init() and cleared by Reset(): they stay null while the clipboard feature is off
+	// minTimer, OldText and lineBuffer are created by Init() and cleared by Reset(): they are non-null exactly while
+	// Config.CBUseClipboard is on - the only writers of that flag are the constructor and the menu handlers, and
+	// ConfigDialog has no CBUseClipboard item - so the readers below may assert.
 	private static System.Timers.Timer? minTimer; //Minimum timer for refrehsing the clipboard to prevent spam
 
 	private int MaxCB; //Max length in lines of the output to clipboard

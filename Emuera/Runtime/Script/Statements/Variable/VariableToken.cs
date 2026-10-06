@@ -283,7 +283,8 @@ internal abstract class CharaVariableToken : VariableToken
 		CanRestructure = false;
 	}
 
-	// Null for user-defined chara variables until the derived constructor replaces it
+	// Null only for the user-defined chara codes (>= 0xF0), which the derived constructors replace
+	// with data.Lengths; every read happens on a fully constructed token, so sizes is non-null there.
 	protected int[]? sizes;
 	protected int totalSize;
 

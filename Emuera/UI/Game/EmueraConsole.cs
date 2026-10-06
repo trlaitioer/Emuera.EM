@@ -2444,7 +2444,8 @@ internal sealed partial class EmueraConsole : IDisposable
 							if (lastPointingString == savedPointingString)
 							{
 								Point mousePos = window.MainPicBox.PointToClient(Control.MousePosition);
-								// null only while no cursor is available; the same expression is read below
+								// A tooltip is sized only while the mouse points at a button, which is also when a
+								// cursor is current; the unasserted read on the next line relies on this
 								Point p = new(mousePos.X + 2, mousePos.Y + Cursor.Current!.Size.Height);
 								Point absoluteP = Cursor.Position;
 								if (absoluteP.Y + tooltip_size.Height > Screen.FromPoint(mousePos).WorkingArea.Height)
@@ -2539,7 +2540,8 @@ internal sealed partial class EmueraConsole : IDisposable
 
 	private void ToolTip_Popup(object? sender, PopupEventArgs e)
 	{
-		// the handlers are registered on this console's ToolTip
+		// ToolTip_Popup runs only for window.ToolTip, which is where CustomToolTip registers it, so
+		// `sender` is that ToolTip here and at the MeasureText call below
 		if (tooltip_img && int.TryParse((sender as ToolTip)!.GetToolTip(e.AssociatedControl), out int i))
 		{
 			GraphicsImage g = GameData.Function.BuiltinArgReaders.ReadGraphics(i);
@@ -3091,8 +3093,9 @@ internal sealed partial class EmueraConsole : IDisposable
 			{
 				// 行範囲を超えたパーツのヒットテスト
 				int correction = lineNo > Config.MaxLog ? lineNo - Config.MaxLog : 0;
-				// the field was filled in above when it was still null; only the null test in the
-				// edepth expression above lost that state
+				// escapedParts is non-null here: the guard above fills it when it is null, and a true
+				// TestedInRange means an earlier GetPartsInRange already filled this same field. Only
+				// the explicit null test in the edepth initializer above lost that state.
 				if (depth != 0 || escapedParts!.ContainsKey(depth))
 				{
 					foreach (AConsoleDisplayNode part in escapedParts![depth])

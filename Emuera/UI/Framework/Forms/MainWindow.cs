@@ -118,7 +118,9 @@ internal sealed partial class MainWindow : Form
 
 	public ToolTip ToolTip => toolTipButton;
 
-	//Assigned by the constructor and nulled by MainWindow_FormClosing
+	// Assigned by the constructor and nulled by MainWindow_FormClosing, which disposes it. Every
+	// `console!` below sits in an event handler that can only run while the window is alive; the
+	// `console == null` guards cover the window between InitializeComponent and the assignment.
 	private EmueraConsole? console;
 
 	#region EM_私家版_Icon指定機能
@@ -2001,6 +2003,7 @@ internal sealed partial class MainWindow : Form
 
 		if (Clipboard.GetDataObject() != null && Clipboard.ContainsText())
 		{
+			// The null check above passed; GetDataObject is read again because each call re-queries the clipboard
 			if (Clipboard.GetDataObject()!.GetDataPresent(DataFormats.Text))
 				//Clipboard.SetText(Clipboard.GetText(TextDataFormat.UnicodeText));
 			{

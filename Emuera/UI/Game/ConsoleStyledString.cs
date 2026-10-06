@@ -18,6 +18,8 @@ internal sealed class ConsoleStyledString : AConsoleColoredPart
 	{
 		//if ((StaticConfig.TextDrawingMode != TextDrawingMode.GRAPHICS) && (str.IndexOf('\t') >= 0))
 		//    str = str.Replace("\t", "");
+		// The only two assignments are this one and DivideAt's object initializer, both non-null, so
+		// the Text! readers below need no check against Error (unlike Font)
 		Text = str;
 		StringStyle = style;
 		Font = FontFactory.GetFont(style.Fontname, style.FontStyle);

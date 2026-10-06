@@ -123,6 +123,8 @@ internal sealed class ConfigItem<T> : AConfigItem
 			#endregion
 
 			default:
+				// T is unconstrained, so val.ToString() needs the first assertion (CS8602), and the
+				// nullable signature of object.ToString() needs the second one (CS8603).
 				return val!.ToString()!;
 		}
 	}

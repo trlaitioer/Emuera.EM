@@ -20,6 +20,9 @@ internal abstract class LogicalLine
 	protected ScriptPosition? scriptPosition;
 
 	//LogicalLine prevLine;
+	// Nullable for unwired paths only: every line the parser builds (LogicalLineParser's ParseLine overloads and
+	// ParseLabelLine, fed by ErbLoader.loadErb's position) receives a ScriptPosition, so a reader of a line being
+	// executed may assert.
 	public ScriptPosition? Position => scriptPosition;
 
 	public FunctionLabelLine? ParentLabelLine { get; set; }
@@ -30,6 +33,7 @@ internal abstract class LogicalLine
 	{
 		if (scriptPosition == null)
 		{
+			// object.ToString() is annotated string?, but its implementation always returns a string.
 			return base.ToString()!;
 		}
 
@@ -140,6 +144,10 @@ internal sealed class InstructionLine : LogicalLine
 		return ret ?? throw new ExeEE(trerror.MissingArg.Text);
 	}
 
+	/// <summary>
+	/// Takes the assignment target words. Only the assignment-line constructor (LogicalLineParser's
+	/// SETFunction path) fills assigndest, and SP_SET_ArgumentBuilder - the only caller - is reached from there.
+	/// </summary>
 	public WordCollection? PopAssignmentDestStr()
 	{
 		WordCollection? ret = assigndest;
@@ -381,6 +389,8 @@ internal sealed class GotoLabelLine : LogicalLine, IEqualityComparer<GotoLabelLi
 
 	public int GetHashCode(GotoLabelLine obj)
 	{
+		// ErbLoader.loadErb sets ParentLabelLine as the label is registered and only registers it while a parent
+		// label is open, so any instance that reaches a comparer has one.
 		return labelname.GetHashCode() ^ ParentLabelLine!.GetHashCode();
 	}
 

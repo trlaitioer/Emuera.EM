@@ -273,6 +273,9 @@ internal abstract class FunctionMethod
 		/// reference slot past the block's minimum count still needs a Count guard), role <see cref="SlotRole.Ref"/>,
 		/// and a non-constant argument (a rule carrying <see cref="SlotRole.AllowConstRef"/> implies the class sets
 		/// HasUniqueRestructure, so the constant array is not folded into a SingleTerm).
+		/// The matched rule also pins the entity's operand type, and its array rank whenever the rule names one:
+		/// <see cref="CheckArgumentTypeEx"/> tested both against the argument's Identifier, which is what lets a body
+		/// read Identifier.GetArray() through the array type the rule declares.
 		/// </summary>
 		internal VariableTerm Var(int index) => Term(index) as VariableTerm ?? throw new ExeEE(
 			$"slot {index} (role {RoleAt(index)}) is not a variable entity: the slot must be a reference slot");

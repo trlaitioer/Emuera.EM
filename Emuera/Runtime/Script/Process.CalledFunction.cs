@@ -117,6 +117,7 @@ internal sealed class CalledFunction
 		if (called.eventLabelList == null)
 		{
 			FunctionLabelLine? line = parent.LabelDictionary.GetNonEventLabel(label);
+			// line repeats the lookup the guard performs, so it is non-null exactly inside this branch.
 			if (parent.LabelDictionary.GetNonEventLabel(label) != null)
 			{
 				throw new CodeEE(string.Format(trerror.CalleventToNonEventFunc.Text, label, line!.Position!.Value.Filename,
@@ -129,6 +130,8 @@ internal sealed class CalledFunction
 		called.counter = -1;
 		called.group = 0;
 		called.ShiftNext();
+		// ShiftNext cannot exhaust the four groups here: GetEventLabels returned non-null, so at least one of
+		// them holds a label.
 		called.TopLabel = called.CurrentLabel!;
 		called.returnAddress = retAddress;
 		called.IsEvent = true;
@@ -303,7 +306,12 @@ internal sealed class CalledFunction
 		return called;
 	}
 
+	// Only ever set from LabelDictionary.GetEventLabels (CallEventFunction) and copied by Clone; CallEventFunction
+	// returns without building an instance when that lookup misses, so ShiftNext only runs on a non-null list.
 	private List<FunctionLabelLine>[]? eventLabelList;
+	// Non-null for every entry of ProcessState.functionList: the three private factories all assign a label, and
+	// the only null assignment - event iteration running out - happens in the same ProcessState.Return that
+	// removes the entry from that list.
 	public FunctionLabelLine? CurrentLabel { get; private set; }
 	public FunctionLabelLine TopLabel { get; private set; } = null!;
 	private int counter = -1;

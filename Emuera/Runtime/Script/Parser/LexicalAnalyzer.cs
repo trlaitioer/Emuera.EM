@@ -1405,6 +1405,8 @@ internal static class LexicalAnalyzer
 
 			macroWC.Remove();
 			macroWC.InsertRange(args[w.Number]);
+			// InsertRange leaves Pointer on the last inserted node, and the loop runs exactly the
+			// number of words that were inserted, so Pointer and Pointer.Next stay valid.
 			for (int i = 0; i < args[w.Number].Collection.Count; i++)
 			{
 				macroWC.Pointer = macroWC.Pointer!.Next;
@@ -1590,6 +1592,8 @@ internal static class LexicalAnalyzer
 			}
 
 			st.ShiftNext();
+			// Formatted strings are analysed during ErbLoader's parse passes, which always have a
+			// current line; the thread-local side covers freshly pooled workers.
 			ParserMediator.Warn(string.Format(trerror.NotFoundCorresponding.Text, "\\@", "#"), GlobalStatic.Process.GetScaningLine()!, 1, false,
 				false);
 			return new YenAtSubWord(w, left, null);

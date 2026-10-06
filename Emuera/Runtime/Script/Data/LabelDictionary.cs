@@ -170,6 +170,7 @@ internal sealed class LabelDictionary
 	//ファイル名に基づき、そのファイルに紐づくラベルを削除する
 	public void RemoveLabelWithPath(string fname)
 	{
+		// FunctionLabelLine is built by LogicalLineParser.ParseLabelLine with a position
 		static bool IsMatch(string fname, FunctionLabelLine line) => string.Equals(line.Position!.Value.Filename, fname, Config.Config.SCIgnoreCase);
 
 		List<string> removeFunctions = [];

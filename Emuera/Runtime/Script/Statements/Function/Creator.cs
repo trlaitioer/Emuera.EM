@@ -67,6 +67,8 @@ internal static class FunctionMethodCreator
 
 		try
 		{
+			// The shape check above (a parameterless factory returning a concrete, non-abstract FunctionMethod)
+			// is what makes the result non-null; `!` only covers MethodInfo.Invoke's object? return.
 			return (FunctionMethod)factory.Invoke(null, null)!;
 		}
 		catch (TargetInvocationException ex) when (ex.InnerException != null)

@@ -116,6 +116,7 @@ internal sealed class ConstantData
 
 	// Slots stay null until LoadData fills them; elements stay null where the CSV has no entry
 	private readonly string?[]?[] names = new string?[countNameCsv + 1][]; // 元より1増やす
+	// Slots stay null until LoadData fills them; loadAliases is only called for a slot it just created
 	private readonly Dictionary<string, int>[] aliases = new Dictionary<string, int>[countNameCsv + 1];
 	private readonly Dictionary<string, Dictionary<string, int>> erdNameToIntDics = [];
 
@@ -2147,6 +2148,7 @@ internal sealed class ConstantData
 			}
 			else
 			{
+				// The field is assigned by LoadData, whose callers reach this point through it
 				output!.PrintError(trerror.UnexpectedError.Text);
 			}
 

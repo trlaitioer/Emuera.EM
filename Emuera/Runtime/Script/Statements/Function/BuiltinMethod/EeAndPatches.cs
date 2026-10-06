@@ -108,6 +108,8 @@ internal sealed class ExistFunctionMethod : FunctionMethod
 			{
 				if (funcname.Equals(functionname, StringComparison.CurrentCultureIgnoreCase))
 				{
+					// funcname comes from NoneventKeys, i.e. from the dictionary GetNonEventLabel reads, so the
+					// lookup cannot miss.
 					FunctionLabelLine func = GlobalStatic.LabelDictionary.GetNonEventLabel(funcname)!;
 
 					if (func.IsMethod)

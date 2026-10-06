@@ -459,6 +459,8 @@ internal sealed class ErbLoader(EmueraConsole output, ExpressionMediator exm, Pr
 				nextLine = LogicalLineParser.ParseLabelLine(st, position, output);
 				if (isFunction)
 				{
+					// ParseLabelLine returns a FunctionLabelLine unless it reports an invalid
+					// declaration, in which case it returns the InvalidLabelLine handled below.
 					FunctionLabelLine label = (nextLine as FunctionLabelLine)!;
 					lastLabelLine = label;
 					if (label is InvalidLabelLine)
@@ -477,6 +479,8 @@ internal sealed class ErbLoader(EmueraConsole output, ExpressionMediator exm, Pr
 							if (seniorLabel != null)
 							{
 								//output.NewLine();
+								// FunctionLabelLine and InstructionLine are only built by
+								// LogicalLineParser (ParseLabelLine / ParseLine), each with a position.
 								ParserMediator.Warn(
 									string.Format(trerror.FuncIsAlreadyDefined.Text, label.LabelName, seniorLabel.Position!.Value.Filename,
 										seniorLabel.Position!.Value.LineNo.ToString()), position, 1);
@@ -499,6 +503,8 @@ internal sealed class ErbLoader(EmueraConsole output, ExpressionMediator exm, Pr
 						gotoLabel.ParentLabelLine = lastLabelLine;
 						if (lastLabelLine != null && !labelDic.AddLabelDollar(gotoLabel))
 						{
+							// AddLabelDollar failed, so the same key+parent pair is already registered
+							// and the lookup cannot miss; Position is set by the parser, as for every line.
 							ScriptPosition? pos = labelDic.GetLabelDollar(gotoLabel.LabelName, lastLabelLine)!.Position;
 							ParserMediator.Warn(
 								string.Format(trerror.LabelIsAlreadyDefined.Text, gotoLabel.LabelName, pos!.Value.Filename,
@@ -729,6 +735,8 @@ internal sealed class ErbLoader(EmueraConsole output, ExpressionMediator exm, Pr
 					//引数読み取り時点で判別されないといけない
 					//if (term == null)
 					//{ errMes = "関数定義の引数は省略できません"; goto err; }
+					// The define path of ReduceArguments always emits the parameter slot itself (an
+					// omitted default becomes a NullTerm), so this entry is never null.
 					if (!(term!.Restructure(exm) is VariableTerm vTerm) || vTerm.Identifier.IsConst)
 					{
 						errMes = trerror.ArgCanOnlyAssignableVar.Text;
@@ -785,6 +793,8 @@ internal sealed class ErbLoader(EmueraConsole output, ExpressionMediator exm, Pr
 					}
 					else
 					{
+						// The NullTerm arm above covers the omitted form; a present argument is
+						// always an expression.
 						def = term!.Restructure(exm) as SingleTerm;
 						if (def == null)
 						{
@@ -1006,6 +1016,7 @@ internal sealed class ErbLoader(EmueraConsole output, ExpressionMediator exm, Pr
 				bool ignore = false;
 				if (notCalledWarning == DisplayWarningFlag.ONCE)
 				{
+					// FunctionLabelLine is built by LogicalLineParser.ParseLabelLine with a position
 					string filename = label.Position!.Value.Filename;
 
 					if (!string.IsNullOrEmpty(filename))
@@ -1189,6 +1200,7 @@ internal sealed class ErbLoader(EmueraConsole output, ExpressionMediator exm, Pr
 				break;
 			case DisplayWarningFlag.ONCE:
 			{
+				// InstructionLine is built by LogicalLineParser.ParseLine with a position
 				string filename = line.Position!.Value.Filename;
 				if (!string.IsNullOrEmpty(filename))
 				{
@@ -1389,6 +1401,8 @@ internal sealed class ErbLoader(EmueraConsole output, ExpressionMediator exm, Pr
 								break;
 							case FunctionCode.FOR:
 							{
+								// The FOR instruction is built by SP_FOR_NEXT_ArgumentBuilder, which
+								// always returns an SpForNextArgment; a nested FOR is pushed already parsed.
 								VariableTerm cnt = (iLine.Argument as SpForNextArgment)!.Cnt;
 								if (cnt.Identifier.Name == "COUNT" && cnt is { isAllConst: true, getEl1forArg: 0 })
 								{
@@ -1428,6 +1442,8 @@ internal sealed class ErbLoader(EmueraConsole output, ExpressionMediator exm, Pr
 					//それでこれがfalseになるのは、引数解析でエラーが起きた場合のみ
 					if (func.Argument != null)
 					{
+						// Same builder as REPEAT above; Argument is non-null on this path, so the
+						// cast cannot be the one that fails.
 						VariableTerm Cnt = (func.Argument as SpForNextArgment)!.Cnt;
 						if (Cnt.Identifier.Name == "COUNT")
 						{
@@ -1440,6 +1456,7 @@ internal sealed class ErbLoader(EmueraConsole output, ExpressionMediator exm, Pr
 										break;
 									case FunctionCode.FOR:
 									{
+										// Nested FOR instructions reach here through the same push above
 										VariableTerm destCnt = (iLine.Argument as SpForNextArgment)!.Cnt;
 										if (destCnt.Identifier.Name == "COUNT" && Cnt.isAllConst && destCnt.isAllConst &&
 										    destCnt.getEl1forArg == Cnt.getEl1forArg)
@@ -1613,6 +1630,8 @@ internal sealed class ErbLoader(EmueraConsole output, ExpressionMediator exm, Pr
 						break;
 					}
 
+					// SELECTCASE is built by INT_EXPRESSION_ArgumentBuilder, whose only product is an
+					// ExpressionArgument.
 					AExpression? term = (selectLine.Argument as ExpressionArgument)!.Term;
 					if (term == null)
 					{
@@ -1633,6 +1652,8 @@ internal sealed class ErbLoader(EmueraConsole output, ExpressionMediator exm, Pr
 							continue;
 						}
 
+						// CASEELSE is skipped above, so every remaining line is a CASE, whose builder
+						// only produces CaseArgument.
 						CaseExpression[] caseExps = (caseLine.Argument as CaseArgument)!.CaseExps;
 						if (caseExps.Length == 0)
 						{
@@ -1876,6 +1897,8 @@ internal sealed class ErbLoader(EmueraConsole output, ExpressionMediator exm, Pr
 
 					if (pFunc.FunctionCode == FunctionCode.TRYGOTOLIST)
 					{
+						// SP_CALL_ArgumentBuilder checks its first argument type before returning, so
+						// a non-null Argument here is always an SpCallArgment.
 						SpCallArgment spCallArg = (func.Argument as SpCallArgment)!;
 						if (spCallArg.SubNames.Count != 0)
 						{

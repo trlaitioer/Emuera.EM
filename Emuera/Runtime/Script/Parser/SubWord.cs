@@ -59,6 +59,8 @@ internal sealed class YenAtSubWord : SubWord
 	public override void SetIsMacro()
 	{
 		IsMacro = true;
+		// The constructor requires a WordCollection, so Words is non-null here. The only subtype that passes
+		// null (TripleSymbolSubWord) does not override this, so the base body's null check covers it.
 		Words!.SetIsMacro();
 		Left.SetIsMacro();
 		Right!.SetIsMacro(); //Right is null only on the missing-# warning path, which never reaches macro expansion
