@@ -4057,13 +4057,17 @@ internal sealed partial class FunctionIdentifier
 			//1.723 仕様変更。BREAKのJUMP先にはREPEAT、FOR、WHILEを記憶する。そのJUMP先が本当のJUMP先。
 			InstructionLine jumpTo = (InstructionLine)func.JumpTo!;
 			InstructionLine iLine = (InstructionLine)jumpTo.JumpTo!;
+			//The loop variable is unknown when the body was entered without running the loop header
+			//(GOTO into a REPEAT/FOR body): there is no counter to rotate, so leave the loop as
+			//CONTINUE and REND do.
 			//WHILEとDOはカウンタがないので、即ジャンプ
-			if (jumpTo.FunctionCode != FunctionCode.WHILE && jumpTo.FunctionCode != FunctionCode.DO)
+			VariableTerm? loopCounter = jumpTo.LoopCounter;
+			if (loopCounter != null && jumpTo.FunctionCode != FunctionCode.WHILE && jumpTo.FunctionCode != FunctionCode.DO)
 			{
 				unchecked
 				{
 					//eramakerではBREAK時にCOUNTが回る
-					jumpTo.LoopCounter!.ChangeValue(jumpTo.LoopStep, exm);
+					loopCounter.ChangeValue(jumpTo.LoopStep, exm);
 				}
 			}
 

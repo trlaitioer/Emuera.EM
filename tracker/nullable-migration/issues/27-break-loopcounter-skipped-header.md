@@ -1,7 +1,7 @@
 # Nullable:GOTO 跳入 REPEAT/FOR 体时 BREAK 解引用 null 的 `LoopCounter`
 
 id: nullable-migration-27
-Status: ready-for-agent
+Status: implemented
 
 ## 任务
 
@@ -56,6 +56,18 @@ REND
 3. 两种都要顺带核对 `CONTINUE_Instruction`、`REND_Instruction` 与 `BREAK_Instruction` 的行为一致性。
 
 完成标准：上述脚本不再产生 `NullReferenceException`，且与 `CONTINUE` 的语义一致；`Emuera` 与 `Emuera.Tests` 的 CS86xx 仍为 0，测试通过。
+
+### 实施结果（2026-10-05）
+
+按方案第 1 条落地：`BREAK_Instruction.DoInstruction` 先把 `jumpTo.LoopCounter` 取到局部变量，`loopCounter != null` 才旋转计数器；为 null 时跳过旋转、直接 `state.JumpTo(iLine)` 跳出该循环——与 `CONTINUE_Instruction`/`REND_Instruction` 的「ループ変数が不明なら無視してループを抜ける」一致，`!` 随之删除，`WHILE`/`DO` 的既有 `FunctionCode` 短路保持不变。计数器非空时（循环头已执行的正常路径）执行语句逐字未变，只是多了一个 null 前置条件。
+
+`FOR` 与 `REPEAT` 共用 `REPEAT_Instruction`（`FunctionIdentifier` 映射），两形态同一站点、同一修法，故未另设 `FOR` 夹具。
+
+新增用例 2 例（`Emuera.Tests/Runtime/Script/Statements/BreakLoopCounterTests.cs`，缝为装载入口 + `BREAK_Instruction.DoInstruction` + 观察 `ProcessState.CurrentLine`）：GOTO 跳入 `REPEAT` 体后 `BREAK` 不抛异常且跳到 `REND`（并先断言 `LoopCounter == null` 的缺陷前提）；同形态的 `WHILE` 跳入不回归。红→绿实测：还原旧行为后 REPEAT 用例报 `NullReferenceException`。
+
+「方案」第 3 条的一致性核对：`CONTINUE`/`REND` 的短路在本次改动前就已存在，`BREAK` 现与二者同为「无计数器即跳出」。
+
+验证：`dotnet build Emuera/Emuera.csproj -c Debug-NAudio -p:Platform=x64` CS86xx = 0；`Emuera.Tests` 由 700 条增至 702 条，全绿。
 
 ## 影响
 
