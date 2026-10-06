@@ -1,5 +1,4 @@
-﻿using System.Text;
-using MinorShift.Emuera;
+﻿using MinorShift.Emuera;
 using MinorShift.Emuera.GameProc.Function;
 using MinorShift.Emuera.Runtime.Script.Loader;
 using MinorShift.Emuera.Runtime.Script.Statements;
@@ -25,39 +24,7 @@ public class ErbLoaderNestCheckTests
 	/// 普通函数,nestCheck 根本不会运行。
 	/// </summary>
 	private static async Task<List<InstructionLine>> LoadFixture(params string[] lines)
-	{
-		string root = GameRootScope.UseTempRoot("nestcheck");
-		string erbDir = Path.Combine(root, "erb");
-		Directory.CreateDirectory(erbDir);
-		string path = Path.Combine(erbDir, "test.erb");
-		string[] source = ["@SYSTEM_TITLE", .. lines];
-		File.WriteAllLines(path, source, new UTF8Encoding(false));
-		// EraStreamReader 走 Preload 的缓存,未预读的文件在 OpenOnCache 里直接 KeyNotFound
-		await Preload.Load(path);
-
-		// scaningLine 的占位值由 TestBootstrap 设置,装载结束时会被清掉;用例必须还原,
-		// 否则后续用例的 GetScaningLine 会解引用未初始化的 Process.state。
-		LogicalLine? placeholder = GlobalStatic.Process.scaningLine;
-		GlobalStatic.LabelDictionary.RemoveAll();
-		try
-		{
-			var loader = new ErbLoader(null!, GlobalStatic.EMediator, GlobalStatic.Process);
-			await loader.LoadErbList([path], GlobalStatic.LabelDictionary);
-		}
-		finally
-		{
-			GlobalStatic.Process.scaningLine = placeholder;
-		}
-
-		FunctionLabelLine label = Assert.Single(GlobalStatic.LabelDictionary.GetAllLabels(false));
-		List<InstructionLine> body = [];
-		for (LogicalLine? line = label.NextLine; line is InstructionLine instruction; line = line.NextLine)
-		{
-			body.Add(instruction);
-		}
-
-		return body;
-	}
+		=> (await ErbLoaderFixture.LoadSystemTitleBody("nestcheck", lines)).Body;
 
 	private static InstructionLine LineWith(List<InstructionLine> body, FunctionCode code)
 		=> Assert.Single(LinesWith(body, code));

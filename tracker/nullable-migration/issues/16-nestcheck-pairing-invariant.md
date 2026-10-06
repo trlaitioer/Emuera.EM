@@ -1,7 +1,7 @@
 # Nullable:配对被破坏时未标记错误行，空跳转目标进入执行期
 
 id: nullable-migration-16
-Status: in-progress
+Status: implemented
 
 ## 任务
 
