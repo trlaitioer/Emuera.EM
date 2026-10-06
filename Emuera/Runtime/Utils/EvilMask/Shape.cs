@@ -173,13 +173,11 @@ internal sealed class Shape
 					(cornerRect.Height * 2) - 1));
 				bool hasInnerEllipse = (border != null ? border[flipX ? Direction.Left : Direction.Right] : 0) < radius[corner]
 				                       && (border != null ? border[flipY ? Direction.Bottom : Direction.Top] : 0) < radius[corner];
-				Rectangle innerEllipseRect = radius != null
-					? new Rectangle(
-						flipX ? rect.X + rect.Width - radius[corner] : rect.X + (border != null ? border[Direction.Left] : 0),
-						flipY ? rect.Y + rect.Height - radius[corner] : rect.Y + (border != null ? border[Direction.Top] : 0),
-						radius[corner] - (border != null ? border[flipX ? Direction.Left : Direction.Right] : 0),
-						radius[corner] - (border != null ? border[flipY ? Direction.Bottom : Direction.Top] : 0))
-					: new Rectangle();
+				Rectangle innerEllipseRect = new(
+					flipX ? rect.X + rect.Width - radius[corner] : rect.X + (border != null ? border[Direction.Left] : 0),
+					flipY ? rect.Y + rect.Height - radius[corner] : rect.Y + (border != null ? border[Direction.Top] : 0),
+					radius[corner] - (border != null ? border[flipX ? Direction.Left : Direction.Right] : 0),
+					radius[corner] - (border != null ? border[flipY ? Direction.Bottom : Direction.Top] : 0));
 				if (hasInnerEllipse)
 				{
 					innerEllipse = new GraphicsPath();
@@ -256,9 +254,9 @@ internal sealed class Shape
 							graph.SmoothingMode = backUp;
 							graph.FillRectangle(brush, new Rectangle(
 								flipX ? rect.X + rect.Width - border[Direction.Right] : rect.X,
-								flipY ? rect.Y + (rect.Height / 2) : rect.Y + radius![corner],
+								flipY ? rect.Y + (rect.Height / 2) : rect.Y + radius[corner],
 								border[flipX ? Direction.Right : Direction.Left],
-								(rect.Height / 2) - radius![corner]));
+								(rect.Height / 2) - radius[corner]));
 							graph.SmoothingMode = SmoothingMode.AntiAlias;
 						}
 					}
@@ -287,9 +285,9 @@ internal sealed class Shape
 							graph.SetClip(rect, CombineMode.Replace);
 							graph.SmoothingMode = backUp;
 							graph.FillRectangle(brush, new Rectangle(
-								flipX ? rect.X + (rect.Width / 2) : rect.X + radius![corner],
+								flipX ? rect.X + (rect.Width / 2) : rect.X + radius[corner],
 								flipY ? rect.Y + rect.Height - border[Direction.Bottom] : rect.Y,
-								(rect.Width / 2) - (flipX ? radius![corner] : 0),
+								(rect.Width / 2) - (flipX ? radius[corner] : 0),
 								border[flipY ? Direction.Bottom : Direction.Top]));
 							graph.SmoothingMode = SmoothingMode.AntiAlias;
 						}

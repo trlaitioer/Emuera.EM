@@ -1,7 +1,7 @@
 # Nullable:其余成员与局部非空断言的复核
 
 id: nullable-migration-21
-Status: in-progress
+Status: implemented
 
 ## 任务
 
@@ -132,6 +132,10 @@ Status: in-progress
 - 本票是 issues/14 完成标准的必要条件：清单产出前，剩余断言无法声称已逐点复核
 - 预计产出若干缺陷票；`Dictionary`/`List` 成员断言如果集中在少数构造点，可能像 issues/13 那样收敛为单点入口，届时在同一票内评估
 - 本票不改动 issues/14 已判定的六类断言
-- 截至 2026-09-26，方案第 4 步的「冗余断言同票清理」尚未执行：标为可删冗余的 6 处 `!`（`radius` 4 处、`ConfigItem<T>.val` 2 处）仍在树上；A 类理由注释、D 类契约诚实化由 issues/22 承接。这是本票保持 `in-progress` 的原因
+- 截至 2026-09-26，方案第 4 步的「冗余断言同票清理」尚未执行：标为可删冗余的 6 处 `!`（`radius` 4 处、`ConfigItem<T>.val` 2 处）仍在树上；A 类理由注释、D 类契约诚实化由 issues/22 承接。这是本票保持 `in-progress` 的原因（该步已于 2026-10-06 执行，见下条）
 - 2026-09-27：`59cd307e` 按「Try 方法补抛异常入口」删除 19 处 A 类站点——18 处 `PopArgumentPrimitive()!`（改为非可空返回、重复取用抛 `ExeEE`）与 `GetConfigMethod.GetSingleTerm` 的 `term!`（`GetConfigValueInERB` 拆 Try/非空入口），清单可定位 310 → 291；同批新增 5 个测试文件 15 例，`Debug-NAudio` 全量 357 通过、两种声音后端配置 CS86xx 均为 0
 - 2026-10-05：计数脚本入库（[tools/count-bang-sites.ps1](../tools/count-bang-sites.ps1)，口径、锚点交叉验证与基线见 [bang-sites.md](../bang-sites.md)「复现与基线」），上条「复刻计数脚本与 2026-09-25 实现的绝对值不对齐」的缺口关闭——脚本在锚点提交上复现出 979（原始）/ 969（剥注释与字面量）两个记载值；当前 `Emuera` 残差类基线 305 处（脚本口径，按本文件的 `Argument` 字段名口径折算约 289，与「余下 291 条」一致）
+- 2026-10-06：方案第 4 步的「冗余断言同票清理」执行完毕，原判为可删冗余的 6 处**只有 4 处成立**，判定更正如下（两处更正的依据都用 `.temp/nrt-probe` 的最小 NRT 探针复现，非仅推理）：
+  - `Emuera/Runtime/Utils/EvilMask/Shape.cs` 的 4 处 `radius![corner]`：**冗余但需先删死分支**。`boxBorder.drawRoundedCornerBorderLeftTop` 的形参确为非可空 `int[]`，但同方法内 `Rectangle innerEllipseRect = radius != null ? … : new Rectangle();` 的三元判断把 `radius` 的流状态退回 maybe-null——探针实测三元**之后**的 `radius[corner]` 报 CS8602、之前不报，故断言并非「编译器本可证明」。已删除该三元（`else` 分支不可达：四个调用点都在 `radius != null` 门禁内，且同方法第 163 行已无条件解引用 `radius`），4 处 `!` 随之删除，`Emuera` 全量重建 CS86xx 归零
+  - `Emuera/Runtime/Config/ConfigItem.cs` 的 `val!.ToString()!`：**两处均非冗余，保留**。`T` 无约束，故 `val.ToString()` 报 CS8602（`val!` 不可删），而 `object.ToString()` 的可空签名使尾部 `!` 承担 CS8603（不可删）；探针两种形态分别复现出这两个码
+  - 计数（同口径）：`Emuera` 后缀断言 872 → 868、残差类 297 → 293（`Emuera.Tests` 132 / 79 不变）；`Debug-NAudio` 全量重建 CS86xx 0 条、`Emuera.Tests` 707 例全通过
