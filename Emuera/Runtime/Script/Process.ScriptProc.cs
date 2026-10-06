@@ -978,6 +978,8 @@ internal sealed partial class Process
 				// Both names come from SingleTerm.GetStrValue, and SP_COPY_ARRAY_Arguments already resolved them
 				// at build time: a failed lookup warns and marks the line as an error, which blocks execution.
 				// The names[] slots below are filled by those same non-null GetStrValue results.
+				// SingleTerm is SingleStrTerm here: both operands are string-typed, and SingleTerm's only other
+				// subclass (SingleLongTerm) cannot pass that check.
 				VariableToken?[] vars = [null, null];
 				if (!(varName1 is SingleTerm) || !(varName2 is SingleTerm))
 				{
@@ -1032,12 +1034,10 @@ internal sealed partial class Process
 				}
 				else
 				{
-					// Both names were already resolved by SP_COPY_ARRAY_Arguments with this very call while
-					// the argument was built: a failed lookup warns at level 2 and marks the line as an error
-					// there, which runScriptProc turns into a CodeEE before this branch runs. Keep the two
-					// lookups in sync.
-					vars[0] = GlobalStatic.IdentifierDictionary.GetVariableToken(((SingleStrTerm)varName1).Str, null, true);
-					vars[1] = GlobalStatic.IdentifierDictionary.GetVariableToken(((SingleStrTerm)varName2).Str, null, true);
+					// Both names are literal, so the tokens resolved while the argument was built are the
+					// ones this branch needs; no second lookup, and no second failure path to keep in sync.
+					vars[0] = arrayArg.ResolvedVar1;
+					vars[1] = arrayArg.ResolvedVar2;
 					if ((vars[0]!.IsInteger && vars[1]!.IsString) || (vars[0]!.IsString && vars[1]!.IsInteger))
 					{
 						throw new CodeEE(trerror.DifferentArraycopyArgsType.Text);

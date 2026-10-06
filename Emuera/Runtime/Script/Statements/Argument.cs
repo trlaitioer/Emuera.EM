@@ -156,10 +156,11 @@ internal sealed class ExpressionArgument : Argument
 
 internal sealed class ExpressionArrayArgument : Argument
 {
-	public ExpressionArrayArgument(List<AExpression?> termList)
+	// The element type is non-null because every caller has already rejected an omitted element:
+	// INT_ANY and SP_SAVECHARA through checkArgumentType, FORM_STR_ANY by building its own terms.
+	public ExpressionArrayArgument(List<AExpression> termList)
 	{
-		TermList = new AExpression[termList.Count];
-		termList.CopyTo(TermList);
+		TermList = [.. termList];
 	}
 
 	public readonly AExpression[] TermList;
@@ -782,14 +783,21 @@ internal sealed class SpArraySortArgument : Argument
 
 internal sealed class SpCopyArrayArgument : Argument
 {
-	public SpCopyArrayArgument(AExpression str1, AExpression str2)
+	public SpCopyArrayArgument(AExpression str1, AExpression str2, VariableToken? var1, VariableToken? var2)
 	{
 		VarName1 = str1;
 		VarName2 = str2;
+		ResolvedVar1 = var1;
+		ResolvedVar2 = var2;
 	}
 
 	public readonly AExpression VarName1;
 	public readonly AExpression VarName2;
+
+	// Set when the name is a literal, which is the only shape SP_COPY_ARRAY_Arguments resolves while
+	// building the argument; ARRAYCOPY then reuses them instead of repeating the lookup.
+	public readonly VariableToken? ResolvedVar1;
+	public readonly VariableToken? ResolvedVar2;
 }
 
 internal sealed class SpSaveVarArgument : Argument

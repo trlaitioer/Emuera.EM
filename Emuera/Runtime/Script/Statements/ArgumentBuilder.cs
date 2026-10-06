@@ -129,6 +129,22 @@ internal abstract class ArgumentBuilder
 		return true;
 	}
 
+	/// <summary>
+	/// Copies a builder's collected terms into the element type ExpressionArrayArgument stores. The
+	/// builders using this have already rejected an omitted element (checkArgumentType, or their own
+	/// term construction), so no element is null.
+	/// </summary>
+	protected static List<AExpression> ToNonNullTerms(List<AExpression?> terms)
+	{
+		List<AExpression> ret = new(terms.Count);
+		for (int i = 0; i < terms.Count; i++)
+		{
+			ret.Add(terms[i]!);
+		}
+
+		return ret;
+	}
+
 	protected static VariableTerm? getChangeableVariable(List<AExpression?> terms, int i, InstructionLine line)
 	{
 		if (!(terms[i - 1] is VariableTerm varTerm))
@@ -745,7 +761,8 @@ internal static partial class ArgumentParser
 		{
 			Argument ret;
 			CharStream st = line.PopArgumentPrimitive();
-			List<AExpression?> termList = [];
+			// Every element this builder adds is a non-null term, so the array argument can store them as such.
+			List<AExpression> termList = [];
 			LexicalAnalyzer.SkipHalfSpace(st);
 			if (st.EOS)
 			{
@@ -1810,7 +1827,8 @@ internal static partial class ArgumentParser
 			}
 
 			List<AExpression?> termList = [.. terms];
-			ExpressionArrayArgument ret = new(termList);
+			// checkArgumentType rejects an omitted element for this builder, so no element is null.
+			ExpressionArrayArgument ret = new(ToNonNullTerms(termList));
 			if (terms.Count == 0)
 			{
 				if (line.FunctionCode == FunctionCode.RETURN)
@@ -2878,7 +2896,8 @@ internal static partial class ArgumentParser
 			}
 
 			List<AExpression?> termList = [.. terms];
-			ExpressionArrayArgument ret = new(termList);
+			// checkArgumentType rejects an omitted element for this builder, so no element is null.
+			ExpressionArrayArgument ret = new(ToNonNullTerms(termList));
 
 			for (int i = 2; i < termList.Count; i++)
 			{
@@ -3135,71 +3154,90 @@ internal static partial class ArgumentParser
 			}
 
 			VariableToken?[] vars = [null, null];
-			if (terms[0] is SingleStrTerm term)
+			if (!TryResolveArrayArg(line, terms[0], 1, false, out vars[0]))
 			{
-				if ((vars[0] = GlobalStatic.IdentifierDictionary.GetVariableToken(term.Str, null, true)) == null)
-				{
-					warn(string.Format(trerror.ArraycopyArgIsNotDefined.Text, "1", term.Str), line, 2, false);
-					return null;
-				}
-
-				if (!vars[0]!.IsArray1D && !vars[0]!.IsArray2D && !vars[0]!.IsArray3D)
-				{
-					warn(string.Format(trerror.ArraycopyArgIsNotArray.Text, "1", term.Str), line, 2, false);
-					return null;
-				}
-
-				if (vars[0]!.IsCharacterData)
-				{
-					warn(string.Format(trerror.ArraycopyArgIsCharaVar.Text, "1", term.Str), line, 2, false);
-					return null;
-				}
+				return null;
 			}
 
-			if (terms[1] is SingleStrTerm term1)
+			if (!TryResolveArrayArg(line, terms[1], 2, true, out vars[1]))
 			{
-				if ((vars[1] = GlobalStatic.IdentifierDictionary.GetVariableToken(term1.Str, null, true)) == null)
-				{
-					warn(string.Format(trerror.ArraycopyArgIsNotDefined.Text, "2", term1.Str), line, 2, false);
-					return null;
-				}
-
-				if (!vars[1]!.IsArray1D && !vars[1]!.IsArray2D && !vars[1]!.IsArray3D)
-				{
-					warn(string.Format(trerror.ArraycopyArgIsNotArray.Text, "2", term1.Str), line, 2, false);
-					return null;
-				}
-
-				if (vars[1]!.IsCharacterData)
-				{
-					warn(string.Format(trerror.ArraycopyArgIsCharaVar.Text, "2", term1.Str), line, 2, false);
-					return null;
-				}
-
-				if (vars[1]!.IsConst)
-				{
-					warn(string.Format(trerror.ArraycopyArgIsConst.Text, "2", term1.Str), line, 2, false);
-					return null;
-				}
+				return null;
 			}
 
-			if (vars[0] != null && vars[1] != null)
+			VariableToken? var1 = vars[0];
+			VariableToken? var2 = vars[1];
+			if (var1 != null && var2 != null && !CheckSameShape(line, var1, var2))
 			{
-				if ((vars[0]!.IsArray1D && !vars[1]!.IsArray1D) || (vars[0]!.IsArray2D && !vars[1]!.IsArray2D) ||
-				    (vars[0]!.IsArray3D && !vars[1]!.IsArray3D))
-				{
-					warn(trerror.DifferentArraycopyArgsDim.Text, line, 2, false);
-					return null;
-				}
-
-				if ((vars[0]!.IsInteger && vars[1]!.IsString) || (vars[0]!.IsString && vars[1]!.IsInteger))
-				{
-					warn(trerror.DifferentArraycopyArgsType.Text, line, 2, false);
-					return null;
-				}
+				return null;
 			}
 
-			return new SpCopyArrayArgument(terms.Required(0), terms.Required(1));
+			// A literal name is resolved here, so ARRAYCOPY does not look it up a second time.
+			return new SpCopyArrayArgument(terms.Required(0), terms.Required(1), vars[0], vars[1]);
+		}
+
+		/// <summary>
+		/// Resolves one literal ARRAYCOPY name. Returns false after warning when the name does not denote
+		/// a usable array; the caller then drops the argument, and an erroneous line never executes.
+		/// A name that is not a literal stays unresolved here and is looked up when ARRAYCOPY runs.
+		/// </summary>
+		private static bool TryResolveArrayArg(InstructionLine line, AExpression? term, int number, bool rejectConst, out VariableToken? variable)
+		{
+			variable = null;
+			if (term is not SingleStrTerm strTerm)
+			{
+				return true;
+			}
+
+			string name = strTerm.Str;
+			VariableToken? var = GlobalStatic.IdentifierDictionary.GetVariableToken(name, null, true);
+			if (var == null)
+			{
+				warn(string.Format(trerror.ArraycopyArgIsNotDefined.Text, number.ToString(), name), line, 2, false);
+				return false;
+			}
+
+			if (!var.IsArray1D && !var.IsArray2D && !var.IsArray3D)
+			{
+				warn(string.Format(trerror.ArraycopyArgIsNotArray.Text, number.ToString(), name), line, 2, false);
+				return false;
+			}
+
+			if (var.IsCharacterData)
+			{
+				warn(string.Format(trerror.ArraycopyArgIsCharaVar.Text, number.ToString(), name), line, 2, false);
+				return false;
+			}
+
+			if (rejectConst && var.IsConst)
+			{
+				warn(string.Format(trerror.ArraycopyArgIsConst.Text, number.ToString(), name), line, 2, false);
+				return false;
+			}
+
+			variable = var;
+			return true;
+		}
+
+		/// <summary>
+		/// Both names are literals and resolved: dimension and element type have to match. Returns false
+		/// after warning.
+		/// </summary>
+		private static bool CheckSameShape(InstructionLine line, VariableToken var1, VariableToken var2)
+		{
+			if ((var1.IsArray1D && !var2.IsArray1D) || (var1.IsArray2D && !var2.IsArray2D) ||
+			    (var1.IsArray3D && !var2.IsArray3D))
+			{
+				warn(trerror.DifferentArraycopyArgsDim.Text, line, 2, false);
+				return false;
+			}
+
+			if ((var1.IsInteger && var2.IsString) || (var1.IsString && var2.IsInteger))
+			{
+				warn(trerror.DifferentArraycopyArgsType.Text, line, 2, false);
+				return false;
+			}
+
+			return true;
 		}
 	}
 

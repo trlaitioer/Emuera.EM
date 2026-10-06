@@ -572,6 +572,11 @@ internal sealed partial class Process(EmueraConsole view)
 		scaningLineForThread = line;
 	}
 
+	/// <summary>
+	/// The line a name is resolved against. A null thread-local value does not mean "no current line":
+	/// it falls through to the instance field and then to the line being executed, which is what lets a
+	/// lazily built argument see its own line.
+	/// </summary>
 	internal LogicalLine? GetScaningLine()
 	{
 		if (scaningLineForThreadInitialized && scaningLineForThread != null)
