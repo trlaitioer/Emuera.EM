@@ -1,6 +1,8 @@
 ﻿using System.Text;
+using MinorShift.Emuera.Runtime.Script;
 using MinorShift.Emuera.Runtime.Utils;
 using Xunit;
+using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 
 namespace Emuera.Tests.Runtime.Utils;
 
@@ -8,6 +10,8 @@ namespace Emuera.Tests.Runtime.Utils;
 /// 存档读取器(dotnet-modernization-02):net9 起 <see cref="BinaryReader.ReadString"/> 对畸形 UTF-16
 /// 不再抛异常而是静默返回 U+FFFD,读取器改用带 <see cref="DecoderFallback.ExceptionFallback"/> 的编码后,
 /// 损坏文本段应恢复「损坏即异常」,同时正常文本(含增补平面代理对)不受影响。
+/// nullable-migration-30 的残留:数据区被截断(读越界)是另一种坏输入,同样必须报存档错误类型
+/// <see cref="FileEE"/>,而不是把 BCL 的 <see cref="EndOfStreamException"/> 漏给兜底分支。
 /// </summary>
 public class EraBinaryDataReaderTests
 {
@@ -78,6 +82,84 @@ public class EraBinaryDataReaderTests
 		using EraBinaryDataReader reader = EraBinaryDataReader.CreateReader(save)!;
 
 		Assert.Equal("テス🙂", reader.ReadString());
+	}
+
+	/// <summary>截断处的统一断言:抛存档错误、文案是文本档同款、分级为存档档。</summary>
+	private static void AssertTruncatedSave(Action read)
+	{
+		FileEE ex = Assert.Throws<FileEE>(read);
+		Assert.Equal(trerror.UnexpectedSaveDataEnd.Text, ex.Message);
+		Assert.Equal(ErrorReportKind.SaveData, ErrorReport.Classify(ex));
+	}
+
+	/// <summary>值级损坏的统一断言:不是「读越界」,而是同一份存档的 framing 坏了,
+	/// 故文案是「存档数据已损坏」+ 细节,分级仍是存档档。</summary>
+	private static void AssertCorruptSave(Action read)
+	{
+		FileEE ex = Assert.Throws<FileEE>(read);
+		Assert.StartsWith(trerror.CorruptedSaveData.Text, ex.Message);
+		Assert.Equal(ErrorReportKind.SaveData, ErrorReport.Classify(ex));
+	}
+
+	/// <summary>数据区被截断(nullable-migration-30 的残留):二进制档在「读越界」处原样抛 BCL 的
+	/// <see cref="EndOfStreamException"/>,它按 ErrorReport.Classify 落 Unexpected 分支,
+	/// 玩家看到的是「予期しないエラー」+ CLR 堆栈。读取器须把它收敛成存档错误,
+	/// 并与文本档同文案(见 EraDataStreamTests.cs 的
+	/// ReadInt64Array3DExtended_WithTruncatedBlock_ThrowsFileEE)。</summary>
+	[Fact]
+	public void ReadIntArray_WithTruncatedBlock_ThrowsFileEE()
+	{
+		// 长度 4;块内 0xD1(直后 4 字节 Int32)之后即文件末尾
+		using MemoryStream save = SaveStream(0x04, 0x00, 0x00, 0x00, 0xD1);
+		using EraBinaryDataReader reader = EraBinaryDataReader.CreateReader(save)!;
+
+		AssertTruncatedSave(() => reader.ReadIntArray(new long[4], false));
+	}
+
+	/// <summary>截断在文本段正文(长度前缀声明 0x7F 字节,实到 2 字节):此前这条路径由文本解码的包装
+	/// 独占,读越界仍会从它旁边漏过去,现在与其它读同一出口。</summary>
+	[Fact]
+	public void ReadString_WithTruncatedBody_ThrowsFileEE()
+	{
+		using MemoryStream save = SaveStream(0x7F, (byte)'a', (byte)'b');
+		using EraBinaryDataReader reader = EraBinaryDataReader.CreateReader(save)!;
+
+		AssertTruncatedSave(() => reader.ReadString());
+	}
+
+	/// <summary>截断在文件类型字节之后的定长字段(真实格式里正是 unique code / 版本这两个 Int64):
+	/// 类型字节读完即文件末尾。</summary>
+	[Fact]
+	public void ReadInt64_WithTruncatedHeaderField_ThrowsFileEE()
+	{
+		using MemoryStream save = SaveStream(0x00, 0x01, 0x02, 0x03); // 0x00 = EraSaveFileType.Normal,其后不足 8 字节
+		using EraBinaryDataReader reader = EraBinaryDataReader.CreateReader(save)!;
+
+		Assert.Equal(EraSaveFileType.Normal, reader.ReadFileType());
+		AssertTruncatedSave(() => reader.ReadInt64());
+	}
+
+	/// <summary>长度前缀本身畸形(6 字节全是续读位):BCL 抛 <see cref="FormatException"/>。它和短读同属
+	/// 「这份存档读不出来」,故走同一出口,但文案是「存档数据已损坏」+ 细节,而不是「意料之外的结尾」。</summary>
+	[Fact]
+	public void ReadString_WithMalformedLengthPrefix_ThrowsFileEE()
+	{
+		using MemoryStream save = SaveStream(0x80, 0x80, 0x80, 0x80, 0x80, 0x80);
+		using EraBinaryDataReader reader = EraBinaryDataReader.CreateReader(save)!;
+
+		AssertCorruptSave(() => reader.ReadString());
+	}
+
+	/// <summary>长度前缀的 7bit 编码本身合法、但结果是负数(第 5 字节把符号位置起):BCL 抛的是
+	/// <see cref="IOException"/> 而不是 <see cref="FormatException"/>,同一处 framing 损坏的另一半。</summary>
+	[Fact]
+	public void ReadString_WithNegativeLengthPrefix_ThrowsFileEE()
+	{
+		// 0x80×4 + 0x08 = 0x80000000,按 int 即 -2147483648
+		using MemoryStream save = SaveStream(0x80, 0x80, 0x80, 0x80, 0x08);
+		using EraBinaryDataReader reader = EraBinaryDataReader.CreateReader(save)!;
+
+		AssertCorruptSave(() => reader.ReadString());
 	}
 
 	/// <summary>写→读往返(票面的「正常存档读写回归」):用生产写入器 <see cref="EraBinaryDataWriter"/> 写出

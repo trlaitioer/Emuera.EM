@@ -86,15 +86,16 @@ internal abstract class EraBinaryDataReader : IDisposable
 	private EraBinaryDataReader()
 	{ }
 
-	protected EraBinaryDataReader(BinaryReader stream, int ver, uint[] buf)
+	// The only subclass is nested below, so the shared reader stays private to this file.
+	private EraBinaryDataReader(SaveDataReader stream, int ver, uint[] buf)
 	{
 		reader = stream;
 		version = ver;
 		data = buf;
 	}
 
-	// Assigned by the protected constructor; nulled only by Dispose
-	protected BinaryReader reader = null!;
+	// Assigned by the constructor; nulled only by Dispose. Read directly by the nested subclass below.
+	private SaveDataReader reader = null!;
 	protected readonly int version;
 	protected readonly uint[] data = null!;
 
@@ -105,32 +106,55 @@ internal abstract class EraBinaryDataReader : IDisposable
 	private static readonly Encoding SaveTextEncoding = EncodingHandler.GetEncoding(Encoding.Unicode.CodePage);
 
 	/// <summary>
-	/// The one reader every construction site uses. Every text-decode entry is wrapped so a malformed sequence
-	/// becomes <see cref="FileEE"/> (the save/load error type) instead of a raw decoder exception: <see cref="ReadString"/>
-	/// for saved text, <see cref="PeekChar"/>/<see cref="ReadChar"/> for the character-level EOF checks (a bare
-	/// decoder exception there would float past the save/load error handling as an internal error).
+	/// Every read from a save stream goes through this type, so no such read can fail past it as a raw BCL
+	/// exception: a read that runs past the end is a truncated save, and anything else a read can reject -
+	/// malformed text, an unusable length prefix, a failure from the medium - is a corrupt one. Either is bad
+	/// input and must become <see cref="FileEE"/> (the save/load error type); a raw BCL exception instead reaches
+	/// the handlers' unexpected-error branch, which prints a CLR message and stack in place of the save-data
+	/// grading (<see cref="MinorShift.Emuera.Runtime.Script.ErrorReport"/>). It wraps <see cref="BinaryReader"/>
+	/// rather than deriving from it because the integral reads are not virtual and one override cannot catch them.
 	/// </summary>
-	private sealed class SaveTextReader : BinaryReader
+	private sealed class SaveDataReader
 	{
-		public SaveTextReader(Stream stream, bool leaveOpen)
-			: base(stream, SaveTextEncoding, leaveOpen)
-		{ }
+		public SaveDataReader(Stream stream, bool leaveOpen)
+		{
+			reader = new BinaryReader(stream, SaveTextEncoding, leaveOpen);
+		}
 
-		public override string ReadString() => Decode(() => base.ReadString());
+		private readonly BinaryReader reader;
 
-		public override int PeekChar() => Decode(() => base.PeekChar());
+		public Stream BaseStream => reader.BaseStream;
 
-		public override char ReadChar() => Decode(() => base.ReadChar());
+		public ulong ReadUInt64() => Guarded(() => reader.ReadUInt64());
+		public uint ReadUInt32() => Guarded(() => reader.ReadUInt32());
+		public byte ReadByte() => Guarded(() => reader.ReadByte());
+		public short ReadInt16() => Guarded(() => reader.ReadInt16());
+		public int ReadInt32() => Guarded(() => reader.ReadInt32());
+		public long ReadInt64() => Guarded(() => reader.ReadInt64());
+		public string ReadString() => Guarded(() => reader.ReadString());
+		public int PeekChar() => Guarded(() => reader.PeekChar());
 
-		private static T Decode<T>(Func<T> read)
+		public void Close() => reader.Close();
+
+		private static T Guarded<T>(Func<T> read)
 		{
 			try
 			{
 				return read();
 			}
-			catch (DecoderFallbackException e)
+			catch (EndOfStreamException)
 			{
-				throw new FileEE($"{trerror.CorruptedSaveData.Text} ({e.Message})");
+				// The wording the text-format reader throws for the same situation
+				// (EraDataStream.cs, EraDataReader.ReadInt64Array and the same ReadLine null check elsewhere).
+				throw new FileEE(trerror.UnexpectedSaveDataEnd.Text);
+			}
+			catch (Exception e) when (e is DecoderFallbackException or FormatException or IOException)
+			{
+				// Undecodable text, an unusable length prefix (over-long, or a negative result that ReadString
+				// reports as IOException), or a read that failed on the medium. The truncation case is
+				// EndOfStreamException above; the type name stays in the message because the stack is not
+				// printed, and an I/O fault would otherwise be indistinguishable from corrupt framing.
+				throw new FileEE($"{trerror.CorruptedSaveData.Text} ({e.GetType().Name}: {e.Message})");
 			}
 		}
 	}
@@ -161,7 +185,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 
 			#region EM_私家版_セーブ圧縮
 
-			SaveTextReader reader = new(fs, true);
+			SaveDataReader reader = new(fs, true);
 
 			//if (reader.ReadUInt64() != EraBDConst.Header)
 			//	return null;
@@ -190,11 +214,11 @@ internal abstract class EraBinaryDataReader : IDisposable
 				gzips.CopyTo(ms);
 				gzips.Close();
 				ms.Seek(0, SeekOrigin.Begin);
-				reader = new SaveTextReader(ms, false);
+				reader = new SaveDataReader(ms, false);
 			}
 			else
 			{
-				reader = new SaveTextReader(reader.BaseStream, false);
+				reader = new SaveDataReader(reader.BaseStream, false);
 			}
 
 			#endregion
@@ -266,7 +290,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 
 	private sealed class EraBinaryDataReader1808 : EraBinaryDataReader
 	{
-		public EraBinaryDataReader1808(BinaryReader stream, int ver, uint[] buf)
+		public EraBinaryDataReader1808(SaveDataReader stream, int ver, uint[] buf)
 			: base(stream, ver, buf)
 		{ }
 
