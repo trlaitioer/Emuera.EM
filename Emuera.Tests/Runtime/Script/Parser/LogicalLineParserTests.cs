@@ -3,6 +3,7 @@ using MinorShift.Emuera.Runtime.Script.Parser;
 using MinorShift.Emuera.Runtime.Script.Statements;
 using MinorShift.Emuera.Runtime.Utils;
 using Xunit;
+using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 
 namespace Emuera.Tests.Runtime.Script.Parser;
 
@@ -33,6 +34,33 @@ public class LogicalLineParserTests
 	{
 		Assert.Null(LogicalLineParser.ParseLine("", null!));
 		Assert.Null(LogicalLineParser.ParseLine("   \t ", null!));
+	}
+
+	/// <summary>首个 @函数 之前的 VARI/VARS 没有可登记的父标签:给出脚本可见的解析错误,
+	/// 而不是在 parentLine 的非空断言上崩(nullable-migration-24)。</summary>
+	[Fact]
+	public void VariVars_WithoutParentLabel_BecomesInvalidLine()
+	{
+		foreach (string text in new[] { "VARI X", "VARI ARR, 3", "VARS X", "VARS ARR, 2" })
+		{
+			var line = Assert.IsType<InvalidLine>(LogicalLineParser.ParseLine(new CharStream(text), Pos, null, null));
+			Assert.Equal(trerror.LineBeforeFunc.Text, line.ErrMes);
+		}
+	}
+
+	/// <summary>正控制:父标签存在时同一行照常解析为私有变量声明。</summary>
+	[Fact]
+	public void VariVars_WithParentLabel_RegistersThePrivateVariable()
+	{
+		FunctionLabelLine parent = Assert.IsType<FunctionLabelLine>(ParseLabelLine("@FUNC_DIM"));
+
+		var vari = Assert.IsType<InstructionLine>(LogicalLineParser.ParseLine(new CharStream("VARI X"), Pos, null, parent));
+		var vars = Assert.IsType<InstructionLine>(LogicalLineParser.ParseLine(new CharStream("VARS Y"), Pos, null, parent));
+
+		Assert.Equal(FunctionCode.VARI, vari.Function.Code);
+		Assert.Equal(FunctionCode.VARS, vars.Function.Code);
+		Assert.Same(parent, vari.ParentLabelLine);
+		Assert.Same(parent, vars.ParentLabelLine);
 	}
 
 	[Fact]

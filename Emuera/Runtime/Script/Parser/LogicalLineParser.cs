@@ -505,6 +505,14 @@ internal static class LogicalLineParser
 				{
 					if (func.Code is FunctionCode.VARI or FunctionCode.VARS)
 					{
+						// VARI/VARS register a private variable on the enclosing function. A file may
+						// hold statements before its first @function (ErbLoader only warns about
+						// them), and there is nothing to register on in that case.
+						if (parentLine == null)
+						{
+							return new InvalidLine(position, trerror.LineBeforeFunc.Text);
+						}
+
 						InstructionLine line = new(position, func, stream) { ParentLabelLine = parentLine };
 						ReadOnlySpan<char> statementsSpan = line.PopArgumentPrimitive().SubstringROS();
 						int commentIndex = statementsSpan.IndexOf(';');
@@ -561,7 +569,7 @@ internal static class LogicalLineParser
 								Dimension = lengths.Count,
 								TypeIsStr = false
 							};
-							parentLine!.AddPrivateVariable(varData);
+							parentLine.AddPrivateVariable(varData);
 
 							if (exp != null)
 							{
@@ -605,7 +613,7 @@ internal static class LogicalLineParser
 								Dimension = lengths.Count,
 								TypeIsStr = true
 							};
-							parentLine!.AddPrivateVariable(varData);
+							parentLine.AddPrivateVariable(varData);
 
 							// An omitted initializer means the empty string, as VARI substitutes 0.
 							line.Argument = new StrAsignArgument(varName, varData.Lengths, value ?? "");

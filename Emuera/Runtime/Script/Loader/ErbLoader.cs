@@ -525,13 +525,15 @@ internal sealed class ErbLoader(EmueraConsole output, ExpressionMediator exm, Pr
 				//        replacedLine = replacedLine.Replace(pair.Key, pair.Value);
 				//    st = new StringStream(replacedLine);
 				//}
-				if (lastLabelLine == null)
+				nextLine = LogicalLineParser.ParseLine(st, position, output, lastLabelLine);
+
+				// A line before the first @function has no parent label. VARI/VARS report that themselves
+				// (they need a function to register the private variable on), so a line that already failed
+				// to parse is not warned about a second time here.
+				if (lastLabelLine == null && nextLine is not InvalidLine)
 				{
 					ParserMediator.Warn(trerror.LineBeforeFunc.Text, position, 1);
 				}
-
-				nextLine = LogicalLineParser.ParseLine(st, position, output, lastLabelLine);
-
 
 				switch (nextLine)
 				{
