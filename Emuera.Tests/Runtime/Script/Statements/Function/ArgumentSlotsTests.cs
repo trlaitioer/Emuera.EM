@@ -278,7 +278,7 @@ public class ArgumentSlotsTests
 	{
 		FunctionMethodTerm term = Assert.IsType<FunctionMethodTerm>(
 			Parse("GETMETH(\"NOT_REGISTERED\", 3, MAX(1, 2))"));
-		AExpression forwarded = Assert.Single(term.Slots.Tail(2));
+		AExpression forwarded = Assert.Single(term.Slots.Tail(2))!;
 		List<AExpression?> live = term.Slots.FoldTarget;
 
 		term.Restructure(GlobalStatic.EMediator);
@@ -295,7 +295,7 @@ public class ArgumentSlotsTests
 	{
 		FunctionMethodTerm term = Assert.IsType<FunctionMethodTerm>(
 			Parse("GETMETHS(\"NOT_REGISTERED\", \"fallback\", MAX(1, 2))"));
-		AExpression forwarded = Assert.Single(term.Slots.Tail(2));
+		AExpression forwarded = Assert.Single(term.Slots.Tail(2))!;
 		List<AExpression?> live = term.Slots.FoldTarget;
 
 		term.Restructure(GlobalStatic.EMediator);

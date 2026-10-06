@@ -4,6 +4,12 @@
     <TargetFramework>net10.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <!--
+      与 Emuera.csproj 同口径的可空回归闸门:测试工程是各契约票所定签名的实时消费者,
+      只开 enable 不设闸门时,新增测试引入的 CS86xx 会静默落地(2026-10-05 实测 2 条 CS8600)。
+      测试代码内的 `!` 断言按 nullable-migration-14 的决策豁免逐点判定,不受本闸门限制。
+    -->
+    <WarningsAsErrors>nullable</WarningsAsErrors>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <!--
