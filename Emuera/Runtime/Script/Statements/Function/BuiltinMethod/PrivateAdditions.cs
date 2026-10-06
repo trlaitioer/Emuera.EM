@@ -1603,55 +1603,86 @@ internal sealed class XmlAddNodeMethod : FunctionMethod
 
 	private bool Insert(XmlNode node, XmlNode child, int method)
 	{
+		// Each operation names its own target kinds (docs/builtin-functions.md): XML_ADDNODE inserts into the
+		// element selected by XPath (methodType 0 as its parent, 1/2 next to a non-root element), XML_ADDATTRIBUTE
+		// into the selected element (methodType 0) or attribute (1/2). XPath can also select a text, attribute or
+		// document node, and such a target cannot host the insertion: it reports the documented failure - the
+		// caller turns false into 0 - instead of surfacing as an unexpected error with a CLR stack. A text or
+		// attribute node used only as the reference point of methodType 1/2 is unaffected; that is the
+		// pre-existing behaviour and stays.
 		if (op == Operation.Node)
 		{
 			switch (method)
 			{
-				case 0: node.AppendChild(child); break;
-				case 1:
-					if (node.ParentNode == null)
+				case 0:
+					// Only an element can host a child node (a text node refuses any child).
+					if (node is not XmlElement)
 					{
 						return false;
 					}
 
-					node.ParentNode.InsertBefore(child, node);
+					node.AppendChild(child);
 					break;
+				case 1:
 				case 2:
-					if (node.ParentNode == null)
+					// The reference node has to be a child of an element: an attribute's ParentNode is null (an
+					// attribute is reached through OwnerElement, never through ChildNodes), and a child of the
+					// document - the root element, but equally a top-level comment or processing instruction - is
+					// not the element the doc names, which excludes the root node from methodType 1/2.
+					if (node.ParentNode is not XmlElement parent)
 					{
 						return false;
 					}
 
-					node.ParentNode.InsertAfter(child, node);
+					if (method == 1)
+					{
+						parent.InsertBefore(child, node);
+					}
+					else
+					{
+						parent.InsertAfter(child, node);
+					}
+
 					break;
 			}
 
 			return true;
 		}
-		else
+
+		if (child is not XmlAttribute newAttr)
 		{
-			if (child is XmlAttribute newAttr)
-			{
-				if (method > 0 && !(node is XmlAttribute))
-				{
-					return false;
-				}
-
-				// Method 1/2 only gets past the guard above when node is an XmlAttribute, and an attribute node
-				// selected by XPath is attached to its element, so attr and its OwnerElement are both non-null.
-				XmlAttribute? attr = method == 0 ? null : node as XmlAttribute;
-				switch (method)
-				{
-					case 0: node.Attributes!.Append(newAttr); break;
-					case 1: attr!.OwnerElement!.Attributes.InsertBefore(newAttr, attr); break;
-					case 2: attr!.OwnerElement!.Attributes.InsertAfter(newAttr, attr); break;
-				}
-
-				return true;
-			}
+			return false;
 		}
 
-		return false;
+		if (method == 0)
+		{
+			// XmlNode.Attributes is only overridden by XmlElement; for a text, attribute or document node
+			// selected by XPath it is null.
+			if (node is not XmlElement element)
+			{
+				return false;
+			}
+
+			element.Attributes.Append(newAttr);
+			return true;
+		}
+
+		// Method 1/2 requires an attribute node, and one selected by XPath is attached to its element.
+		if (node is not XmlAttribute { OwnerElement: XmlElement owner } attr)
+		{
+			return false;
+		}
+
+		if (method == 1)
+		{
+			owner.Attributes.InsertBefore(newAttr, attr);
+		}
+		else
+		{
+			owner.Attributes.InsertAfter(newAttr, attr);
+		}
+
+		return true;
 	}
 
 	public override long GetIntValue(ExpressionMediator exm, ArgumentSlots slots)
@@ -1760,7 +1791,9 @@ internal sealed class XmlAddNodeMethod : FunctionMethod
 					}
 				}
 			}
-			else if (!Insert(nodes[0]!, child, method) && method > 0)
+			// A single match whose node kind cannot host the insertion reports the documented failure (0) rather
+			// than the match count; a multi-match selection keeps the count (see docs/builtin-functions.md).
+			else if (!Insert(nodes[0]!, child, method))
 			{
 				return 0;
 			}

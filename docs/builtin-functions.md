@@ -592,10 +592,10 @@
 
 | 注册名 | 返回 | 实参形状 | 合法实参数 | 空槽语义 | 说明 |
 | --- | --- | --- | --- | --- | --- |
-| `XML_ADDATTRIBUTE`（候选 1） | int | int, str, str, str?, int?, int? | 3–6 | attrValue 省略取空串；methodType/doSetAll 省略取 0；显式留空抛 CodeEE(ArgCanNotBeNull) | 给 xpath 匹配的节点新增属性，返回新增次数；无匹配返 0，目标文档不存在返 -1；methodType=0 且 xpath 选中属性本身时 Attributes 为 null 抛空引用异常；1/2 要求选中属性，选元素则返 0；多匹配复用同一属性只落最后一个 |
+| `XML_ADDATTRIBUTE`（候选 1） | int | int, str, str, str?, int?, int? | 3–6 | attrValue 省略取空串；methodType/doSetAll 省略取 0；显式留空抛 CodeEE(ArgCanNotBeNull) | 给 xpath 匹配的节点新增属性，返回新增次数；无匹配返 0，目标文档不存在返 -1；methodType=0 要求选中元素节点，选中属性/文本/文档节点时不新增（原为运行期空引用异常）；1/2 要求选中属性节点，选中元素/文本/文档节点时不新增；「不新增」时单匹配返 0、多匹配沿用既定的「返匹配数」；多匹配复用同一属性只落最后一个 |
 | `XML_ADDATTRIBUTE`（候选 2） | int | ref str, str, str, str?, int?, int? | 3–6 | attrValue 省略取空串；methodType/doSetAll 省略取 0；显式留空抛 CodeEE(ArgCanNotBeNull) | （同上） |
 | `XML_ADDATTRIBUTE_BYNAME` | int | str, str, str, str?, int?, int? | 3–6 | attrValue 省略取空串；methodType/doSetAll 省略取 0；显式留空抛 CodeEE(ArgCanNotBeNull) | 以 xmlName 指定的 XmlDocument 为目标，给 xpath 匹配节点新增属性并返回新增次数；第 1 实参须为字符串（变量或字面量皆可，按内容查表）；其余坑同 XML_ADDATTRIBUTE |
-| `XML_ADDNODE`（候选 1） | int | int, str, str, int?, int? | 3–5 | methodType/doSetAll 省略取 0（doSetAll 要给满 5 个实参才读）；显式留空抛 CodeEE | 向 xpath 选中的元素插入 nodeXml 新节点，返回匹配（新增）次数；无匹配返 0；多匹配且 doSetAll=0 时不新增却返回匹配数；setAll 复用同一节点实例，实际只落最后一个；选中根节点时 1/2 返 0 |
+| `XML_ADDNODE`（候选 1） | int | int, str, str, int?, int? | 3–5 | methodType/doSetAll 省略取 0（doSetAll 要给满 5 个实参才读）；显式留空抛 CodeEE | 向 xpath 选中的元素插入 nodeXml 新节点，返回匹配（新增）次数；无匹配返 0；多匹配且 doSetAll=0 时不新增却返回匹配数；setAll 复用同一节点实例，实际只落最后一个；methodType=0 要求选中元素节点，选中属性/文本/文档节点时不新增；1/2 要求参照节点的父节点是元素（元素节点与文本节点皆可），选中根/文档/属性节点时不新增；「不新增」时单匹配返 0、多匹配仍返匹配数 |
 | `XML_ADDNODE`（候选 2） | int | ref str, str, str, int?, int? | 3–5 | methodType/doSetAll 省略取 0（doSetAll 要给满 5 个实参才读）；显式留空抛 CodeEE | （同上） |
 | `XML_ADDNODE_BYNAME` | int | str, str, str, int?, int? | 3–5 | methodType/doSetAll 省略取 0（doSetAll 要给满 5 个实参才读）；显式留空抛 CodeEE | 以 xmlName 指定的 XmlDocument 为目标，向 xpath 选中的元素插入 nodeXml 并返回新增次数；返回类型与同族主名一样是 int；多匹配/doSetAll 的坑与 XML_ADDNODE 相同 |
 | `XML_DOCUMENT` | int | any, str | 恰好 2 | 无；个数须恰好 2；显式空槽报 CodeEE(ArgCanNotBeNull) | 解析 XML 文本并以字符串 ID 存入文档表，成功返回 1，该 ID 已被占用则返回 0；解析失败抛 CodeEE（消息文本误用 XML_GET 前缀）；ID 取字符串实参或整数的 TOSTR，不做归一化 |

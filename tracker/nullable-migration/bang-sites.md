@@ -45,6 +45,8 @@
 
 **用法边界**:断言是否已补理由注释无法机械核对(注释不改变计数),故残差计数只用于「趋势与回归」(如 `Emuera.Tests` 的后缀断言已由锚点的 107 涨到 128),**不能**作为 `nullable-migration-22` §1「A 类补注释」的完成判据;逐站点判定与验收仍以本文件的站点表为准。
 
+`nullable-migration-32`/`nullable-migration-30` 落地(2026-10-06)后同口径复测:`Emuera` **799** / 残差 **266**。−5 全部来自 `XmlAddNodeMethod.Insert` 删掉的五处假断言(`node.Attributes!`、两处 `attr!`、两处 `OwnerElement!`——改成节点种类模式后它们不再需要),落在残差桶(271 → **266**);其余各桶(313 / 77 / 62 / 43 / 38)同批不变;`DT_TOXML` 的 `!` 保留(`as` 的语义决定它承担 CS8600,见 issues/32 §2)。`Emuera.Tests` 按 issues/14 决策豁免,本表的脚本不覆盖该工程。
+
 ## 构成
 
 | 子桶 | 处数 |
@@ -63,9 +65,9 @@
 
 | 结论 | 处数 |
 | --- | --- |
-| A | 282 |
+| A | 281 |
 | B | 9 |
-| C | 16 |
+| C | 17 |
 | D | 37 |
 | 待确认 | 0 |
 | 未判定 | 0 |
@@ -73,6 +75,8 @@
 
 逐站点的结论见各表「结论」列;分组依据与去向见 `nullable-migration-21` 的判定表。
 `A` 成立(保留 + 理由注释) / `B` 不成立但当前不可达(潜在缺陷) / `C` 可达缺陷(另立票) / `D` 断言为假但被调方容忍(契约诚实化)。
+
+2026-10-06 更正:`XmlAddNodeMethod.Insert#1`(`node.Attributes!`)原判 A,经 `nullable-migration-32` §1 取证为可达缺陷——`XmlNode.Attributes` 只被 `XmlElement` 覆写,XPath 选中属性/文本节点时该断言为假(NRE 是既有可观测行为,`docs/builtin-functions.md` 的 `XML_ADDATTRIBUTE` 行曾记载)。故该行结论改为 `C`,`A` −1、`C` +1;同批由 `nullable-migration-32` §1 修复(按在线文档的「Returns 0 on failure」返 0,不再是运行期异常)。同批消失的还有 `Insert#2`~`Insert#5`(两处 `attr!`、两处 `OwnerElement!`,4 处 A):它们与 `Insert#1` 一样已随该修复删除,按本文既有约定登记在文末「已失效站点」,不进入上表与分组索引(表内行仍是锚点上的事实)。同票 §2 的 `DataTableToXmlMethod` 站点属 `(x as T)!` 桶,不在本文件的残差范围内,不在此表。
 
 ### 裸标识符/局部断言(`bare/local`,167 处)
 
@@ -289,7 +293,7 @@
 | `Emuera/Runtime/Script/Statements/ArgumentParser.cs#ArgumentParser.SetArgumentTo#1` | `line.Function.Instruction` | InstructionLine (成员) | A | `arg = line.Function.Instruction!.CreateArgument(line, GlobalStatic.EMediator);` |
 | `Emuera/Runtime/Script/Statements/Expression/ExpressionParser.cs#ExpressionParser.local#1` | `terms.Last` | LinkedList<AExpression?> (成员) | A | `if (term.GetOperandType() != terms.Last!.Value!.GetOperandType())` |
 | `Emuera/Runtime/Script/Statements/Expression/ExpressionParser.cs#ExpressionParser.local#2` | `terms.Last` | LinkedList<AExpression?> (成员) | A | `if (terms.Last!.Value!.IsInteger)` |
-| `Emuera/Runtime/Script/Statements/Function/BuiltinMethod/PrivateAdditions.cs#XmlAddNodeMethod.Insert#1` | `node.Attributes` | XmlNode (参数) | A | `case 0: node.Attributes!.Append(newAttr); break;` |
+| `Emuera/Runtime/Script/Statements/Function/BuiltinMethod/PrivateAdditions.cs#XmlAddNodeMethod.Insert#1` | `node.Attributes` | XmlNode (参数) | C | `case 0: node.Attributes!.Append(newAttr); break;` |
 | `Emuera/Runtime/Script/Statements/Function/BuiltinMethod/PrivateAdditions.cs#XmlAddNodeMethod.Insert#3` | `attr!.OwnerElement` | XmlAttribute? (局部) | A | `case 1: attr!.OwnerElement!.Attributes.InsertBefore(newAttr, attr); break;` |
 | `Emuera/Runtime/Script/Statements/Function/BuiltinMethod/PrivateAdditions.cs#XmlAddNodeMethod.Insert#5` | `attr!.OwnerElement` | XmlAttribute? (局部) | A | `case 2: attr!.OwnerElement!.Attributes.InsertAfter(newAttr, attr); break;` |
 | `Emuera/Runtime/Script/Statements/Function/BuiltinMethod/PrivateAdditions.cs#XmlAddNodeMethod.GetIntValue#2` | `childNode.DocumentElement` | XmlDocument (局部) | A | `XmlElement newNode = childNode.DocumentElement!;` |
@@ -610,3 +614,6 @@
 - `ab93db4f`(2 处 A):`Emuera/Runtime/Script/Statements/Expression/ExpressionParser.cs#ExpressionParser.local#1`、`Emuera/Runtime/Script/Statements/Expression/ExpressionParser.cs#ExpressionParser.local#2`
 - `322bba97`(issues/29,22 处 A;`GetKeywordDictionary` 拆 Try 与非空入口):`Emuera/Runtime/Script/Data/ConstantData.cs#ConstantData.KeywordToInteger#1`、`Emuera/Runtime/Utils/PluginSystem/PluginManager.cs#PluginManager.SetCharVar#1`、`Emuera/Runtime/Utils/PluginSystem/PluginManager.cs#PluginManager.GetCharVar#1`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#GlobalInt1dWrapper.Get#1`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#GlobalInt1dWrapper.Set#1`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#GlobalString1dWrapper.Get#1`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#GlobalString1dWrapper.Set#1`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#GlobalConstString1dWrapper.Get#1`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#GlobalConstInt1dWrapper.Get#1`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#CharInt1dWrapper.Get#1`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#CharInt1dWrapper.Set#1`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#CharInt2dWrapper.Get#1`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#CharInt2dWrapper.Get#2`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#CharInt2dWrapper.Get#3`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#CharInt2dWrapper.Get#4`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#CharInt2dWrapper.Set#1`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#CharInt2dWrapper.Set#2`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#CharInt2dWrapper.Set#3`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#CharInt2dWrapper.Set#4`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#CharString1dWrapper.Get#1`、`Emuera/Runtime/Utils/PluginSystem/VariableDataWrappers.cs#CharString1dWrapper.Set#1`、`Emuera/Runtime/Script/Statements/Variable/VariableStrArgTerm.cs#VariableStrArgTerm.GetIntValue#1`
 - `59cd307e`(19 处 A;Try 方法补抛异常入口):`Emuera/Runtime/Script/Statements/Function/BuiltinMethod/StringOperations.cs#GetConfigMethod.GetSingleTerm#1`、`Emuera/Runtime/Script/Parser/LogicalLineParser.cs#LogicalLineParser.ParseLine#1`、`Emuera/Runtime/Script/Statements/ArgumentBuilder.cs#ArgumentBuilder.popWords#1`、`Emuera/Runtime/Script/Statements/ArgumentBuilder.cs#ArgumentBuilder.popTerms#1`、`Emuera/Runtime/Script/Statements/ArgumentBuilder.cs#SP_HTML_PRINT_ArgumentBuilder.CreateArgument#1`、`Emuera/Runtime/Script/Statements/ArgumentBuilder.cs#SP_PRINTV_ArgumentBuilder.CreateArgument#1`、`Emuera/Runtime/Script/Statements/ArgumentBuilder.cs#SP_TIMES_ArgumentBuilder.CreateArgument#1`、`Emuera/Runtime/Script/Statements/ArgumentBuilder.cs#FORM_STR_ANY_ArgumentBuilder.CreateArgument#1`、`Emuera/Runtime/Script/Statements/ArgumentBuilder.cs#VOID_ArgumentBuilder.CreateArgument#1`、`Emuera/Runtime/Script/Statements/ArgumentBuilder.cs#STR_ArgumentBuilder.CreateArgument#1`、`Emuera/Runtime/Script/Statements/ArgumentBuilder.cs#FORM_STR_ArgumentBuilder.CreateArgument#1`、`Emuera/Runtime/Script/Statements/ArgumentBuilder.cs#SP_VAR_ArgumentBuilder.CreateArgument#1`、`Emuera/Runtime/Script/Statements/ArgumentBuilder.cs#SP_CALL_ArgumentBuilder.CreateArgument#1`、`Emuera/Runtime/Script/Statements/ArgumentBuilder.cs#SP_CALLSHARP_ArgumentBuilder.CreateArgument#1`、`Emuera/Runtime/Script/Statements/ArgumentBuilder.cs#SP_SET_ArgumentBuilder.CreateArgument#2`、`Emuera/Runtime/Script/Statements/ArgumentBuilder.cs#SP_INPUTS_ArgumentBuilder.CreateArgument#1`、`Emuera/Runtime/Script/Statements/ArgumentBuilder.cs#STR_DOUBLE_ArgumentBuilder.CreateArgument#1`、`Emuera/Runtime/Script/Statements/Instraction.Child.cs#CUSTOMDRAWLINE_Instruction.CreateArgument#1`、`Emuera/Runtime/Script/Statements/Instraction.Child.cs#CALLSHARP_Instruction.CreateArgument#1`
+- `nullable-migration-32` §1(2026-10-06,5 处 A;其中 `Insert#1` 的判定随后更正为 C):`Emuera/Runtime/Script/Statements/Function/BuiltinMethod/PrivateAdditions.cs#XmlAddNodeMethod.Insert#1`(判定更正为 C,站点已删)、`Emuera/Runtime/Script/Statements/Function/BuiltinMethod/PrivateAdditions.cs#XmlAddNodeMethod.Insert#2`、`Emuera/Runtime/Script/Statements/Function/BuiltinMethod/PrivateAdditions.cs#XmlAddNodeMethod.Insert#4`(A,两处 `attr!`)、`Emuera/Runtime/Script/Statements/Function/BuiltinMethod/PrivateAdditions.cs#XmlAddNodeMethod.Insert#3`、`Emuera/Runtime/Script/Statements/Function/BuiltinMethod/PrivateAdditions.cs#XmlAddNodeMethod.Insert#5`(A,两处 `attr!.OwnerElement!`;`Insert` 改成节点种类模式后该臂这四处 `!` 不再需要)
+
+⇒ 本批之后当前可定位 **286** 条(2026-09-27 记的 291 条减去这 5 处;存活分布 C 9 / B 8 / A 232 / D 37——`Insert#1` 的更正判定落在已删除的站点上,故不出现在存活分布里;口径同上一段的「可在 HEAD 上定位」)。

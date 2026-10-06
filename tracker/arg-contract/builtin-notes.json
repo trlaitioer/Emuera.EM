@@ -1989,7 +1989,7 @@
    "upstream": "按 xpath 选中的元素/属性新增属性 attrName=attrValue；省略 attrValue 时为空串；methodType 0末尾/1前/2后；返回新增次数，失败 0，文档不存在 -1",
    "desc": "给 xpath 匹配的节点新增属性，返回新增次数；无匹配返 0，目标文档不存在返 -1",
    "empty_slot": "attrValue 省略取空串；methodType/doSetAll 省略取 0；显式留空抛 CodeEE(ArgCanNotBeNull)",
-   "notes": "methodType=0 且 xpath 选中属性本身时 Attributes 为 null 抛空引用异常；1/2 要求选中属性，选元素则返 0；多匹配复用同一属性只落最后一个",
+   "notes": "methodType=0 要求选中元素节点，选中属性/文本/文档节点时不新增（原为运行期空引用异常）；1/2 要求选中属性节点，选中元素/文本/文档节点时不新增；「不新增」时单匹配返 0、多匹配沿用既定的「返匹配数」；多匹配复用同一属性只落最后一个",
    "uncertain": false
   },
   "XML_ADDATTRIBUTE_BYNAME": {
@@ -2005,7 +2005,7 @@
    "upstream": "在 xpath 选中的元素上加 nodeXml 子节点；methodType 0子末/1之前/2之后；返回新增次数，失败 0，文档不存在 -1",
    "desc": "向 xpath 选中的元素插入 nodeXml 新节点，返回匹配（新增）次数；无匹配返 0",
    "empty_slot": "methodType/doSetAll 省略取 0（doSetAll 要给满 5 个实参才读）；显式留空抛 CodeEE",
-   "notes": "多匹配且 doSetAll=0 时不新增却返回匹配数；setAll 复用同一节点实例，实际只落最后一个；选中根节点时 1/2 返 0",
+   "notes": "多匹配且 doSetAll=0 时不新增却返回匹配数；setAll 复用同一节点实例，实际只落最后一个；methodType=0 要求选中元素节点，选中属性/文本/文档节点时不新增；1/2 要求参照节点的父节点是元素（元素节点与文本节点皆可），选中根/文档/属性节点时不新增；「不新增」时单匹配返 0、多匹配仍返匹配数",
    "uncertain": false
   },
   "XML_ADDNODE_BYNAME": {
