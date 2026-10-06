@@ -548,7 +548,7 @@ internal sealed partial class Process(EmueraConsole view)
 	/// (tests, runtime code) keeps reading this instance field, so paths that do not take part in
 	/// the parallel parse behave exactly as before.
 	/// </summary>
-	public LogicalLine scaningLine = null!;
+	public LogicalLine? scaningLine;
 
 	[ThreadStatic] private static LogicalLine? scaningLineForThread;
 	[ThreadStatic] private static bool scaningLineForThreadInitialized;

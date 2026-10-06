@@ -2979,7 +2979,7 @@ internal static partial class ArgumentParser
 			{
 				if (srcCode == null)
 				{
-					return new RefArgument(refm, name!);
+					return new RefArgument(refm, name);
 				}
 
 				UserDefinedRefMethod? srcRef = GlobalStatic.IdentifierDictionary.GetRefMethod(srcCode);
@@ -3008,7 +3008,7 @@ internal static partial class ArgumentParser
 			{
 				if (srcCode == null)
 				{
-					return new RefArgument(refVar!, name!);
+					return new RefArgument(refVar!, name);
 				}
 
 				VariableToken? srcVar = GlobalStatic.IdentifierDictionary.GetVariableToken(srcCode, null, true);

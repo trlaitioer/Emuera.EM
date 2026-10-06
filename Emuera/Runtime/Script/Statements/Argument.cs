@@ -817,7 +817,7 @@ internal sealed class RefArgument : Argument
 		SrcCalledFunction = src;
 	}
 
-	public RefArgument(UserDefinedRefMethod udrm, AExpression src)
+	public RefArgument(UserDefinedRefMethod udrm, AExpression? src)
 	{
 		RefMethodToken = udrm;
 		SrcTerm = src;
@@ -829,7 +829,7 @@ internal sealed class RefArgument : Argument
 		SrcVarToken = src;
 	}
 
-	public RefArgument(ReferenceToken vt, AExpression src)
+	public RefArgument(ReferenceToken vt, AExpression? src)
 	{
 		RefVarToken = vt;
 		SrcTerm = src;

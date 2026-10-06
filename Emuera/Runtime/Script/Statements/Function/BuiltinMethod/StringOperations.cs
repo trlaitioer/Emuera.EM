@@ -687,7 +687,10 @@ internal sealed class UnicodeMethod : FunctionMethod
 			else
 				//ParserMediator.Warn("UNICODE関数に制御文字に対応する値(0x" + String.Format("{0:X}", i) + ")が渡されました", GlobalStatic.Process.scaningLine, 1, false, false, null);
 			{
-				ParserMediator.Warn(string.Format(trerror.InvalidUnicode.Text, Name, i), GlobalStatic.Process.scaningLine, 1, false, false, null);
+				// Warn reads line.Position, so this relies on a line being scanned. The field holds one
+				// during a parse, but a parallel parse worker keeps its line thread-locally, so the
+				// assertion is not provable for every path that can reach here.
+				ParserMediator.Warn(string.Format(trerror.InvalidUnicode.Text, Name, i), GlobalStatic.Process.scaningLine!, 1, false, false, null);
 			}
 
 			return "";

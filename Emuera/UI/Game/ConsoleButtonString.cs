@@ -31,7 +31,9 @@ internal sealed class ConsoleButtonString
 
 	public ConsoleButtonString(EmueraConsole? console, AConsoleDisplayNode[] strs)
 	{
-		// The console is absent only for the non-button string that DivideAt splits off, which re-parents it
+		// A null console is only passed for a button that is never displayed (Html2DisplayLine without a
+		// console, or the string DivideAt splits off, which is re-parented); parent is read nowhere but on
+		// a button that has one.
 		parent = console!;
 		strArray = strs;
 		IsButton = false;

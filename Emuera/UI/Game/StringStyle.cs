@@ -29,7 +29,7 @@ internal struct StringStyle : IEquatable<StringStyle>
 	/// <summary>
 	/// HTML用。ColorChangedを固定する。
 	/// </summary>
-	public StringStyle(Color color, bool colorChanged, Color buttonColor, FontStyle fontStyle, string fontname)
+	public StringStyle(Color color, bool colorChanged, Color buttonColor, FontStyle fontStyle, string? fontname)
 	{
 		Color = color;
 		ButtonColor = buttonColor;

@@ -111,7 +111,8 @@ internal sealed class Utils
 		}
 	}
 
-	public static T CreateIfNull<T>(ref T obj) where T : new()
+	// Null is the normal input here: it means the attribute has not been parsed yet.
+	public static T CreateIfNull<T>([NotNull] ref T? obj) where T : new()
 	{
 		if (obj == null)
 		{
@@ -131,7 +132,8 @@ internal sealed class Utils
 		return obj;
 	}
 
-	public static bool TryParseStyledBoxModel(ref StyledBoxModel box, string tag, string word, string attrValue)
+	// A null box is the normal input: the first attribute that needs it creates it.
+	public static bool TryParseStyledBoxModel(ref StyledBoxModel? box, string tag, string word, string attrValue)
 	{
 		switch (word.ToLower())
 		{
@@ -188,7 +190,9 @@ internal sealed class Utils
 		return false;
 	}
 
-	public static void ParseMixedNum(ref MixedNum num, string tag, string word, string attrValue)
+	// Null is the normal input here: a null num means the attribute has not been set yet, and the
+	// guarantee that it is not null on return is what lets callers pass an array element by ref.
+	public static void ParseMixedNum([NotNull] ref MixedNum? num, string tag, string word, string attrValue)
 	{
 		if (num == null)
 		{

@@ -199,7 +199,7 @@ internal sealed partial class Process
 		//そもそも非イベント関数では関数1個分しか与えないので条件を満たすわけがない
 		//if ((!isEvent) && (call.Count > 1))
 		//    throw new ExeEE("イベント関数でない関数\"@" + functionName + "\"の候補が複数ある");
-		state.IntoFunction(call, null, null!);
+		state.IntoFunction(call, null, null);
 		return true;
 	}
 

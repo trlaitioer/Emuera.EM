@@ -228,7 +228,7 @@ internal static class HtmlManager
 		return ret;
 	}
 
-	public static void ParseParam4IntNum(ref int[] nums, string tag, string word, string attrValue)
+	public static void ParseParam4IntNum(ref int[]? nums, string tag, string word, string attrValue)
 	{
 		if (nums == null)
 		{
@@ -322,8 +322,8 @@ internal static class HtmlManager
 
 		public int BColor = -1;
 
-		// Set when the <font> tag carries a face attribute
-		public string FontName = null!;
+		// Null until the <font> tag carries a face attribute; StringStyle substitutes Config.FontName for it
+		public string? FontName;
 		//public int PointX = 0;
 		//public bool PointXisLocked = false;
 	}
@@ -406,8 +406,7 @@ internal static class HtmlManager
 				}
 			}
 
-			// StringStyle substitutes Config.FontName when this is null
-			return new StringStyle(c, colorChanged, b, FontStyle, fontname!);
+			return new StringStyle(c, colorChanged, b, FontStyle, fontname);
 		}
 	}
 
@@ -1469,15 +1468,15 @@ internal static class HtmlManager
 					}
 					else if (word.Code.Equals("height", StringComparison.OrdinalIgnoreCase))
 					{
-						ParseMixedNum(ref height!, tag, word.Code, attrValue);
+						ParseMixedNum(ref height, tag, word.Code, attrValue);
 					}
 					else if (word.Code.Equals("width", StringComparison.OrdinalIgnoreCase))
 					{
-						ParseMixedNum(ref width!, tag, word.Code, attrValue);
+						ParseMixedNum(ref width, tag, word.Code, attrValue);
 					}
 					else if (word.Code.Equals("ypos", StringComparison.OrdinalIgnoreCase))
 					{
-						ParseMixedNum(ref ypos!, tag, word.Code, attrValue);
+						ParseMixedNum(ref ypos, tag, word.Code, attrValue);
 					}
 					else
 					{
@@ -1529,19 +1528,19 @@ internal static class HtmlManager
 					attrValue = Unescape(attr.Str);
 					if (word.Code.Equals("height", StringComparison.OrdinalIgnoreCase))
 					{
-						ParseMixedNum(ref height!, tag, word.Code, attrValue);
+						ParseMixedNum(ref height, tag, word.Code, attrValue);
 					}
 					else if (word.Code.Equals("width", StringComparison.OrdinalIgnoreCase))
 					{
-						ParseMixedNum(ref width!, tag, word.Code, attrValue);
+						ParseMixedNum(ref width, tag, word.Code, attrValue);
 					}
 					else if (word.Code.Equals("ypos", StringComparison.OrdinalIgnoreCase))
 					{
-						ParseMixedNum(ref y!, tag, word.Code, attrValue);
+						ParseMixedNum(ref y, tag, word.Code, attrValue);
 					}
 					else if (word.Code.Equals("xpos", StringComparison.OrdinalIgnoreCase))
 					{
-						ParseMixedNum(ref x!, tag, word.Code, attrValue);
+						ParseMixedNum(ref x, tag, word.Code, attrValue);
 					}
 					else if (word.Code.Equals("depth", StringComparison.OrdinalIgnoreCase))
 					{
@@ -1577,8 +1576,8 @@ internal static class HtmlManager
 							tokens[i] = tokens[i].Trim();
 							switch (i)
 							{
-								case 0: ParseMixedNum(ref width!, tag, "width", tokens[i]); break;
-								case 1: ParseMixedNum(ref height!, tag, "height", tokens[i]); break;
+								case 0: ParseMixedNum(ref width, tag, "width", tokens[i]); break;
+								case 1: ParseMixedNum(ref height, tag, "height", tokens[i]); break;
 							}
 						}
 					}
@@ -1595,17 +1594,17 @@ internal static class HtmlManager
 							tokens[i] = tokens[i].Trim();
 							switch (i)
 							{
-								case 0: ParseMixedNum(ref x!, tag, "xpos", tokens[i]); break;
-								case 1: ParseMixedNum(ref y!, tag, "ypos", tokens[i]); break;
-								case 2: ParseMixedNum(ref width!, tag, "width", tokens[i]); break;
-								case 3: ParseMixedNum(ref height!, tag, "height", tokens[i]); break;
+								case 0: ParseMixedNum(ref x, tag, "xpos", tokens[i]); break;
+								case 1: ParseMixedNum(ref y, tag, "ypos", tokens[i]); break;
+								case 2: ParseMixedNum(ref width, tag, "width", tokens[i]); break;
+								case 3: ParseMixedNum(ref height, tag, "height", tokens[i]); break;
 							}
 						}
 					}
 					else if (word.Code.Equals("bcolor", StringComparison.OrdinalIgnoreCase))
 					{
-						// CreateIfNull replaces the null box/array with a new instance; the ref parameters are non-nullable
-						ParseParam4IntNum(ref CreateIfNull(ref box!).color!, tag, word.Code, attrValue);
+						// Both create the missing box/array, so the ref parameters accept null
+						ParseParam4IntNum(ref CreateIfNull(ref box).color, tag, word.Code, attrValue);
 					}
 					else if (word.Code.Equals("display", StringComparison.OrdinalIgnoreCase))
 					{
@@ -1622,7 +1621,7 @@ internal static class HtmlManager
 							throw new CodeEE(string.Format(trerror.CanNotInterpretAttribute.Text, attrValue));
 						}
 					}
-					else if (!TryParseStyledBoxModel(ref box!, tag, word.Code, attrValue))
+					else if (!TryParseStyledBoxModel(ref box, tag, word.Code, attrValue))
 					{
 						throw new CodeEE(string.Format(trerror.CanNotInterpretAttributeName.Text, tag, word.Code));
 					}
