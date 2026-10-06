@@ -602,20 +602,11 @@ internal sealed partial class Process(EmueraConsole view)
 	private void handleExceptionInSystemProc(Exception exc, LogicalLine? current, bool playSound)
 	{
 		console.ThrowError(playSound);
-		if (exc is CodeEE)
+		ErrorReportKind kind = ErrorReport.Classify(exc);
+		console.PrintError(string.Format(ErrorReport.SystemProcHeader(kind).Text, AssemblyData.EmueraVersionText));
+		console.PrintError(ErrorReport.Message(kind, exc));
+		if (ErrorReport.PrintsStackTrace(kind))
 		{
-			console.PrintError(string.Format(trerror.FuncEndError.Text, AssemblyData.EmueraVersionText));
-			console.PrintError(exc.Message);
-		}
-		else if (exc is ExeEE)
-		{
-			console.PrintError(string.Format(trerror.FuncEndEmueraError.Text, AssemblyData.EmueraVersionText));
-			console.PrintError(exc.Message);
-		}
-		else
-		{
-			console.PrintError(string.Format(trerror.FuncEndUnexpectedError.Text, AssemblyData.EmueraVersionText));
-			console.PrintError(exc.GetType() + ":" + exc.Message);
 			// Exception.StackTrace is null only for an exception that was never thrown; this one was caught.
 			string[] stack = exc.StackTrace!.Split('\n');
 			for (int i = 0; i < stack.Length; i++)
@@ -653,7 +644,8 @@ internal sealed partial class Process(EmueraConsole view)
 			}
 		}
 
-		if (exc is CodeEE)
+		ErrorReportKind kind = ErrorReport.Classify(exc);
+		if (kind == ErrorReportKind.Code)
 		{
 			if (position != null)
 			{
@@ -665,7 +657,7 @@ internal sealed partial class Process(EmueraConsole view)
 				}
 				else
 				{
-					console.PrintErrorButton(string.Format(trerror.HasError.Text, posString, AssemblyData.EmueraVersionText), position);
+					console.PrintErrorButton(string.Format(ErrorReport.Header(kind).Text, posString, AssemblyData.EmueraVersionText), position);
 					printRawLine(position);
 					console.PrintError(string.Format(trerror.ErrorMessage.Text, exc.Message));
 				}
@@ -689,24 +681,22 @@ internal sealed partial class Process(EmueraConsole view)
 			}
 			else
 			{
-				console.PrintError(string.Format(trerror.HasError.Text, posString, AssemblyData.EmueraVersionText));
+				console.PrintError(string.Format(ErrorReport.Header(kind).Text, posString, AssemblyData.EmueraVersionText));
 				console.PrintError(exc.Message);
 			}
 		}
-		else if (exc is ExeEE)
-		{
-			console.PrintError(string.Format(trerror.HasEmueraError.Text, posString, AssemblyData.EmueraVersionText));
-			console.PrintError(exc.Message);
-		}
 		else
 		{
-			console.PrintError(string.Format(trerror.HasUnexpectedError.Text, posString, AssemblyData.EmueraVersionText));
-			console.PrintError(exc.GetType() + ":" + exc.Message);
-			// Exception.StackTrace is null only for an exception that was never thrown; this one was caught.
-			string[] stack = exc.StackTrace!.Split('\n');
-			for (int i = 0; i < stack.Length; i++)
+			console.PrintError(string.Format(ErrorReport.Header(kind).Text, posString, AssemblyData.EmueraVersionText));
+			console.PrintError(ErrorReport.Message(kind, exc));
+			if (ErrorReport.PrintsStackTrace(kind))
 			{
-				console.PrintError(stack[i]);
+				// Exception.StackTrace is null only for an exception that was never thrown; this one was caught.
+				string[] stack = exc.StackTrace!.Split('\n');
+				for (int i = 0; i < stack.Length; i++)
+				{
+					console.PrintError(stack[i]);
+				}
 			}
 		}
 	}

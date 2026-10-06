@@ -690,6 +690,7 @@ Emuera的历史版本有效的内容变得无效等等现象而设置的。
     <tr id="Error.OverflowFuncStack"><![CDATA[函数调用栈溢出(是否发生了无限递归调用？)]]></tr>
     <tr id="Error.FuncEndError"><![CDATA[函数结尾发生错误:{0}]]></tr>
     <tr id="Error.FuncEndEmueraError"><![CDATA[函数结尾发生Emuera错误:{0}]]></tr>
+    <tr id="Error.FuncEndSaveDataError"><![CDATA[函数结尾发生存档数据错误:{0}]]></tr>
     <tr id="Error.FuncEndUnexpectedError"><![CDATA[函数结尾发生意料之外的错误:{0}]]></tr>
     <tr id="Error.ErrorFileAndLine"><![CDATA[{0}在{1}行]]></tr>
     <tr id="Error.ErrorFile"><![CDATA[在{0}]]></tr>
@@ -701,6 +702,7 @@ Emuera的历史版本有效的内容变得无效等等现象而设置的。
     <tr id="Error.FuncCallStack"><![CDATA[函数调用栈:]]></tr>
     <tr id="Error.ErrorFuncStack"><![CDATA[{0}的第{1}行（函数@{2}内）]]></tr>
     <tr id="Error.HasEmueraError"><![CDATA[{0}发生了Emuera错误:{1}]]></tr>
+    <tr id="Error.HasSaveDataError"><![CDATA[{0}发生了存档数据错误:{1}]]></tr>
     <tr id="Error.HasUnexpectedError"><![CDATA[{0}发生了意料之外的错误:{1}]]></tr>
     <tr id="Error.SkipdispInputError1"><![CDATA[在调过显示中遇到了没有默认值的INPUT]]></tr>
     <tr id="Error.SkipdispInputError2"><![CDATA[请将需要INPUT处理的部分用NOSKIP～ENDNOSKIP包围，或用SKIPDISP 0～SKIPDISP 1包围]]></tr>

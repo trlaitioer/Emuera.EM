@@ -953,6 +953,7 @@ internal sealed partial class Lang
 		[Managed] public static TranslatableString OverflowFuncStack { get; } = new("関数の呼び出しスタックが溢れました(無限に再帰呼び出しされていませんか？)");
 		[Managed] public static TranslatableString FuncEndError { get; } = new("関数の終端でエラーが発生しました:{0}");
 		[Managed] public static TranslatableString FuncEndEmueraError { get; } = new("関数の終端でEmueraのエラーが発生しました:{0}");
+		[Managed] public static TranslatableString FuncEndSaveDataError { get; } = new("関数の終端でセーブデータのエラーが発生しました:{0}");
 		[Managed] public static TranslatableString FuncEndUnexpectedError { get; } = new("関数の終端で予期しないエラーが発生しました:{0}");
 		[Managed] public static TranslatableString ErrorFileAndLine { get; } = new("{0}の{1}行目で");
 		[Managed] public static TranslatableString ErrorFile { get; } = new("{0}で");
@@ -964,6 +965,7 @@ internal sealed partial class Lang
 		[Managed] public static TranslatableString FuncCallStack { get; } = new("関数呼び出しスタック：");
 		[Managed] public static TranslatableString ErrorFuncStack { get; } = new("{0}の{1}行目（関数@{2}内）");
 		[Managed] public static TranslatableString HasEmueraError { get; } = new("{0}Emueraのエラーが発生しました:{1}");
+		[Managed] public static TranslatableString HasSaveDataError { get; } = new("{0}セーブデータのエラーが発生しました:{1}");
 		[Managed] public static TranslatableString HasUnexpectedError { get; } = new("{0}予期しないエラーが発生しました:{1}");
 		[Managed] public static TranslatableString SkipdispInputError1 { get; } = new("表示スキップ中にデフォルト値を持たないINPUTに遭遇しました");
 

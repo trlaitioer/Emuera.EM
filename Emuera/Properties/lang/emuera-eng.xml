@@ -693,6 +693,7 @@ Settings apply only at start]]></tr>
     <tr id="Error.OverflowFuncStack"><![CDATA[Call stack of the function has overflowed (is it being recursively called indefinitely?)]]></tr>
     <tr id="Error.FuncEndError"><![CDATA[An error has occurred at the end of the function:{0}]]></tr>
     <tr id="Error.FuncEndEmueraError"><![CDATA[An Emuera error has occurred at the end of the function:{0}]]></tr>
+    <tr id="Error.FuncEndSaveDataError"><![CDATA[A save data error has occurred at the end of the function:{0}]]></tr>
     <tr id="Error.FuncEndUnexpectedError"><![CDATA[An unexpected error has occurred at the end of the function:{0}]]></tr>
     <tr id="Error.ErrorFileAndLine"><![CDATA[{0} at line {1}]]></tr>
     <tr id="Error.ErrorFile"><![CDATA[In {0}]]></tr>
@@ -704,6 +705,7 @@ Settings apply only at start]]></tr>
     <tr id="Error.FuncCallStack"><![CDATA[Function call stack:]]></tr>
     <tr id="Error.ErrorFuncStack"><![CDATA[↑{0} at line {1}（function@{2}）]]></tr>
     <tr id="Error.HasEmueraError"><![CDATA[{0}Emuera has encountered an error: {1}]]></tr>
+    <tr id="Error.HasSaveDataError"><![CDATA[{0}Save data error has occurred: {1}]]></tr>
     <tr id="Error.HasUnexpectedError"><![CDATA[{0}Unexpected error has occurred: {1}]]></tr>
     <tr id="Error.SkipdispInputError1"><![CDATA[Encountered INPUT without the default value during display skip]]></tr>
     <tr id="Error.SkipdispInputError2"><![CDATA[Enclose the INPUT necessary for processing with NOSKIP-ENDNOSKIP or SKIPDISP 0-SKIPDISP 1]]></tr>
