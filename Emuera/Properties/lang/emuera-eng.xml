@@ -197,8 +197,8 @@ Settings apply only at start]]></tr>
     <tr id="Error.NotExistColorSpecifier"><![CDATA[Value cannot be interpreted as Color specifier]]></tr>
     <tr id="Error.ContainsNonNumericCharacters"><![CDATA[Numeric config item contains non-numeric characters]]></tr>
     <tr id="Error.InvalidSpecification"><![CDATA[invalid specification]]></tr>
-    <tr id="Error.DoesNotMatchCdflagElements"><![CDATA[The number of elements of CDFLAG does not match the number of elements of CDFLAGNAME 1 and CDFLAGNAME 2", position);]]></tr>
-    <tr id="Error.TooManyCdflagElements"><![CDATA[CDFLAG array is too many]]></tr>
+    <tr id="Error.DoesNotMatchCdflagElements"><![CDATA[The element count of CDFLAG does not match the element counts of CDFLAGNAME1 and CDFLAGNAME2]]></tr>
+    <tr id="Error.TooManyCdflagElements"><![CDATA[CDFLAG has too many elements (the product of the element counts of CDFLAGNAME1 and CDFLAGNAME2 exceeds 1 million)]]></tr>
     <tr id="Error.DuplicateErdKey"><![CDATA[ERD key "{1}" is already defined at "{0}" variable（File 1 - {2}）（File 2 - {3}）]]></tr>
     <tr id="Error.DuplicateVariableDefine"><![CDATA[Variable name {0} is already used]]></tr>
     <tr id="Error.NotDefinedErdKey"><![CDATA[There is no definition of "{1}" at "{0}"]]></tr>
