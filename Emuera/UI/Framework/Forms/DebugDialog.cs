@@ -2,6 +2,7 @@
 using MinorShift.Emuera.GameView;
 using MinorShift.Emuera.Runtime.Config;
 using MinorShift.Emuera.Runtime.Script.Parser;
+using MinorShift.Emuera.Runtime.Script.Statements;
 using MinorShift.Emuera.Runtime.Script.Statements.Expression;
 using MinorShift.Emuera.Runtime.Utils;
 using MinorShift.Emuera.Runtime.Utils.EvilMask;
@@ -171,28 +172,10 @@ public partial class DebugDialog : Form
 			return "";
 		}
 
-		if (string.IsNullOrEmpty(str))
-		{
-			return "";
-		}
-
 		mainConsole.RunERBFromMemory = true;
 		try
 		{
-			CharStream st = new(str);
-			WordCollection wc = LexicalAnalyzer.Analyse(st, LexEndWith.EoL, LexAnalyzeFlag.None);
-			AExpression? term = ExpressionParser.ReduceExpressionTerm(wc, TermEndWith.EoL);
-			SingleTerm value = term!.GetValue(GlobalStatic.EMediator);
-			//SingleLongTerm/SingleStrTerm are the only results of GetValue and both format to non-null text
-			return value.ToString()!;
-		}
-		catch (CodeEE e)
-		{
-			return e.Message;
-		}
-		catch (Exception e)
-		{
-			return e.GetType() + ":" + e.Message;
+			return DebugWatchExpression.GetValueString(str, GlobalStatic.EMediator);
 		}
 		finally
 		{
