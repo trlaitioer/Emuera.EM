@@ -1,7 +1,7 @@
 # Nullable:无保护的 as 转换三处（含同源的 MAXARRAY/MINARRAY）
 
 id: nullable-migration-18
-Status: in-progress
+Status: implemented
 
 ## 任务
 

@@ -1,7 +1,7 @@
 # Nullable:容器与成员断言的零散守卫缺失
 
 id: nullable-migration-17
-Status: in-progress
+Status: implemented
 
 ## 任务
 

@@ -1,7 +1,7 @@
 # Nullable:省略参数以 null 到达消费点
 
 id: nullable-migration-15
-Status: in-progress
+Status: implemented
 
 ## 任务
 
@@ -59,6 +59,12 @@ issues/05 把方法调用与指令参数的元素类型定为 `List<AExpression?
 10. **同类站点排查**（完成标准的必要条件）：枚举 `ArgumentBuilder.cs` 内全部 `.Required(` 与可空元素直读（`terms[i]`/`args[i]`/`param[i].num`），再枚举指令侧对可空参数数组的读取（`SpPrintVArgument.Terms`、`SpCallSharpArgment.RowArgs`、`SpSetArrayArgument.TermList`、`SpDtColumnOptions.Values`、`SpTInputsArgument.*`、`SpSaveVarArgument` 等），逐点给出「该构造路径能否产出 null 元素」的结论并写入本文（定位用「文件#类型.成员」，不用行号）。新发现的可达缺陷按同根因并入本票，不同根因的转票。
 11. **测试**（`Emuera.Tests`）：复用 `TestBootstrap.Initialize()` + `LogicalLineParser.ParseLine` + `ArgumentParser.SetArgumentTo` 的解析期 seam，逐触发式断言 `line.IsError` 或构造结果形态。用例清单：`INPUT ,,1` 报错、`INPUT 5,1,1` 三实参非空、`INPUT 5`/`INPUT ,1` 仍非错误；`PRINT_SPACE ,`/`PRINT_RECT ,`/`PRINT_RECT ,,,,` 报错、`PRINT_SPACE 10px` 仍可解析；`PRINT_IMG "a", , 100` 非错误且 `Nameb == null`、`Param[0].num` 非空；`HTML_PRINT "a", ,` 非错误且 `Opt == null`；`CALLSHARP "m", , 3`/`CALLSHARP "m"[,3]`/`CALLF FOO[1, ,2]` 报错（构造器早于插件查找，无需注册插件）；`VARS FOO`/`VARS FOO = ` 得到 `Value == ""`。`INPUT` 族 `DoInstruction` 需要 `EmueraConsole`、无法 headless 覆盖，以构造器不变量为准并在票内记明。
 12. **顺序**：先按范围表写测试复现（票面原记触发式已按「依据」更正），再改构造器，最后跑排查。构建 `dotnet build Emuera/Emuera.csproj -c Debug-NAudio -p:Platform=x64 --no-restore --nologo -v:minimal`；测试 `dotnet test Emuera.Tests/Emuera.Tests.csproj -c Debug-NAudio -p:Platform=x64`（沙箱内需申请权限）。
+
+### 实施结果（2026-09-25，2026-10-05 结票时回填）
+
+按判据在构造器侧处置省略实参、消费点不再判空，落地于 `e9eaaf32`（`fix(script): 省略实参在解析期处置，不再以 null 到达消费点`）。范围内 3 处断言站点随之删除（[bang-sites.md](../bang-sites.md) 的「已失效站点」记为 `SP_PRINT_IMG_ArgumentBuilder.CreateArgument#1`、`SP_PRINT_SHAPE_ArgumentBuilder.CreateArgument#1`/`#2`）；用例落在 `Emuera.Tests/Runtime/Script/Statements/OmittedArgumentTests.cs`，`.Required(` 与可空元素直读的排查结论见「影响」末条。
+
+票面此前只记到「决策记录」，无实施结果节，此处按提交与站点清单回填。
 
 ## 曾考虑的替代方案
 

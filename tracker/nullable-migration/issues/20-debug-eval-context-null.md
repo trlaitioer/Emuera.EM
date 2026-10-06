@@ -1,7 +1,7 @@
 # Nullable:解析期以 null 求值上下文折叠元素数表达式
 
 id: nullable-migration-20
-Status: in-progress
+Status: implemented
 
 ## 任务
 

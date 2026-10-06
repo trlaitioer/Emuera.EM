@@ -134,3 +134,4 @@ Status: in-progress
 - 本票不改动 issues/14 已判定的六类断言
 - 截至 2026-09-26，方案第 4 步的「冗余断言同票清理」尚未执行：标为可删冗余的 6 处 `!`（`radius` 4 处、`ConfigItem<T>.val` 2 处）仍在树上；A 类理由注释、D 类契约诚实化由 issues/22 承接。这是本票保持 `in-progress` 的原因
 - 2026-09-27：`59cd307e` 按「Try 方法补抛异常入口」删除 19 处 A 类站点——18 处 `PopArgumentPrimitive()!`（改为非可空返回、重复取用抛 `ExeEE`）与 `GetConfigMethod.GetSingleTerm` 的 `term!`（`GetConfigValueInERB` 拆 Try/非空入口），清单可定位 310 → 291；同批新增 5 个测试文件 15 例，`Debug-NAudio` 全量 357 通过、两种声音后端配置 CS86xx 均为 0
+- 2026-10-05：计数脚本入库（[tools/count-bang-sites.ps1](../tools/count-bang-sites.ps1)，口径、锚点交叉验证与基线见 [bang-sites.md](../bang-sites.md)「复现与基线」），上条「复刻计数脚本与 2026-09-25 实现的绝对值不对齐」的缺口关闭——脚本在锚点提交上复现出 979（原始）/ 969（剥注释与字面量）两个记载值；当前 `Emuera` 残差类基线 305 处（脚本口径，按本文件的 `Argument` 字段名口径折算约 289，与「余下 291 条」一致）
