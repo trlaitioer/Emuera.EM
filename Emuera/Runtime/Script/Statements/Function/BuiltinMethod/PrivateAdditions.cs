@@ -2299,7 +2299,8 @@ internal sealed class DataTableColumnManagementMethod : FunctionMethod
 	{
 		string key = slots.Str(exm, 0);
 		Dictionary<string, DataTable> dict = exm.VEvaluator.VariableData.DataDataTables;
-		if (!dict.TryGetValue(key, out DataTable? dt))
+		DataTable? dt = Utils.DataTable.FindTable(dict, key);
+		if (dt == null)
 		{
 			return -1;
 		}
@@ -2453,10 +2454,7 @@ internal sealed class DataTableRowSetMethod : FunctionMethod
 			throw new CodeEE(string.Format(trerror.DTCanNotEditIdColumn.Text, Name, key));
 		}
 
-		if (!dt.Columns.Contains(name))
-		{
-			throw new CodeEE(string.Format(trerror.DTLackOfNamedColumn.Text, Name, key, name));
-		}
+		Utils.DataTable.RequireColumn(dt, Name, key, name);
 	}
 
 	private void SetValue(DataRow row, DataTable dt, string name, string key, ExpressionMediator exm, AExpression? v)
@@ -2509,7 +2507,8 @@ internal sealed class DataTableRowSetMethod : FunctionMethod
 		int b = op == Operation.Add ? 0 : 1;
 		string key = slots.Str(exm, 0);
 		Dictionary<string, DataTable> dict = exm.VEvaluator.VariableData.DataDataTables;
-		if (!dict.TryGetValue(key, out DataTable? dt))
+		DataTable? dt = Utils.DataTable.FindTable(dict, key);
+		if (dt == null)
 		{
 			return -1;
 		}
@@ -2651,7 +2650,8 @@ internal sealed class DataTableRowRemoveMethod : FunctionMethod
 	{
 		string key = slots.Str(exm, 0);
 		Dictionary<string, DataTable> dict = exm.VEvaluator.VariableData.DataDataTables;
-		if (!dict.TryGetValue(key, out DataTable? dt))
+		DataTable? dt = Utils.DataTable.FindTable(dict, key);
+		if (dt == null)
 		{
 			return -1;
 		}
@@ -2846,7 +2846,8 @@ internal sealed class DataTableCellSetMethod : FunctionMethod
 	{
 		string key = slots.Str(exm, 0);
 		Dictionary<string, DataTable> dict = exm.VEvaluator.VariableData.DataDataTables;
-		if (!dict.TryGetValue(key, out DataTable? dt))
+		DataTable? dt = Utils.DataTable.FindTable(dict, key);
+		if (dt == null)
 		{
 			return -1;
 		}
@@ -2923,7 +2924,8 @@ internal sealed class DataTableSelectMethod : FunctionMethod
 	{
 		string key = slots.Str(exm, 0);
 		Dictionary<string, DataTable> dict = exm.VEvaluator.VariableData.DataDataTables;
-		if (!dict.TryGetValue(key, out DataTable? dt))
+		DataTable? dt = Utils.DataTable.FindTable(dict, key);
+		if (dt == null)
 		{
 			return -1;
 		}

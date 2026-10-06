@@ -67,7 +67,7 @@ issues/14 判定 `(x as T)!` 中 49 处有前置类型检查，需逐点注明�
 
 ### 2026-10-06,分支 `nullable/assertion-rationale`
 
-§5/§6 按用户决定并入本票(不再另开票);§1~§4 已落地,§5/§6 待落地。
+§5/§6 按用户决定并入本票(不再另开票);§1~§6 已落地(§5-3 的 `id` 列守卫待产品判断)。
 
 **§2 冗余 `!` 清理(完成)**
 
@@ -121,6 +121,16 @@ issues/14 判定 `(x as T)!` 中 49 处有前置类型检查，需逐点注明�
 - 两处先前疑为「可删冗余」的断言经取证**并非冗余**:`WordCollection.Next` 的第二个 `!`(`LinkedListNode<T>.Next` 本身可空,守卫只保证节点存在)、`ReferenceToken.IsArrayRangeValid` 的「第二处读取」——该处本就没有 `!`,首处 `array!` 的收窄已覆盖后续
 - 三处疑似缺陷与一处产品不一致移交 [issues/32](32-assertion-audit-findings.md):`XML_ADDATTRIBUTE` method 0 的 `node.Attributes!` 解引用非元素节点、`DATATABLE_TO_XML` 的 `(… as string[])!` 与规则声明的形状不一致、`PrintStringBuffer.getDivideIndex` 的 `if (part == null)` 疑为 `css == null` 笔误、`SP_SPLIT_ArgumentBuilder` 的 `term!` 与姊妹 `SP_HTMLSPLIT` 的回退行为不一致
 - `bang-sites.md` 中已被实施提交删除的站点行(issues/29、`59cd307e`、§3 所删)与该表「已失效站点」节的口径需在收尾时统一
+
+**§5/§6 结构性项(完成)**
+
+- §5-1 `SP_COPY_ARRAY_Arguments` 的两个实参块合并为 `TryResolveArrayArg`(按序号复用同一检查序列)与 `CheckSameShape`,保留原差异(arg1 不查 `IsConst`、arg2 查)
+- §5-2 `SpCopyArrayArgument` 携带解析期已解析的 `ResolvedVar1/2`,ARRAYCOPY 执行期不再二次查找——去掉 issues/17 留下的「两处查找必须同步」耦合约。判据口径:该实参在**解析期折成常量串**(字面量或字面量拼接),不是「源码里写了引号」——运行期定名的形态(如 `RESULTS:0`)仍走执行期解析
+- §5-3 表/列解析抽到 `Utils.DataTable.FindTable`/`RequireColumn`:DT_COLUMN_OPTIONS 与 `DataTableRowSetMethod.CheckName` 共用,另有 5 处 DT_* 的取表改用 `FindTable`(语义不变,缺表仍 `-1`、缺列仍抛 `DTLackOfNamedColumn`)。**未实施**:「`id` 列不可改」守卫是否也应覆盖 DT_COLUMN_OPTIONS 改列默认值的路径——该守卫今天只加在写行路径上,扩展与否属产品判断,登记待定
+- §6 `ExpressionArrayArgument` 改收 `List<AExpression>`(元素非空由 `ToNonNullTerms` 单点断言;原 `CopyTo` 把元素可空性在类型上洗掉);`FORM_STR_ANY` 的内部列表同步改非可空。注意这是**元素契约**而非长度契约:`RETURN` 无实参时 `TermList` 合法为空表
+- 回归网:`Emuera.Tests` 新增 `ArraycopyArgumentTests`(29 例:未定义名/标量/角色数据/arg2 常量/arg1 常量放行这一保留差异/维数/类型/正控制/解析期令牌同一性/运行期定名/常量串拼接/形状比对跳过/level 1 对照/读法边界)与 `ExpressionArrayArgumentTests`(18 例:构造器与 `TermList` 的类型层契约 + 反空跑对照、INT_ANY 五条形态、省略元素先被拒、FORM_STR_ANY、SP_SAVECHARA、空表快照),全量 707 → **754** 通过
+- 未覆盖(夹具边界):ARRAYCOPY 的执行期分支走 `Process.ScriptProc.doNormalFunction`,现夹具没有运行中的 `Process`/`ProcessState` 入口,故「执行期复用 `ResolvedVar1/2`」只有间接证据(令牌 `Same` + 实参是常量串 ⇒ 必进该分支);`ParserMediator.Warn` 在 null console 下不写 `warningList`,用例改以 `line.ErrMes` 与 `line.IsError` 观察告警键与级别
+
 
 
 ## 影响

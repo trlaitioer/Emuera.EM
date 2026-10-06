@@ -37,6 +37,13 @@ Type: bug
 - 后果：`term!` 严格为假，只因 `warn` 把行标成 `IsError`、执行期在 `DoInstruction` 前抛 `CodeEE` 才不可达（故 §1 按「靠错误标记成立」写了注释）
 - 处置方向：与 `SP_HTMLSPLIT` 统一（补 `?? new VariableTerm(RESULT…)`）或明确保留差异，属产品判断
 
+### 5. `FORM_STR_ANY_ArgumentBuilder` 内的 `RETURNFORM` 分支今天不可达
+
+- 位置：`Emuera/Runtime/Script/Statements/ArgumentBuilder.cs` 的 `FORM_STR_ANY_ArgumentBuilder.CreateArgument` 内 `line.FunctionCode == FunctionCode.RETURNFORM` 的分支（`termList.Add(new SingleStrTerm("0"))`）
+- 事实：`RETURNFORM` 的唯一注册点（`FunctionIdentifier.cs`）用的是 `RETURNFORM_Instruction`，其 `ArgBuilder` 是 `FORM_STR`（`FORM_STR_ANY` 那一行被注释掉），故该分支永不执行；`FORM_STR_ANY` 今天的活消费者只有 `SETBGIMAGE`/`REMOVEBGIMAGE`
+- 旁证：为 issues/22 §5/§6 补的回归网（`Emuera.Tests` 的 `ArraycopyArgumentTests`/`ExpressionArrayArgumentTests`）无法为该分支写出可执行用例
+- 处置方向：删掉死分支，或把注册改回 `FORM_STR_ANY`（后者会改变 `RETURNFORM` 的参数形状，须先定语义）
+
 ## 影响
 
 - 1、2 触及内建函数 `XML_ADDATTRIBUTE`/`DATATABLE_TO_XML` 的实参校验，修法会影响脚本可观测行为（NRE → `CodeEE`），须各自给判据与 `Emuera.Tests` 用例

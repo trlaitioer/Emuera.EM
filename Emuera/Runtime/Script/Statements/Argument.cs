@@ -794,8 +794,9 @@ internal sealed class SpCopyArrayArgument : Argument
 	public readonly AExpression VarName1;
 	public readonly AExpression VarName2;
 
-	// Set when the name is a literal, which is the only shape SP_COPY_ARRAY_Arguments resolves while
-	// building the argument; ARRAYCOPY then reuses them instead of repeating the lookup.
+	// Set when the argument folded to a constant string while it was being built (a literal, or a
+	// concatenation of them): that is the only shape SP_COPY_ARRAY_Arguments resolves, and ARRAYCOPY
+	// reuses the result instead of repeating the lookup. A name computed at run time stays null here.
 	public readonly VariableToken? ResolvedVar1;
 	public readonly VariableToken? ResolvedVar2;
 }

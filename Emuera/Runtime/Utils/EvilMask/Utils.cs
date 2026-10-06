@@ -416,6 +416,29 @@ internal sealed class Utils
 			{ "string", typeof(string) }
 		};
 
+		/// <summary>
+		/// Table registered under <paramref name="key"/>, or null when there is none: the DT_* family
+		/// reports a missing table as -1 instead of throwing, so callers start from null here.
+		/// </summary>
+		public static System.Data.DataTable? FindTable(Dictionary<string, System.Data.DataTable> tables, string key)
+		{
+			return tables.TryGetValue(key, out System.Data.DataTable? table) ? table : null;
+		}
+
+		/// <summary>
+		/// Column named <paramref name="name"/> of a table that has to have it; the DT_* family throws
+		/// DTLackOfNamedColumn when the column is missing.
+		/// </summary>
+		public static System.Data.DataColumn RequireColumn(System.Data.DataTable table, string funcName, string key, string name)
+		{
+			if (table.Columns[name] is not System.Data.DataColumn column)
+			{
+				throw new CodeEE(string.Format(Lang.Error.DTLackOfNamedColumn.Text, funcName, key, name));
+			}
+
+			return column;
+		}
+
 		public static long TypeToInt(Type t)
 		{
 			if (t == typeof(sbyte))

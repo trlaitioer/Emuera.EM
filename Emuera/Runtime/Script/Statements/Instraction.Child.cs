@@ -3116,18 +3116,16 @@ internal sealed partial class FunctionIdentifier
 			Dictionary<string, System.Data.DataTable> dict = exm.VEvaluator.VariableData.DataDataTables;
 			string cName = arg.Column.GetStrValue(exm);
 			string key = arg.DT.GetStrValue(exm);
-			if (!dict.TryGetValue(key, out System.Data.DataTable? dt))
+			System.Data.DataTable? dt = Utils.DataTable.FindTable(dict, key);
+			if (dt == null)
 			{
 				// Same convention as the DT_* functions: a missing table reports -1 instead of throwing.
 				exm.VEvaluator.RESULT = -1;
 				return;
 			}
 
-			if (dt.Columns[cName] is not DataColumn column)
-			{
-				// Nothing can be set without the column, and the DT_* family throws here as well.
-				throw new CodeEE(string.Format(trerror.DTLackOfNamedColumn.Text, "DT_COLUMN_OPTIONS", key, cName));
-			}
+			// Nothing can be set without the column, and the DT_* family throws here as well.
+			DataColumn column = Utils.DataTable.RequireColumn(dt, "DT_COLUMN_OPTIONS", key, cName);
 
 			bool isString = column.DataType == typeof(string);
 			int idx = 0;
