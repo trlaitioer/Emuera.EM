@@ -109,7 +109,7 @@
 | `DT_ROW_REMOVE` | int | DataTable（数据库）系 | str, int |
 | `DT_ROW_SET` | int | DataTable（数据库）系 | str, int, str…, any…, （尾部：自第 3 槽起按末位规则重复） |
 | `DT_SELECT` | int | DataTable（数据库）系 | str, str?-, str?-, ref int[]? |
-| `DT_TOXML` | str | DataTable（数据库）系 | str, ref str? |
+| `DT_TOXML` | str | DataTable（数据库）系 | str, ref str[]? |
 | `ENCODETOUNI` | int | 字符串操作・参照 | str, int?- |
 | `ENUMFILES` | int | 其他 | str, str?, int?, ref str[]? |
 | `ENUMFUNCBEGINSWITH` | int | 变量操作・变量参照・CSV 参照 | str, ref str[]? |
@@ -665,7 +665,7 @@
 | `DT_ROW_SET`（候选 1） | int | str, int, str…, any…, （尾部：自第 3 槽起按末位规则重复） | >= 4，且超出 2 的部分按每 2 个一组（(n-2)%2=0） | —（各实参都不可留空；数组形式的 count 必给） | 按 id 定位行并改若干列，返回成功设置的值个数；表不存在 -1；该 id 不存在返回 -2（文档未列）；列名写错或写 id、值类型与列类型不符都抛 CodeEE |
 | `DT_ROW_SET`（候选 2） | int | str, int, ref str[], ref any[], int | 恰好 5 | —（各实参都不可留空；数组形式的 count 必给） | （同上） |
 | `DT_SELECT` | int | str, str?-, str?-, ref int[]? | 1–4 | 槽2、3 省略或留空＝不筛选/不排序；槽4 省略则写 RESULT:1 起 | 筛选并按规则排序 DataTable，把首列(id)值写入 output 或 RESULT，返回命中行数；表不存在返回 -1、RESULT:0 写为命中数（文档未载）；取第 0 列而非名为 id 的列；数组写满即截断但返回总数；表达式非法抛非 CodeEE 异常 |
-| `DT_TOXML` | str | str, ref str? | 1–2 | 槽2 省略则模式存 RESULTS:1；留空报 ArgCanNotBeNull | 把指定 DataTable 序列化为 XML，模式写入 ref 字符串变量，返回数据 XML；文档未载表不存在时返回空串且不写模式；模式写入所传数组下标 0（RESULT 系才从 1 起）；即 WriteXmlSchema/WriteXml 输出 |
+| `DT_TOXML` | str | str, ref str[]? | 1–2 | 槽2 省略则模式存 RESULTS:1；留空报 ArgCanNotBeNull | 把指定 DataTable 序列化为 XML，模式写入所传的一维字符串数组变量，返回数据 XML；文档未载表不存在时返回空串且不写模式；模式写入所传数组下标 0（RESULT 系才从 1 起）；槽2 给出时须为一维字符串数组变量（规则档 `RefString1D`+`NotNull`），标量/二维/三维在检查期报 `CodeEE(ArgIsNotNDStrArray)`，不再是运行期空引用；即 WriteXmlSchema/WriteXml 输出 |
 
 ### 其他
 

@@ -3019,7 +3019,10 @@ internal sealed class DataTableToXmlMethod : FunctionMethod
 		ReturnType = typeof(string);
 		argumentTypeArrayEx =
 		[
-			new ArgTypeList { ArgTypes = { ArgType.String, ArgType.RefString | ArgType.NotNull }, OmitStart = 1 }
+			// The slot is read through Var(1).Identifier.GetArray() as string[], so the rule has to pin the
+			// dimension: dims = 0 only compares the operand type and lets a 2D array through, whose GetArray()
+			// is not a string[] (the cast then yields null).
+			new ArgTypeList { ArgTypes = { ArgType.String, ArgType.RefString1D | ArgType.NotNull }, OmitStart = 1 }
 		];
 		CanRestructure = false;
 	}

@@ -1,4 +1,6 @@
 ﻿using MinorShift.Emuera;
+using MinorShift.Emuera.GameData.Variable;
+using MinorShift.Emuera.Runtime.Script.Data;
 using MinorShift.Emuera.Runtime.Script.Parser;
 using MinorShift.Emuera.Runtime.Script.Statements;
 using MinorShift.Emuera.Runtime.Script.Statements.Expression;
@@ -672,7 +674,71 @@ public class CheckArgumentTypeEx
 	public void GraphicsDrawG_WithOmittedColormatrix_IsAccepted()
 		=> AssertAccepted("GDRAWG", GraphicsDrawGArgs());
 
+	// ── nullable-migration-32 §2:DT_TOXML 的输出槽没声明维度 ─────────────────────
+	// 规则原写 RefString(dims = 0),只比对操作数类型、不约束数组形状:二维字符串数组经
+	// `as string[]` 得 null,随后写 output[0] 空引用。补 RefString1D 后与姊妹站点同形
+	// (DT_SELECT 的 RefInt1D、ENUMNAME/ENUMFILES 的 RefString1D)。
+
+	/// <summary>正控制:一维字符串数组变量是该槽的既定写法,收紧后不得误伤。</summary>
+	[Fact]
+	public void DtToXml_WithOneDimensionalStringVariableInSchemaSlot_IsAccepted()
+		=> AssertAccepted("DT_TOXML", new SingleStrTerm("t"), Variable("SAVESTR:0"));
+
+	/// <summary>二维字符串数组:旧规则放行,现由检查器按维度拒绝(文案的 dims = 1 证明读到的是 RefString1D)。</summary>
+	[Fact]
+	public void DtToXml_WithTwoDimensionalStringVariableInSchemaSlot_IsRejected()
+	{
+		RegisterStringArraysOnce();
+		AssertRejectedWith("DT_TOXML", trerror.ArgIsNotNDStrArray, 2, 1,
+			new SingleStrTerm("t"), Variable("NLM32STR2D:0:0"));
+	}
+
+	/// <summary>
+	/// 零维字符串变量(CALLNAME 是 character data、不带 __ARRAY_1D__):旧规则同样放行,函数体的
+	/// `GetArray()` 抛的是另一条可读错误 CodeEE(GetSize0DVar);补维度声明后改由检查器按维度拒绝。
+	/// 这是该槽的行为变更之一,与二维那两条同源。
+	/// </summary>
+	[Fact]
+	public void DtToXml_WithScalarStringVariableInSchemaSlot_IsRejected()
+		=> AssertRejectedWith("DT_TOXML", trerror.ArgIsNotNDStrArray, 2, 1,
+			new SingleStrTerm("t"), Variable("CALLNAME:0"));
+
+	/// <summary>三维同理:维度判据对 1 维以外的形态一律拒绝,不是只挡二维。</summary>
+	[Fact]
+	public void DtToXml_WithThreeDimensionalStringVariableInSchemaSlot_IsRejected()
+	{
+		RegisterStringArraysOnce();
+		AssertRejectedWith("DT_TOXML", trerror.ArgIsNotNDStrArray, 2, 1,
+			new SingleStrTerm("t"), Variable("NLM32STR3D:0:0:0"));
+	}
+
 	// ── 夹具 ────────────────────────────────────────────────────────────────
+
+	/// <summary>注册只做一次(进程级、无撤销 API),标志与两个注册方法同处夹具区。</summary>
+	private static bool stringArraysRegistered;
+
+	/// <summary>#DIMS 的注册链(与 ErhLoader.analyzeSharpDimLines 同一条)注册一个字符串数组变量。
+	/// 变量名取测试专用,以免与别的用例解析的脚本撞名。</summary>
+	private static void RegisterStringArraysOnce()
+	{
+		if (stringArraysRegistered)
+		{
+			return;
+		}
+
+		RegisterStringArray("NLM32STR2D, 2, 2");
+		RegisterStringArray("NLM32STR3D, 2, 2, 2");
+		stringArraysRegistered = true;
+	}
+
+	private static void RegisterStringArray(string declaration)
+	{
+		var wc = LexicalAnalyzer.Analyse(new CharStream(declaration), LexEndWith.EoL, LexAnalyzeFlag.AllowAssignment);
+		var dimline = new DimLineWC(wc, true, false, new ScriptPosition("test.erh", 1));
+		UserDefinedVariableData data = UserDefinedVariableData.Create(dimline);
+		VariableToken token = GlobalStatic.VariableData.CreateUserDefVariable(data, dimline);
+		GlobalStatic.IdentifierDictionary.AddUseDefinedVariable(token);
+	}
 
 	/// <summary>GDRAWG 的槽 0..9 全是 ArgType.Int,槽 10 才是颜色矩阵。</summary>
 	private static AExpression?[] GraphicsDrawGArgs(AExpression? colormatrix = null)

@@ -499,9 +499,9 @@
   "DT_TOXML": {
    "category": "DataTable（数据库）系",
    "upstream": "把 DataTable 转为 XML，模式 XML 存入 schemaOutput（省略则存 RESULTS:1），返回数据 XML",
-   "desc": "把指定 DataTable 序列化为 XML，模式写入 ref 字符串变量，返回数据 XML",
+   "desc": "把指定 DataTable 序列化为 XML，模式写入所传的一维字符串数组变量，返回数据 XML",
    "empty_slot": "槽2 省略则模式存 RESULTS:1；留空报 ArgCanNotBeNull",
-   "notes": "文档未载表不存在时返回空串且不写模式；模式写入所传数组下标 0（RESULT 系才从 1 起）；即 WriteXmlSchema/WriteXml 输出",
+   "notes": "文档未载表不存在时返回空串且不写模式；模式写入所传数组下标 0（RESULT 系才从 1 起）；槽2 给出时须为一维字符串数组变量（规则档 `RefString1D`+`NotNull`），标量/二维/三维在检查期报 `CodeEE(ArgIsNotNDStrArray)`，不再是运行期空引用；即 WriteXmlSchema/WriteXml 输出",
    "uncertain": false
   },
   "ENCODETOUNI": {
