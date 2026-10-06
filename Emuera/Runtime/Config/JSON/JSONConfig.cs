@@ -27,7 +27,14 @@ internal static class JSONConfig
 
 		string json = File.ReadAllText(ConfigFilePath.FullName);
 
-		Data = JsonSerializer.Deserialize<JSONConfigData>(json)!;
+		// A file whose content is the JSON literal null deserializes to null instead of throwing; Data is read
+		// without a null check everywhere, so it falls back to defaults and the file is rewritten with them.
+		JSONConfigData? loaded = JsonSerializer.Deserialize<JSONConfigData>(json);
+		Data = loaded ?? new JSONConfigData();
+		if (loaded == null)
+		{
+			Save();
+		}
 	}
 
 	public static void Save()

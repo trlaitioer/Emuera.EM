@@ -63,10 +63,14 @@ internal sealed partial class EraStreamReader : IDisposable
 		filename = name;
 		curNo = 0;
 		nextNo = 0;
-		// A cached entry is null only when the preload reported an encoding error; the dereference in ReadLine
-		// then throws exactly as before, so the cache is asserted non-null here rather than made nullable.
-		_fileLines = Preload.GetFileLines(path)!;
-		return true;
+		// A cached entry is null when the preload reported an encoding error. Report the failure instead of
+		// asserting the cache non-null: callers turn false into the FailedOpenFile diagnostic. The reader is
+		// left on an empty set of lines, so a caller that keeps going (ErbLoader) reads EOF rather than
+		// dereferencing the null array. A path that was never preloaded is a different case and still throws
+		// from GetFileLines - that one is a programming error (the caller skipped Preload), not bad input.
+		string[]? cached = Preload.GetFileLines(path);
+		_fileLines = cached ?? [];
+		return cached != null;
 	}
 
 

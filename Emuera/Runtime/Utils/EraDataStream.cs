@@ -620,8 +620,14 @@ internal sealed class EraDataReader : IDisposable
 							break;
 						}
 
-						// A null line (EOF) is dereferenced as before; ! keeps the existing behavior
-						if (str!.Length == 0)
+						// A save truncated inside an extended array block ends here; report it as a corrupt
+						// save instead of dereferencing the null line.
+						if (str == null)
+						{
+							throw new FileEE(trerror.UnexpectedSaveDataEnd.Text);
+						}
+
+						if (str.Length == 0)
 						{
 							tokenList.Add([]);
 							continue;

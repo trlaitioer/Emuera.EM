@@ -353,8 +353,9 @@ internal static class Config
 
 	#endregion
 
-	// GetFont is only null for a family that cannot be built at all; DefaultFont keeps its non-null promise
-	public static Font DefaultFont => FontFactory.GetFont("", FontStyle.Regular)!;
+	// The default font must exist: every drawing path reads it without a null check. FontFactory falls back
+	// to the generic family when the configured one cannot be built, so that promise holds.
+	public static Font DefaultFont => FontFactory.GetDefaultFont();
 
 
 	/// <summary>

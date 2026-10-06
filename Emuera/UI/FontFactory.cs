@@ -1,4 +1,5 @@
 ﻿using MinorShift.Emuera.Runtime.Config;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -69,6 +70,34 @@ internal class FontFactory
 		}
 
 		return fontDic[key] = createdFont;
+	}
+
+	/// <summary>
+	/// The default font, which must exist: every drawing path reads it without a null check, and the configured
+	/// family can be unusable - GetFont reports that by returning null.
+	/// </summary>
+	public static Font GetDefaultFont()
+		=> GetFont("", FontStyle.Regular) ?? GetFallbackFont(Config.RenderFontSizePx);
+
+	/// <summary>
+	/// The font used when the configured one cannot be built: the generic family at <paramref name="fontSize"/>,
+	/// clamped positive because an illegal size is one of the ways a font fails to build. Cached per size, since
+	/// the default font is read on every frame - building one per read would leak GDI handles - and the cache's
+	/// disposer (ClearFont) then owns it like any other font.
+	/// </summary>
+	public static Font GetFallbackFont(int fontSize)
+	{
+		(string fontname, int fontSize, FontStyle fontStyle) key =
+			(FontFamily.GenericSansSerif.Name, Math.Max(1, fontSize), FontStyle.Regular);
+		if (fontDic.TryGetValue(key, out Font? cachedFont))
+		{
+			return cachedFont;
+		}
+
+		// CreateFont reports "cannot be built" as null; the FontFamily overload skips name resolution and the
+		// size is clamped positive, so this floor cannot fail.
+		return fontDic[key] = CreateFont(key.fontname, key.fontSize, key.fontStyle)
+			?? new Font(FontFamily.GenericSansSerif, key.fontSize, FontStyle.Regular, GraphicsUnit.Pixel);
 	}
 
 	/// <summary>
