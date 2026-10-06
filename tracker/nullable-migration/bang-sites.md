@@ -40,6 +40,9 @@
 
 `nullable-migration-21` 收尾(2026-10-06,分支 `nullable/assertion-rationale`)后同口径复测:`Emuera` 868 / 残差 293、`Emuera.Tests` 132 / 残差 79——`Emuera` 的 −4 是该票判为可删冗余的 4 处 `radius![corner]`,同批删掉了令其成为必要的死分支 `radius != null ? … : new Rectangle()`(形参非可空、四个调用点都在 `radius != null` 门禁内);同票原判可删的另一组 `ConfigItem<T>.val` 2 处经最小 NRT 探针复测**并非冗余**(`val!` 承担 CS8602、尾部 `!` 承担 CS8603),判定更正见 `nullable-migration-21` 的「影响」节。
 
+`nullable-migration-22` §1~§6 落地(2026-10-06)后同口径复测:`Emuera` **804** / 残差 **271**、`Emuera.Tests` 135 / 残差 82(测试工程的 +3 是新增用例里的断言,按 `nullable-migration-14` 的决策豁免)。`Emuera` 的 −64 以上一行 `nullable-migration-21` 收尾态(868)为基线,构成为:`null!` −25(§4 的 19 处调用实参收敛为 3 个无参入口 −16,§3 的 `ref MixedNum?`/`[NotNull]` 系列 −9)、`Argument 可选字段` −2、`list[i]!` −15(§3 的 −18 与 §2/§3 期间的 +3)、残差 −22(§3 的死分支与 `Process.scaningLine`、§5 的 DT 共享解析器与 ARRAYCOPY 复用)。区间内另有定点 `7c89285`(§2/§3 落地后)为 `838`——`nullable-migration-22` §4 记的「838 → 822」即以此为基线,与本行的 868 不同源。**本节的计数只用于趋势**;§1 的验收以站点表逐条核对为准(注释不改变计数)。
+
+
 **用法边界**:断言是否已补理由注释无法机械核对(注释不改变计数),故残差计数只用于「趋势与回归」(如 `Emuera.Tests` 的后缀断言已由锚点的 107 涨到 128),**不能**作为 `nullable-migration-22` §1「A 类补注释」的完成判据;逐站点判定与验收仍以本文件的站点表为准。
 
 ## 构成

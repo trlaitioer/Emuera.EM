@@ -1,7 +1,7 @@
 # Nullable:保留断言的理由注释与契约诚实化
 
 id: nullable-migration-22
-Status: in-progress
+Status: implemented
 
 ## 任务
 
@@ -106,7 +106,7 @@ issues/14 判定 `(x as T)!` 中 49 处有前置类型检查，需逐点注明�
 
 **§1 保留断言的理由注释(完成)**
 
-按「一个不变量一条注释、写在不变量的建立点」分五个区域落地,合计 **141 条注释**(新增约 128 / 改写 13 条既有注释),覆盖 `(x as T)!` 的前置检查组、issues/21 判定表的 A 类组,以及 issues/14 复核对象 1 的 `Argument` 可选字段桶(该桶不在 `bang-sites.md` 的站点表内,此前无人承接):
+按「一个不变量一条注释、写在不变量的建立点」分五个区域落地,覆盖 `(x as T)!` 的前置检查组、issues/21 判定表的 A 类组,以及 issues/14 复核对象 1 的 `Argument` 可选字段桶(该桶不在 `bang-sites.md` 的站点表内,此前无人承接)。**实测**(`git diff 6bb31248^ 6bb31248 -- Emuera/`,注释块 = 连续的新增注释行):新增 **135** 个注释块 / 248 行,改写既有注释 **12** 块 / 16 行。票面原记的「合计 141 条(新增约 128 / 改写 13)」不能复现:下表前四行按文件路径计已合到 135,末行的 `Argument` 可选字段桶是跨文件的**子集**(其注释就落在 `Instraction.Child.cs` 与 `Process.ScriptProc.cs` 内),再计一次才得 141——141 是重复计数的结果,不是站点差异:
 
 | 区域 | 注释 | 覆盖 |
 | --- | --- | --- |
@@ -115,6 +115,8 @@ issues/14 判定 `(x as T)!` 中 49 处有前置类型检查，需逐点注明�
 | `UI/**` | 12 | 覆盖 40 处:`AConsoleDisplayNode.Text` 13 处一条、`MainWindow.console` 13 处一条(含 `FormClosing` 置 null 的真不变量);约 28 处迁移期已有达标注释,复核未动 |
 | `Config`+`Utils`+`Statements` 顶层+`Process*` | 37 | 覆盖约 110 处:`.Position!` 族 23 处在 `LogicalLine.Position` 声明处一条、`CaseExpression` 14 处、`Clipboard` 10 处、`CurrentLabel` 8 处、`WebPWrapper` 的 `bmp!` 4 处各一条 |
 | `Argument` 可选字段桶(issues/14 复核对象 1) | 37 | 覆盖 91 处(`Instraction.Child.cs` 30 / `Process.ScriptProc.cs` 7),依据逐条回到各指令的 `CreateArgument` 分支 |
+
+上表前四行的路径实测分别为 21 / 27 / 12 / 75(合计 135),与表中 34、37 两格不符;以实测的 135 为准,分区构成只用于说明覆盖意图。
 
 判定更正与上报(均只报告、未在 §1 内改动):
 
@@ -125,8 +127,8 @@ issues/14 判定 `(x as T)!` 中 49 处有前置类型检查，需逐点注明�
 **§5/§6 结构性项(完成)**
 
 - §5-1 `SP_COPY_ARRAY_Arguments` 的两个实参块合并为 `TryResolveArrayArg`(按序号复用同一检查序列)与 `CheckSameShape`,保留原差异(arg1 不查 `IsConst`、arg2 查)
-- §5-2 `SpCopyArrayArgument` 携带解析期已解析的 `ResolvedVar1/2`,ARRAYCOPY 执行期不再二次查找——去掉 issues/17 留下的「两处查找必须同步」耦合约。判据口径:该实参在**解析期折成常量串**(字面量或字面量拼接),不是「源码里写了引号」——运行期定名的形态(如 `RESULTS:0`)仍走执行期解析
-- §5-3 表/列解析抽到 `Utils.DataTable.FindTable`/`RequireColumn`:DT_COLUMN_OPTIONS 与 `DataTableRowSetMethod.CheckName` 共用,另有 5 处 DT_* 的取表改用 `FindTable`(语义不变,缺表仍 `-1`、缺列仍抛 `DTLackOfNamedColumn`)。**未实施**:「`id` 列不可改」守卫是否也应覆盖 DT_COLUMN_OPTIONS 改列默认值的路径——该守卫今天只加在写行路径上,扩展与否属产品判断,登记待定
+- §5-2 `SpCopyArrayArgument` 携带解析期已解析的 `ResolvedVar1/2`,ARRAYCOPY 执行期不再二次查找——去掉 issues/17 留下的「两处查找必须同步」耦合约。判据口径:该实参在**解析期折成常量串**(字面量或字面量拼接),不是「源码里写了引号」——运行期定名的形态(如 `RESULTS:0`)仍走执行期解析。两种构造时机下结果一致的理由(review 复核补记):名字是按 `GetScaningLine()` 的所属函数解析私有变量的,而装载期由 `ErbLoader.setArgument` 的线程本地(`SetScaningLineForThread(nextLine)`)、执行期由 `Process.GetScaningLine()` 回退到 `state.ErrorLine`(正在执行的行)各自给出**同一条 ARRAYCOPY 行**,故解析期存下的令牌与执行期再查一次等价;该等价性依赖「执行期无路径改写全局 `scaningLine`」(赋值点只有 `ErbLoader` 的装载收尾与 `LogicalLineParser` 解析 `VARI` 初值),此前提未被测试固定,与下节「未覆盖(夹具边界)」同源
+- §5-3 表/列解析抽到 `Utils.DataTable.FindTable`/`RequireColumn`:DT_COLUMN_OPTIONS 与 `DataTableRowSetMethod.CheckName` 共用,另有 5 处 DT_* 的取表改用 `FindTable`(语义不变,缺表仍 `-1`、缺列仍抛 `DTLackOfNamedColumn`)。**未实施**:「`id` 列不可改」守卫是否也应覆盖 DT_COLUMN_OPTIONS 改列默认值的路径——该守卫今天只加在写行路径上,扩展与否属产品判断,已登记为 issues/32 第 6 项
 - §6 `ExpressionArrayArgument` 改收 `List<AExpression>`(元素非空由 `ToNonNullTerms` 单点断言;原 `CopyTo` 把元素可空性在类型上洗掉);`FORM_STR_ANY` 的内部列表同步改非可空。注意这是**元素契约**而非长度契约:`RETURN` 无实参时 `TermList` 合法为空表
 - 回归网:`Emuera.Tests` 新增 `ArraycopyArgumentTests`(29 例:未定义名/标量/角色数据/arg2 常量/arg1 常量放行这一保留差异/维数/类型/正控制/解析期令牌同一性/运行期定名/常量串拼接/形状比对跳过/level 1 对照/读法边界)与 `ExpressionArrayArgumentTests`(18 例:构造器与 `TermList` 的类型层契约 + 反空跑对照、INT_ANY 五条形态、省略元素先被拒、FORM_STR_ANY、SP_SAVECHARA、空表快照),全量 707 → **754** 通过
 - 未覆盖(夹具边界):ARRAYCOPY 的执行期分支走 `Process.ScriptProc.doNormalFunction`,现夹具没有运行中的 `Process`/`ProcessState` 入口,故「执行期复用 `ResolvedVar1/2`」只有间接证据(令牌 `Same` + 实参是常量串 ⇒ 必进该分支);`ParserMediator.Warn` 在 null console 下不写 `warningList`,用例改以 `line.ErrMes` 与 `line.IsError` 观察告警键与级别
@@ -136,6 +138,6 @@ issues/14 判定 `(x as T)!` 中 49 处有前置类型检查，需逐点注明�
 ## 影响
 
 - 方案第 1~4 节的全部改动为注解与注释级，IL 除元数据外不变；无运行行为变化
-- 第 5~6 节（issues/17 review 移交）是结构性改动，超出「注解与注释级」：抽实参检查辅助会改 `SP_COPY_ARRAY_Arguments` 的发出物、共享 DT 解析器会改 `DT_COLUMN_OPTIONS` 的错误处置与 `id` 列守卫的有无、`TermList` 的元素类型变更会波及全部消费点；这三项须各自给判据与测试，不与第 1~4 节同批
+- 第 5~6 节（issues/17 review 移交）是结构性改动，超出「注解与注释级」：抽实参检查辅助会改 `SP_COPY_ARRAY_Arguments` 的发出物、共享 DT 解析器会改 `DT_COLUMN_OPTIONS` 的错误处置与 `id` 列守卫的有无、`TermList` 的元素类型变更会波及全部消费点；这三项须各自给判据与测试，不与第 1~4 节同批（2026-10-06：用户决定并入本票；已按「判据 + 回归网」落地，见「实施结果」§5/§6，`Emuera.Tests` 707 → 754）
 - 改动后仍须满足两种声音后端 `-p:Nullable=enable` 的 CS86xx 为 0（`WarningsAsErrors>nullable</WarningsAsErrors>` 已开启）与 `Emuera.Tests` 通过
 - 删除冗余 `!` 时须逐处构建确认：`!` 除断言外还参与流分析收窄，删除可能让后续位置的判据失效（issues/13 已实测该现象），必要时以局部回退处理

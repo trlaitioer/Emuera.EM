@@ -6,7 +6,7 @@ Type: bug
 
 ## 任务
 
-`nullable-migration-22` §1 补理由注释时逐站读码，发现下列位置「判 A（不变量成立）」的判定与代码事实不符，或规则与实现形状不一致。四处都**未改动**（§1 是注释级工作，行为变更须另立判据），集中登记待分流；其中 1、2 两条是可达缺陷，3 是死判断，4 是产品一致性问题。分流时可按根因拆成多张票。
+`nullable-migration-22` §1 补理由注释时逐站读码，发现下列位置「判 A（不变量成立）」的判定与代码事实不符，或规则与实现形状不一致。这些项都**未改动**（§1 是注释级工作，行为变更须另立判据），集中登记待分流；其中 1、2 两条是可达缺陷，3、5 是死判断/死分支，4、6 是产品一致性问题。分流时可按根因拆成多张票。第 6 项来自 `nullable-migration-22` §5-3 收尾时未决的产品判断，同属「已判出、待分流」，故并入本票。
 
 ### 1. `XML_ADDATTRIBUTE` 的 `node.Attributes!` 解引用非元素节点
 
@@ -44,8 +44,29 @@ Type: bug
 - 旁证：为 issues/22 §5/§6 补的回归网（`Emuera.Tests` 的 `ArraycopyArgumentTests`/`ExpressionArrayArgumentTests`）无法为该分支写出可执行用例
 - 处置方向：删掉死分支，或把注册改回 `FORM_STR_ANY`（后者会改变 `RETURNFORM` 的参数形状，须先定语义）
 
+### 6. `DT_COLUMN_OPTIONS` 是否应受「`id` 列不可改」守卫约束（未决）
+
+- 位置：`Emuera/Runtime/Script/Statements/Instraction.Child.cs` 的 `DT_COLUMN_OPTIONS_Instruction.DoInstruction`
+- 事实：族内 `DTCanNotEditIdColumn` 守卫只加在写行的路径（`DataTableRowSetMethod`）上；`DT_COLUMN_OPTIONS` 改的是列默认值，未加该守卫
+- 来源：`nullable-migration-22` §5-3 把表/列解析抽到 `Utils.DataTable.FindTable`/`RequireColumn` 时写明「是否需要该守卫属产品判断，需与共享解析一起定」；共享解析已落地，该判断未做、也无人承接
+- 处置方向：把守卫扩展到改列默认值的路径，或明确「改默认值不算改 `id` 列」并保留差异——二者取一都要给判据与用例
+
+## 方案
+
+本票只登记、不实施；分流时按根因拆票，每项各自给判据与 `Emuera.Tests` 用例。1、2 是可达缺陷，优先级高于 3~6：
+
+| # | 待定事项 | 两种取法 |
+| --- | --- | --- |
+| 1 | `XML_ADDATTRIBUTE` method 0 的 `node.Attributes!` | method 0 分支补 `node is XmlElement` 门禁并抛 `CodeEE`（NRE → 可读错误），`docs/builtin-functions.md:595` 记载的既有 NRE 行为随之变更，须同步该文档 |
+| 2 | `DATATABLE_TO_XML` 的 `(… as string[])!` | 规则补 `RefString1D`，或实现显式拒绝非一维；同时核对 `docs/builtin-functions.md:668` 的描述 |
+| 3 | `getDivideIndex` 的 `if (part == null)` | 改 `css == null`（不可达路径上 NRE → -1），或保留现状只作注释清理 |
+| 4 | `SP_SPLIT` 与 `SP_HTMLSPLIT` 的回退不一致 | 统一（补 `?? new VariableTerm(RESULT…)`），或明确保留差异 |
+| 5 | `FORM_STR_ANY` 的 `RETURNFORM` 死分支 | 删掉，或把 `RETURNFORM` 的注册改回 `FORM_STR_ANY`（后者改变参数形状，须先定语义） |
+| 6 | `DT_COLUMN_OPTIONS` 的 `id` 列守卫 | 扩展守卫，或明确保留差异 |
+
 ## 影响
 
 - 1、2 触及内建函数 `XML_ADDATTRIBUTE`/`DATATABLE_TO_XML` 的实参校验，修法会影响脚本可观测行为（NRE → `CodeEE`），须各自给判据与 `Emuera.Tests` 用例
 - 3、4 当前不可达，属清理项；4 的两种取法行为不同（回退到 RESULT vs 报错），需先定语义
+- 5 的注册改动会改变 `RETURNFORM` 的参数形状；6 的两种取法行为不同（拦下改列默认值 vs 放行），若判定加守卫则 `DT_COLUMN_OPTIONS` 的可观测行为随之变化，须给 `Emuera.Tests` 用例
 - 本票不动 `nullable-migration-22` §1 已补的理由注释；判定更正后（若 1、2 改为 C 类）应同步 `bang-sites.md` 的结论列

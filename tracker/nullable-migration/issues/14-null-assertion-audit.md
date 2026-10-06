@@ -1,7 +1,7 @@
 # Nullable:非空断言的逐点复核
 
 id: nullable-migration-14
-Status: in-progress
+Status: implemented
 
 ## 任务
 
@@ -84,3 +84,5 @@ issues/13 消掉的是「可以用机制替代」的 `!`；剩下的断言里有
 - 保留的断言由 issues/22 补理由注释，冗余断言同票清理
 - 复核表第 4、6 项的 `CharacterData.temp_SortKey`（C，issues/17 未承接）已就地修复：`SetSortKey` 的字符串分支统一为「未赋值按空串参与比较」的 `?? ""`（二维、一维与标量同形），回归网为 `Emuera.Tests/Runtime/Script/Statements/Variable/SortCharaTests.cs`（缝为 `VariableEvaluator.SortChara`）。旧行为只在未赋值键位于角色列表首位时首次比较即崩——`AscCharacterComparison` 只解引用接收者 `x`，键位在别处要后续比较才抛 `NullReferenceException`（`List.Sort` 会包成 `InvalidOperationException`）
 - issues/21 承接第 8 项复核对象；其清单产出前，「剩余断言的每一处都有结论」无法核对
+- 2026-10-06（结票）：完成标准的两半均已落地。**每处给出结论**——第 1~7 项由上表给出，第 8 项（残差类）由 issues/21 逐站点判定（344/344）；**保留的断言补理由注释**——由 issues/22 §1 分五个区域补 141 条（含第 1 项 `Argument` 可选字段桶的 91 处，该桶此前无人承接）。冗余断言已清理（issues/21 收尾 4 处 + issues/22 §2），判定为假断言或契约不实者另有承接：issues/15~20、24~29、31。复核表第 2 项 `(x as T)!` 的 49 处前置检查、第 5 项 `JumpTo` 族已按各自票落地；`Emuera.Tests` 内的断言按决策豁免
+
