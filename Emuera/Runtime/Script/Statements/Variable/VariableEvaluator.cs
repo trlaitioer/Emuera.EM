@@ -2887,18 +2887,26 @@ internal sealed class VariableEvaluator : IDisposable
 		}
 	}
 
-	public void LoadChara(string savename)
+	/// <summary>
+	/// Loads a character save. Returns null when there is nothing to report, otherwise the reason the file
+	/// was rejected, for the call site to print. <c>RESULT</c> keeps its contract: 1 on success, 0 on every
+	/// failure, whether it is reported or not (a name the path check rejected and a save that is not there
+	/// both keep <c>RESULT</c> at 0 and print nothing). A file that is there but does not read is reported,
+	/// not thrown: the script's channel for this command is <c>RESULT</c>, and the grading of the exception
+	/// would only move the message, not add one.
+	/// </summary>
+	public string? LoadChara(string savename)
 	{
 		RESULT = 0;
 		if (!TryResolveSaveDataPath("chara_", savename, out GamePath? dataFile))
 		{
-			return;
+			return null;
 		}
 
 		string filepath = dataFile.FullName;
 		if (!File.Exists(filepath))
 		{
-			return;
+			return null;
 		}
 
 		EraBinaryDataReader? bReader = null;
@@ -2908,25 +2916,27 @@ internal sealed class VariableEvaluator : IDisposable
 			List<CharacterData> addCharaList = [];
 			fs = new FileStream(filepath, FileMode.Open, FileAccess.Read);
 			bReader = EraBinaryDataReader.CreateReader(fs);
+			// Chara saves are binary only: unlike the normal save there is no text format to fall back to,
+			// so a file the reader does not recognise is a file this command cannot use.
 			if (bReader == null)
 			{
-				return;
+				return trerror.CorruptedSaveData.Text;
 			}
 
 			if (bReader.ReadFileType() != EraSaveFileType.CharVar)
 			{
-				return;
+				return trerror.CorruptedSaveData.Text;
 			}
 
 			if (!gamebase.UniqueCodeEqualTo(bReader.ReadInt64()))
 			{
-				return;
+				return trerror.DifferentGame.Text;
 			}
 
 			long version = bReader.ReadInt64();
 			if (!gamebase.CheckVersion(version))
 			{
-				return;
+				return trerror.DifferentVersion.Text;
 			}
 
 			bReader.ReadString(); //saveMes
@@ -2940,11 +2950,17 @@ internal sealed class VariableEvaluator : IDisposable
 
 			varData.CharacterList.AddRange(addCharaList);
 			RESULT = 1;
+			return null;
 		}
-		//catch (Exception)
-		//{
-		//	return;
-		//}
+		catch (EmueraException e) when (e is not CodeEE)
+		{
+			// The reader's own diagnostics (a FileEE for a body that does not read): reported through the
+			// return value, which keeps RESULT as the script's channel. The filter is the grading policy the
+			// writers share - a CodeEE is the script's own fault and keeps its Code grading, whose handler
+			// prints the script-side call stack - even though nothing on this path raises one today.
+			// Anything that is not an EmueraException is a programming fault and keeps its CLR stack.
+			return ErrorReport.Reason(e);
+		}
 		finally
 		{
 			if (bReader != null)
@@ -3195,14 +3211,43 @@ internal sealed class VariableEvaluator : IDisposable
 		return true;
 	}
 
-	public bool LoadGlobal()
+	/// <summary>
+	/// Loads global.sav. Returns false when nothing was loaded; <paramref name="errorReason"/> is null when
+	/// there is nothing to report (no global.sav yet: <c>RESULT</c> stays 0 and nothing is printed) and the
+	/// reason otherwise, for the call site to print. The reason travels as a return value rather than an
+	/// exception because the script sees this as <c>RESULT</c>, and a damaged save must not end the line.
+	/// </summary>
+	public bool LoadGlobal(out string? errorReason)
 	{
-		string filepath = getSaveDataPathG();
+		// Resolving the path reads Config.SavDir, which only a mis-initialized process leaves unset. It sits
+		// inside its own guard for the same reason SaveTo's does: this entry point promises a return value
+		// instead of an exception.
+		string filepath;
+		try
+		{
+			filepath = getSaveDataPathG();
+		}
+		catch (Exception e)
+		{
+			return FailWith(e, out errorReason);
+		}
+
 		if (!File.Exists(filepath))
 		{
+			errorReason = null;
 			return false;
 		}
 
+		return LoadGlobalFile(filepath, out errorReason);
+	}
+
+	/// <summary>
+	/// Loads one global.sav. Split out of <see cref="LoadGlobal"/> because the path comes from
+	/// <c>Config.SavDir</c>, which a test cannot point anywhere; a path can.
+	/// </summary>
+	public bool LoadGlobalFile(string filepath, out string? errorReason)
+	{
+		errorReason = null;
 		EraDataReader? reader = null;
 		EraBinaryDataReader? bReader = null;
 		FileStream? fs = null;
@@ -3223,17 +3268,20 @@ internal sealed class VariableEvaluator : IDisposable
 				EraSaveFileType fileType = bReader.ReadFileType();
 				if (fileType != EraSaveFileType.Global)
 				{
+					errorReason = trerror.CorruptedSaveData.Text;
 					return false;
 				}
 
 				if (!gamebase.UniqueCodeEqualTo(bReader.ReadInt64()))
 				{
+					errorReason = trerror.DifferentGame.Text;
 					return false;
 				}
 
 				long version = bReader.ReadInt64();
 				if (!gamebase.CheckVersion(version))
 				{
+					errorReason = trerror.DifferentVersion.Text;
 					return false;
 				}
 
@@ -3251,15 +3299,18 @@ internal sealed class VariableEvaluator : IDisposable
 			}
 			else
 			{
+				// Not a binary save: the eramaker text format, which the same file may hold.
 				reader = new EraDataReader(fs);
 				if (!gamebase.UniqueCodeEqualTo(reader.ReadInt64()))
 				{
+					errorReason = trerror.DifferentGame.Text;
 					return false;
 				}
 
 				long version = reader.ReadInt64();
 				if (!gamebase.CheckVersion(version))
 				{
+					errorReason = trerror.DifferentVersion.Text;
 					return false;
 				}
 
@@ -3272,9 +3323,11 @@ internal sealed class VariableEvaluator : IDisposable
 
 			return true;
 		}
-		catch
+		catch (Exception e)
 		{
-			return false;
+			// Including a FileEE from a truncated data section: the reader graded it, but this path answers
+			// the script with RESULT, so the reason is returned instead of thrown.
+			return FailWith(e, out errorReason);
 		}
 		finally
 		{

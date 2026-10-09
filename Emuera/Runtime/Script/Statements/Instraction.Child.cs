@@ -2205,13 +2205,13 @@ internal sealed partial class FunctionIdentifier
 
 		public override void DoInstruction(ExpressionMediator exm, InstructionLine func, ProcessState state)
 		{
-			if (exm.VEvaluator.LoadGlobal())
+			bool loaded = exm.VEvaluator.LoadGlobal(out string? loadError);
+			exm.VEvaluator.RESULT = loaded ? 1 : 0;
+			// A global.sav that is there but cannot be read is reported: RESULT alone made it look like there
+			// was nothing to load.
+			if (loadError != null)
 			{
-				exm.VEvaluator.RESULT = 1;
-			}
-			else
-			{
-				exm.VEvaluator.RESULT = 0;
+				exm.Console.PrintError(loadError);
 			}
 		}
 	}
@@ -2319,7 +2319,12 @@ internal sealed partial class FunctionIdentifier
 				datFilename = arg.Term!.GetStrValue(exm);
 			}
 
-			exm.VEvaluator.LoadChara(datFilename);
+			// As with LOADGLOBAL: RESULT carries success, and a character save that is there but cannot be
+			// read is reported instead of leaving the failure indistinguishable from a missing file.
+			if (exm.VEvaluator.LoadChara(datFilename) is { } loadError)
+			{
+				exm.Console.PrintError(loadError);
+			}
 		}
 	}
 
