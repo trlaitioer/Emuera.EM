@@ -1,7 +1,9 @@
-# 实参契约深化：让声明兑现为槽位类型（阶段 B）
-
+---
 id: arg-contract-05
-Status: implemented
+status: implemented
+---
+
+# 实参契约深化：让声明兑现为槽位类型（阶段 B）
 
 ## 任务
 

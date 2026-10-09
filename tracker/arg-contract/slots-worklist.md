@@ -1,4 +1,4 @@
-﻿# arg-contract/issues/03 逐槽清单（机械预筛 + 片 2 裁定结果）
+# arg-contract/issues/03 逐槽清单（机械预筛 + 片 2 裁定结果）
 
 本文件由 [slots-worklist.py](slots-worklist.py) 生成，口径见脚本头注释；票见 `arg-contract-03`。
 

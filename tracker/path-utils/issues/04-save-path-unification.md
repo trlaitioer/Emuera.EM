@@ -1,7 +1,9 @@
-# 路径:存档路径统一到 GamePath
-
+---
 id: path-utils-04
-Status: implemented
+status: implemented
+---
+
+# 路径:存档路径统一到 GamePath
 
 ## 任务
 

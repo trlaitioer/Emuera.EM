@@ -1,7 +1,9 @@
-# 实参契约表（阶段 A）：可省略槽的硬转型止血
-
+---
 id: arg-contract-04
-Status: implemented
+status: implemented
+---
+
+# 实参契约表（阶段 A）：可省略槽的硬转型止血
 
 ## 任务
 
@@ -96,5 +98,5 @@ Status: implemented
 - **行为变更**：4 个槽的**显式空槽**由运行期 NRE 变为检查器判据拒绝的 `CodeEE(ArgCanNotBeNull)`（`FunctionMethod.CheckArgumentTypeEx`；默认在首次执行该行时抛出，时机见 issues/03 风险 6）；数量省略与合法写法不变。涉及的注册名：`ENUMFUNCBEGINSWITH`/`ENUMFUNCENDSWITH`/`ENUMFUNCWITH`/`ENUMVARBEGINSWITH`/`ENUMVARENDSWITH`/`ENUMVARWITH`/`ENUMMACROBEGINSWITH`/`ENUMMACROENDSWITH`/`ENUMMACROWITH`（9 个名字共用同一规则形状）、`ENUMFILES`、`DT_SELECT`、`DT_TOXML`。
 - **阶段 B**：已转出为 `arg-contract-05`（`implemented`），改动面与性能说明见该票。
 - **不在本票范围**：issues/03 的片 5（B 表执行期语义用例）与片 6（指令侧 `ArgumentBuilder` 两轴定案）是与本票同批落地的工作，记录在 `arg-contract-03` 的对应小节，不属本票的完成标准。
-- **邻票**：`arg-contract-01/arg-contract-02/arg-contract-03`（01/02 已落地；03 余项 7「`docs/` 侧内建函数契约表」已落地为 [docs/builtin-functions.md](../../../docs/builtin-functions.md)，03 随之收尾）、`nullable-migration-18`（已落地，本票按它的 `AllowConstRef ⇒ HasUniqueRestructure` 不变量收口）、`nullable-migration-22`（其余 `as`+`!` 站点的理由注释，`ready-for-agent`）、`backlog-15`（`Argument` 三字段折叠协议，同一 seam 的另一侧，不并轨）。
+- **邻票**：`arg-contract-01/arg-contract-02/arg-contract-03`（01/02 已落地；03 余项 7「`docs/` 侧内建函数契约表」已落地为 [docs/builtin-functions.md](../../../docs/builtin-functions.md)，03 随之收尾）、`nullable-migration-18`（已落地，本票按它的 `AllowConstRef ⇒ HasUniqueRestructure` 不变量收口）、`nullable-migration-22`（其余 `as`+`!` 站点的理由注释，`ready`）、`backlog-15`（`Argument` 三字段折叠协议，同一 seam 的另一侧，不并轨）。
 - **原始审查记录**：`backlog-02`。

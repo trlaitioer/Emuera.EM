@@ -1,8 +1,10 @@
-# Nullable:断言审计收尾时发现的三处疑似缺陷与一处不一致
-
+---
 id: nullable-migration-32
-Status: in-progress
-Type: bug
+status: in-progress
+type: bug
+---
+
+# Nullable:断言审计收尾时发现的三处疑似缺陷与一处不一致
 
 ## 任务
 

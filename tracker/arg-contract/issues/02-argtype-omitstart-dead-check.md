@@ -1,8 +1,10 @@
-# 规则块未写 OmitStart 时，该槽的省略检查恒假
-
+---
 id: arg-contract-02
-Status: implemented
-Type: bug
+status: implemented
+type: bug
+---
+
+# 规则块未写 OmitStart 时，该槽的省略检查恒假
 
 ## 任务
 

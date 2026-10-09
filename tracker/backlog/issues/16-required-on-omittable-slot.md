@@ -1,8 +1,11 @@
-# 函数体在「设计上可省略」的实参槽上解引用 null
-
+---
 id: backlog-16
-Status: superseded
-Type: bug
+status: superseded
+type: bug
+superseded_by: [arg-contract-03]
+---
+
+# 函数体在「设计上可省略」的实参槽上解引用 null
 
 ## 任务
 

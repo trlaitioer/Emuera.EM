@@ -1,7 +1,9 @@
-# 输入协议没有 module：WinForms 事件处理器直接写 eraBasic 输入结果
-
+---
 id: backlog-10
-Status: needs-triage
+status: draft
+---
+
+# 输入协议没有 module：WinForms 事件处理器直接写 eraBasic 输入结果
 
 ## 任务
 

@@ -1,7 +1,9 @@
-# 实参契约(Argument Contract)
+---
+date: 2026-09-27
+status: implemented
+---
 
-Date: 2026-09-27
-Status: implemented
+# 实参契约(Argument Contract)
 
 ## 问题/背景
 

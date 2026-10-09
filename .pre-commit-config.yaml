@@ -13,3 +13,9 @@ repos:
         language: system
         pass_filenames: true
         files: ^Emuera(\.Tests)?/.*\.cs$
+    -   id: check-tracker-yaml
+        name: check tracker front matter
+        entry: uv run --script scripts/check_tracker_yaml.py
+        language: system
+        pass_filenames: true
+        files: ^tracker/.*\.md$

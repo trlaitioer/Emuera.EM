@@ -1,8 +1,10 @@
-# 坏存档仍能以非 FileEE 异常逃逸的其余出口
-
+---
 id: nullable-migration-34
-Status: in-progress
-Type: bug
+status: in-progress
+type: bug
+---
+
+# 坏存档仍能以非 FileEE 异常逃逸的其余出口
 
 ## 任务
 

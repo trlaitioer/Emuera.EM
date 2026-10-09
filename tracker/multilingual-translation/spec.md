@@ -1,8 +1,9 @@
+---
+date: 2026-08-22
+status: draft
+---
+
 # 多语言翻译：代码覆盖层（spec）
-
-Date: 2026-08-22
-Status: draft
-
 
 ## 问题/背景
 

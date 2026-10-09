@@ -1,7 +1,9 @@
-# 内建函数把名字当行为用：7 个类靠 `switch (Name)` 分派、16 处名字字面量散在实现里
-
+---
 id: backlog-19
-Status: needs-triage
+status: draft
+---
+
+# 内建函数把名字当行为用：7 个类靠 `switch (Name)` 分派、16 处名字字面量散在实现里
 
 ## 任务
 

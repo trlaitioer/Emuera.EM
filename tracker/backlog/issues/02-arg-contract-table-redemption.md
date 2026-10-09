@@ -1,7 +1,10 @@
-# 实参契约表只在解析期声明、到运行期靠 cast 兑现
-
+---
 id: backlog-02
-Status: superseded
+status: superseded
+superseded_by: [arg-contract-04]
+---
+
+# 实参契约表只在解析期声明、到运行期靠 cast 兑现
 
 ## 任务
 

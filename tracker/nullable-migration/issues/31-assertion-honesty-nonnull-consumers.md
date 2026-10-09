@@ -1,8 +1,10 @@
-# Nullable:可空化被非空消费方挡住的断言链
-
+---
 id: nullable-migration-31
-Status: needs-triage
-Type: task
+status: draft
+type: task
+---
+
+# Nullable:可空化被非空消费方挡住的断言链
 
 ## 任务
 

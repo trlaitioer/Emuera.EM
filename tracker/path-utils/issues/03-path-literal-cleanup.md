@@ -1,7 +1,9 @@
-# 路径:剩余硬编码分隔符与死代码清理
-
+---
 id: path-utils-03
-Status: implemented
+status: implemented
+---
+
+# 路径:剩余硬编码分隔符与死代码清理
 
 ## 任务
 

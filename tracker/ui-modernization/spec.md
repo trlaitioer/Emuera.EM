@@ -1,7 +1,9 @@
-# 方案:UI 层现代化(WinForms / 显示)
+---
+date: 2026-08-30
+status: implemented
+---
 
-Date: 2026-08-30
-Status: implemented
+# 方案:UI 层现代化(WinForms / 显示)
 
 ## 问题/背景
 

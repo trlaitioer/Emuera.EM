@@ -1,7 +1,9 @@
-# 画布与字体缩放:运行时窗口缩放与高 DPI
-
+---
 id: ui-modernization-02
-Status: implemented
+status: implemented
+---
+
+# 画布与字体缩放:运行时窗口缩放与高 DPI
 
 ## 任务
 

@@ -1,7 +1,9 @@
-# 迁移方案:性能优化
+---
+date: 2026-08-22
+status: in-progress
+---
 
-Date: 2026-08-22
-Status: in-progress
+# 迁移方案:性能优化
 
 ## 问题/背景
 

@@ -1,8 +1,10 @@
-# 函数体在「设计上可省略」的实参槽上解引用 null
-
+---
 id: arg-contract-03
-Status: implemented
-Type: bug
+status: implemented
+type: bug
+---
+
+# 函数体在「设计上可省略」的实参槽上解引用 null
 
 ## 任务
 
@@ -139,7 +141,7 @@ else
 
 片 1 与片 2/3/4（含片 2-C 的变长尾部定案、片 2-D 的补车道 20 项）均已落地，含片 4 的 A10 位置形态与数量省略两轴。
 
-**与 `arg-contract-02` 的区别要在实现时守住**：02 修检查器（把设计上不可省略的槽拦住），本票修函数体（在设计上可省略的槽上不要假装非空）。02 **已落地**（`Status: implemented`，判据即 `FunctionMethod.CheckArgumentTypeEx` 里那句 `list.OmitStart < 0 || i < list.OmitStart || rule.NotNull`），故 `SETVAR("TARGET", )` 已由 02 拒绝，`RAND(1,,)` 仍归本票。
+**与 `arg-contract-02` 的区别要在实现时守住**：02 修检查器（把设计上不可省略的槽拦住），本票修函数体（在设计上可省略的槽上不要假装非空）。02 **已落地**（`status: implemented`，判据即 `FunctionMethod.CheckArgumentTypeEx` 里那句 `list.OmitStart < 0 || i < list.OmitStart || rule.NotNull`），故 `SETVAR("TARGET", )` 已由 02 拒绝，`RAND(1,,)` 仍归本票。
 
 本票的裁定结果**是 arg-contract/issues/05（阶段 B 槽位类型）的设计输入**（访问器必须显式选 null 语义）。
 

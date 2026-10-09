@@ -1,7 +1,9 @@
-# Nullable:横切可空契约决策
-
+---
 id: nullable-migration-06
-Status: implemented
+status: implemented
+---
+
+# Nullable:横切可空契约决策
 
 ## 任务
 

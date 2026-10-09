@@ -1,7 +1,9 @@
-# 决策:保留 Microsoft.VisualBasic 的 StrConv 依赖
-
+---
 id: dotnet-modernization-04
-Status: wontfix
+status: wontfix
+---
+
+# 决策:保留 Microsoft.VisualBasic 的 StrConv 依赖
 
 ## 任务
 

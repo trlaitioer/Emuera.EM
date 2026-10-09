@@ -1,7 +1,9 @@
-# Nullable:省略参数可空贯通
-
+---
 id: nullable-migration-05
-Status: implemented
+status: implemented
+---
+
+# Nullable:省略参数可空贯通
 
 ## 任务
 

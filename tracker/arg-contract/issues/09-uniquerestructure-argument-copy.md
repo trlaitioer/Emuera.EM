@@ -1,7 +1,9 @@
-# UniqueRestructure 收到的是副本，13 个类的写回被静默丢弃
-
+---
 id: arg-contract-09
-Status: wontfix
+status: wontfix
+---
+
+# UniqueRestructure 收到的是副本，13 个类的写回被静默丢弃
 
 ## 任务
 

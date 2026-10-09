@@ -1,8 +1,10 @@
-# _ArgType.Array3D 读错标志位，三维数组实参槽不校验维度
-
+---
 id: arg-contract-01
-Status: implemented
-Type: bug
+status: implemented
+type: bug
+---
+
+# _ArgType.Array3D 读错标志位，三维数组实参槽不校验维度
 
 ## 任务
 

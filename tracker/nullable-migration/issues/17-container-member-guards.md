@@ -1,7 +1,9 @@
-# Nullable:容器与成员断言的零散守卫缺失
-
+---
 id: nullable-migration-17
-Status: implemented
+status: implemented
+---
+
+# Nullable:容器与成员断言的零散守卫缺失
 
 ## 任务
 

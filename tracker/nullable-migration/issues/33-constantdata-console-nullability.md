@@ -1,8 +1,10 @@
-# Nullable:`ConstantData.output` 的非空断言与测试夹具的 null console 冲突
-
+---
 id: nullable-migration-33
-Status: needs-triage
-Type: bug
+status: draft
+type: bug
+---
+
+# Nullable:`ConstantData.output` 的非空断言与测试夹具的 null console 冲突
 
 ## 任务
 

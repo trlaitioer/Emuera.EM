@@ -1,7 +1,9 @@
-# GDI+ 文字绘制档:现状与缺陷修复
-
+---
 id: ui-modernization-04
-Status: implemented
+status: implemented
+---
+
+# GDI+ 文字绘制档:现状与缺陷修复
 
 ## 任务
 

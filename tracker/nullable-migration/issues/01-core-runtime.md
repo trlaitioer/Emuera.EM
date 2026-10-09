@@ -1,7 +1,10 @@
-# Nullable:核心运行时迁移
-
+---
 id: nullable-migration-01
-Status: superseded
+status: superseded
+superseded_by: [nullable-migration-08, nullable-migration-09, nullable-migration-11]
+---
+
+# Nullable:核心运行时迁移
 
 ## 任务
 

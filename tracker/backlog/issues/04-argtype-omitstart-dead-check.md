@@ -1,8 +1,11 @@
-# 规则块未写 OmitStart 时，该槽的省略检查恒假
-
+---
 id: backlog-04
-Status: superseded
-Type: bug
+status: superseded
+type: bug
+superseded_by: [arg-contract-02]
+---
+
+# 规则块未写 OmitStart 时，该槽的省略检查恒假
 
 ## 任务
 

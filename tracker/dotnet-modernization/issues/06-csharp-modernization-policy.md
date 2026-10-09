@@ -1,7 +1,9 @@
-# 决策:C# 语言特性现代化策略
-
+---
 id: dotnet-modernization-06
-Status: wontfix
+status: wontfix
+---
+
+# 决策:C# 语言特性现代化策略
 
 ## 任务
 

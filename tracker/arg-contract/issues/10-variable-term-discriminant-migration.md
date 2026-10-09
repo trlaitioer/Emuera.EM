@@ -1,7 +1,9 @@
-# 迁移后残留的 4 处 VariableTerm 判别：2 处已改走 `Var(i)`，2 处不能换
-
+---
 id: arg-contract-10
-Status: implemented
+status: implemented
+---
+
+# 迁移后残留的 4 处 VariableTerm 判别：2 处已改走 `Var(i)`，2 处不能换
 
 ## 任务
 

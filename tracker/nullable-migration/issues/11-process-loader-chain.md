@@ -1,9 +1,10 @@
-# Nullable:进程与加载链启用
-
+---
 id: nullable-migration-11
-Status: implemented
+status: implemented
+blocked_by: [nullable-migration-07, nullable-migration-10]
+---
 
-Blocked by: nullable-migration-07, nullable-migration-10
+# Nullable:进程与加载链启用
 
 ## 任务
 

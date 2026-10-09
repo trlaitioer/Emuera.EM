@@ -1,7 +1,10 @@
-# Nullable:显式 `@子键` 的局部变量引用在无父标签时解引用 null
-
+---
 id: nullable-migration-25
-Status: superseded
+status: superseded
+superseded_by: [nullable-migration-19]
+---
+
+# Nullable:显式 `@子键` 的局部变量引用在无父标签时解引用 null
 
 ## 任务
 

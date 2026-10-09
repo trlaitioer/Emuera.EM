@@ -1,7 +1,9 @@
-# 决策:DLL 导入维持 DllImport 声明
-
+---
 id: dotnet-modernization-05
-Status: wontfix
+status: wontfix
+---
+
+# 决策:DLL 导入维持 DllImport 声明
 
 ## 任务
 

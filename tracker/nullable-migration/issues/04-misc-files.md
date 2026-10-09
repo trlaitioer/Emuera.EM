@@ -1,7 +1,10 @@
-# Nullable:其余文件清尾
-
+---
 id: nullable-migration-04
-Status: superseded
+status: superseded
+superseded_by: [nullable-migration-07, nullable-migration-08, nullable-migration-09, nullable-migration-10, nullable-migration-11, nullable-migration-12]
+---
+
+# Nullable:其余文件清尾
 
 ## 任务
 

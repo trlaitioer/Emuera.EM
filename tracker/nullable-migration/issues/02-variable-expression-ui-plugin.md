@@ -1,7 +1,10 @@
-# Nullable:变量/表达式 + UI/Plugin 迁移
-
+---
 id: nullable-migration-02
-Status: superseded
+status: superseded
+superseded_by: [nullable-migration-08, nullable-migration-10, nullable-migration-12]
+---
+
+# Nullable:变量/表达式 + UI/Plugin 迁移
 
 ## 任务
 

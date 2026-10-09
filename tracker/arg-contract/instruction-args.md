@@ -1,4 +1,4 @@
-﻿# arg-contract/issues/03 片 6：指令侧实参契约（`ArgumentBuilder`）机械预筛 + 裁定
+# arg-contract/issues/03 片 6：指令侧实参契约（`ArgumentBuilder`）机械预筛 + 裁定
 
 本文件由 [instruction-args.py](instruction-args.py) 生成，口径见脚本头注释；票见 `arg-contract-03`。
 

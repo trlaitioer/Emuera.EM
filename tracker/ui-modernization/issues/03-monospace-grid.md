@@ -1,7 +1,9 @@
-# 渲染字号反查:全角单元格宽对齐默认字体,em 基准保持不变
-
+---
 id: ui-modernization-03
-Status: implemented
+status: implemented
+---
+
+# 渲染字号反查:全角单元格宽对齐默认字体,em 基准保持不变
 
 ## 任务
 

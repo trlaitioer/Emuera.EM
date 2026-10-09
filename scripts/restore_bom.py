@@ -1,3 +1,4 @@
+import io
 import sys
 from pathlib import Path
 
@@ -53,6 +54,10 @@ def main() -> bool:
 
 
 if __name__ == "__main__":
+    for stream in (sys.stdout, sys.stderr):
+        if isinstance(stream, io.TextIOWrapper):
+            stream.reconfigure(encoding="utf-8")
+
     any_failed = False
     if len(sys.argv) > 1:
         for file in sys.argv[1:]:

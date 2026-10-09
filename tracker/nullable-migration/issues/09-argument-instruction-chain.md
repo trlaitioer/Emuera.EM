@@ -1,9 +1,10 @@
-# Nullable:参数与指令链启用
-
+---
 id: nullable-migration-09
-Status: implemented
+status: implemented
+blocked_by: [nullable-migration-05, nullable-migration-06]
+---
 
-Blocked by: nullable-migration-05, nullable-migration-06
+# Nullable:参数与指令链启用
 
 ## 任务
 
@@ -67,7 +68,7 @@ Blocked by: nullable-migration-05, nullable-migration-06
 - issues/08:`arguments[i]` 的处理规则(必填槽位 `!`、省略槽位按方法体既有判空)与 `FunctionMethod.CheckArgumentType → string?`
 - issues/10:`IdentifierDictionary.GetFunctionMethod`(`List<AExpression?>?` 参数、`AExpression?` 返回)、`VariableToken.GetStrValue → string?`
 
-以上契约均已落地,`Blocked by` 仍按 spec.md 只列 05、06(阻塞边只表达「先有契约再清警告」);本票开工时 issues/07、08、10 的 Status 均未转 `implemented`,故先确认其收尾以免清零基线变动;三者现已随运行行为确认转 `implemented`,其间未变动本票基线。
+以上契约均已落地,`blocked_by` 仍按 spec.md 只列 05、06(阻塞边只表达「先有契约再清警告」);本票开工时 issues/07、08、10 的 `status` 均未转 `implemented`,故先确认其收尾以免清零基线变动;三者现已随运行行为确认转 `implemented`,其间未变动本票基线。
 
 ### 上游对本票范围文件的签名改动
 

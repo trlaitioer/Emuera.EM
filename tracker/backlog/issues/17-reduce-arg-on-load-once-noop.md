@@ -1,8 +1,10 @@
-# ReduceArgumentOnLoad 的 ONCE 档不生效，等价于 NO
-
+---
 id: backlog-17
-Status: needs-triage
-Type: bug
+status: draft
+type: bug
+---
+
+# ReduceArgumentOnLoad 的 ONCE 档不生效，等价于 NO
 
 ## 任务
 

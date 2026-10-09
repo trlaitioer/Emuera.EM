@@ -1,7 +1,9 @@
-# Config 把解析期开关与 120 项全局值袋混在一个 static module
-
+---
 id: backlog-07
-Status: needs-triage
+status: draft
+---
+
+# Config 把解析期开关与 120 项全局值袋混在一个 static module
 
 ## 任务
 

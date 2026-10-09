@@ -1,7 +1,9 @@
-# Nullable:解析链启用
-
+---
 id: nullable-migration-07
-Status: implemented
+status: implemented
+---
+
+# Nullable:解析链启用
 
 ## 任务
 
@@ -102,7 +104,7 @@ issues/06 的 exm 非空决策在本票的落点是 `LogicalLineParser.ParseLine
 
 ### 执行顺序与验收
 
-- 本票无 `Blocked by`,在下游票之前执行;建议顺序 07 → 10 → 08 → 09 → 11 → 12 不变。
+- 本票无 `blocked_by`,在下游票之前执行;建议顺序 07 → 10 → 08 → 09 → 11 → 12 不变。
 - 逐文件:`#nullable enable` → 构建 → 清零该文件 CS86xx;改动须只有 `?`/`!`/`null!`/`#nullable` 与注解,不得新增 `?.`、新增分支或删除既有判空。
 - 本链计数:`dotnet build Emuera/Emuera.csproj -c Debug-NAudio -p:Platform=x64 --no-incremental -p:Nullable=enable --nologo -v:minimal`。同一警告在内联与末尾汇总各出现一次,直接数行会翻倍,以 MSBuild 末尾汇总为准。
 - 默认构建回归:同上但不加 `-p:Nullable=enable`,CS86xx 必须为 0(当前实测为 0,其余为 CS8981 等既有警告)。

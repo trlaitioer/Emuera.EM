@@ -1,4 +1,4 @@
-﻿# arg-contract/issues/05 阶段 B 进度：访问器覆盖与归零目标
+# arg-contract/issues/05 阶段 B 进度：访问器覆盖与归零目标
 
 本文件由 [arg-slots.py](arg-slots.py) 生成（默认产物；`--phase-a` 才另写阶段 A 快照
 [slots-consumption.md](slots-consumption.md)，口径见脚本头注释）。票见

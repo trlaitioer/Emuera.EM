@@ -1,7 +1,9 @@
-# 决策:WinForms 层升级需求评估
-
+---
 id: ui-modernization-01
-Status: wontfix
+status: wontfix
+---
+
+# 决策:WinForms 层升级需求评估
 
 ## 任务
 

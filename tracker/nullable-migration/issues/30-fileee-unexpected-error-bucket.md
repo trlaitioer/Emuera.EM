@@ -1,8 +1,10 @@
-# 存档坏输入抛出的 FileEE 落到「予期せぬエラー」+ 堆栈
-
+---
 id: nullable-migration-30
-Status: implemented
-Type: bug
+status: implemented
+type: bug
+---
+
+# 存档坏输入抛出的 FileEE 落到「予期せぬエラー」+ 堆栈
 
 ## 任务
 

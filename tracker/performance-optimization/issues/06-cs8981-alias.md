@@ -1,7 +1,9 @@
-# CS8981:小写 alias 处理决策
-
+---
 id: performance-optimization-06
-Status: wontfix
+status: wontfix
+---
+
+# CS8981:小写 alias 处理决策
 
 ## 任务
 

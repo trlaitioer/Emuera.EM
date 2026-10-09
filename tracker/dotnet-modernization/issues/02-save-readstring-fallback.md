@@ -1,7 +1,9 @@
-# 存档读取:畸形文本序列检出加固
-
+---
 id: dotnet-modernization-02
-Status: implemented
+status: implemented
+---
+
+# 存档读取:畸形文本序列检出加固
 
 ## 任务
 

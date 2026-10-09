@@ -1,8 +1,10 @@
-# JSONConfig:setting.json 内容非法 JSON 时抛 JsonException,启动链无处处置
-
+---
 id: backlog-21
-Status: needs-triage
-Type: bug
+status: draft
+type: bug
+---
+
+# JSONConfig:setting.json 内容非法 JSON 时抛 JsonException,启动链无处处置
 
 ## 任务
 

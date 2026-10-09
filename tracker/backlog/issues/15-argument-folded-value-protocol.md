@@ -1,7 +1,9 @@
-# Argument 基类的 IsConst/ConstStr/ConstInt 是一个没有 interface 的三字段协议
-
+---
 id: backlog-15
-Status: needs-triage
+status: draft
+---
+
+# Argument 基类的 IsConst/ConstStr/ConstInt 是一个没有 interface 的三字段协议
 
 ## 任务
 

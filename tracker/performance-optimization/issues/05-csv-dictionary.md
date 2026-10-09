@@ -1,7 +1,9 @@
-# 性能:CSV 查询字典化
-
+---
 id: performance-optimization-05
-Status: implemented
+status: implemented
+---
+
+# 性能:CSV 查询字典化
 
 ## 任务
 

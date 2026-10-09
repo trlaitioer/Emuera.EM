@@ -1,8 +1,10 @@
-# 存档写入侧的错误分级与「写失败毁旧档」
-
+---
 id: nullable-migration-35
-Status: in-progress
-Type: bug
+status: in-progress
+type: bug
+---
+
+# 存档写入侧的错误分级与「写失败毁旧档」
 
 ## 任务
 

@@ -1,7 +1,9 @@
-# 内建函数注册表在静态构造里建完，启动期失败只能以 TypeInitializationException 呈现
-
+---
 id: backlog-20
-Status: needs-triage
+status: draft
+---
+
+# 内建函数注册表在静态构造里建完，启动期失败只能以 TypeInitializationException 呈现
 
 ## 任务
 

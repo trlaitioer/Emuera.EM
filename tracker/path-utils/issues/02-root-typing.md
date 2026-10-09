@@ -1,7 +1,9 @@
-# 路径:根目录类型化与「游戏目录」唯一定义
-
+---
 id: path-utils-02
-Status: implemented
+status: implemented
+---
+
+# 路径:根目录类型化与「游戏目录」唯一定义
 
 ## 任务
 

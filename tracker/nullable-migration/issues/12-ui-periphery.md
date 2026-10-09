@@ -1,9 +1,10 @@
-# Nullable:UI 与外围启用
-
+---
 id: nullable-migration-12
-Status: implemented
+status: implemented
+blocked_by: [nullable-migration-06, nullable-migration-07, nullable-migration-10]
+---
 
-Blocked by: nullable-migration-06, nullable-migration-07, nullable-migration-10
+# Nullable:UI 与外围启用
 
 ## 任务
 
@@ -71,7 +72,7 @@ UI 与外围是最后一批,双向依赖(UI 既被 Process/指令调用,又主�
 
 `ConfigDialog.cs` 单文件 141 条、占本票 20%,与 `DebugConfigDialog.cs` 拆成独立子包(第 6 批内先做这两个),避免与 `MainWindow.cs`、`Rikaichan.cs` 混批后难以定位回归。
 
-本票是最后一个链簇票,开工前需确认 issues/07、08、10 的契约已冻结。开工时三者代码已提交但 `Status:` 仍为 `in-progress`(待 review 与真实游戏目录验证),故先复测一次基线钉住当前提交;三者现已转 `implemented`,其间上游签名未变动,本票清零结果无需重做。
+本票是最后一个链簇票,开工前需确认 issues/07、08、10 的契约已冻结。开工时三者代码已提交但 `status` 仍为 `in-progress`(待 review 与真实游戏目录验证),故先复测一次基线钉住当前提交;三者现已转 `implemented`,其间上游签名未变动,本票清零结果无需重做。
 
 ### 前置契约(含上游交接;开工前逐条复核,本轮实测全部通过)
 

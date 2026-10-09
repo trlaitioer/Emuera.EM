@@ -1,9 +1,10 @@
-# Nullable:表达式与方法链启用
-
+---
 id: nullable-migration-08
-Status: implemented
+status: implemented
+blocked_by: [nullable-migration-05, nullable-migration-06, nullable-migration-10]
+---
 
-Blocked by: nullable-migration-05, nullable-migration-06, nullable-migration-10
+# Nullable:表达式与方法链启用
 
 ## 任务
 

@@ -1,7 +1,9 @@
-# 路径处理统一：PurePath / GamePath
+---
+date: 2026-09-20
+status: implemented
+---
 
-Date: 2026-09-20
-Status: implemented
+# 路径处理统一：PurePath / GamePath
 
 ## 问题/背景
 

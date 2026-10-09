@@ -1,8 +1,10 @@
-# ConfigData.FindByName 的键形态与写入方不对称
-
+---
 id: backlog-01
-Status: needs-triage
-Type: bug
+status: draft
+type: bug
+---
+
+# ConfigData.FindByName 的键形态与写入方不对称
 
 ## 任务
 

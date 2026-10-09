@@ -1,7 +1,9 @@
-# 测试基础设施(Test Infrastructure)
+---
+date: 2026-08-22
+status: implemented
+---
 
-Date: 2026-08-22
-Status: implemented
+# 测试基础设施(Test Infrastructure)
 
 ## 问题/背景
 

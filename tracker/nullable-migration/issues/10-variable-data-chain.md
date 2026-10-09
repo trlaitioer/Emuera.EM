@@ -1,9 +1,10 @@
-# Nullable:变量与数据链启用
-
+---
 id: nullable-migration-10
-Status: implemented
+status: implemented
+blocked_by: [nullable-migration-07]
+---
 
-Blocked by: nullable-migration-07
+# Nullable:变量与数据链启用
 
 ## 任务
 
