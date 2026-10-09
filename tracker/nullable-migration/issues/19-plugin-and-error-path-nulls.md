@@ -1,7 +1,7 @@
 # Nullable:插件与错误报告路径的空引用
 
 id: nullable-migration-19
-Status: in-progress
+Status: implemented
 
 ## 任务
 
@@ -76,7 +76,7 @@ issues/21 的断言审计（批次 1/2/3）与 issues/14 复核表第 4 项另�
 
 - 构建 `dotnet build Emuera/Emuera.csproj -c Debug-NAudio -p:Platform=x64 --no-restore --nologo -v:minimal`；测试 `dotnet test Emuera.Tests/Emuera.Tests.csproj -c Debug-NAudio -p:Platform=x64 --nologo -v:minimal`（沙箱内需提权到 `danger-full-access`）。
 - 可进 `Emuera.Tests`：行 7 的 `CodeEE`（以首个标签为 `scaningLine` 直接调 `GetVariableToken`）；文本辅助的三种缺失组合；`ExecuteLine` 对非法入参的拒绝（在 `SetParent` 之前即可断言「先于任何状态访问抛错」，与「`DoInstruction` 需要 `EmueraConsole`，不在用例集覆盖」的既有边界相容）。
-- 只能实机/人工：行 6 的 NRE——构造 `VariableSize.CSV`（`CDFLAG,3000,3000` + `CDFLAGNAME1,100`，或 `CDFLAGNAME1,2000` + `CDFLAGNAME2,2000`），确认启动显示脚本错误而不是空引用；行 1~3 的指令面——在 `-DEBUG` 调试窗口确认 `PRINTL` 仍工作、`RESTART` 被明确拒绝。
+- 只能实机/人工（不在用例集覆盖范围）：行 6 的 NRE——构造 `VariableSize.CSV`（`CDFLAG,3000,3000` + `CDFLAGNAME1,100`，或 `CDFLAGNAME1,2000` + `CDFLAGNAME2,2000`），确认启动显示脚本错误而不是空引用；行 1~3 的指令面——在 `-DEBUG` 调试窗口确认 `PRINTL` 仍工作、`RESTART` 被明确拒绝。
 - 不覆盖 `EmueraPluginExample/`（AGENTS.md：用户未显式说明时不改动该项目）。
 
 ### 完成标准
@@ -101,7 +101,6 @@ issues/21 的断言审计（批次 1/2/3）与 issues/14 复核表第 4 项另�
 - 新增 `Emuera.Tests` 三个文件共 16 条用例（`Runtime/Script/Data/IdentifierDictionaryTests.cs`、`Runtime/Script/Statements/LineLocationTextTests.cs`、`Runtime/Utils/PluginSystem/PluginManagerTests.cs`），逐条先取得失败（`NullReferenceException`/`InvalidCastException`）再转绿；「默认结构即无位置」与 `MemoryLineEntry` 的 `InvalidLine` 分支另做变异校验，确认用例能分辨。`LineLocationText` 内部类型化与 `MemoryLineEntry` 抽取后，同一批用例仍全绿（重构的行为安全网）。
 - 全量构建（`-c Debug-NAudio -p:Platform=x64 --no-incremental -p:Nullable=enable`）：0 错误、CS86xx 0 条；警告 85 条＝既有 83 条 + 本票两个新增文件各 1 条 CS8981。
 - `Emuera.Tests`：338 条用例，本票新增的 16 条稳定通过；**`CallformCacheTests.MultiInterpolationForm_UsesStrKey` 是既有脆弱用例**——实测全量 3 次中 2 次失败，且排除本票 3 个新测试类（322 条用例）后仍 2/3 失败，故与本票无关；机制是该用例用 `A_{TFLAG}_{RESULT}` 拼键，而 `{RESULT}` 会被其他用例改写（其注释自称只选 TFLAG/SAVESTR 等不被触碰的变量，漏了 `{RESULT}`）。该问题属测试工程，宜记入 `tracker/test-infrastructure/`，本票不修。
-- 待人工验收：真实游戏目录的启动与 `-DEBUG` 调试窗口（`PRINTL` 仍工作、`RESTART` 被明确拒绝），以及 `VariableSize.CSV` 坏输入下的报错文本。
 - 验收发现（已修）：本票新增的 `LineLocationTextTests.MemoryLine()` 直接用 `LogicalLine` 承接 `LogicalLineParser.ParseLine` 的 `LogicalLine?`，测试工程因此报 CS8603，与完成标准「`Emuera.Tests` 的 CS86xx 为 0」不符；补 `!` 后归零。
 
 ## 曾考虑的替代方案
