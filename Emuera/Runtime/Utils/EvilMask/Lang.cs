@@ -570,6 +570,7 @@ internal sealed partial class Lang
 		[Managed] public static TranslatableString DifferentGame { get; } = new("異なるゲームのセーブデータです");
 		[Managed] public static TranslatableString DifferentVersion { get; } = new("セーブデータのバーションが異なります");
 		[Managed] public static TranslatableString CorruptedSaveData { get; } = new("セーブデータが壊れています");
+		[Managed] public static TranslatableString FailedToSaveData { get; } = new("セーブデータの書き込みに失敗しました");
 		[Managed] public static TranslatableString LoadError { get; } = new("読み込み中にエラーが発生しました");
 		[Managed] public static TranslatableString ErrorSavingGlobalData { get; } = new("グローバルデータの保存中にエラーが発生しました");
 		[Managed] public static TranslatableString NotExistPath { get; } = new("存在しないパスを指定しました");
@@ -982,7 +983,6 @@ internal sealed partial class Lang
 		[Managed] public static TranslatableString SavetextContainNewLineCharacter { get; } =
 			new("SAVEDATAのセーブテキストに改行文字が与えられました（セーブデータが破損するため改行文字は使えません）");
 
-		[Managed] public static TranslatableString UnexpectedErrorInSavedata { get; } = new("SAVEDATA命令によるセーブ中に予期しないエラーが発生しました");
 		[Managed] public static TranslatableString PowerResultNonNumeric { get; } = new("累乗結果が非数値です");
 		[Managed] public static TranslatableString PowerResultInfinite { get; } = new("累乗結果が無限大です");
 		[Managed] public static TranslatableString PowerResultOverflow { get; } = new("累乗結果({0})が64ビット符号付き整数の範囲外です");
@@ -1009,11 +1009,9 @@ internal sealed partial class Lang
 		[Managed] public static TranslatableString InvalidValue { get; } = new("無効な値です");
 		[Managed] public static TranslatableString ExecutedCom { get; } = new("＜コマンド連続実行：{0}/{1}＞");
 		[Managed] public static TranslatableString CouldNotExecuteCom { get; } = new("コマンドを実行できませんでした");
-		[Managed] public static TranslatableString AutoSaveError1 { get; } = new("オートセーブ中に予期しないエラーが発生しました");
 		[Managed] public static TranslatableString AutoSaveError2 { get; } = new("オートセーブをスキップします");
 		[Managed] public static TranslatableString NotEnoughMoney { get; } = new("お金が足りません。");
 		[Managed] public static TranslatableString OutOfStock { get; } = new("売っていません。");
-		[Managed] public static TranslatableString UnexpectedSaveError { get; } = new("セーブ中に予期しないエラーが発生しました");
 		[Managed] public static TranslatableString NoData { get; } = new("データがありません");
 		[Managed] public static TranslatableString UnexpectedScriptEnd { get; } = new("予期しないスクリプト終端です");
 		[Managed] public static TranslatableString StateAlreadySaved { get; } = new("記憶している状態があるのに再度記憶しようとした");

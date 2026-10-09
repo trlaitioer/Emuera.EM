@@ -2856,41 +2856,34 @@ internal sealed class VariableEvaluator : IDisposable
 		}
 
 		string filepath = dataFile.FullName;
-		EraBinaryDataWriter? bWriter = null;
-		FileStream? fs = null;
 		try
 		{
 			Config.Config.CreateSavDir();
-			fs = new FileStream(filepath, FileMode.Create, FileAccess.Write);
-			bWriter = new EraBinaryDataWriter(fs);
-			bWriter.WriteHeader();
-			bWriter.WriteFileType(EraSaveFileType.CharVar);
-			bWriter.WriteInt64(gamebase.ScriptUniqueCode);
-			bWriter.WriteInt64(gamebase.ScriptVersion);
-			bWriter.WriteString(savMes);
-			bWriter.WriteInt64(charas.Length); //保存するキャラ数
-			for (int i = 0; i < charas.Length; i++)
+			TempFileWriter.Write(filepath, stream =>
 			{
-				varData.CharacterList[charas[i]].SaveToStreamBinary(bWriter, varData);
-			}
+				using EraBinaryDataWriter bWriter = new(stream);
+				bWriter.WriteHeader();
+				bWriter.WriteFileType(EraSaveFileType.CharVar);
+				bWriter.WriteInt64(gamebase.ScriptUniqueCode);
+				bWriter.WriteInt64(gamebase.ScriptVersion);
+				bWriter.WriteString(savMes);
+				bWriter.WriteInt64(charas.Length); //保存するキャラ数
+				for (int i = 0; i < charas.Length; i++)
+				{
+					varData.CharacterList[charas[i]].SaveToStreamBinary(bWriter, varData);
+				}
 
-			bWriter.WriteEOF();
-			//RESULT = 1;
+				bWriter.WriteEOF();
+				//RESULT = 1;
+			});
 		}
-		//catch (Exception)
-		//{
-		//	throw new CodeEE("セーブ中にエラーが発生しました");
-		//}
-		finally
+		catch (Exception e) when (e is not CodeEE)
 		{
-			if (bWriter != null)
-			{
-				bWriter.Close();
-			}
-			else
-			{
-				fs?.Close();
-			}
+			// A failed write used to escape as a raw BCL exception, which the handlers report as an unexpected
+			// error with a CLR stack; FileEE puts it in the save/load grading, which prints the message alone.
+			// A CodeEE is the script's own fault and keeps its Code grading, whose handler prints the
+			// script-side call stack; wrapping it would trade that for a message-only save error.
+			throw ErrorReport.AsSaveDataError(e);
 		}
 	}
 
@@ -2974,41 +2967,34 @@ internal sealed class VariableEvaluator : IDisposable
 		}
 
 		string filepath = dataFile.FullName;
-		EraBinaryDataWriter? bWriter = null;
-		FileStream? fs = null;
 		try
 		{
 			Config.Config.CreateSavDir();
-			fs = new FileStream(filepath, FileMode.Create, FileAccess.Write);
-			bWriter = new EraBinaryDataWriter(fs);
-			bWriter.WriteHeader();
-			bWriter.WriteFileType(EraSaveFileType.Var);
-			bWriter.WriteInt64(gamebase.ScriptUniqueCode);
-			bWriter.WriteInt64(gamebase.ScriptVersion);
-			bWriter.WriteString(savMes);
-
-			for (int i = 0; i < vars.Length; i++)
+			TempFileWriter.Write(filepath, stream =>
 			{
-				bWriter.WriteWithKey(vars[i].Name, vars[i].GetArray());
-			}
+				using EraBinaryDataWriter bWriter = new(stream);
+				bWriter.WriteHeader();
+				bWriter.WriteFileType(EraSaveFileType.Var);
+				bWriter.WriteInt64(gamebase.ScriptUniqueCode);
+				bWriter.WriteInt64(gamebase.ScriptVersion);
+				bWriter.WriteString(savMes);
 
-			bWriter.WriteEOF();
-			//RESULT = 1;
+				for (int i = 0; i < vars.Length; i++)
+				{
+					bWriter.WriteWithKey(vars[i].Name, vars[i].GetArray());
+				}
+
+				bWriter.WriteEOF();
+				//RESULT = 1;
+			});
 		}
-		//catch (Exception)
-		//{
-		//	throw new CodeEE("セーブ中にエラーが発生しました");
-		//}
-		finally
+		catch (Exception e) when (e is not CodeEE)
 		{
-			if (bWriter != null)
-			{
-				bWriter.Close();
-			}
-			else
-			{
-				fs?.Close();
-			}
+			// Same grading as SaveChara: the SAVEVAR instruction is not implemented, so this path is
+			// unreachable from a script today, and it is kept consistent rather than left as the only
+			// writer that reports a raw BCL exception. Excluded: the CodeEE that GetArray() raises for a
+			// reference variable with nothing in it, which is not a save/load failure.
+			throw ErrorReport.AsSaveDataError(e);
 		}
 	}
 
@@ -3150,48 +3136,51 @@ internal sealed class VariableEvaluator : IDisposable
 
 	public bool SaveGlobal()
 	{
-		string filepath = getSaveDataPathG();
 		try
 		{
+			// Inside the guard as well: resolving the path reads Config.SavDir (see LoadGlobal).
+			string filepath = getSaveDataPathG();
 			Config.Config.CreateSavDir();
-			using FileStream fs = new(filepath, FileMode.Create, FileAccess.Write);
-			if (Config.Config.SystemSaveInBinary)
+			// Through a temporary file, like the normal save: a failed global write must not destroy the
+			// global.sav that is already there (see TempFileWriter.Write in Runtime/Utils/TempFileWriter.cs).
+			TempFileWriter.Write(filepath, fs =>
 			{
-				using EraBinaryDataWriter bWriter = new(fs);
-				bWriter.WriteHeader();
-				bWriter.WriteFileType(EraSaveFileType.Global);
-				bWriter.WriteInt64(gamebase.ScriptUniqueCode);
-				bWriter.WriteInt64(gamebase.ScriptVersion);
-				bWriter.WriteString(""); //saveMes
-				varData.SaveGlobalToStreamBinary(bWriter);
-				bWriter.WriteEOF();
+				if (Config.Config.SystemSaveInBinary)
+				{
+					using EraBinaryDataWriter bWriter = new(fs);
+					bWriter.WriteHeader();
+					bWriter.WriteFileType(EraSaveFileType.Global);
+					bWriter.WriteInt64(gamebase.ScriptUniqueCode);
+					bWriter.WriteInt64(gamebase.ScriptVersion);
+					bWriter.WriteString(""); //saveMes
+					varData.SaveGlobalToStreamBinary(bWriter);
+					bWriter.WriteEOF();
 
-				#region EMのデータがSAVEGLOBALに対応してなかったのを修正
+					#region EMのデータがSAVEGLOBALに対応してなかったのを修正
 
-				varData.SaveGlobalEMDataToStreamBinary(bWriter);
-				bWriter.WriteEOF();
+					varData.SaveGlobalEMDataToStreamBinary(bWriter);
+					bWriter.WriteEOF();
 
-				#endregion
-
-				bWriter.Close();
-			}
-			else
-			{
-				using EraDataWriter writer = new(fs);
-				writer.Write(gamebase.ScriptUniqueCode);
-				writer.Write(gamebase.ScriptVersion);
-				varData.SaveGlobalToStream(writer);
-				writer.EmuStart();
-				varData.SaveGlobalToStream1808(writer);
-				writer.Close();
-			}
+					#endregion
+				}
+				else
+				{
+					using EraDataWriter writer = new(fs);
+					writer.Write(gamebase.ScriptUniqueCode);
+					writer.Write(gamebase.ScriptVersion);
+					varData.SaveGlobalToStream(writer);
+					writer.EmuStart();
+					varData.SaveGlobalToStream1808(writer);
+				}
+			});
 		}
-		catch (SystemException)
+		catch (Exception e)
 		{
-			throw new CodeEE(trerror.ErrorSavingGlobalData.Text);
-			//console.PrintError(
-			//console.NewLine();
-			//return false;
+			// A failed global write is a save/load error, not a script error: the CodeEE this used to throw
+			// put a disk fault (an IOException is a SystemException) in the Code grading, whose handler prints
+			// the script-side call stack. The reason rides in the message because this one is reported through
+			// the handler, which prints no stack.
+			throw new FileEE($"{trerror.ErrorSavingGlobalData.Text} ({ErrorReport.Reason(e)})");
 		}
 
 		//finally
@@ -3375,47 +3364,70 @@ internal sealed class VariableEvaluator : IDisposable
 		#endregion
 	}
 
-	public bool SaveTo(int saveIndex, string saveText)
+	/// <summary>
+	/// The entry points that promise a return value instead of an exception report a failure this way: the
+	/// reason travels back to the call site, which prints it (<see cref="ErrorReport.Reason"/>).
+	/// </summary>
+	private static bool FailWith(Exception exc, out string? errorReason)
 	{
-		string filepath = getSaveDataPath(saveIndex);
-		FileStream? fs = null;
-		EraDataWriter? writer = null;
-		EraBinaryDataWriter? bWriter = null;
+		errorReason = ErrorReport.Reason(exc);
+		return false;
+	}
+
+	/// <summary>
+	/// Writes the save slot, reporting the failure through <paramref name="errorReason"/> instead of throwing:
+	/// the manual-save and autosave call sites print the reason and keep the save state machine going, so a
+	/// failure must not escape as an exception there.
+	/// </summary>
+	public bool SaveTo(int saveIndex, string saveText, [NotNullWhen(false)] out string? errorReason)
+	{
+		// Resolving the path reads Config.SavDir, which only a mis-initialized process leaves unset. It sits
+		// inside its own guard because this method promises the callers a return value rather than an
+		// exception - the autosave caller has a state machine to keep running.
+		string filepath;
+		try
+		{
+			filepath = getSaveDataPath(saveIndex);
+		}
+		catch (Exception e)
+		{
+			return FailWith(e, out errorReason);
+		}
+
+		return SaveToFile(filepath, saveText, out errorReason);
+	}
+
+	/// <summary>
+	/// Writes one save file. Split out of <see cref="SaveTo"/> because the save folder comes from
+	/// <c>Config.SavDir</c>, which a test cannot point anywhere; a target path can.
+	/// </summary>
+	public bool SaveToFile(string filepath, string saveText, [NotNullWhen(false)] out string? errorReason)
+	{
 		try
 		{
 			Config.Config.CreateSavDir();
-			fs = new FileStream(filepath, FileMode.Create, FileAccess.Write);
-			if (Config.Config.SystemSaveInBinary)
+			// Through a temporary file: the previous save must survive a write that fails half-way
+			// (see TempFileWriter.Write in Runtime/Utils/TempFileWriter.cs).
+			TempFileWriter.Write(filepath, stream =>
 			{
-				bWriter = new EraBinaryDataWriter(fs);
-				SaveToStreamBinary(bWriter, saveText);
-			}
-			else
-			{
-				writer = new EraDataWriter(fs);
-				SaveToStream(writer, saveText);
-			}
+				if (Config.Config.SystemSaveInBinary)
+				{
+					using EraBinaryDataWriter bWriter = new(stream);
+					SaveToStreamBinary(bWriter, saveText);
+				}
+				else
+				{
+					using EraDataWriter writer = new(stream);
+					SaveToStream(writer, saveText);
+				}
+			});
 
+			errorReason = null;
 			return true;
 		}
-		catch (Exception)
+		catch (Exception e)
 		{
-			return false;
-		}
-		finally
-		{
-			if (writer != null)
-			{
-				writer.Close();
-			}
-			else if (bWriter != null)
-			{
-				bWriter.Close();
-			}
-			else
-			{
-				fs?.Close();
-			}
+			return FailWith(e, out errorReason);
 		}
 	}
 

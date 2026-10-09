@@ -326,6 +326,7 @@ Emuera的历史版本有效的内容变得无效等等现象而设置的。
     <tr id="Error.DifferentGame"><![CDATA[试图读取的存档属于另一个游戏]]></tr>
     <tr id="Error.DifferentVersion"><![CDATA[存档版本不同]]></tr>
     <tr id="Error.CorruptedSaveData"><![CDATA[存档数据已损坏]]></tr>
+    <tr id="Error.FailedToSaveData"><![CDATA[存档数据写入失败]]></tr>
     <tr id="Error.LoadError"><![CDATA[加载时发生错误]]></tr>
     <tr id="Error.ErrorSavingGlobalData"><![CDATA[保存全局数据时发生错误]]></tr>
     <tr id="Error.NotExistPath"><![CDATA[试图加载的路径不存在]]></tr>
@@ -713,7 +714,6 @@ Emuera的历史版本有效的内容变得无效等等现象而设置的。
     <tr id="Error.SavedataArgIsNegative"><![CDATA[对SAVEDATA的参数使用负值({0})]]></tr>
     <tr id="Error.TooLargeSavedataArg"><![CDATA[SAVEDATA的参数值过大({0})]]></tr>
     <tr id="Error.SavetextContainNewLineCharacter"><![CDATA[SAVEDATA对的提示文本使用了换行符号（由于会导致存档损坏，不能使用换行符）]]></tr>
-    <tr id="Error.UnexpectedErrorInSavedata"><![CDATA[SAVEDATA命令在存档时发生了意料之外的错误]]></tr>
     <tr id="Error.PowerResultNonNumeric"><![CDATA[幂运算结果不是数值]]></tr>
     <tr id="Error.PowerResultInfinite"><![CDATA[幂运算结果无限大]]></tr>
     <tr id="Error.PowerResultOverflow"><![CDATA[幂运算结果({0})超过64位带符号整数的有效范围]]></tr>
@@ -740,11 +740,9 @@ Emuera的历史版本有效的内容变得无效等等现象而设置的。
     <tr id="Error.InvalidValue"><![CDATA[无效的值]]></tr>
     <tr id="Error.ExecutedCom"><![CDATA[＜命令连续执行：{0}/{1}＞]]></tr>
     <tr id="Error.CouldNotExecuteCom"><![CDATA[无法执行命令]]></tr>
-    <tr id="Error.AutoSaveError1"><![CDATA[自动存档期间发生预期以外的的错误]]></tr>
     <tr id="Error.AutoSaveError2"><![CDATA[自动存档将被跳过]]></tr>
     <tr id="Error.NotEnoughMoney"><![CDATA[MONEY不足]]></tr>
     <tr id="Error.OutOfStock"><![CDATA[售罄]]></tr>
-    <tr id="Error.UnexpectedSaveError"><![CDATA[存档时发生预期以外的错误]]></tr>
     <tr id="Error.NoData"><![CDATA[没有数据]]></tr>
     <tr id="Error.UnexpectedScriptEnd"><![CDATA[意料之外的脚本结尾]]></tr>
     <tr id="Error.StateAlreadySaved"><![CDATA[在已有保存状态的情况下再次尝试保存状态]]></tr>

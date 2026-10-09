@@ -465,9 +465,9 @@ internal sealed partial class Process
 					throw new CodeEE(trerror.SavetextContainNewLineCharacter.Text);
 				}
 
-				if (!vEvaluator.SaveTo((int)target, savemes))
+				if (!vEvaluator.SaveTo((int)target, savemes, out string? saveError))
 				{
-					console.PrintError(trerror.UnexpectedErrorInSavedata.Text);
+					PrintSaveError(saveError);
 				}
 
 				break;

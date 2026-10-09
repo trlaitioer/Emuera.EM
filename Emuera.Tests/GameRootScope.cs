@@ -9,10 +9,20 @@ namespace Emuera.Tests;
 /// </summary>
 internal static class GameRootScope
 {
+	/// <summary>
+	/// 只在 %TEMP%\emuera-tests 下开一个新临时目录,不动 Program 的目录静态。被测代码不读游戏根时用它,
+	/// 免得把进程级静态指向一个与被测行为无关的游戏根。
+	/// </summary>
+	public static string NewTempDirectory(string name)
+	{
+		string path = Path.Combine(Path.GetTempPath(), "emuera-tests", $"{name}-{Guid.NewGuid():N}");
+		Directory.CreateDirectory(path);
+		return path;
+	}
+
 	public static string UseTempRoot(string name)
 	{
-		string root = Path.Combine(Path.GetTempPath(), "emuera-tests", $"{name}-{Guid.NewGuid():N}");
-		Directory.CreateDirectory(root);
+		string root = NewTempDirectory(name);
 		Program.SetDirPaths(root);
 		return root;
 	}

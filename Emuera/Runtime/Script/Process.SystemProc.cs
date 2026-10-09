@@ -846,9 +846,9 @@ internal sealed partial class Process
 		// before the SaveInfo state is entered.
 		if (saveTarget == AutoSaveIndex)
 		{
-			if (!vEvaluator.SaveTo(saveTarget, vEvaluator.SAVEDATA_TEXT!))
+			if (!vEvaluator.SaveTo(saveTarget, vEvaluator.SAVEDATA_TEXT!, out string? saveError))
 			{
-				console.PrintError(trerror.AutoSaveError1.Text);
+				PrintSaveError(saveError);
 				console.PrintError(trerror.AutoSaveError2.Text);
 				console.ReadAnyKey();
 			}
@@ -1233,13 +1233,23 @@ internal sealed partial class Process
 		}
 	}
 
+	/// <summary>
+	/// The two lines a failed save prints: the shared header and the reason the writer returned. The three save
+	/// paths (SAVEDATA, manual, autosave) differ only in what they print after this.
+	/// </summary>
+	private void PrintSaveError(string reason)
+	{
+		console.PrintError(trerror.FailedToSaveData.Text);
+		console.PrintError(reason);
+	}
+
 	private void endCallSaveInfo()
 	{
 		// Reached only through SaveGame_CallSaveInfo, which saveGameWaitInputOverwrite enters right after
 		// assigning SAVEDATA_TEXT.
-		if (!vEvaluator.SaveTo(saveTarget, vEvaluator.SAVEDATA_TEXT!))
+		if (!vEvaluator.SaveTo(saveTarget, vEvaluator.SAVEDATA_TEXT!, out string? saveError))
 		{
-			console.PrintError(trerror.UnexpectedSaveError.Text);
+			PrintSaveError(saveError);
 			console.ReadAnyKey();
 		}
 

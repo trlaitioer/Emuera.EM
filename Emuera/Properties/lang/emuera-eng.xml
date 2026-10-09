@@ -329,6 +329,7 @@ Settings apply only at start]]></tr>
     <tr id="Error.DifferentGame"><![CDATA[Attempted to load save data from a different game]]></tr>
     <tr id="Error.DifferentVersion"><![CDATA[Save data version is different]]></tr>
     <tr id="Error.CorruptedSaveData"><![CDATA[Save data is corrupted]]></tr>
+    <tr id="Error.FailedToSaveData"><![CDATA[Failed to write the save data]]></tr>
     <tr id="Error.LoadError"><![CDATA[An error has occurred while loading]]></tr>
     <tr id="Error.ErrorSavingGlobalData"><![CDATA[An error has occurred while saving the global data]]></tr>
     <tr id="Error.NotExistPath"><![CDATA[Tried to load from a non-existent path]]></tr>
@@ -716,7 +717,6 @@ Settings apply only at start]]></tr>
     <tr id="Error.SavedataArgIsNegative"><![CDATA[A negative value has been specified to SAVEDATA ({0})]]></tr>
     <tr id="Error.TooLargeSavedataArg"><![CDATA[Argument given to SAVEDATA ({0}) is too big]]></tr>
     <tr id="Error.SavetextContainNewLineCharacter"><![CDATA[SAVEDATA save text contains a new line character (Save data will get corrupted)]]></tr>
-    <tr id="Error.UnexpectedErrorInSavedata"><![CDATA[An unexpected error occurred while saving with SAVEDATA instruction]]></tr>
     <tr id="Error.PowerResultNonNumeric"><![CDATA[Power result is non-numeric]]></tr>
     <tr id="Error.PowerResultInfinite"><![CDATA[Power result is infinite]]></tr>
     <tr id="Error.PowerResultOverflow"><![CDATA[Power result ({0}) exceeds the upper limit of the 64 bit signed integer range]]></tr>
@@ -743,11 +743,9 @@ Settings apply only at start]]></tr>
     <tr id="Error.InvalidValue"><![CDATA[Invalid value]]></tr>
     <tr id="Error.ExecutedCom"><![CDATA[＜Executed command：{0}/{1}＞]]></tr>
     <tr id="Error.CouldNotExecuteCom"><![CDATA[Unable to execute command]]></tr>
-    <tr id="Error.AutoSaveError1"><![CDATA[An unexpected error occurred during autosave]]></tr>
     <tr id="Error.AutoSaveError2"><![CDATA[Autosave will be skipped]]></tr>
     <tr id="Error.NotEnoughMoney"><![CDATA[Not enough money.]]></tr>
     <tr id="Error.OutOfStock"><![CDATA[Out of stock.]]></tr>
-    <tr id="Error.UnexpectedSaveError"><![CDATA[Unexpected error while saving has occurred]]></tr>
     <tr id="Error.NoData"><![CDATA[No data found]]></tr>
     <tr id="Error.UnexpectedScriptEnd"><![CDATA[Script execution terminated]]></tr>
     <tr id="Error.StateAlreadySaved"><![CDATA[Attempted to save the current state while a saved state already exists]]></tr>

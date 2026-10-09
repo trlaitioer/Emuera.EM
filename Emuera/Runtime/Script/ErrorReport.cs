@@ -73,5 +73,33 @@ internal static class ErrorReport
 
 	/// <summary>The line under the header: an unexpected error names its CLR type, since nothing else does.</summary>
 	internal static string Message(ErrorReportKind kind, Exception exc) =>
-		kind == ErrorReportKind.Unexpected ? exc.GetType() + ":" + exc.Message : exc.Message;
+		kind == ErrorReportKind.Unexpected ? WithTypeName(exc, exc.GetType().ToString(), ":") : exc.Message;
+
+	/// <summary>
+	/// The detail for a save/load failure, wherever it is reported: an <see cref="EmueraException"/> already
+	/// carries a message written for the player, while anything else - a BCL I/O failure from the medium -
+	/// names its CLR type, which is what tells the two apart because these lines are printed without a stack.
+	/// Used both where the caller prints the line itself (the <c>SAVEDATA</c> family and the
+	/// <c>LOADGLOBAL</c>/<c>LOADCHARA</c> paths, which keep their return values) and where the failure is
+	/// graded through the handlers (<see cref="AsSaveDataError"/>, and <c>SaveGlobal</c>'s own message, which
+	/// keeps its header text in front of the reason).
+	/// </summary>
+	internal static string Reason(Exception exc) =>
+		exc is EmueraException ? exc.Message : WithTypeName(exc, exc.GetType().Name, ": ");
+
+	/// <summary>
+	/// Grades a failure as a save/load error carrying its reason (<see cref="Reason"/>), for the writers that
+	/// report through the handlers instead of through a return value: a failed write is a save/load error, not
+	/// an unexpected one that prints a CLR stack.
+	/// </summary>
+	internal static FileEE AsSaveDataError(Exception exc) => new(Reason(exc));
+
+	/// <summary>
+	/// One "<c>type:message</c>" line, for the reports that print no stack and so have nothing else to say what
+	/// went wrong. Both spellings belong to the caller: the handler path has always printed the full name tight
+	/// against the message - pinned by <c>Message_NamesTheClrTypeOnlyForUnexpected</c> in
+	/// <c>Emuera.Tests/Runtime/Script/ErrorReportTests.cs</c> - while the save line prints the short name.
+	/// </summary>
+	private static string WithTypeName(Exception exc, string typeName, string separator) =>
+		typeName + separator + exc.Message;
 }
