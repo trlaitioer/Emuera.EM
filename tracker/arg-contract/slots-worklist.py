@@ -21,7 +21,7 @@
 剥注释是逐行朴素实现（不识别字符串字面量里的 `//`），命中处仍需人工确认。
 
 用法：python3.14 tracker/arg-contract/slots-worklist.py
-产物：tracker/arg-contract/slots-worklist.md（UTF-8 BOM，与本脚本的写出编码一致，故可逐字节复现）
+产物：tracker/arg-contract/slots-worklist.md（UTF-8 无 BOM，与本脚本的写出编码一致，故可逐字节复现）
 
 **冻结提示**：本表建模的是阶段 A 的「被 `Required`(字面量) 读取」这条车道。arg-contract/issues/05 的阶段 B
 把这些消费点全换成了 `ArgumentSlots` 访问器，迁移后再跑本脚本会**覆盖冻结产物**：口径数字必然漂移
@@ -328,7 +328,7 @@ out.append("- [ ] 仍未纳入本表：活 `arguments[i]` 站点里落在**非�
 out.append(f"- [x] **片 5（B 表执行期语义）与片 6（指令侧两轴模型定案）已落地**：片 5 的用例在 `{TEST_SRC}`（{case_txt}；覆盖了 B 表哪些槽、各项钉住的默认值、未覆盖槽的理由均见 issues/03 片 5，逐槽证据留在票内而不在此处硬编码）；片 6 的工件是 [instruction-args.py](instruction-args.py) → [instruction-args.md](instruction-args.md)（不并入本表——它扫的是 `ArgumentBuilder.cs`，口径与本站点清单不同）")
 out.append("- [ ] 本票仍未做的一件（见票内「余项」7）：`docs/` 侧的内建函数契约表")
 
-open(DST, "w", encoding="utf-8-sig", newline="\n").write("\n".join(out) + "\n")
+open(DST, "w", encoding="utf-8", newline="\n").write("\n".join(out) + "\n")
 print("rows", len(rows), "need", len(need), "flagged_need", len(flagged_need),
       "intent", len(intent), "misreport", len(misreport))
 # 自校验失败：产物照写（人工仍可看），但脚本以非零码退出，别让复跑看起来"通过"

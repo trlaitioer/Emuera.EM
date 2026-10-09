@@ -44,7 +44,7 @@
     （规则表族 185 + Trusted 三族 44）、全库 `FunctionMethodTerm` 构造点 15。
 用法：python3.14 tracker/arg-contract/arg-slots.py            # 只写阶段 B 的进度工件
       python3.14 tracker/arg-contract/arg-slots.py --phase-a  # 另写阶段 A 快照（只应在阶段 A 的 HEAD 上跑）
-产物：tracker/arg-contract/slots-progress.md（默认：G 段 + 阶段 B 自校验；UTF-8 BOM，可逐字节复现）
+产物：tracker/arg-contract/slots-progress.md（默认：G 段 + 阶段 B 自校验；UTF-8 无 BOM，可逐字节复现）
       tracker/arg-contract/slots-consumption.md（--phase-a：阶段 A 的 A–F 与 E 段快照。阶段 B 重写消费面后
       那批表的「读取形态」扫描不到访问器调用、必然漂移，故该文件已冻结在基线 HEAD 30686cf4，不再默认重写；
       产物 .md 头部的冻结声明由生成器写出（`_scan.FREEZE_NOTE_CONSUMPTION`），不手工维护）
@@ -1100,9 +1100,9 @@ b_out.append("| --- | --- |")
 for _label, _ok in b_rows:
     b_out.append(f"| {_label} | {'通过' if _ok else '**不符**'} |")
 b_out.append("")
-open(PROGRESS_DST, "w", encoding="utf-8-sig", newline="\n").write("\n".join(b_out) + "\n")
+open(PROGRESS_DST, "w", encoding="utf-8", newline="\n").write("\n".join(b_out) + "\n")
 if PHASE_A:
-    open(DST, "w", encoding="utf-8-sig", newline="\n").write("\n".join(out) + "\n")
+    open(DST, "w", encoding="utf-8", newline="\n").write("\n".join(out) + "\n")
     print("wrote", DST, "(phase A snapshot)")
 print("wrote", PROGRESS_DST)
 print("rows", len(rows), "omittable", len(all_omittable), "cand", len(cand), "guarded", len(guarded),

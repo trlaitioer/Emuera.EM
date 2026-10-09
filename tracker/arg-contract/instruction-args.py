@@ -17,7 +17,7 @@
     「指令侧的编码形状」与「读取点」摆出来供复核。
 
 用法：python3.14 tracker/arg-contract/instruction-args.py
-产物：tracker/arg-contract/instruction-args.md（UTF-8 BOM，可逐字节复现）
+产物：tracker/arg-contract/instruction-args.md（UTF-8 无 BOM，可逐字节复现）
 """
 
 import re
@@ -330,5 +330,5 @@ out.append("")
 out.append("## C. 与规则表 `OmitStart` / `ArgType.NotNull` 的对齐结论")
 out.append("")
 out.append(ALIGNMENT.strip())
-open(DST, "w", encoding="utf-8-sig", newline="\n").write("\n".join(out) + "\n")
+open(DST, "w", encoding="utf-8", newline="\n").write("\n".join(out) + "\n")
 print("builders", len(rows), "model", len(model_rows), "self", len(self_rows), "need_manual", len(need_manual))
