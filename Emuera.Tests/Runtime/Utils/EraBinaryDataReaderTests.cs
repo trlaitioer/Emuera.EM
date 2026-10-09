@@ -191,4 +191,58 @@ public class EraBinaryDataReaderTests
 			File.Delete(path);
 		}
 	}
+
+	/// <summary>任意头部 + 任意数据块数的二进制档:用于 <c>CreateReader</c> 自身的坏输入路径。</summary>
+	private static MemoryStream BinarySave(ulong header, uint version, uint dataCount, params byte[] payload)
+	{
+		MemoryStream ms = new();
+		ms.Write(BitConverter.GetBytes(header));
+		ms.Write(BitConverter.GetBytes(version));
+		ms.Write(BitConverter.GetBytes(dataCount));
+		ms.Write(payload);
+		ms.Seek(0, SeekOrigin.Begin);
+		return ms;
+	}
+
+	/// <summary>认得出头、但块表读不出来(nullable-migration-34):<c>CreateReader</c> 此前以
+	/// <c>catch { return null; }</c> 收尾,而 null 在调用方只意味着「不是二进制档」——于是它回退文本读取,
+	/// 把损坏答成静默失败(LOADGLOBAL/LOADCHARA 更是什么都不说)。</summary>
+	[Fact]
+	public void CreateReader_WithTruncatedDataBlockTable_ThrowsFileEE()
+	{
+		// 声明 1 个数据块,块表一个字节都没有
+		using MemoryStream save = BinarySave(EraBDConst.Header, 1808, 1);
+
+		AssertTruncatedSave(() => EraBinaryDataReader.CreateReader(save));
+	}
+
+	/// <summary>版本不是本版本:头是本格式的,「读不出来」这件事必须报出来,版本号留在文案里
+	/// (旧实现返回 null,最终以「不是二进制档」的形式被静默掉)。</summary>
+	[Fact]
+	public void CreateReader_WithUnknownVersion_ThrowsFileEE()
+	{
+		using MemoryStream save = BinarySave(EraBDConst.Header, 1807, 0);
+
+		AssertCorruptSave(() => EraBinaryDataReader.CreateReader(save));
+	}
+
+	/// <summary>压缩档的正文损坏(GZipStream 解压失败)不是「读越界」而是同一份存档的 framing 坏了,
+	/// 故与读取器的值级损坏同文案、同分级。</summary>
+	[Fact]
+	public void CreateReader_WithCorruptGzipBody_ThrowsFileEE()
+	{
+		// ZipHeader,其后不是 gzip 流
+		using MemoryStream save = BinarySave(EraBDConst.ZipHeader, 1808, 0, 0x00, 0x01, 0x02);
+
+		AssertCorruptSave(() => EraBinaryDataReader.CreateReader(save));
+	}
+
+	/// <summary>正控制:不是本格式的文件仍返回 null,调用方的文本回退路径不受影响。</summary>
+	[Fact]
+	public void CreateReader_OnForeignContent_ReturnsNull()
+	{
+		using MemoryStream save = new(Encoding.ASCII.GetBytes(EraDataReader.EMU_1808_START + "\n1\n"));
+
+		Assert.Null(EraBinaryDataReader.CreateReader(save));
+	}
 }

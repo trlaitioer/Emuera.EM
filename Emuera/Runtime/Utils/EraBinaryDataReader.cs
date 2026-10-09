@@ -154,7 +154,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 				// reports as IOException), or a read that failed on the medium. The truncation case is
 				// EndOfStreamException above; the type name stays in the message because the stack is not
 				// printed, and an I/O fault would otherwise be indistinguishable from corrupt framing.
-				throw new FileEE($"{trerror.CorruptedSaveData.Text} ({e.GetType().Name}: {e.Message})");
+				throw CorruptedSaveDataError(e);
 			}
 		}
 	}
@@ -162,8 +162,18 @@ internal abstract class EraBinaryDataReader : IDisposable
 	public abstract int ReaderVersion { get; }
 
 	/// <summary>
-	/// FileStreamからReaderを作成
-	/// 不正なファイルの場合はnullを返す・例外は投げない
+	/// A save file whose content cannot be read: an unusable length prefix, undecodable text, a gzip body, a
+	/// failure from the medium. The type name and the detail stay in the message because this exception is
+	/// reported without a stack, so they are the only clue to which of those it was.
+	/// </summary>
+	private static FileEE CorruptedSaveDataError(Exception exc) =>
+		new($"{trerror.CorruptedSaveData.Text} ({exc.GetType().Name}: {exc.Message})");
+
+	/// <summary>
+	/// Creates a reader over a save file. Returns null when the file does not declare the binary format
+	/// (the callers then read it as the text format); once the header says it is one, a failure to read it
+	/// is a damaged save and is thrown as <see cref="FileEE"/> rather than answered with null, which every
+	/// caller can only read as "a different format" (nullable-migration-34).
 	/// </summary>
 	/// <param name="fs"></param>
 	/// <returns></returns>
@@ -176,27 +186,37 @@ internal abstract class EraBinaryDataReader : IDisposable
 		#endregion
 
 	{
+		if (fs == null || fs.Length < sizeof(ulong))
+		{
+			return null;
+		}
+
+		SaveDataReader reader = new(fs, true);
+
+		#region EM_私家版_セーブ圧縮
+
+		ulong header;
 		try
 		{
-			if (fs == null || fs.Length < 16)
-			{
-				return null;
-			}
-
-			#region EM_私家版_セーブ圧縮
-
-			SaveDataReader reader = new(fs, true);
-
 			//if (reader.ReadUInt64() != EraBDConst.Header)
 			//	return null;
-			ulong header = reader.ReadUInt64();
+			header = reader.ReadUInt64();
 			if (header != EraBDConst.Header && header != EraBDConst.ZipHeader)
 			{
 				return null;
 			}
+		}
+		catch (Exception)
+		{
+			// The magic itself could not be read (a failure from the medium). The file never said it was a
+			// binary save, so the text fallback stays the answer.
+			return null;
+		}
 
-			#endregion
+		#endregion
 
+		try
+		{
 			int version = (int)reader.ReadUInt32();
 			int datacount = (int)reader.ReadUInt32();
 			uint[] data = new uint[datacount];
@@ -227,14 +247,14 @@ internal abstract class EraBinaryDataReader : IDisposable
 			{
 				return new EraBinaryDataReader1808(reader, version, data);
 			}
-			else
-			{
-				return null;
-			}
+
+			// A version this build does not read. The version stays in the message because it is the only
+			// thing that tells an older save apart from a damaged one.
+			throw new FileEE($"{trerror.CorruptedSaveData.Text} (version: {version})");
 		}
-		catch
+		catch (Exception e) when (e is not FileEE)
 		{
-			return null;
+			throw CorruptedSaveDataError(e);
 		}
 	}
 
