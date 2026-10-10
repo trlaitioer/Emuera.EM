@@ -64,8 +64,7 @@ code = strip_keep_lines(src)
 # 与 arg-slots.py 同函数同口径（issues/04 的自校验项之一）
 nn = not_null_counts(src)
 
-# 产物里的定位一律写「类内方法名」，不写行号：行号会随任何插入而整体失效（AGENTS.md 要求
-# 「引用代码位置用文件路径 + 函数名」）。同一方法里有多处时用 ×N 保留「几处」这一事实。
+# 产物里的定位一律写「类内方法名」，不写行号：行号会随任何插入而整体失效。同一方法里有多处时用 ×N 保留「几处」这一事实。
 classes = class_spans(src)
 
 

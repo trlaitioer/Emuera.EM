@@ -79,7 +79,7 @@ issues/21 的断言审计（批次 1/2/3）与 issues/14 复核表第 4 项另�
 - 构建 `dotnet build Emuera/Emuera.csproj -c Debug-NAudio -p:Platform=x64 --no-restore --nologo -v:minimal`；测试 `dotnet test Emuera.Tests/Emuera.Tests.csproj -c Debug-NAudio -p:Platform=x64 --nologo -v:minimal`（沙箱内需提权到 `danger-full-access`）。
 - 可进 `Emuera.Tests`：行 7 的 `CodeEE`（以首个标签为 `scaningLine` 直接调 `GetVariableToken`）；文本辅助的三种缺失组合；`ExecuteLine` 对非法入参的拒绝（在 `SetParent` 之前即可断言「先于任何状态访问抛错」，与「`DoInstruction` 需要 `EmueraConsole`，不在用例集覆盖」的既有边界相容）。
 - 只能实机/人工（不在用例集覆盖范围）：行 6 的 NRE——构造 `VariableSize.CSV`（`CDFLAG,3000,3000` + `CDFLAGNAME1,100`，或 `CDFLAGNAME1,2000` + `CDFLAGNAME2,2000`），确认启动显示脚本错误而不是空引用；行 1~3 的指令面——在 `-DEBUG` 调试窗口确认 `PRINTL` 仍工作、`RESTART` 被明确拒绝。
-- 不覆盖 `EmueraPluginExample/`（AGENTS.md：用户未显式说明时不改动该项目）。
+- 不覆盖 `EmueraPluginExample/`
 
 ### 完成标准
 
@@ -112,7 +112,7 @@ issues/21 的断言审计（批次 1/2/3）与 issues/14 复核表第 4 项另�
 3. `ExecuteLine` 改返回 `bool`：放弃——已编译插件 DLL 的调用点是 `callvirt void ExecuteLine(string)`，改签名破坏二进制兼容；需要非异常错误面时另立 `TryExecuteLine`。
 4. 行 4~6 各处就地判空：放弃——同一段「位置 + 父标签」文本散在五处，且这些调用点需要 `EmueraConsole` 因而无法进 `Emuera.Tests`。
 5. 行 8 的 ERD 早退改为抛 `CodeEE`：放弃——当前无可达调用方，属 B 类，只改写 TODO；后续 issues/29 以「Try + 非空入口」实现了同一收口（当时未考虑拆分，故未采纳就地改抛）。
-6. 用 `EmueraPluginExample` 写最小插件复现（本票原方案第 1 步）：放弃——AGENTS.md 规定用户未显式说明时不改动该项目，且插件 DLL 路径也无法进 `Emuera.Tests`。
+6. 用 `EmueraPluginExample` 写最小插件复现（本票原方案第 1 步）：放弃——插件 DLL 路径也无法进 `Emuera.Tests`。
 
 ## 影响
 

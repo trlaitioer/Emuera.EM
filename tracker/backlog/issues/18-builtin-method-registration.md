@@ -91,14 +91,14 @@ status: implemented
 
 **阶段 C 收尾补记**：`builtin-contract.py` 的工厂正则当时只认表达式体单行工厂（`() => new(...);`），而 266 个工厂实际都是块体（`{ return new X(...); }`），实测匹配 **0/266**——该状态下复跑会写出空表（`write_doc` 无条件执行）。已改为「attribute 与工厂签名相邻」+ 括号配对取构造实参（两种体形都收），并在 `main()` 加 attribute 处数交叉校验，漏匹配不再只剩 `EXPECTED_NAMES` 一个总数兜底。修好后复跑 `docs/builtin-functions.md` 与改动前**逐字节相同**，自校验打印 266 名 / 183 类 / 114 规则段、可省略 96 / 拒绝显式空槽 54。
 
-**文档同步补记**：长期文档已同步——`docs/architecture.md`、`docs/csv-erb-syntax.md`、`docs/builtin-functions.md`（生成器 LEGEND）、`AGENTS.md` 第 6 条的合并配方。`tracker/` 下未结票与冻结工件（`slots-consumption.md`、`slots-worklist.md` 两处路径文案）里指向 `Creator.Method.cs` 的死引用改指 `BuiltinMethod/` 目录（按类定位，旧行号不照搬；生成器仍用 `BuiltinMethod/*.cs` 通配，而通配不是合格的「代码位置」口径，见「复核补记」）；已结票按「过程靠 git」不动。
+**文档同步补记**：长期文档已同步——`docs/architecture.md`、`docs/csv-erb-syntax.md`、`docs/builtin-functions.md`（生成器 LEGEND）。`tracker/` 下未结票与冻结工件（`slots-consumption.md`、`slots-worklist.md` 两处路径文案）里指向 `Creator.Method.cs` 的死引用改指 `BuiltinMethod/` 目录（按类定位，旧行号不照搬；生成器仍用 `BuiltinMethod/*.cs` 通配，而通配不是合格的「代码位置」口径，见「复核补记」）；已结票按「过程靠 git」不动。
 
 **复核补记（代码复核后修订）**：
 
 - 「排序」按**误加**处理并从静态构造移除：Gate C 只钉键集，注册表枚举序不作契约（理由见「完成标准」末条）
 - 注册层不再写 `!factory.IsStatic`：扫描只取 `static` 方法，该判据在扫描结果上不可达；改由 Gate A 的 `Static|Instance` 全量扫描断言「带 `[BuiltinMethod]` 的方法全是合法 `static` 工厂」并用 `类型名.方法名` 点名（闸门所述「非法工厂抛 `DeclaringType.Name.MethodName` 消息」对非 static 这一形态由闸门承担，其余形态仍在注册层）
 - `CreateMethod` 里被 `IsAbstract` 覆盖的 `returnType.IsInterface` 一并去掉
-- `docs/` 与生成器 LEGEND 里作为**代码位置**的 `BuiltinMethod/*.cs` 通配改为 `BuiltinMethod/` 目录 + `grep -n '[BuiltinMethod("NAME")]'` 定位口径（`AGENTS.md` 代码/文档 4 要求给出可定位的路径，通配符两者都不是）
+- `docs/` 与生成器 LEGEND 里作为**代码位置**的 `BuiltinMethod/*.cs` 通配改为 `BuiltinMethod/` 目录 + `grep -n '[BuiltinMethod("NAME")]'` 定位口径
 - `docs/architecture.md` 的「各含多个 region」改为「各由多个来源 region 合并而成」（文件内 `#region` 实测 `Graphics.cs` 17、`ArrayOperations.cs` 4、`GeneralPurpose.cs`/`StringOperations.cs` 各 1）
 - 无损证明措辞按机械核验结果精化（见「阶段 A 实施补记」的**无损证明**条）
 
