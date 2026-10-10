@@ -352,7 +352,7 @@ internal sealed class ConfigData
 
 	public AConfigItem? GetConfigItem(string key)
 	{
-		return FindByName(configArray, key);
+		return FindByKey(configArray, key);
 	}
 
 	public AConfigItem? GetReplaceItem(ConfigCode code)
@@ -362,7 +362,7 @@ internal sealed class ConfigData
 
 	public AConfigItem? GetReplaceItem(string key)
 	{
-		return FindByName(replaceArray, key, false);
+		return FindByKey(replaceArray, key);
 	}
 
 	public AConfigItem? GetDebugItem(ConfigCode code)
@@ -372,7 +372,7 @@ internal sealed class ConfigData
 
 	public AConfigItem? GetDebugItem(string key)
 	{
-		return FindByName(debugArray, key, false);
+		return FindByKey(debugArray, key);
 	}
 
 	private static AConfigItem? FindByCode(IEnumerable<AConfigItem> items, ConfigCode code)
@@ -380,12 +380,13 @@ internal sealed class ConfigData
 		return items.FirstOrDefault(item => item != null && item.Code == code);
 	}
 
-	private static AConfigItem? FindByName(IEnumerable<AConfigItem> items, string key, bool matchEnglishName = true)
+	// All three arrays share one key space; the spelling of a line says nothing about which file it came
+	// from (see AConfigItem.WrittenKey/Matches in Emuera/Runtime/Config/ConfigItem.cs).
+	private static AConfigItem? FindByKey(IEnumerable<AConfigItem> items, string key)
 	{
 		#region EM_私家版_Emuera多言語化改造
 
-		key = key.ToUpper();
-		return items.FirstOrDefault(item => item != null && (item.Name == key || item.Text == key || (matchEnglishName && item.EngText == key)));
+		return items.FirstOrDefault(item => item != null && item.Matches(key));
 
 		#endregion
 	}
@@ -607,7 +608,7 @@ internal sealed class ConfigData
 						#region EM_私家版_Emuera多言語化改造
 
 						// sb.Append(ex.Text).Append(":");
-						sb.Append(Config.EnglishConfigOutput ? ex.EngText : ex.Text).Append(':');
+						sb.Append(ex.WrittenKey).Append(':');
 
 						#endregion
 
@@ -727,6 +728,9 @@ internal sealed class ConfigData
 
 				#endregion
 
+				// An unknown key is not an error and is ignored without a word: config files outlive the item
+				// set (hand-written keys, keys written by another Emuera version). This is the one place the
+				// silence is justified - the two other loaders below point here.
 				if (item == null)
 				{
 					continue;
@@ -821,6 +825,7 @@ internal sealed class ConfigData
 				}
 
 				AConfigItem? item = GetReplaceItem(itemName);
+				// Unknown key: ignored silently, as loadConfig (Emuera/Runtime/Config/ConfigData.cs) does.
 				item?.TryParse(tokens[1]);
 			}
 		}
@@ -899,6 +904,7 @@ internal sealed class ConfigData
 				}
 
 				AConfigItem? item = GetDebugItem(tokens[0].Trim());
+				// Unknown key: ignored silently, as loadConfig (Emuera/Runtime/Config/ConfigData.cs) does.
 				item?.TryParse(tokens[1]);
 #if DEBUG
 				//else

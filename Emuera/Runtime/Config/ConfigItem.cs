@@ -31,12 +31,22 @@ internal abstract class AConfigItem(ConfigCode code, string text, string etext)
 	public abstract U GetValue<U>();
 	public abstract string ValueToString();
 	public readonly ConfigCode Code = code;
-	public readonly string Name = EnumsNET.Enums.AsString(code);
 
 	#region EM_私家版_Emuera多言語化改造
 
 	public readonly string Text = text.ToUpper();
 	public readonly string EngText = etext.ToUpper();
+
+	// The one declaration of the config key space: WrittenKey is the key a config line is written under,
+	// Matches accepts every key that line can be read back under, and the two are the same set on purpose.
+	// Both spellings are compared case-insensitively against Text/EngText, which are upper-cased, so no
+	// caller has to pre-normalise the key (issue backlog-01).
+	public string WrittenKey => Config.EnglishConfigOutput ? EngText : Text;
+
+	public bool Matches(string key)
+	{
+		return Text.Equals(key, StringComparison.OrdinalIgnoreCase) || EngText.Equals(key, StringComparison.OrdinalIgnoreCase);
+	}
 
 	#endregion
 
@@ -134,7 +144,7 @@ internal sealed class ConfigItem<T> : AConfigItem
 	{
 		#region EM_私家版_Emuera多言語化改造
 
-		return (Config.EnglishConfigOutput ? EngText : Text) + ":" + ValueToString();
+		return WrittenKey + ":" + ValueToString();
 
 		#endregion
 	}
