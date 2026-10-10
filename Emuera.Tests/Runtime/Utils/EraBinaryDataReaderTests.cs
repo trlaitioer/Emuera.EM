@@ -343,6 +343,35 @@ public class EraBinaryDataReaderTests
 		AssertAbnormalBinaryData(() => reader.ReadIntArray(new long[2], true));
 	}
 
+	/// <summary>零串计数按存档编码可以是 Int64(nullable-migration-38):旧写法先 `(int)` 截断,
+	/// 0x1_0000_0001 会变成 1——零串被读短、数组值静默出错,却不落任何错误(流位置已按 Int64 消费完,
+	/// 后续解析仍然同步,坏档因此被当成一份值不同的正常档读进来)。现在按 long 判上界,越界即报存档错误。</summary>
+	[Fact]
+	public void ReadIntArray_WithInt64RunCountBeyondTheArray_ThrowsFileEE()
+	{
+		// 声明长度 2;Zero 标记(0xF0)+ Int64 标记(0xD2)+ 计数 0x1_0000_0001
+		using MemoryStream save = SaveStream([
+			.. BitConverter.GetBytes(2), 0xF0, 0xD2, .. BitConverter.GetBytes(0x1_0000_0001L), 0xFF]);
+		using EraBinaryDataReader reader = EraBinaryDataReader.CreateReader(save)!;
+
+		AssertAbnormalBinaryData(() => reader.ReadIntArray(new long[2], true));
+	}
+
+	/// <summary>正控制:判据是「越界」而不是「编码宽度」——Int64 编码的计数只要在界内就照常读入。</summary>
+	[Fact]
+	public void ReadIntArray_WithInt64RunCountWithinTheArray_Reads()
+	{
+		// 声明长度 3;Zero 标记 + Int64 标记 + 计数 3,EoD
+		using MemoryStream save = SaveStream([
+			.. BitConverter.GetBytes(3), 0xF0, 0xD2, .. BitConverter.GetBytes(3L), 0xFF]);
+		using EraBinaryDataReader reader = EraBinaryDataReader.CreateReader(save)!;
+		long[] target = [1, 1, 1];
+
+		reader.ReadIntArray(target, true);
+
+		Assert.Equal(new long[] { 0, 0, 0 }, target);
+	}
+
 	/// <summary>二维声明形状的元素总数超出可分配上限(两个维度各自都合法,乘积不合法):在分配之前拒绝,
 	/// 而不是让 <see cref="OverflowException"/> 逃逸。</summary>
 	[Fact]

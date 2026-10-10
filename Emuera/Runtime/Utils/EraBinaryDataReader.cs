@@ -397,6 +397,11 @@ internal abstract class EraBinaryDataReader : IDisposable
 			throw new FileEE(trerror.AbnormalFileData.Text);
 		}
 
+		/// <summary>
+		/// Reads a block-tagged integer. Callers keep the result as <see cref="long"/> rather than narrowing it:
+		/// the Int64 tag carries any 64-bit value, so an <c>(int)</c> cast before the bounds check would
+		/// silently truncate a damaged run count instead of rejecting it (nullable-migration-38).
+		/// </summary>
 		private long m_ReadInt()
 		{
 			byte b = reader.ReadByte();
@@ -537,7 +542,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 
 				if (b == Ebdb.Zero)
 				{
-					int cnt = (int)m_ReadInt();
+					long cnt = m_ReadInt();
 					ThrowIfOutOfRange(cnt < 0 || cnt > bound0 - x);
 					if (needInit)
 					{
@@ -547,7 +552,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 						}
 					}
 
-					x += cnt;
+					x += (int)cnt;
 					continue;
 				}
 
@@ -638,7 +643,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 
 				if (b == Ebdb.ZeroA1)
 				{
-					int cnt = (int)m_ReadInt();
+					long cnt = m_ReadInt();
 					ThrowIfOutOfRange(cnt < 0 || cnt > bound0 - x);
 					if (needInit)
 					{
@@ -649,7 +654,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 						}
 					}
 
-					x += cnt;
+					x += (int)cnt;
 					y = 0;
 					continue;
 				}
@@ -672,7 +677,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 
 				if (b == Ebdb.Zero)
 				{
-					int cnt = (int)m_ReadInt();
+					long cnt = m_ReadInt();
 					ThrowIfOutOfRange(cnt < 0 || x >= bound0 || cnt > bound1 - y);
 					if (needInit)
 					{
@@ -682,7 +687,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 						}
 					}
 
-					y += cnt;
+					y += (int)cnt;
 					continue;
 				}
 
@@ -790,7 +795,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 
 				if (b == Ebdb.ZeroA2) //cnt分だけ空の行列が連続
 				{
-					int cnt = (int)m_ReadInt();
+					long cnt = m_ReadInt();
 					ThrowIfOutOfRange(cnt < 0 || cnt > bound0 - x);
 					if (needInit)
 					{
@@ -802,7 +807,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 						}
 					}
 
-					x += cnt;
+					x += (int)cnt;
 					y = 0;
 					z = 0;
 					continue;
@@ -832,7 +837,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 
 				if (b == Ebdb.ZeroA1) //cnt分だけ空の列が連続
 				{
-					int cnt = (int)m_ReadInt();
+					long cnt = m_ReadInt();
 					ThrowIfOutOfRange(cnt < 0 || x >= bound0 || cnt > bound1 - y);
 					if (needInit)
 					{
@@ -843,7 +848,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 						}
 					}
 
-					y += cnt;
+					y += (int)cnt;
 					z = 0;
 					continue;
 				}
@@ -866,7 +871,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 
 				if (b == Ebdb.Zero) //cnt分だけ0が連続
 				{
-					int cnt = (int)m_ReadInt();
+					long cnt = m_ReadInt();
 					ThrowIfOutOfRange(cnt < 0 || x >= bound0 || y >= bound1 || cnt > bound2 - z);
 					if (needInit)
 					{
@@ -876,7 +881,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 						}
 					}
 
-					z += cnt;
+					z += (int)cnt;
 					continue;
 				}
 
@@ -970,7 +975,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 
 				if (b == Ebdb.Zero)
 				{
-					int cnt = (int)m_ReadInt();
+					long cnt = m_ReadInt();
 					ThrowIfOutOfRange(cnt < 0 || cnt > bound0 - x);
 					if (needInit)
 					{
@@ -980,7 +985,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 						}
 					}
 
-					x += cnt;
+					x += (int)cnt;
 					continue;
 				}
 
@@ -1059,7 +1064,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 
 				if (b == Ebdb.ZeroA1)
 				{
-					int cnt = (int)m_ReadInt();
+					long cnt = m_ReadInt();
 					ThrowIfOutOfRange(cnt < 0 || cnt > bound0 - x);
 					if (needInit)
 					{
@@ -1070,7 +1075,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 						}
 					}
 
-					x += cnt;
+					x += (int)cnt;
 					y = 0;
 					continue;
 				}
@@ -1093,7 +1098,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 
 				if (b == Ebdb.Zero)
 				{
-					int cnt = (int)m_ReadInt();
+					long cnt = m_ReadInt();
 					ThrowIfOutOfRange(cnt < 0 || x >= bound0 || cnt > bound1 - y);
 					if (needInit)
 					{
@@ -1103,7 +1108,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 						}
 					}
 
-					y += cnt;
+					y += (int)cnt;
 					continue;
 				}
 
@@ -1194,7 +1199,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 
 				if (b == Ebdb.ZeroA2) //cnt分だけ空の行列が連続
 				{
-					int cnt = (int)m_ReadInt();
+					long cnt = m_ReadInt();
 					ThrowIfOutOfRange(cnt < 0 || cnt > bound0 - x);
 					if (needInit)
 					{
@@ -1206,7 +1211,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 						}
 					}
 
-					x += cnt;
+					x += (int)cnt;
 					y = 0;
 					z = 0;
 					continue;
@@ -1236,7 +1241,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 
 				if (b == Ebdb.ZeroA1) //cnt分だけ空の列が連続
 				{
-					int cnt = (int)m_ReadInt();
+					long cnt = m_ReadInt();
 					ThrowIfOutOfRange(cnt < 0 || x >= bound0 || cnt > bound1 - y);
 					if (needInit)
 					{
@@ -1247,7 +1252,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 						}
 					}
 
-					y += cnt;
+					y += (int)cnt;
 					z = 0;
 					continue;
 				}
@@ -1270,7 +1275,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 
 				if (b == Ebdb.Zero) //cnt分だけ0が連続
 				{
-					int cnt = (int)m_ReadInt();
+					long cnt = m_ReadInt();
 					ThrowIfOutOfRange(cnt < 0 || x >= bound0 || y >= bound1 || cnt > bound2 - z);
 					if (needInit)
 					{
@@ -1280,7 +1285,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 						}
 					}
 
-					z += cnt;
+					z += (int)cnt;
 					continue;
 				}
 
