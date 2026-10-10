@@ -1,6 +1,6 @@
 ---
 id: nullable-migration-34
-status: in-progress
+status: implemented
 type: bug
 ---
 
@@ -20,7 +20,7 @@ type: bug
 
 第 1 组已落地:裁定取「保留返回值契约 + 打出可读错误」——失败不升级成异常(`LoadGlobal`/`LoadChara` 的脚本通道是 `RESULT`),改由回传原因、调用点打印;`EraBinaryDataReader.CreateReader` 只对「不是二进制档」返回 null,头认出来之后一律抛 `FileEE`。做法与判据见「实施结果」第 1 组。
 
-第 2、3 组待评估:前者要先区分「存档坏」与「脚本数据坏」,后者是读侧边界检查(索引推进与分配长度上界),裁定不与第 1 组共用,范围见「任务」第 2、3 组。
+第 2、3 组已落地(2026-10-10):前者裁定为「与解码失败同档同文案」——内容级失败也是同一份存档读不出来,类型名留在文案里保住「存档结构坏 vs 脚本数据坏」这一层;后者裁定为「只做确定性长度拒绝」(负长度、单维超 `Array.MaxLength`、分配形状的元素总数超上限),「合法但巨大」的长度仍按资源不足处理。做法与用例见「实施结果(2026-10-10)」。
 
 ## 实施结果(2026-10-07)
 
@@ -33,11 +33,22 @@ type: bug
 - 用例:`EraBinaryDataReaderTests` 补 4 条(块表截断、未知版本、gzip 正文损坏、非本格式仍返 null 的正控制),`VariableEvaluatorLoadTests` 补 4 条(chara 两处原因、global 两处原因,含 `RESULT` 归零)。旧行为复测:`CreateReader` 临时换回 `catch { return null; }` → **3 条红**;`LoadChara` 临时换回静默 `return` 并去掉 catch → **2 条红**;`LoadGlobal` 的 catch 临时换回丢弃原因 → **1 条红**
 - 验证:`Debug-NAudio` 与 `Debug`(WMP) 均 0 错误、CS86xx 0 条;`Emuera.Tests` 789 → **803** 全绿(本票 8 条,同批 35 的 6 条;评审修订再追加 1 条后为 **804**);后缀断言计数不变(`Emuera` 799 / 残差 266)
 
-仍未做,与第 1 组内另登记的两处:
+### 实施结果(2026-10-10):第 2、3 组
 
-- 第 2 组(`ReadXml`/`ReadDataTable` 的 XML 侧 BCL 异常、`ReadMap` 重复键的 `ArgumentException`)与第 3 组(`ReadIntArray*` 按存档内容推进的索引与分配上界)保持原判
-- `LoadFrom`(`LOADDATA`)与 `LoadGlobalFile` 都在**读取之前**调 `RemoveEMSaveData()`/`RemoveEMGlobalData()`:读取失败时当前存档/全局数据已被删除(二进制档读不出来时 `CreateReader` 会先抛 `FileEE`,该路径的删除尚未发生;文本档读损坏仍如此)。`Remove*` 必须排在加载之前(否则会删掉刚读进来的内容),故改动要么是快照/回滚,要么另立裁定,未在本票处置
-- 手动/自动存档路径的 XML 侧与写入侧不在本票(写入侧见 `nullable-migration-35`)
+第 2 组(内容级失败)取「与解码失败同档」:新增 `GuardedContent<T>`(`Runtime/Utils/EraBinaryDataReader.cs`),把 `ReadMap`/`ReadXml`/`ReadDataTable` 包成 `FileEE(CorruptedSaveData (类型名: 细节))`,与 `SaveDataReader.Guarded` 同文案同分档。判据:坏的是内容而不是流,但两者对玩家是同一件事(这份存档读不出来);类型名与细节留在文案里,「存档结构坏」与「脚本数据坏」的区分不丢。漏斗放行 `OutOfMemoryException`:资源不足仍按资源不足处理,与第 3 组的边界一致。
+
+第 3 组(读侧边界)取「只做确定性长度拒绝」:
+
+- 声明形状:`ValidateShape(params int[])` 在分配之前拒绝负长度、单维超 `Array.MaxLength`、以及分配形状的元素总数超上限。重分配路径按**实际分配形状** `max(当前维, 声明维)` 验证——它可能比两个形状各自都宽(另一维更大),只验声明形状会漏。
+- 游标:`ThrowIfOutOfRange(bool)` 在每个推进游标的分支与元素写入点收口(六个 `Read*Array` 共 24 处),越界报既有的 `FileEE(AbnormalBinaryData)`,与同一方法内「未知块标记」同档同文案。零串的判据写成 `cnt > 边界 - 游标` 而不是 `游标 + cnt > 边界`:两个操作数都可能接近 `int.MaxValue`,`int` 相加会回绕成负数而把越界放行。
+- 上界取**分配长度**而不是重叠长度 `length0`:「存档里的数组比当前变量大」时读取器会分配 `max(当前, 声明)` 并把 `length0` 缩到两者较小值,故游标越过 `length0` 但仍在分配范围内是**合法**的(对照 `EraBinaryDataWriter.writeData`:零串计数只在「后面还有非零」时写出,行/列标记也不会越过声明形状)。两条正控制用例专门钉住这一点。
+- 不收敛 `OutOfMemoryException`:声明长度合法但巨大(如 1e9)时仍按资源不足处理,与「坏输入报存档错误」分开。
+
+用例(`Emuera.Tests`,15 条):12 条负例(重复键、非法 XML、非法 schema、负长度、超上限、元素越界、零串越界、二维形状超限、二维重分配形状超限、二维列越界、三维深度越界、字符串数组越界)+ 3 条正控制(零串正好填满、末尾全零行、存档数组大于变量)。旧行为复测:把 `GuardedContent` 的 catch 失效、`ValidateShape`/`ThrowIfOutOfRange` 改为不抛 → **12 条负例红**、3 条正控制绿,与「旧写法抛 `ArgumentException`/`XmlException`/`IndexOutOfRangeException`/`OverflowException`」一一对应。重分配判据另单独复测(只去掉 `ValidateShape(alloc0, alloc1)`)→ **只有重分配那条红**:两个形状各自都合法(1x100000 与 100000x1)、逐维取大后才超限——声明形状超限的夹具触发的是声明形状检查,覆盖不到这条。
+
+验证:`Debug-NAudio` 与 `Debug`(WMP) 均 0 错误、CS86xx 0 条;`Emuera.Tests` 806 → **821** 全绿;`Emuera` 的后缀断言 799 → **798**、残差 266 → **265**(下降的 1 处来自 `nullable-migration-32` §3,本票未增删断言;`Emuera.Tests` 因新用例由 144 涨到 159,该工程按 `nullable-migration-14` 豁免)。
+
+「复核补记」里保留现状的两处已转出为独立票,不在本票:`nullable-migration-36`(读档前删除当前存档)、`nullable-migration-37`(头部 catch 把介质故障当成「不是本格式」)。手动/自动存档路径的 XML 侧与写入侧也不在本票(写入侧见 `nullable-migration-35`)。
 
 ### 复核补记(2026-10-07)
 

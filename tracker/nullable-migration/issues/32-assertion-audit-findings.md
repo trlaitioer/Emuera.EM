@@ -1,6 +1,6 @@
 ---
 id: nullable-migration-32
-status: in-progress
+status: need-check
 type: bug
 ---
 
@@ -30,7 +30,7 @@ type: bug
 
 - 位置：`Emuera/UI/Game/PrintStringBuffer.cs:683` 的 `ConsoleStyledString? css = part as ConsoleStyledString; if (part == null) { return -1; }`
 - 事实：`part` 是非可空形参，该判空恒假；疑应为 `css == null`
-- 影响：当前不可达（上游 `!part.CanDivide` 门禁保证 `part` 是 `ConsoleStyledString`，全仓唯一 `CanDivide => true` 的实现就是它），故只登记为死判断；若判空语义改为 `css`，行为在不可达路径上会变（NRE → 返回 -1），需与 §1 的注释一起定
+- 影响：当前不可达（上游 `!part.CanDivide` 门禁保证 `part` 是 `ConsoleStyledString`；生产代码里唯一 `CanDivide => true` 的实现就是它，`Emuera.Tests` 的 `FakeNode` 也报 true），故只登记为死判断；若判空语义改为 `css`，行为在不可达路径上会变（NRE → 返回 -1），需与 §1 的注释一起定
 
 ### 4. `SP_SPLIT_ArgumentBuilder` 的 `term!` 与姊妹 builder 的回退行为不一致
 
@@ -68,7 +68,7 @@ type: bug
 
 ## 实施结果(2026-10-06)
 
-第 1、2 项已落地(第 3~6 项仍待定),两者都先核对了 upstream 在线文档再定做法。
+第 1、2 项已落地,两者都先核对了 upstream 在线文档再定做法;第 3~6 项于 2026-10-10 收尾(§3/§5 落地、§4/§6 裁定保留差异),见「实施结果(2026-10-10)」。
 
 ### 第 1 项:`XML_ADDATTRIBUTE`/`XML_ADDNODE` 的节点种类
 
@@ -94,9 +94,19 @@ type: bug
 - `python3.14 tracker/arg-contract/builtin-contract.py` 自校验通过(266 名 / 183 类 / 114 规则段,可省略 96、拒绝空槽 54 均未变)。
 - 余下四处假断言(`attr!`×2、`OwnerElement!`×2)随 `Insert` 改写消失,`bang-sites.md` 的「已失效站点」已按该文的既有约定登记这 5 处(含判定更正的 `Insert#1`)。
 
-### 仍未做
+### 实施结果(2026-10-10):第 3~6 项
 
-第 3~6 项(`getDivideIndex` 笔误、`SP_SPLIT` 与 `SP_HTMLSPLIT` 的回退不一致、`RETURNFORM` 死分支、`DT_COLUMN_OPTIONS` 的 `id` 列守卫)保持原判,未实施。
+第 3、5 项是不可达路径上的清理,无可见行为变更,已落地:
+
+- **§3 `getDivideIndex`**:`if (part == null)` 改为 `if (css == null)`(`part` 在此非空,原判空恒假),随之去掉 `css!.PointX` 的断言——这一处是 `Emuera` 后缀断言 799 → 798 的唯一来源。行为差异只落在不可达路径上:若将来出现「`CanDivide` 为真但不是 `ConsoleStyledString`」的部件(生产代码里只有 `ConsoleStyledString` 报 `CanDivide`;`Emuera.Tests` 的 `FakeNode` 也报 true,故生产上不可达、类型上不是不变量;插件可以另加),旧写法是 NRE、新写法返 -1。
+- **§5 `RETURNFORM` 死分支**:删掉 `FORM_STR_ANY_ArgumentBuilder` 内的 `line.FunctionCode == FunctionCode.RETURNFORM` 分支(连同只为它存在的 `Argument ret;`)。依据是 `RETURNFORM_Instruction` 的 `ArgBuilder` 用的是 `FORM_STR`(`FORM_STR_ANY` 那一行仍被注释),该分支永不执行,也没有用例能覆盖它。
+
+第 4、6 项是产品判断,裁定**保留差异**(2026-10-10),判据如下:
+
+- **§4 `SP_SPLIT` 与 `SP_HTMLSPLIT` 的回退不一致**:两者的可观测差异只落在「第 4 实参给了但不是可改变量」这一个形态上——`getChangeableVariable` 会 `warn`,把该行标成错误,故这一形态**今天就无法执行**。因此统一(补 `?? new VariableTerm(RESULT…)`)不会破坏任何可运行脚本,但会把这个今天「响亮报错」的形态变成「静默写 RESULT」,即新增一种静默行为;按兼容优先保留差异,判据已写进 `SP_SPLIT_ArgumentBuilder` 的注释(`term!` 的严格为假由错误标记兜住)。
+- **§6 `DT_COLUMN_OPTIONS` 的 `id` 列守卫**:改列默认值只影响**此后新增行**的取值,不改任何既有行的 `id`,与 `DTCanNotEditIdColumn` 所保护的「既有 `id` 不被改写」不是同一层。加守卫会把今天**可用**的写法变成 `CodeEE`,是对现有脚本的兼容破坏;故明确「改默认值不算改 `id` 列」并保留差异,判据写进 `DT_COLUMN_OPTIONS_Instruction.DoInstruction` 的注释。
+
+验证(2026-10-10):`Debug-NAudio` 与 `Debug`(WMP) 均 0 错误、CS86xx 0 条;`Emuera.Tests` **821** 全绿(含 `nullable-migration-34` 本批新增的 15 条用例)。本批未新增用例:§3/§5 的两条路径都不可达,写不出可执行用例(与票面原判一致);§4/§6 的裁定是不改行为,同样无新用例。`Emuera` 后缀断言 799 → **798**、残差 266 → **265**。
 
 ## 影响
 
@@ -104,4 +114,5 @@ type: bug
 - 第 1 项的实施范围包含票面「任务」未列的 `XML_ADDNODE`（同一处 `Insert` 的 Node 臂：method 0 的非元素节点、method 1/2 的以文档为父的参照节点——根元素与顶层注释/处理指令），属同根因同批处理；`docs/builtin-functions.md` 的 `XML_ADDNODE` 说明列随之改写
 - 3、4 当前不可达，属清理项；4 的两种取法行为不同（回退到 RESULT vs 报错），需先定语义
 - 5 的注册改动会改变 `RETURNFORM` 的参数形状；6 的两种取法行为不同（拦下改列默认值 vs 放行），若判定加守卫则 `DT_COLUMN_OPTIONS` 的可观测行为随之变化，须给 `Emuera.Tests` 用例
+- 2026-10-10 的实际取法：3、5 按清理落地（无可见行为变更），4、6 取「保留差异」，故 `SP_SPLIT` 与 `DT_COLUMN_OPTIONS` 的对外行为与落地前一致——本票最终没有改变任何可运行脚本的行为，唯一的行为差异落在不可达路径（§3 的 NRE → 返 -1）
 - 本票不动 `nullable-migration-22` §1 已补的理由注释；§1 的判定更正（`node.Attributes!` 由 A 改为 C）已同步 `bang-sites.md` 的结论列、判定进度表（A 281 / C 17）与「已失效站点」；§2 的站点属 `(x as T)!` 桶，不在 `bang-sites.md` 的残差范围内，无需同步

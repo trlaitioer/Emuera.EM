@@ -1,6 +1,6 @@
 ---
 id: nullable-migration-35
-status: in-progress
+status: implemented
 type: bug
 ---
 
@@ -40,7 +40,7 @@ type: bug
 落地内容即上述方案，实施中确认的边界：
 
 - `TempFileWriter` 的回调拥有流（`EraDataWriter.Close()`/`EraBinaryDataWriter` 的 `Dispose` 会关掉底层 `FileStream`），故该类在回调返回后不再触碰流；`using` 对已关闭的流是幂等的
-- 读写两侧的失败语义按 `nullable-migration-34` 的裁定（保留返回值契约 + 打出可读错误）分工：写入侧把原因回传由调用点打印；`SaveGlobal` 的失败文案未带原因（保留既有 `ErrorSavingGlobalData`），属本票未纳入的一处
+- 读写两侧的失败语义按 `nullable-migration-34` 的裁定（保留返回值契约 + 打出可读错误）分工：写入侧把原因回传由调用点打印；`SaveGlobal` 的失败文案当时未带原因，已由本节的「评审修订 a2」改为附原因（本行原记「属本票未纳入的一处」，以 a2 为准）
 - `SaveChara`/`SaveVariable` 的 catch 只包非 `CodeEE` 的异常：`VariableToken.GetArray()` 对空引用变量抛 `CodeEE(EmptyRefVar)`，那是脚本自身的错误，按分级语义应留在 Code 档并保留该档打出的脚本侧调用栈（方案第 2 条只写「失败包成 `FileEE`」，此处按 `ErrorReport` 的档位收窄）
 - 目标档为只读文件时新旧写法都失败（旧：`FileMode.Create` 打不开；新：`File.Move` 拒绝覆盖），行为一致，`DelData` 的只读检查不受影响
 
@@ -54,12 +54,12 @@ type: bug
 
 ### 评审修订(2026-10-09)
 
-评审判出四处，a1/a2/c1 已落地，c2 待裁定（落地后本节与状态一并收尾）：
+评审判出四处，a1/a2/c1 已落地，c2 已裁定（2026-10-10），本票至此收尾：
 
 - **a1 路径解析不设防（已修）**：`LoadGlobal` 与 `SaveGlobal` 的 `getSaveDataPathG()` 都在任何 try 之外。方案第 2 条只把这条规则写给了 `SaveTo`（「路径解析也放进自己的 try」），本批推广到这两个入口——`LoadGlobal` 的失败走 `FailWith`，`SaveGlobal` 的解析移进它自己的 try（原 `catch (SystemException)` 接不住 NRE）
 - **a2 `SaveGlobal` 的档位与原因（已修）**：原 `catch (SystemException) { throw new CodeEE(ErrorSavingGlobalData); }` 有两处问题——不带原因，且 `IOException` 是 `SystemException` 的子类，磁盘满、文件被锁、`File.Move` 被拒都会落 Code 档（「脚本错误」抬头 + 出错脚本行 + eraBasic 函数调用栈），即介质故障被报成脚本自身的错误。改为 `catch (Exception e) { throw new FileEE($"{ErrorSavingGlobalData} ({Reason(e)})"); }`：抬头文案保留、附原因、归存档档。方案第 3 条「wherever it is reported」原先比字面窄，至此覆盖
 - **c1 `LoadChara` 的 catch 比注释宽（已收窄）**：`catch (EmueraException e)` 也吞 `CodeEE`，与 `SaveChara`/`SaveVariable` 的 `when (e is not CodeEE)` 相反；改为同一判据，注释改成准确说法。**复核发现该路径今天不产生 `CodeEE`**：`CharacterData.LoadFromStreamBinary` 写的是 `dataIntegerArray[codeInt]`/`UserDefCVarDataList[...]` 这类现成数组，不调 `GetArray()`，故这一处是「判据统一 + 注释诚实」，不是修活缺陷，也因此没有对应用例（无法构造）
-- **c2 `SaveToFile` 的 catch 不过滤（待裁定）**：原判「`SaveToStreamBinary` 经 `GetArray()` 抛 `CodeEE(EmptyRefVar)` 被吞」——**该前提经复核不成立**：`ReferenceToken` 只由 `CreatePrivateVariable` 的 `data.Reference` 分支产生，而它不往任何存档列表注册（`userDefinedStaticVarList`/`userDefinedSaveVarList`/`userDefinedGlobalVarList` 只由 `CreateUserDefVariable` 填，那里不产参照型），`CharacterData.SaveToStreamBinary` 写的是 `UserDefCVarDataList[...]` 数组。故方案第 40 行那条规则唯一有实际主体的地方是 `SAVEVAR`（`NotImplCodeEE`；实现后其实参可来自脚本、才可能拿到参照型），`SAVEDATA`/`SaveChara` 上的 `CodeEE` 过滤器是策略声明而非活分支。裁定待定：选「过滤 + 两个系统流程调用点兜住」（`SaveToFile` 过滤后若不在 `endCallSaveInfo`/`endAutoSaveCallSaveInfo` 兜住，自动存档遇异常会中止 `DoScript()`）还是「维持宽 catch，只把规则的适用范围写清楚」
+- **c2 `SaveToFile` 的 catch 不过滤（待裁定）**：原判「`SaveToStreamBinary` 经 `GetArray()` 抛 `CodeEE(EmptyRefVar)` 被吞」——**该前提经复核不成立**：`ReferenceToken` 只由 `CreatePrivateVariable` 的 `data.Reference` 分支产生，而它不往任何存档列表注册（`userDefinedStaticVarList`/`userDefinedSaveVarList`/`userDefinedGlobalVarList` 只由 `CreateUserDefVariable` 填，那里不产参照型），`CharacterData.SaveToStreamBinary` 写的是 `UserDefCVarDataList[...]` 数组。故方案第 40 行那条规则唯一有实际主体的地方是 `SAVEVAR`（`NotImplCodeEE`；实现后其实参可来自脚本、才可能拿到参照型），`SAVEDATA`/`SaveChara` 上的 `CodeEE` 过滤器是策略声明而非活分支。裁定待定：选「过滤 + 两个系统流程调用点兜住」（`SaveToFile` 过滤后若不在 `endCallSaveInfo`/`endAutoSaveCallSaveInfo` 兜住，自动存档遇异常会中止 `DoScript()`）还是「维持宽 catch，只把规则的适用范围写清楚」。**裁定（2026-10-10）：取后者**——过滤器今天没有活主体（前提见本条开头），取前者等于在两个系统流程调用点各加一处不可达守卫，且写不出能分辨旧行为的用例；判据已写进 `SaveToFile` 的 catch 注释，其中含「实现 `SAVEVAR` 时重访」这一条
 
 用例新增 2 条（本批）：`SaveDataWriteTests.SaveGlobal_WhenTheWriteFails_ThrowsASaveDataError`、`VariableEvaluatorLoadTests.LoadGlobal_WhenThePathCannotBeResolved_ReturnsFalse`；两条都做了旧行为复测（把路径守卫换回不设防、`SaveGlobal` 换回 `CodeEE` → 2 条红）。验证：`Debug-NAudio` 0 错误、97 条既有分析器警告（无 CS86xx）；`Emuera.Tests` 804 → **806** 全绿。
 
@@ -76,3 +76,5 @@ type: bug
 - Lang 键的删除是对外可见面（外部语言包按 id 覆盖）：`UnexpectedErrorInSavedata`/`AutoSaveError1`/`UnexpectedSaveError` 三个 id 消失，其译文条目在语言包中成为无效条目（不报错）
 - 2026-10-09 追加的行为变更：`SAVEGLOBAL` 的失败由「Code 档 + 出错脚本行 + 脚本侧调用栈 + 一句 `ErrorSavingGlobalData`」改为「存档档 + 只打消息 + 抬头带原因」——原写法把 `IOException`（`SystemException` 的子类，即磁盘满、文件被锁这类介质故障）误分到 Code 档；`SAVEDATA` 路径上的 `CodeEE` 过滤器（`SaveChara`/`SaveVariable` 已有、`LoadChara` 本批补齐）今天都无活分支，其唯一有实际主体的位置是 `SAVEVAR`（见「评审修订」的 c2）
 - 本票不动 `Process.handleException`/`handleExceptionInSystemProc` 的分级（`nullable-migration-30` 的成果），也不动读取侧剩余出口（`nullable-migration-34`）
+- 2026-10-10 的 c2 裁定不改行为：`SaveToFile` 保持宽 catch，只在注释里写明适用边界，故对外可见面与上一节所列相同
+- 本票完成后，`nullable-migration` 的 spec 完成标准仍差第 4 条「迁移前后运行行为一致（真实 era 游戏目录验证）」——它不在本票范围（该条的现状见 `tracker/nullable-migration/spec.md`）
