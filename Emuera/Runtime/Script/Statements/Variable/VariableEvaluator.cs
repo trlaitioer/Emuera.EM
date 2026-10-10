@@ -3480,6 +3480,12 @@ internal sealed class VariableEvaluator : IDisposable
 		}
 		catch (Exception e)
 		{
+			// Deliberately wider than the `when (e is not CodeEE)` filter on SaveChara/SaveVariable/LoadChara:
+			// no live path here raises a CodeEE (only SAVEVAR could, and it is NotImplCodeEE - the reference
+			// tokens it would carry are built by CreatePrivateVariable, which registers into none of the save
+			// lists). A filter would guard the two system-flow call sites against an exception that cannot
+			// occur and that no test can provoke; the rule's scope is written out here instead
+			// (nullable-migration-35). Revisit if SAVEVAR is implemented.
 			return FailWith(e, out errorReason);
 		}
 	}
