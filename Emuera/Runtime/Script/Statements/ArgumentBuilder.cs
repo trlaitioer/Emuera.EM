@@ -759,20 +759,15 @@ internal static partial class ArgumentParser
 	{
 		public override Argument? CreateArgument(InstructionLine line, ExpressionMediator exm)
 		{
-			Argument ret;
 			CharStream st = line.PopArgumentPrimitive();
 			// Every element this builder adds is a non-null term, so the array argument can store them as such.
 			List<AExpression> termList = [];
 			LexicalAnalyzer.SkipHalfSpace(st);
 			if (st.EOS)
 			{
-				if (line.FunctionCode == FunctionCode.RETURNFORM)
-				{
-					termList.Add(new SingleStrTerm("0"));
-					ret = new ExpressionArrayArgument(termList) { IsConst = true, ConstInt = 0 };
-					return ret;
-				}
-
+				// No RETURNFORM case here: its registration uses FORM_STR (the FORM_STR_ANY line in
+				// RETURNFORM_Instruction is commented out), so the branch that answered a bare RETURNFORM with
+				// "0" was unreachable (nullable-migration-32 §5).
 				warn(trerror.MissingArg.Text, line, 2, false);
 				return null;
 			}
@@ -2626,7 +2621,10 @@ internal static partial class ArgumentParser
 			}
 
 			// The first arm can return null, but getChangeableVariable then warns, which marks the line as an
-			// error - and an error line is refused before it can be executed.
+			// error - and an error line is refused before it can be executed. The difference from SP_HTMLSPLIT
+			// below (which falls back to RESULT in the same situation) is deliberate: that form is rejected at
+			// load today, so unifying would silently accept a form that currently errors
+			// (nullable-migration-32 §4).
 			VariableTerm? term = terms.Count >= 4
 				? getChangeableVariable(terms, 4, line)
 				: new VariableTerm(GlobalStatic.VariableData.GetSystemVariableToken("RESULT"), [new SingleLongTerm(0)]);

@@ -3132,6 +3132,9 @@ internal sealed partial class FunctionIdentifier
 			// Nothing can be set without the column, and the DT_* family throws here as well.
 			DataColumn column = Utils.DataTable.RequireColumn(dt, "DT_COLUMN_OPTIONS", key, cName);
 
+			// No DTCanNotEditIdColumn guard here, unlike the row-writing paths: a column default does not change
+			// the id of any existing row, and refusing it would reject a form that scripts can use today
+			// (nullable-migration-32 §6).
 			bool isString = column.DataType == typeof(string);
 			int idx = 0;
 			foreach (SpDtColumnOptions.DTOptions opt in arg.Options)

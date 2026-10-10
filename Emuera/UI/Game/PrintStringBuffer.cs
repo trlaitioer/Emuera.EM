@@ -680,14 +680,15 @@ internal sealed class PrintStringBuffer
 		}
 
 		ConsoleStyledString? css = part as ConsoleStyledString;
-		if (part == null)
+		if (css == null)
 		{
 			return -1;
 		}
 
-		// ConsoleStyledString is the only part that reports CanDivide, which the guard above required
+		// ConsoleStyledString is the only production part that reports CanDivide, which the guard above
+		// required; the test suite's FakeNode reports it too, so this stays a guard and not an invariant.
 		// int widthLimit = Config.DrawableWidth - css.PointX;
-		int widthLimit = divWidth - css!.PointX;
+		int widthLimit = divWidth - css.PointX;
 
 		#endregion
 
