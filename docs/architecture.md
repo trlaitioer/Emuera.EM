@@ -1,27 +1,16 @@
 # Emuera 架构(大图景)
 
-> 所有路径与类名已对照实际代码核对。
-
-## 仓库布局
-
-- 根目录 `Emuera.sln` = `Emuera/`(解释器本体)+ `EmueraPluginExample/`(插件 API 示例)。注意 `Emuera/` 目录下还有一份旧的 `Emuera.sln`(仅含 Emuera 项目、`Any CPU`、无 NAudio 配置),构建请用根目录的 `Emuera.sln`
-- `Emuera/` — C# WinForms 主程序,`net10.0-windows`,x64/x86;`Emuera.Tests/` 为 xUnit 单元测试工程(不纳入根 `Emuera.sln`,运行方式见其 README);验证方式是测试 + 编译 + 用真实 era 游戏(含 `csv/`、`erb/` 目录)启动运行
-- `Readme/` — 各版本 readme(`EmueraEE_readme.txt`、`Emuera.EM_readme.txt`)与 changelog
-- `docs/` — 长期参考:[`README.md`](README.md) 为索引(`architecture.md`、`csv-erb-syntax.md`);`docs/tracking/` 为议题跟踪约定(issue tracker / triage 标签)
-- CI:`.github/workflows/dotnet-build.yaml`(tag 触发发布,windows-latest)
-
 ## 仓库与历史
 
-- Emuera 更新到 `1.824` 后停止更新([License](../Readme/License/Emuera.LICENSE.txt))；私家改造版接手，仅修正 bug，更新到 `v24`([License](../Readme/私家改造版Emuera_readme.txt))
-- EM 在私家改造版基础上修改，EE 在 EM 基础上修改，随后两者合并为 EM；迭代过程中项目从 `.Net Framework` 基本迁移到 `.Net`，版本至今仍取自 `Emuera/Emuera.csproj` 的 `InformationalVersion`(`1.824+v24+EMv18+EEv56`)，CI 发布的 tag 必须与它一致
-- 本仓库 fork 自 EM(`upstream` remote)：`master` 保持与 `upstream` 同步，个人改动只留在 `develop` 并推送到 `origin`，不推送到 `upstream`
-- 仓库若直接 clone 自 `origin`，会缺少 `upstream` remote，按需执行：
-
-```bash
-git remote add upstream https://gitlab.com/EvilMask/emuera.em.git
-git remote set-url upstream --push no-push
-git remote set-branches upstream master
-```
+- Emuera 更新到 `1.824` 后停止更新([License](../Readme/License/Emuera.LICENSE.txt))；私家改造版接手, 仅修正 bug, 更新到 `v24`([License](../Readme/私家改造版Emuera_readme.txt))
+- EM 在私家改造版基础上修改, EE 在 EM 基础上修改, 随后两者合并为 EM
+  - 迭代过程中项目从 `.Net Framework` 基本迁移到 `.Net`
+- 仓库若直接 clone 自 `origin`, 会缺少 `upstream` remote, 按需执行：
+    ```bash
+    git remote add upstream https://gitlab.com/EvilMask/emuera.em.git
+    git remote set-url upstream --push no-push
+    git remote set-branches upstream master
+    ```
 
 ## 启动链
 
@@ -82,7 +71,5 @@ git remote set-branches upstream master
 
 `PluginManager.ExecuteLine` 是**单行执行入口**:只接受 `METHOD_SAFE`、非流控、非输入等待、非 `PARTIAL`、非 `PUTFORM`/`UPCHECK`/`CUPCHECK`/`SAVEDATA`、实参可解析的单行指令(Debug 系指令仅 `-Debug` 下可用),其余抛 `CodeEE`;规则与调试命令共用(`Runtime/Script/Statements/MemoryLineEntry.cs`)。`ExecuteLine` 的分派走 `Process.DoDebugNormalFunction`,故 `PRINTPLAIN`/`PRINTBUTTON` 这类由 `ArgumentBuilder` 注册、没有 `AInstruction` 的命令同样可用。
 
-## 构建杂项
-
-- 声音后端互斥:默认配置用 `Runtime/Utils/Sound.WMP.cs`(WMP,需 VS 的 MSBuild 构建 COM 引用);`Debug-NAudio` / `Release-NAudio` 用 `Sound.NAudio.cs` + `NAudio_LoopStream.cs`(`dotnet build` 可用)。csproj 按配置排除源文件
-- 原生库:`Libs/Webp/{x86,x86_64}`(WebP 解码)
+## 杂项
+- `Libs/Webp/{x86,x86_64}`(WebP 解码): libwebp `1.5.0` + libsharpyuv `0.4.1`
