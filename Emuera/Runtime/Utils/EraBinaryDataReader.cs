@@ -170,6 +170,68 @@ internal abstract class EraBinaryDataReader : IDisposable
 		new($"{trerror.CorruptedSaveData.Text} ({exc.GetType().Name}: {exc.Message})");
 
 	/// <summary>
+	/// The funnel for content-level failures: a duplicate key, malformed XML, an unusable DataTable schema.
+	/// They are the same damaged save as the framing failures <see cref="SaveDataReader.Guarded"/> wraps, but
+	/// they are raised outside that funnel because the content, not the stream, is what the reader rejects
+	/// (nullable-migration-34). The type name stays in the message so the layer that rejected it is visible.
+	/// A resource failure is left alone: <see cref="OutOfMemoryException"/> stays a resource failure rather
+	/// than becoming "this save is corrupt", the same line the array-shape checks draw.
+	/// </summary>
+	private static T GuardedContent<T>(Func<T> read)
+	{
+		try
+		{
+			return read();
+		}
+		catch (Exception e) when (e is not FileEE and not OutOfMemoryException)
+		{
+			throw CorruptedSaveDataError(e);
+		}
+	}
+
+	/// <summary>
+	/// Rejects an array shape a save file cannot legitimately declare: a negative length, or a total element
+	/// count the runtime cannot allocate. The reader allocates from these numbers, so an unchecked one turns
+	/// damaged content into an <see cref="OverflowException"/>/<see cref="OutOfMemoryException"/> that escapes
+	/// the save-error grading (nullable-migration-34).
+	/// </summary>
+	private static void ValidateShape(params int[] lengths)
+	{
+		long total = 1;
+		foreach (int length in lengths)
+		{
+			if (length < 0)
+			{
+				throw new FileEE(trerror.AbnormalBinaryData.Text);
+			}
+
+			// Each factor is at most int.MaxValue and the running product stops at Array.MaxLength, so the
+			// multiplication cannot overflow before the comparison rejects it.
+			total *= length;
+			if (total > Array.MaxLength)
+			{
+				throw new FileEE(trerror.AbnormalBinaryData.Text);
+			}
+		}
+	}
+
+	/// <summary>
+	/// Rejects content that runs past the array it is being read into. The allocation is at least as long as
+	/// the length the save declares, so a cursor beyond it is damaged content - not the "the save is bigger
+	/// than the current variable" case, which the reallocation handles (the text-format reader skips that
+	/// excess instead, see EraDataStream.cs ReadInt64Array). Callers pass a run as `cnt &gt; bound - cursor`
+	/// rather than `cursor + cnt &gt; bound`: both operands can be near int.MaxValue, and the sum would wrap
+	/// negative and let the run through.
+	/// </summary>
+	private static void ThrowIfOutOfRange(bool outOfRange)
+	{
+		if (outOfRange)
+		{
+			throw new FileEE(trerror.AbnormalBinaryData.Text);
+		}
+	}
+
+	/// <summary>
 	/// Creates a reader over a save file. Returns null when the file does not declare the binary format
 	/// (the callers then read it as the text format); once the header says it is one, a failure to read it
 	/// is a damaged save and is thrown as <see cref="FileEE"/> rather than answered with null, which every
@@ -371,31 +433,40 @@ internal abstract class EraBinaryDataReader : IDisposable
 
 		public override Dictionary<string, string> ReadMap()
 		{
-			int count = reader.ReadInt32();
-			Dictionary<string, string> dict = new();
-			for (int i = 0; i < count; i++)
+			return GuardedContent(() =>
 			{
-				dict.Add(reader.ReadString(), reader.ReadString());
-			}
+				int count = reader.ReadInt32();
+				Dictionary<string, string> dict = new();
+				for (int i = 0; i < count; i++)
+				{
+					dict.Add(reader.ReadString(), reader.ReadString());
+				}
 
-			return dict;
+				return dict;
+			});
 		}
 
 		public override XmlDocument ReadXml()
 		{
-			XmlDocument doc = new();
-			doc.LoadXml(reader.ReadString());
-			return doc;
+			return GuardedContent(() =>
+			{
+				XmlDocument doc = new();
+				doc.LoadXml(reader.ReadString());
+				return doc;
+			});
 		}
 
 		public override DataTable ReadDataTable()
 		{
-			DataTable dt = new();
-			StringReader ss = new(reader.ReadString());
-			dt.ReadXmlSchema(ss);
-			ss = new StringReader(reader.ReadString());
-			dt.ReadXml(ss);
-			return dt;
+			return GuardedContent(() =>
+			{
+				DataTable dt = new();
+				StringReader ss = new(reader.ReadString());
+				dt.ReadXmlSchema(ss);
+				ss = new StringReader(reader.ReadString());
+				dt.ReadXml(ss);
+				return dt;
+			});
 		}
 
 		#endregion
@@ -436,6 +507,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 			byte b;
 			int x = 0;
 			int saveLength0 = reader.ReadInt32();
+			ValidateShape(saveLength0);
 			if (refArray == null) //読み捨て。レアケースのはず
 			{
 				refArray = new long[saveLength0];
@@ -453,6 +525,8 @@ internal abstract class EraBinaryDataReader : IDisposable
 				length0 = Math.Min(length0, saveLength0);
 			}
 
+			int bound0 = refArray.Length;
+
 			while (true)
 			{
 				b = reader.ReadByte();
@@ -464,6 +538,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 				if (b == Ebdb.Zero)
 				{
 					int cnt = (int)m_ReadInt();
+					ThrowIfOutOfRange(cnt < 0 || cnt > bound0 - x);
 					if (needInit)
 					{
 						for (int i = 0; i < cnt; i++)
@@ -476,6 +551,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 					continue;
 				}
 
+				ThrowIfOutOfRange(x >= bound0);
 				if (b <= Ebdb.Byte)
 				{
 					refArray[x] = b;
@@ -525,6 +601,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 			int y = 0;
 			int saveLength0 = reader.ReadInt32();
 			int saveLength1 = reader.ReadInt32();
+			ValidateShape(saveLength0, saveLength1);
 			if (refArray == null)
 			{
 				refArray = new long[saveLength0, saveLength1];
@@ -537,11 +614,19 @@ internal abstract class EraBinaryDataReader : IDisposable
 			{
 				oriArray = refArray;
 				//1818修正 サイズ違いの時にあふれないように/配列は最大まで確保、作業するのは重複部分だけ
-				refArray = new long[Math.Max(length0, saveLength0), Math.Max(length1, saveLength1)];
+				int alloc0 = Math.Max(length0, saveLength0);
+				int alloc1 = Math.Max(length1, saveLength1);
+				// The reallocation can be wider than either shape (the other dimension may be bigger), so
+				// validate it too.
+				ValidateShape(alloc0, alloc1);
+				refArray = new long[alloc0, alloc1];
 
 				length0 = Math.Min(length0, saveLength0);
 				length1 = Math.Min(length1, saveLength1);
 			}
+
+			int bound0 = refArray.GetLength(0);
+			int bound1 = refArray.GetLength(1);
 
 			while (true)
 			{
@@ -554,6 +639,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 				if (b == Ebdb.ZeroA1)
 				{
 					int cnt = (int)m_ReadInt();
+					ThrowIfOutOfRange(cnt < 0 || cnt > bound0 - x);
 					if (needInit)
 					{
 						for (int i = 0; i < cnt; i++)
@@ -570,6 +656,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 
 				if (b == Ebdb.EoA1)
 				{
+					ThrowIfOutOfRange(x >= bound0);
 					if (needInit)
 					{
 						for (; y < length1; y++)
@@ -586,6 +673,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 				if (b == Ebdb.Zero)
 				{
 					int cnt = (int)m_ReadInt();
+					ThrowIfOutOfRange(cnt < 0 || x >= bound0 || cnt > bound1 - y);
 					if (needInit)
 					{
 						for (int i = 0; i < cnt; i++)
@@ -598,6 +686,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 					continue;
 				}
 
+				ThrowIfOutOfRange(x >= bound0 || y >= bound1);
 				if (b <= Ebdb.Byte)
 				{
 					refArray[x, y] = b;
@@ -660,6 +749,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 			int saveLength0 = reader.ReadInt32();
 			int saveLength1 = reader.ReadInt32();
 			int saveLength2 = reader.ReadInt32();
+			ValidateShape(saveLength0, saveLength1, saveLength2);
 			if (refArray == null)
 			{
 				refArray = new long[saveLength0, saveLength1, saveLength2];
@@ -673,12 +763,22 @@ internal abstract class EraBinaryDataReader : IDisposable
 			{
 				oriArray = refArray;
 				//1818修正 サイズ違いの時にあふれないように/配列は最大まで確保、作業するのは重複部分だけ
-				refArray = new long[Math.Max(length0, saveLength0), Math.Max(length1, saveLength1), Math.Max(length2, saveLength2)];
+				int alloc0 = Math.Max(length0, saveLength0);
+				int alloc1 = Math.Max(length1, saveLength1);
+				int alloc2 = Math.Max(length2, saveLength2);
+				// The reallocation can be wider than either shape (the other dimensions may be bigger), so
+				// validate it too.
+				ValidateShape(alloc0, alloc1, alloc2);
+				refArray = new long[alloc0, alloc1, alloc2];
 
 				length0 = Math.Min(length0, saveLength0);
 				length1 = Math.Min(length1, saveLength1);
 				length2 = Math.Min(length2, saveLength2);
 			}
+
+			int bound0 = refArray.GetLength(0);
+			int bound1 = refArray.GetLength(1);
+			int bound2 = refArray.GetLength(2);
 
 			while (true)
 			{
@@ -691,6 +791,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 				if (b == Ebdb.ZeroA2) //cnt分だけ空の行列が連続
 				{
 					int cnt = (int)m_ReadInt();
+					ThrowIfOutOfRange(cnt < 0 || cnt > bound0 - x);
 					if (needInit)
 					{
 						for (int i = 0; i < cnt; i++)
@@ -709,6 +810,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 
 				if (b == Ebdb.EoA2) //行列終わりor残りが全て0
 				{
+					ThrowIfOutOfRange(x >= bound0);
 					if (needInit)
 					{
 						for (; y < length1; y++)
@@ -731,6 +833,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 				if (b == Ebdb.ZeroA1) //cnt分だけ空の列が連続
 				{
 					int cnt = (int)m_ReadInt();
+					ThrowIfOutOfRange(cnt < 0 || x >= bound0 || cnt > bound1 - y);
 					if (needInit)
 					{
 						for (int i = 0; i < cnt; i++)
@@ -747,6 +850,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 
 				if (b == Ebdb.EoA1) //列終わりor残り全て0
 				{
+					ThrowIfOutOfRange(x >= bound0 || y >= bound1);
 					if (needInit)
 					{
 						for (; z < length2; z++)
@@ -763,6 +867,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 				if (b == Ebdb.Zero) //cnt分だけ0が連続
 				{
 					int cnt = (int)m_ReadInt();
+					ThrowIfOutOfRange(cnt < 0 || x >= bound0 || y >= bound1 || cnt > bound2 - z);
 					if (needInit)
 					{
 						for (int i = 0; i < cnt; i++)
@@ -775,6 +880,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 					continue;
 				}
 
+				ThrowIfOutOfRange(x >= bound0 || y >= bound1 || z >= bound2);
 				if (b <= Ebdb.Byte)
 				{
 					refArray[x, y, z] = b;
@@ -834,6 +940,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 			byte b;
 			int x = 0;
 			int saveLength0 = reader.ReadInt32();
+			ValidateShape(saveLength0);
 			if (refArray == null) //読み捨て。レアケースのはず
 			{
 				refArray = new string[saveLength0];
@@ -851,6 +958,8 @@ internal abstract class EraBinaryDataReader : IDisposable
 				length0 = Math.Min(length0, saveLength0);
 			}
 
+			int bound0 = refArray.Length;
+
 			while (true)
 			{
 				b = reader.ReadByte();
@@ -862,6 +971,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 				if (b == Ebdb.Zero)
 				{
 					int cnt = (int)m_ReadInt();
+					ThrowIfOutOfRange(cnt < 0 || cnt > bound0 - x);
 					if (needInit)
 					{
 						for (int i = 0; i < cnt; i++)
@@ -874,6 +984,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 					continue;
 				}
 
+				ThrowIfOutOfRange(x >= bound0);
 				if (b == Ebdb.String)
 				{
 					refArray[x] = ReadString();
@@ -911,6 +1022,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 			int y = 0;
 			int saveLength0 = reader.ReadInt32();
 			int saveLength1 = reader.ReadInt32();
+			ValidateShape(saveLength0, saveLength1);
 			if (refArray == null)
 			{
 				refArray = new string[saveLength0, saveLength1];
@@ -923,11 +1035,19 @@ internal abstract class EraBinaryDataReader : IDisposable
 			{
 				oriArray = refArray;
 				//1818修正 サイズ違いの時にあふれないように/配列は最大まで確保、作業するのは重複部分だけ
-				refArray = new string[Math.Max(length0, saveLength0), Math.Max(length1, saveLength1)];
+				int alloc0 = Math.Max(length0, saveLength0);
+				int alloc1 = Math.Max(length1, saveLength1);
+				// The reallocation can be wider than either shape (the other dimension may be bigger), so
+				// validate it too.
+				ValidateShape(alloc0, alloc1);
+				refArray = new string[alloc0, alloc1];
 
 				length0 = Math.Min(length0, saveLength0);
 				length1 = Math.Min(length1, saveLength1);
 			}
+
+			int bound0 = refArray.GetLength(0);
+			int bound1 = refArray.GetLength(1);
 
 			while (true)
 			{
@@ -940,6 +1060,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 				if (b == Ebdb.ZeroA1)
 				{
 					int cnt = (int)m_ReadInt();
+					ThrowIfOutOfRange(cnt < 0 || cnt > bound0 - x);
 					if (needInit)
 					{
 						for (int i = 0; i < cnt; i++)
@@ -956,6 +1077,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 
 				if (b == Ebdb.EoA1)
 				{
+					ThrowIfOutOfRange(x >= bound0);
 					if (needInit)
 					{
 						for (; y < length1; y++)
@@ -972,6 +1094,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 				if (b == Ebdb.Zero)
 				{
 					int cnt = (int)m_ReadInt();
+					ThrowIfOutOfRange(cnt < 0 || x >= bound0 || cnt > bound1 - y);
 					if (needInit)
 					{
 						for (int i = 0; i < cnt; i++)
@@ -984,6 +1107,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 					continue;
 				}
 
+				ThrowIfOutOfRange(x >= bound0 || y >= bound1);
 				if (b == Ebdb.String)
 				{
 					refArray[x, y] = ReadString();
@@ -1029,6 +1153,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 			int saveLength0 = reader.ReadInt32();
 			int saveLength1 = reader.ReadInt32();
 			int saveLength2 = reader.ReadInt32();
+			ValidateShape(saveLength0, saveLength1, saveLength2);
 			if (refArray == null)
 			{
 				refArray = new string[saveLength0, saveLength1, saveLength2];
@@ -1042,12 +1167,22 @@ internal abstract class EraBinaryDataReader : IDisposable
 			{
 				oriArray = refArray;
 				//1818修正 サイズ違いの時にあふれないように/配列は最大まで確保、作業するのは重複部分だけ
-				refArray = new string[Math.Max(length0, saveLength0), Math.Max(length1, saveLength1), Math.Max(length2, saveLength2)];
+				int alloc0 = Math.Max(length0, saveLength0);
+				int alloc1 = Math.Max(length1, saveLength1);
+				int alloc2 = Math.Max(length2, saveLength2);
+				// The reallocation can be wider than either shape (the other dimensions may be bigger), so
+				// validate it too.
+				ValidateShape(alloc0, alloc1, alloc2);
+				refArray = new string[alloc0, alloc1, alloc2];
 
 				length0 = Math.Min(length0, saveLength0);
 				length1 = Math.Min(length1, saveLength1);
 				length2 = Math.Min(length2, saveLength2);
 			}
+
+			int bound0 = refArray.GetLength(0);
+			int bound1 = refArray.GetLength(1);
+			int bound2 = refArray.GetLength(2);
 
 			while (true)
 			{
@@ -1060,6 +1195,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 				if (b == Ebdb.ZeroA2) //cnt分だけ空の行列が連続
 				{
 					int cnt = (int)m_ReadInt();
+					ThrowIfOutOfRange(cnt < 0 || cnt > bound0 - x);
 					if (needInit)
 					{
 						for (int i = 0; i < cnt; i++)
@@ -1078,6 +1214,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 
 				if (b == Ebdb.EoA2) //行列終わりor残りが全て0
 				{
+					ThrowIfOutOfRange(x >= bound0);
 					if (needInit)
 					{
 						for (; y < length1; y++)
@@ -1100,6 +1237,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 				if (b == Ebdb.ZeroA1) //cnt分だけ空の列が連続
 				{
 					int cnt = (int)m_ReadInt();
+					ThrowIfOutOfRange(cnt < 0 || x >= bound0 || cnt > bound1 - y);
 					if (needInit)
 					{
 						for (int i = 0; i < cnt; i++)
@@ -1116,6 +1254,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 
 				if (b == Ebdb.EoA1) //列終わりor残り全て0
 				{
+					ThrowIfOutOfRange(x >= bound0 || y >= bound1);
 					if (needInit)
 					{
 						for (; z < length2; z++)
@@ -1132,6 +1271,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 				if (b == Ebdb.Zero) //cnt分だけ0が連続
 				{
 					int cnt = (int)m_ReadInt();
+					ThrowIfOutOfRange(cnt < 0 || x >= bound0 || y >= bound1 || cnt > bound2 - z);
 					if (needInit)
 					{
 						for (int i = 0; i < cnt; i++)
@@ -1144,6 +1284,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 					continue;
 				}
 
+				ThrowIfOutOfRange(x >= bound0 || y >= bound1 || z >= bound2);
 				if (b == Ebdb.String)
 				{
 					refArray[x, y, z] = ReadString();
