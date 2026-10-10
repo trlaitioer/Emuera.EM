@@ -1,0 +1,7 @@
+* text=auto eol=crlf
+
+*.dll binary
+*.exe binary
+*.pdb binary
+*.png binary
+*.webp binary
