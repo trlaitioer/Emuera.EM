@@ -36,7 +36,6 @@ superseded_by: [<id3>]
 ```
 
 - `id` 必填，确认后不再变化：`<feature-slug>` 与所属目录一致，`<NN>` 与文件名编号一致
-  - 正文里的票间引用一律写 `id`
 - `type` 可省略，默认为 `task`
 - 当且仅在被阻塞，需要等待其他 issue 完成时，`blocked_by` 标注对应 issue 的 `id`
 - 当且仅当 `status` 为 `superseded` 时, `superseded_by` 标注对应 issue 的 `id`
@@ -54,6 +53,7 @@ spec 不罗列各 issue 的状态；issue 与 spec 同目录分层，无需互�
 
 ```markdown
 ---
+id: <feature-slug>-spec
 date: YYYY-MM-DD
 status: <status>
 ---
@@ -71,6 +71,7 @@ status: <status>
 ## 影响
 ```
 
+- `id` 固定为 `<feature-slug>-spec`
 - `## 曾考虑的替代方案` 无内容则省略
 
 ## 延后项的归属

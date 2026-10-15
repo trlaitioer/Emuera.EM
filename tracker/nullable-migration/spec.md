@@ -1,4 +1,5 @@
 ---
+id: nullable-migration-spec
 date: 2026-08-22
 status: in-progress
 ---
@@ -11,50 +12,20 @@ status: in-progress
 
 现状:
 
-- 迁移本体已完成:`Emuera/Emuera.csproj` 已恢复 `<Nullable>enable</Nullable>` 并加 `<WarningsAsErrors>nullable</WarningsAsErrors>`(issues/03),全库源码与 `Emuera.Tests` 的 CS86xx 在 `Debug-NAudio` 与 `Debug`(WMP)两配置下实测均为 0;以下各条计数为迁移过程的历史记录
-- 非空断言收敛已落地:issues/13 把全库 `!` 由 1839 处收敛到 1040 处(匹配行数口径;A 类删 109 处 / 12 个文件,`Required(...)` 429 处调用,`BuiltArgument` 167 处),issues/14 逐点复核后把可达缺陷分流到 issues/15~22,站点锚点由 issues/21 的清单给出(issues/14 同口径复测得 1075 处——与 1040 的差别是「按出现次数」与「按行」两个计数单位,不是站点差异)。2026-09-21 在 HEAD 复测:全库 1088 处(`Emuera` 981 / `Emuera.Tests` 107),其中 `null!` 393、`Argument` 可选字段 98、其他 `list[i]!` 78、`(x as T)!` 63、`JumpTo` 族 43,残差 411(`Emuera` 内 356,即 issues/21 的范围);样式提交只删 19 处,增量主要来自此后新增的测试。2026-09-25 清单落地时收紧匹配式(剔除 `\s*` 带来的 12 处前缀逻辑非误计):全库后缀断言 1076 处(`Emuera` 969 / `Emuera.Tests` 107),残差 399 处(`Emuera` 344,清单见 [bang-sites.md](bang-sites.md))
-- 2026-10-05 在 HEAD `1fcfff67` 复核断言审计尾部并推进：issues/15~21 的落地内容已随实施提交进入 develop（15、16、17、18、20 本轮结票，19 留「真实游戏目录 + `-DEBUG` 窗口 + 坏输入报错文本」的人工验收），审计判出的 C 类缺陷已由 issues/24、26、27、28 四票收口；`!` 计数脚本入库（[tools/count-bang-sites.ps1](tools/count-bang-sites.ps1)，口径、锚点交叉验证与基线见 [bang-sites.md](bang-sites.md)「复现与基线」），`Emuera` 后缀断言 880 → 872、残差类 305 → 297；回归闸门补齐：`Emuera.Tests.csproj` 增加 `<WarningsAsErrors>nullable</WarningsAsErrors>`（此前只开 `enable`，已放过 2 条 CS8600 落到树上），测试工程 CS86xx 归零（该工程不在 `Emuera.sln`，闸门只在单独构建测试工程时生效）；`Debug`(WMP，amd64 MSBuild + 清空 `*_PROXY`) 与 `EmueraPluginExample` 复测 CS86xx 亦为 0
-- 2026-10-06 断言审计尾部收尾（分支 `nullable/assertion-rationale`，从 `develop` 的 `e45c3b71` 切出）：
-  - issues/21 结票：原判「可删冗余」的 6 处经验证只有 4 处成立（`Shape.cs` 的 `radius![corner]`，同批删掉令其成为必要的死三元分支）；`ConfigItem<T>.val` 两处经最小 NRT 探针复测并非冗余（`val!` 承担 CS8602、尾部 `!` 承担 CS8603），判定更正
-  - issues/22 §1~§6 全部落地：补 135 个理由注释块（实测，分四区即覆盖全部；票面原记的 141 条把跨文件的 `Argument` 可选字段桶重复计了一次，更正见 issues/22 §1）、清理冗余与假断言（§2）、契约诚实化（§3，含 `ref string?`、`Process.scaningLine`、`CircularBuffer<T>` 的 `T?[]`、`ParseMixedNum`/`CreateIfNull` 的可空形参与 `[NotNull]` 后置条件）、常量折叠实参的具名入口（§4，19 处 `null!` 收敛到 3 处）、ARRAYCOPY 实参检查抽取与解析期结果复用、DT 表/列解析共享一处（§5）、`ExpressionArrayArgument.TermList` 的元素契约诚实化（§6）
-  - 计数（同口径）：`Emuera` 后缀断言 872 → **804**、残差类 297 → **271**；`Emuera.Tests` 132 → 135（新增用例里的断言）
-  - 验证：`Debug-NAudio` 与 `Debug`(WMP，amd64 MSBuild + 清空 `*_PROXY`) 两配置全量重建 CS86xx 均 0 条、0 错误；`Emuera.Tests` 707 → **754** 全通过
-  - 收尾时判出的残余项已另立票：issues/31（被非空消费方挡住的四条诚实化链，含换行哨兵）、issues/32（`XML_ADDATTRIBUTE`/`DATATABLE_TO_XML` 的疑似缺陷、`getDivideIndex` 笔误、`SP_SPLIT` 与 `SP_HTMLSPLIT` 不一致、`FORM_STR_ANY` 的 `RETURNFORM` 死分支，以及 §5-3 遗留的「`id` 列守卫是否覆盖 `DT_COLUMN_OPTIONS`」这一产品判断）
-  - 仍未做：spec 完成标准里的「迁移前后运行行为一致（真实 era 游戏目录验证）」与 issues/19 的人工验收（真实游戏目录 + `-DEBUG` 窗口 + 坏输入报错文本）
-- 2026-10-06 审计残余项开始收口（同分支）：issues/32 §1/§2 与 issues/30 落地——`XML_ADDATTRIBUTE`/`XML_ADDNODE` 的插入目标按在线文档的失败语义返 0（返 0 只发生在单匹配，多匹配沿用既定的「返匹配数」；原为运行期异常。§1 的 `node.Attributes!` 由 A 更正为 C，`bang-sites.md` 的判定进度改为 A 281 / C 17）、`DT_TOXML` 的输出槽补 `RefString1D`（原为 `RefString`，二维数组经 `as string[]` 得 null）、`FileEE` 报错分级（装载侧：新增 `Runtime/Script/ErrorReport.cs` 与 `SaveData` 档 + `HasSaveDataError`/`FuncEndSaveDataError` 两个 Lang 键，不再落「予期せぬエラー」+ CLR 堆栈；写入侧 `EraDataWriter` 的 18 处经 `SaveTo` 转 `UnexpectedErrorInSavedata`，见 issues/30 的存档侧一段）。计数（同口径）：`Emuera` 后缀断言 804 → **799**、残差 271 → **266**（−5 为该批删掉的假断言）
-  - 验证：两配置（`Debug-NAudio` 全量重建、`Debug`(WMP) 经 amd64 `MSBuild.exe`）均 0 错误、CS86xx 0 条（警告 96 → 97，新增的 1 条是 `ErrorReport.cs` 的 `trerror` 别名带来的 CS8981，属既有警告类型）；`Emuera.Tests` 754 → **784** 全绿；新增用例先把实现 `git stash` 回退复测（15 条中 8 条红），确认钉住的是修前行为；issues/30 的分级、抬头文案与堆栈策略已成为可单测的纯函数（`ErrorReport`），只剩两处 handler 的打印调用需人工验收
-  - 仍未做：issues/32 §3~§6（`getDivideIndex` 笔误、`SP_SPLIT` 回退不一致、`RETURNFORM` 死分支、`DT_COLUMN_OPTIONS` 的 `id` 列守卫）、issues/31、issues/33；`FileEE` 那档「打印出来的文字」与 `nullable-migration-19` 同批人工验收
-- 2026-10-07 二进制档的坏输入出口收敛（同分支，承接 issues/30 的残留）：`EraBinaryDataReader` 的 `SaveTextReader : BinaryReader` 换成持有 `BinaryReader` 的 `SaveDataReader`（组合——`BinaryReader` 的整型读不是 virtual，override 拦不住），全部读取入口经同一 `Guarded`：读越界 → `FileEE(UnexpectedSaveDataEnd)`（与文本档同文案），解码失败、长度前缀畸形或为负（`FormatException`／`ReadString` 对负长度抛的 `IOException`）→ `FileEE(CorruptedSaveData (类型名: 细节))`。触发场景是 `Config.SystemSaveInBinary` 写出的二进制存档在数据区被截断或 framing 损坏（`CreateReader` 按文件头自动判别，不必该开关当前为真）；`EraBinaryDataReaderTests` 784 时补 5 条，其中长度前缀那两条先分别复现 `FormatException` 与 `IOException` 再收敛
-  - 验证：`Debug-NAudio` 0 错误、97 条既有分析器警告（无 CS86xx）；`Emuera.Tests` 784 → **789** 全绿
-  - 仍未做：读取侧剩余出口另立 `nullable-migration-34`（`CreateReader` 的 catch-all 吞掉存档错误、XML 侧异常与重复键 `ArgumentException`、`ReadIntArray*` 的上界检查）；写入侧 18 处 `EraDataWriter` 仍欠一票
-- 2026-10-09 存档写入侧的失败分级与「写失败毁旧档」（同分支，`nullable-migration-35`；读取侧同批收口 `nullable-migration-34` 第 1 组）：新增 `Runtime/Utils/TempFileWriter.cs` 的 `Write`——写入先落到目标档的同目录兄弟位 `filepath + ".tmp"`，回调返回后 `File.Move(..., overwrite: true)` 替换目标，失败时删临时文件并原样抛，故「新内容落盘之前不动目标档」（原 `FileMode.Create` 在写入第一个字节之前就截断，写到一半失败会同时毁掉旧存档并留下半截文件，而半截文件正是读取侧报成损坏存档的那类输入）；四条写入路径（`SaveToFile`/`SaveChara`/`SaveVariable`/`SaveGlobal`）都接入。写入失败的抬头由三条「予期しない」合并为新键 `Error.FailedToSaveData` + 原因行（`ErrorReport.Reason`：`EmueraException` 取消息、其余带 CLR 类型名，因为该行不打堆栈），`UnexpectedErrorInSavedata`/`AutoSaveError1`/`UnexpectedSaveError` 三键随之从 `Lang.cs` 与两个语言 xml 删除；`SaveTo`/`SaveToFile`/`LoadGlobal` 以 `[NotNullWhen(false)] out string? errorReason` 报失败而不抛（自动存档的调用点在失败后还要打跳过提示并继续状态机），路径解析（读 `Config.SavDir`）也移进各自的守卫；`SaveChara`/`SaveVariable` 的失败包成 `FileEE` 归存档档
-  - 同批把 `SaveGlobal` 的失败由 `CodeEE(ErrorSavingGlobalData)` 改为 `FileEE(ErrorSavingGlobalData + 原因)`：`IOException` 是 `SystemException` 的子类，原写法把磁盘满、文件被锁这类介质故障报成 Code 档（「脚本错误」抬头 + 出错脚本行 + eraBasic 函数调用栈），与 30/35 要消掉的方向相反
-  - 读取侧：`EraBinaryDataReader.CreateReader` 只对「不是二进制档」（长度不足 8 字节、头不是本格式、头本身读不出来）返回 null，头认出来之后（块表截断、gzip 正文损坏、未知版本）一律抛 `FileEE`；`LoadGlobal`/`LoadChara` 把失败原因回传给指令打印，`RESULT`/`false` 契约不变（`LoadGlobalFile` 是为「测试指不到 `Config.SavDir`」拆出的可测入口）
-  - 验证：`Debug-NAudio` 0 错误、97 条既有分析器警告（无 CS86xx）；`Emuera.Tests` 789 → 804 → **806** 全绿；新增用例以旧行为复测确认能分辨（写入侧换回直接写目标档红 2 条、`CreateReader` 换回返回 null 红 3 条、`LoadChara` 换回静默返回红 2 条、`LoadGlobal` 换回丢弃原因红 1 条、`SaveChara` 的 catch 换回原样抛出红 1 条、`LoadGlobal`/`SaveGlobal` 的路径守卫换回不设防红 2 条）
-  - 仍未做：读取侧 XML 侧异常与 `ReadMap` 重复键的 `ArgumentException`、`ReadIntArray*` 按存档内容推进的分配上界（`nullable-migration-34` 第 2、3 组）；`LoadFrom`/`LoadGlobalFile` 在读取之前就调 `RemoveEMSaveData()`/`RemoveEMGlobalData()`（文本档读损坏时当前数据已先被删）
-- 2026-10-10 审计残余项收尾（分支 `nullable/save-tail`，从 `develop` 的 `cf8a1e37` 切出）：
-  - `nullable-migration-34` 第 2 组：内容级失败（`ReadMap` 重复键、`ReadXml` 的非法 XML、`ReadDataTable` 的不可用 schema）由新增的 `GuardedContent` 漏斗转 `FileEE(CorruptedSaveData (类型名: 细节))`，与 `SaveDataReader.Guarded` 同文案同分档（坏的是内容而不是流，但对玩家是同一件事）；`OutOfMemoryException` 放行
-  - `nullable-migration-34` 第 3 组：六个 `Read*Array` 补形状与游标判据——`ValidateShape` 在分配前拒绝负长度、单维超 `Array.MaxLength`、分配形状的元素总数超上限（重分配路径按逐维取大的**实际**形状验证，它可能比两个形状各自都宽）；`ThrowIfOutOfRange` 在推进游标与元素写入的 24 处收口，越界报既有的 `FileEE(AbnormalBinaryData)`；零串判据写成 `cnt > 边界 - 游标` 而不是 `游标 + cnt > 边界`（两个操作数都可能接近 `int.MaxValue`，相加会回绕成负数而放行）
-  - `nullable-migration-35` 的 c2 裁定：普通存档的 `SaveToFile` **保持宽 catch**（`CodeEE` 过滤器今天没有活主体——唯一可能是未实现的 `SAVEVAR`，参照型变量不进任何存档列表），判据写进代码注释并在实现 `SAVEVAR` 时重访；票内自相矛盾的一行随之更正
-  - `nullable-migration-32` §3/§5：`getDivideIndex` 的 `if (part == null)`（`part` 在此非空，恒假）改为 `if (css == null)`，随之去掉 `css!.PointX`；删掉 `FORM_STR_ANY` 里不可达的 `RETURNFORM` 分支。§4/§6 属产品判断，裁定**保留差异**（§4 的差异只落在今天已被判错、无法执行的形态上，统一会把「响亮报错」变成「静默写 `RESULT`」；§6 加守卫会把今天可用的写法变成 `CodeEE`，而改列默认值不改任何既有行的 `id`），两处只加判据注释、不改行为
-  - `nullable-migration-38`（34 第 3 组复核中判出，同日落地）：12 处零串计数由 `int cnt = (int)m_ReadInt();` 改为 `long cnt = m_ReadInt();`——`Ebdb.Int64` 标记后的计数可以是任意 64 位值，先窄化再判界会把 `0x1_0000_0001` 读成 `1`，零串被读短、数组值静默出错而不落任何错误（流位置已按 Int64 消费完，后续解析仍然同步）
-  - 计数（同口径）：`Emuera` 后缀断言 799 → **798**、残差 266 → **265**（−1 为 §3 删掉的 `css!.PointX`，见 [bang-sites.md](bang-sites.md) 的「已失效站点」）；`Emuera.Tests` 144 → 161（新增用例里的断言，该工程按 issues/14 豁免）
-  - 验证：`Debug-NAudio` 与 `Debug`(WMP，amd64 MSBuild + 清空 `*_PROXY`) 两配置全量重建均 0 错误、CS86xx 0 条（警告仍 97）；`Emuera.Tests` 806 → **823** 全绿；本批新增用例 17 条（13 负例 + 4 条防误拒的正控制），旧行为复测：34 的 12 条负例红（全量失效一次运行）、重分配判据只去掉 `ValidateShape(alloc0, alloc1)` 时只有重分配那条红、38 的越界那条把 12 处改回窄化时只有它红
-  - 仍未做：issues/31、issues/33；`nullable-migration-34` 里登记的两处已转出为 issues/36（读档前先删当前存档，`LOADGLOBAL` 的删除排在读取之前故更重）与 issues/37（头部 catch 把介质故障当成「不是本格式」）；本完成标准的第 4 条与 issues/19 的人工验收仍未做
-- 断言审计尾部的票面已按 HEAD 复核:`3dd766f1`(写票)之后落过 60+ 个样式/重构提交(2026-09-18~09-21,含 `e70ec779`/`cb8661ba`「移除冗余的 ! 标识」、`6cd84a47`/`e58e1272` 类型转换简化、`8a98583d`「避免解引用 null」、`bf0c345e`「修正插件接口」与 `0e2a39ab`..`d63d9694` 路径统一)。逐票核对结果:issues/15、16、19、20 的站点断言全部仍成立(仅行号漂移);issues/17 更正了两处定位(`ARRAYCOPY` 在 `doNormalFunction`、`output[0]!` 在 `BuiltinMethod/PrivateAdditions.cs` 而非 `HtmlManager.cs`)并把 ARRAYCOPY 的可达性判定为不可达;issues/18 更正了 `INRANGEARRAY`/`FINDELEMENT` 函数名;issues/22 的一条已由 `e70ec779` 完成、`StrConv` 两处的「冗余」判定被推翻(该成员的 .NET 签名是 `string?`,删 `!` 会报 CS8603);issues/14 的同一处结论同步更正。issues/21 的范围判断成立(第 8 项量级约 400 处),但其处数构成按实测改写(401→411 减法残差,并补齐口径与匹配式说明);2026-09-25 清单落地后进一步收紧匹配式,残差定为 399 处(`Emuera` 344),子桶构成与判定分组见 [bang-sites.md](bang-sites.md)
-- 项目级迁移期曾改为 `<Nullable>annotations</Nullable>`(注解全局生效、流分析警告逐文件开启)
-- 迁移期已启用 `#nullable enable` 且无 CS86xx 警告:`Runtime/Script/Data/StrForm.cs`(本迁移样例,18 处 `null!` 已全部消除,省略参数占位由 issues/05 贯通;该文件原记在 issues/01 名下,而 issues/01 已废止,适配由 issues/05 承担、收尾验收归 issues/03)、`Program.cs`、`UI/Game/StringStyle.cs`(后两者早于本迁移即已启用,见 git 历史)
-- 剩余文件有 CS86xx 警告:issues/05(元素可空贯通)与 issues/06(横切契约声明)落地前为 99 个文件、1,799 条,落地后为 99 个文件、2,547 条;链簇票 issues/07、10、08 落地后为 66 个文件、1,821 条,issues/07~11 全部落地后为 49 个文件(完整警告行 802 条 / 位置口径 696 条,2026-09-16 实测),余下集中在 issues/12 与生成文件、`Emuera.Tests`(后者归 issues/03);issues/12 落地后全库仅剩生成文件 `RikaichanAutogenerated.cs` 的 3 条(两口径同为 3)与 `Emuera.Tests` 的 15 条 / 5 个文件,均归 issues/03。增量是契约本身引入的、按票由下游消化:元素可空化暴露的 `arguments[i]` 解引用(issues/08/09/11)与 Config 查找 API 变可空后的消费点(issues/12);链簇票开工时须重新实测本链数字。以上各历史数字沿用各票当时的记录口径(issues/07、09、11 为完整警告行;issues/10 的链簇数字与其基线 `2,805 条 / 92 个文件` 同源、即 issues/07 的收尾数字,属完整警告行,仅其 `Emuera.Tests` 的 16→17 为按列去重;issues/03 为按列去重)
-- CS86xx 之外尚有既有警告,不属于本迁移目标:CS8981(小写 alias 64 条,处理决策见 `performance-optimization-06`)、CS4014(`MainWindow.cs` 未 await 的 `ReloadPartialErb` 调用 1 条)、CA1069(13 条)、CA1806(2 条)、CA1816(1 条)、CA2019(1 条,`Process.cs` 的 `[ThreadStatic]` 内联初始化)、WFO0003(1 条)——2026-09-25 在 `Debug-NAudio` 实测共 83 条
+- 迁移本体已完成:[Emuera/Emuera.csproj](../../Emuera/Emuera.csproj) 为 `<Nullable>enable</Nullable>` 并带 `<WarningsAsErrors>nullable</WarningsAsErrors>`;[Emuera.Tests.csproj](../../Emuera.Tests/Emuera.Tests.csproj) 同样全量 `enable`(该工程不在 [Emuera.sln](../../Emuera.sln),闸门只在单独构建它时生效)
+- CS86xx 为 0 条,两种声音后端配置分别确认:`Debug-NAudio`,以及 `Debug`(WMP,须用 VS 的 amd64 `MSBuild\Current\Bin\amd64\MSBuild.exe` 并清空 `*_PROXY`;32 位的 `MSBuild.exe` 会在 `ResolveComReference` 处报 MSB4216,proxy 变量名大小写重复会让 Roslyn 任务报 MSB3883)
+- 非空断言(`!`)的收敛结果:`Emuera` 后缀断言 798 处、残差类 265 处,`Emuera.Tests` 161 处(测试工程按 [nullable-migration-14](issues/14-null-assertion-audit.md) 豁免逐点复核);逐站点判定分组与已失效站点见 [bang-sites.md](bang-sites.md),计数脚本为 [tools/count-bang-sites.ps1](tools/count-bang-sites.ps1)
+- 存档读写的失败分档已落地:读取侧(文本档与二进制档)的内容损坏、越界与形状非法统一归 `FileEE`,二进制档头部仍按「头认不出来 ⇒ 不是二进制档」返 `null`(该档吞掉介质故障诊断的问题记 [nullable-migration-37](issues/37-header-catch-swallows-fileee.md));写入侧经 [Runtime/Utils/TempFileWriter.cs](../../Emuera/Runtime/Utils/TempFileWriter.cs) 先写同目录临时档再替换目标,故新内容落盘之前不动目标档;抬头与原因行由 [Runtime/Script/ErrorReport.cs](../../Emuera/Runtime/Script/ErrorReport.cs) 统一
+- 完成标准第 4 条按 [nullable-migration-19](issues/19-plugin-and-error-path-nulls.md) 的终态计:真实 era 游戏目录 + `-DEBUG` 窗口 + 坏输入报错文本(含 `FileEE` 档)已人工验收,该票为 `implemented`,依 [issue-tracker.md](../../docs/tracking/issue-tracker.md)「状态为 implemented 即视为验收通过」
+- `Emuera.Tests` 全绿(830 条),其 CS86xx 亦为 0 条(实测只剩 CS8981 等非本迁移目标的警告)
+- 非本迁移目标:`!` 之外的既有警告(CS8981 小写 alias、CS4014、CA1069/CA1806/CA1816/CA2019、WFO0003)
+- 剩余范围:[nullable-migration-31](issues/31-assertion-honesty-nonnull-consumers.md) 断言诚实化的非空消费方、[nullable-migration-32](issues/32-assertion-audit-findings.md) 审计残余项、[nullable-migration-33](issues/33-constantdata-console-nullability.md) `ConstantData` 与 console 可空化、[nullable-migration-36](issues/36-pre-read-save-data-removal.md) 读档前先删当前存档、[nullable-migration-37](issues/37-header-catch-swallows-fileee.md) 二进制档头部 catch 吞 `FileEE`
 
-计数口径:以上数字为全量构建输出去重后的 CS86xx 条数,复现命令 `dotnet build Emuera/Emuera.csproj -c Debug-NAudio -p:Platform=x64 --no-incremental -p:Nullable=enable`。去重有两种口径,两者只在 CS8618 上分叉:
+计数口径与复现:
 
-- **完整警告行**:去重键为「文件路径 + (行,列) + 警告码 + 消息文本」。同一位置可以报告多条警告——CS8618 在构造函数位置按未初始化字段逐条报告——所以它是唯一能反映逐字段推进的指标,链簇票的清零进度与验收以此为准(issues/07、09、11 记录的即此口径)。
-- **文件+行+列+警告码**:把同一位置的同一码型折叠为一条,是更粗的位置口径(issues/03、10 的「按列去重」与 issues/12 的首测表用此口径)。
-
-两种口径在同一构建下不通用:issues/11 落地后(即 issues/12 的起点)全库为完整警告行 802 条 / 49 个文件、位置口径 696 条 / 49 个文件,差额 106 条全部是 CS8618(该码型 219 条 → 113 条,集中在「一个构造函数报告多个未初始化字段」,其中 `PluginManager.cs` 一个文件占 62 条),其余 8 个码型两口径相同。故各票保留自己的原始口径数字,不跨口径比较;两种口径下的「0 条」同时成立,收尾验收两者都看。
-
-同一条警告在 `dotnet build` 的输出中会于内联与末尾汇总各出现一次,直接数行会翻倍;`Debug` 配置经 `MSBuild.exe` 构建时未见该重复。两种方式都以去重后的条数为准。该配置只编译 NAudio 后端文件,`Runtime/Utils/Sound.WMP.cs` 未纳入统计。迁移期默认构建(不加 `-p:Nullable=enable`)只覆盖已启用文件,当时其 CS86xx 应恒为 0;csproj 恢复 enable 后该开关冗余,默认构建即以全量口径统计。issues/01、issues/04 中标注 2026-08-29 实测的历史计数按当时口径记录(输出原始行数,含重复)。
+- 复现命令 `dotnet build Emuera/Emuera.csproj -c Debug-NAudio -p:Platform=x64 --no-incremental -p:Nullable=enable`(csproj 恢复 `enable` 后该开关已冗余)
+- 均为全量构建输出去重后的条数;去重有两种口径,只在 CS8618 上分叉:**完整警告行**(键为「文件路径 + (行,列) + 警告码 + 消息文本」,同一构造函数位置按未初始化字段逐条报告)与**文件+行+列+警告码**(更粗的位置口径)。各票保留自己的原始口径数字,「0 条」在两口径下同时成立
+- `dotnet build` 会把同一条警告在内联与末尾汇总各输出一次,直接数行会翻倍;`Debug` 配置经 `MSBuild.exe` 构建时未见该重复
 
 ## 整体方案
 
@@ -81,9 +52,9 @@ status: in-progress
 
 完成标准:
 
-- 全量构建(`-p:Nullable=enable`)CS86xx 警告为 0,两种声音后端配置分别确认:`Debug-NAudio`(用「计数口径」的命令)与 `Debug`(WMP,用 VS 的 amd64 `MSBuild\Current\Bin\amd64\MSBuild.exe` 并清空 `*_PROXY` 环境变量;32 位的 `MSBuild\Current\Bin\MSBuild.exe` 会在 `ResolveComReference` 处报 MSB4216,proxy 变量名大小写重复会让 Roslyn 任务报 MSB3883)。issues/12 起点(issues/11 落地后)的基线为 `Debug-NAudio` 全库 802/696、`Debug` 全库 779/678(每组前者为完整警告行、后者为位置口径),两配置的差恰为互斥编译的 `Sound.NAudio.cs`
+- 全量构建 CS86xx 警告为 0,两种声音后端配置分别确认(命令与踩坑见现状;两配置的差恰为互斥编译的 [Runtime/Utils/Sound.NAudio.cs](../../Emuera/Runtime/Utils/Sound.NAudio.cs) 与 [Runtime/Utils/Sound.WMP.cs](../../Emuera/Runtime/Utils/Sound.WMP.cs))
 - `Emuera.Tests` 的 CS86xx 同样为 0(测试工程已全量 `enable`,由 issues/03 清尾)
-- csproj 恢复 `<Nullable>enable</Nullable>` 后构建通过(CS8981 等非 CS86xx 既有警告不在消除目标内,见现状)
+- csproj 为 `<Nullable>enable</Nullable>` 且构建通过(非 CS86xx 的既有警告不在消除目标内,见现状)
 - 迁移前后运行行为一致(用真实 era 游戏目录验证)
 
 ## 影响

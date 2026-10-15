@@ -1,5 +1,7 @@
 # 贡献指南
 
+规范仅约束新增内容，违反规范的旧有内容按需修正
+
 ## 代码风格
 
 ### 格式化
@@ -16,6 +18,8 @@
 
 命名规则（接口加 `I` 前缀、类型与成员 PascalCase）在 editorconfig 中为 `suggestion` 级，即建议而非强制
 
+仓库内的 Python 脚本使用 [ruff](ruff.toml)（行长 150）：`ruff check` 按默认规则集 lint，`ruff format` 格式化（含 Markdown 文件中的 python 代码块）；`tracker/arg-contract/` 的存量脚本尚未按此收编，改动时会触发整体重排
+
 ### 编码
 
 - `Emuera/`、`Emuera.Tests/` 下的 `.cs` 为 **UTF-8 with BOM**
@@ -25,17 +29,34 @@
 ### 文档 / 注释
 
 - `Emuera/` 的新增代码注释用英文，`Emuera.Tests/` 用中文
-- 引用代码位置用「文件路径 + 函数名」
-- 引用议题时使用议题 id（见 [issue-tracker.md](docs/tracking/issue-tracker.md)）
+- 非过程性文档仅记录最终状态，历史记录通过 git 查询
+- 引用文件或目录时需遵循以下规范：
+  - 引用 `tracker/` 下 issue 或 spec 时使用 `id`，见 [issue-tracker.md](docs/tracking/issue-tracker.md)
+    - 使用 `markdown` 链接引用文件时，文本部分使用 `id`
+  - 对于其他文件或目录，根据所处文件类型选择合适的形式：
+    - `markdown` 文档中使用 `markdown` 链接
+    - 其余情况下使用相对路径（未显式说明时相对于项目根目录）
+- 引用文件内容时需遵循以下规范：
+  - 无法推断引用内容所处的文件时，需额外显式引用文件
+  - 不使用行号定位
+  - 需保证引用精确，不与其他相似内容混淆
+  - 引用代码时可使用类型、成员或函数名
+    - `C#` 优先使用 [文档注释的 `<see cref>` 或 `<seealso cref>`](https://learn.microsoft.com/zh-cn/dotnet/csharp/language-reference/language-specification/documentation-comments#d314-see)
+    - 被引用函数存在重载时按需附上参数声明
+    - 单个函数行数过多时可额外附代码片段
+  - 引用文档时可引用 `markdown` 标题/小节
+    - 单一小节内容过多可额外附原文片段
 
 ### C# 语言特性
 
 其他改动时顺带修改，详细见 [dotnet-modernization-06](tracker/dotnet-modernization/issues/06-csharp-modernization-policy.md)
 
-可空引用类型（NRT）由 [nullable-migration](tracker/nullable-migration/spec.md) 单独推进
+可空引用类型（NRT）由 [nullable-migration-spec](tracker/nullable-migration/spec.md) 单独推进
 
 ### 提交前检查
 
-仓库使用 [pre-commit](.pre-commit-config.yaml)，本地脚本如下：
+仓库使用 [pre-commit](.pre-commit-config.yaml)，钩子如下：
+- `ruff-check` / `ruff-format`（Python lint 与格式化，见上方「格式化」）
 - [restore-bom](scripts/restore_bom.py)（补回 C# 的 BOM）
 - [check-tracker-yaml](scripts/check_tracker_yaml.py)（校验 `tracker/` 文档的 front matter）
+- 通用检查（check-merge-conflict、check-added-large-files、check-yaml）

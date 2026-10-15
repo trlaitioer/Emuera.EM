@@ -1,4 +1,5 @@
 ---
+id: test-infrastructure-spec
 date: 2026-08-22
 status: implemented
 ---

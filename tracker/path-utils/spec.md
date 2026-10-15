@@ -1,4 +1,5 @@
 ---
+id: path-utils-spec
 date: 2026-09-20
 status: implemented
 ---

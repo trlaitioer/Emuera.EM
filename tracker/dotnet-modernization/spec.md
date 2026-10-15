@@ -1,4 +1,5 @@
 ---
+id: dotnet-modernization-spec
 date: 2026-08-30
 status: implemented
 ---

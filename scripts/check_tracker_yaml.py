@@ -9,6 +9,7 @@ import io
 import re
 import sys
 from pathlib import Path
+from typing import Any
 
 import yaml
 
@@ -29,39 +30,50 @@ TYPES = {"task", "bug"}
 
 ISSUE_KEY_ORDER = ["id", "status", "type", "blocked_by", "superseded_by"]
 ISSUE_REQUIRED_KEYS = {"id", "status"}
-SPEC_KEY_ORDER = ["date", "status"]
-SPEC_REQUIRED_KEYS = {"date", "status"}
+SPEC_KEY_ORDER = ["id", "date", "status"]
+SPEC_REQUIRED_KEYS = {"id", "date", "status"}
 
 ISSUE_NAME_PATTERN = re.compile(r"\d{2}\-[\w-]+")
 DATE_PATTERN = re.compile(r"\d{4}-\d{2}-\d{2}")
 
 
 def has_bom(file: Path) -> bool:
-    with file.open("rb") as f:
-        bom = f.read(3)
-        return bom == b"\xef\xbb\xbf"
+    # 读取失败时按无 BOM 处理；具体错误由 check_file 的文本读取上报
+    try:
+        with file.open("rb") as f:
+            bom = f.read(3)
+            return bom == b"\xef\xbb\xbf"
+    except OSError:
+        return False
 
 
-def check_spec(data: dict) -> list[str]:
+def check_keys(data: dict[str, Any], required_keys: set[str], key_order: list[str], context: str) -> list[str]:
     errors: list[str] = []
-    for key in SPEC_REQUIRED_KEYS:
+    for key in required_keys:
         if key not in data:
-            errors.append(f"spec 缺少必需的键 {key}")
+            errors.append(f"{context} 缺少必需的键 {key}")
 
     last_order = -1
     for key in data:
-        if key not in SPEC_KEY_ORDER:
+        if key not in key_order:
             errors.append(f"未知的键 {key}")
             continue
-        order = SPEC_KEY_ORDER.index(key)
+        order = key_order.index(key)
         if order < last_order:
-            errors.append(
-                f"spec 键的顺序不正确，{key} 应在 {SPEC_KEY_ORDER[last_order]} 之前"
-            )
+            errors.append(f"{context} 键的顺序不正确，{key} 应在 {key_order[last_order]} 之前")
         last_order = order
+
+    return errors
+
+
+def check_spec(data: dict[str, Any], spec_id: str) -> list[str]:
+    errors: list[str] = check_keys(data, SPEC_REQUIRED_KEYS, SPEC_KEY_ORDER, "spec")
 
     for k, v in data.items():
         match k:
+            case "id":
+                if v != spec_id:
+                    errors.append(f"spec id 错误，应为 {spec_id}，实际为 {v}")
             case "date":
                 if isinstance(v, datetime.date):
                     pass
@@ -73,24 +85,8 @@ def check_spec(data: dict) -> list[str]:
     return errors
 
 
-def check_issue(data: dict, issue_id: str, issue_ids: set[str]) -> list[str]:
-    errors: list[str] = []
-
-    for key in ISSUE_REQUIRED_KEYS:
-        if key not in data:
-            errors.append(f"issue 缺少必需的键 {key}")
-
-    last_order = -1
-    for key in data:
-        if key not in ISSUE_KEY_ORDER:
-            errors.append(f"未知的键 {key}")
-            continue
-        order = ISSUE_KEY_ORDER.index(key)
-        if order < last_order:
-            errors.append(
-                f"issue 键的顺序不正确，{key} 应在 {ISSUE_KEY_ORDER[last_order]} 之前"
-            )
-        last_order = order
+def check_issue(data: dict[str, Any], issue_id: str, issue_ids: set[str]) -> list[str]:
+    errors: list[str] = check_keys(data, ISSUE_REQUIRED_KEYS, ISSUE_KEY_ORDER, "issue")
 
     for k, v in data.items():
         match k:
@@ -149,14 +145,18 @@ def check_file(path: Path, issue_ids: set[str]) -> list[str]:
             if not end:
                 return [f"{relative_path} 缺少 YAML front matter 结束标记"]
             data = yaml.safe_load("\n".join(lines))
-    except Exception as e:
+    except yaml.YAMLError as e:
         return [f"无法解析 YAML: {e}"]
+    except OSError as e:
+        return [f"无法读取文件: {e}"]
+    except UnicodeDecodeError as e:
+        return [f"无法解码 UTF-8: {e}"]
 
     if not isinstance(data, dict):
         return [f"{relative_path} YAML front matter 应为键值对"]
 
     if is_spec:
-        return check_spec(data)
+        return check_spec(data, f"{feature_slug}-spec")
     else:
         issue_id = f"{feature_slug}-{path.stem[:2]}"
         return check_issue(data, issue_id, issue_ids)

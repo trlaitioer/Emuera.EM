@@ -1,4 +1,5 @@
 ---
+id: performance-optimization-spec
 date: 2026-08-22
 status: in-progress
 ---

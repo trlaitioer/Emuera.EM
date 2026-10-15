@@ -1,4 +1,5 @@
 ---
+id: multilingual-translation-spec
 date: 2026-08-22
 status: draft
 ---

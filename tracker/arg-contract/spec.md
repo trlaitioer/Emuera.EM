@@ -1,4 +1,5 @@
 ---
+id: arg-contract-spec
 date: 2026-09-27
 status: implemented
 ---
