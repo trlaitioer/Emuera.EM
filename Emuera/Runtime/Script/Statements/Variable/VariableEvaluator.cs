@@ -3243,7 +3243,7 @@ internal sealed class VariableEvaluator : IDisposable
 
 	/// <summary>
 	/// Loads one global.sav. Split out of <see cref="LoadGlobal"/> because the path comes from
-	/// <c>Config.SavDir</c>, which a test cannot point anywhere; a path can.
+	/// <see cref="Config.Config.SavDir"/>, which a test cannot point anywhere; a path can.
 	/// </summary>
 	public bool LoadGlobalFile(string filepath, out string? errorReason)
 	{
@@ -3254,8 +3254,9 @@ internal sealed class VariableEvaluator : IDisposable
 
 		#region EM_LOADDATA、LOADGLOBAL、LOADDATA、LOADGLOBAL時にMAP,XML,DataTableを適切に削除するように
 
-		//DIM GLOVAL SAVEDATAにあたるデータだけが上書きされるらしい？
-		varData.RemoveEMGlobalData();
+		// Staged instead of cleared up front: a read that fails leaves the current global MAP/XML/DT as they
+		// are (nullable-migration-36).
+		using EMDataLoadScope emData = varData.BeginEMGlobalDataLoad();
 
 		#endregion
 
@@ -3321,6 +3322,7 @@ internal sealed class VariableEvaluator : IDisposable
 				}
 			}
 
+			emData.Commit();
 			return true;
 		}
 		catch (Exception e)
@@ -3452,7 +3454,7 @@ internal sealed class VariableEvaluator : IDisposable
 
 	/// <summary>
 	/// Writes one save file. Split out of <see cref="SaveTo"/> because the save folder comes from
-	/// <c>Config.SavDir</c>, which a test cannot point anywhere; a target path can.
+	/// <see cref="Config.Config.SavDir"/>, which a test cannot point anywhere; a target path can.
 	/// </summary>
 	public bool SaveToFile(string filepath, string saveText, [NotNullWhen(false)] out string? errorReason)
 	{
@@ -3492,7 +3494,20 @@ internal sealed class VariableEvaluator : IDisposable
 
 	public bool LoadFrom(int dataIndex)
 	{
-		string filepath = getSaveDataPath(dataIndex);
+		bool loaded = LoadFromFile(getSaveDataPath(dataIndex));
+		varData.LastLoadNo = dataIndex;
+		return loaded;
+	}
+
+	/// <summary>
+	/// Loads one save slot's file: returns true when it loaded, and reports a failure by throwing
+	/// (<see cref="ExeEE"/> for a missing slot, <see cref="FileEE"/> for a broken one), the way
+	/// <see cref="LoadFrom"/> always has. Split out of <see cref="LoadFrom"/> because the slot path comes from
+	/// <see cref="Config.Config.SavDir"/>, which a test cannot point anywhere; a path can. MAP/XML/DT are
+	/// staged here so a read that fails leaves the current ones as they are (nullable-migration-36).
+	/// </summary>
+	public bool LoadFromFile(string filepath)
+	{
 		if (!File.Exists(filepath))
 		{
 			throw new ExeEE(trerror.NotExistPath.Text);
@@ -3500,12 +3515,7 @@ internal sealed class VariableEvaluator : IDisposable
 
 		using FileStream fs = new(filepath, FileMode.Open, FileAccess.Read);
 		using EraBinaryDataReader? bReader = EraBinaryDataReader.CreateReader(fs);
-
-		#region セーブデータ指定されているMap、Xml、DataTableをロード時に削除するように修正
-
-		VariableData.RemoveEMSaveData();
-
-		#endregion
+		using EMDataLoadScope emData = varData.BeginEMSaveDataLoad();
 
 		if (bReader != null)
 		{
@@ -3517,7 +3527,7 @@ internal sealed class VariableEvaluator : IDisposable
 			LoadFromStream(reader);
 		}
 
-		varData.LastLoadNo = dataIndex;
+		emData.Commit();
 		return true;
 	}
 

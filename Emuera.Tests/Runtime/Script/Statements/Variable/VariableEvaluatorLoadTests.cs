@@ -75,7 +75,7 @@ public class VariableEvaluatorLoadTests : IDisposable
 	{
 		VariableEvaluator evaluator = StartWithStaleResult("loadchara-truncated");
 		// 0x03 = CharVar,其后不足 8 字节的 unique code
-		WriteCharaSave("truncated", BinarySave(0x03));
+		WriteCharaSave("truncated", SaveFileFixtures.MinimalBinarySave(EraSaveFileType.CharVar));
 
 		string? reason = evaluator.LoadChara("truncated");
 
@@ -102,7 +102,7 @@ public class VariableEvaluatorLoadTests : IDisposable
 	{
 		GameRootScope.UseTempRoot("loadglobal-wrong-type");
 		string path = Path.Combine(Path.GetTempPath(), $"emuera-global-{Guid.NewGuid():N}.sav");
-		File.WriteAllBytes(path, BinarySave(0x00)); // 0x00 = Normal
+		File.WriteAllBytes(path, SaveFileFixtures.MinimalBinarySave(EraSaveFileType.Normal));
 
 		try
 		{
@@ -123,7 +123,7 @@ public class VariableEvaluatorLoadTests : IDisposable
 	{
 		GameRootScope.UseTempRoot("loadglobal-truncated");
 		string path = Path.Combine(Path.GetTempPath(), $"emuera-global-{Guid.NewGuid():N}.sav");
-		File.WriteAllBytes(path, BinarySave(0x01)); // 0x01 = Global
+		File.WriteAllBytes(path, SaveFileFixtures.MinimalBinarySave(EraSaveFileType.Global));
 
 		try
 		{
@@ -145,18 +145,6 @@ public class VariableEvaluatorLoadTests : IDisposable
 		string datRoot = Program.DatRoot.FullName;
 		Directory.CreateDirectory(datRoot);
 		File.WriteAllBytes(Path.Combine(datRoot, $"chara_{name}.dat"), content);
-	}
-
-	/// <summary>最小二进制存档:Header + 版本 1808 + 数据块数 0 + 文件类型字节,其后即文件末尾。
-	/// 用于钉住「认得出二进制头、但读不出来」这条路(旧实现把它返回成 null,调用方只当它不是二进制档)。</summary>
-	private static byte[] BinarySave(byte fileType)
-	{
-		using MemoryStream ms = new();
-		ms.Write(BitConverter.GetBytes(EraBDConst.Header));
-		ms.Write(BitConverter.GetBytes(1808u));
-		ms.Write(BitConverter.GetBytes(0u));
-		ms.WriteByte(fileType);
-		return ms.ToArray();
 	}
 
 	/// <summary>一次成功读取会留下 RESULT=1,下一个用例从这里出发才能看见失败是否归零。</summary>

@@ -17,9 +17,18 @@ internal sealed partial class VariableData : IDisposable
 {
 	#region EM_私家版_XMLDocument_連想配列
 
-	public Dictionary<string, XmlDocument> DataXmlDocument { get; set; } = [];
-	public Dictionary<string, Dictionary<string, string>> DataStringMaps { get; set; } = [];
-	public Dictionary<string, DataTable> DataDataTables { get; set; } = [];
+	private EMDataState emData = new();
+
+	public Dictionary<string, XmlDocument> DataXmlDocument => emData.Xmls;
+	public Dictionary<string, Dictionary<string, string>> DataStringMaps => emData.Maps;
+	public Dictionary<string, DataTable> DataDataTables => emData.Tables;
+
+	/// <summary>The MAP/XML/DT state as one unit: a read swaps it for its staging state and swaps it back.</summary>
+	internal EMDataState EMData
+	{
+		get => emData;
+		set => emData = value;
+	}
 
 	#endregion
 
@@ -1354,76 +1363,41 @@ internal sealed partial class VariableData : IDisposable
 
 	#region EE_RESETDATA、RESETGLOBAL、LOADDATA、LOADGLOBAL時にMap、Xml、DataTableを適切に削除するように
 
+	/// <summary>
+	/// Starts a LOADDATA read. MAP/XML/DT go into a staging <see cref="EMDataState"/> and only reach the
+	/// current state through <see cref="EMDataLoadScope.Commit"/>, so a read that fails leaves the current
+	/// ones untouched (nullable-migration-36).
+	/// </summary>
+	public EMDataLoadScope BeginEMSaveDataLoad()
+	{
+		return new EMDataLoadScope(this, EMDataKeySets.Save());
+	}
+
+	/// <summary>LOADGLOBAL counterpart of <see cref="BeginEMSaveDataLoad"/> (nullable-migration-36).</summary>
+	public EMDataLoadScope BeginEMGlobalDataLoad()
+	{
+		return new EMDataLoadScope(this, EMDataKeySets.GlobalSave());
+	}
+
+	/// <summary>RESETDATA: resets the slot's MAP/XML/DT entries at once. A LOADDATA read instead goes
+	/// through <see cref="EMDataState.ClearEMData"/> on the state it is about to publish, with the keys the
+	/// file provided left alone (nullable-migration-36).</summary>
 	public void RemoveEMSaveData()
 	{
-		foreach (string key in GlobalStatic.ConstantData.SaveMaps)
-		{
-			if (DataStringMaps.TryGetValue(key, out Dictionary<string, string>? value))
-			{
-				value.Clear();
-			}
-		}
-
-		foreach (string key in GlobalStatic.ConstantData.SaveXmls)
-		{
-			DataXmlDocument.Remove(key);
-		}
-
-		foreach (string key in GlobalStatic.ConstantData.SaveDTs)
-		{
-			if (DataDataTables.TryGetValue(key, out DataTable? value))
-			{
-				value.Clear();
-			}
-		}
+		EMData.ClearEMData(EMDataKeySets.Save());
 	}
 
+	/// <summary>RESETGLOBAL: resets global.sav's MAP/XML/DT entries at once; LOADGLOBAL goes through
+	/// <see cref="EMDataState.ClearEMData"/> instead (nullable-migration-36).</summary>
 	public void RemoveEMGlobalData()
 	{
-		foreach (string key in GlobalStatic.ConstantData.GlobalSaveMaps)
-		{
-			if (DataStringMaps.TryGetValue(key, out Dictionary<string, string>? value))
-			{
-				value.Clear();
-			}
-		}
-
-		foreach (string key in GlobalStatic.ConstantData.GlobalSaveXmls)
-		{
-			DataXmlDocument.Remove(key);
-		}
-
-		foreach (string key in GlobalStatic.ConstantData.GlobalSaveDTs)
-		{
-			if (DataDataTables.TryGetValue(key, out DataTable? value))
-			{
-				value.Clear();
-			}
-		}
+		EMData.ClearEMData(EMDataKeySets.GlobalSave());
 	}
 
+	/// <summary>RESETGLOBAL also drops the game-owned (static) entries; no read ever restores them.</summary>
 	public void RemoveEMStaticData()
 	{
-		foreach (string key in GlobalStatic.ConstantData.StaticMaps)
-		{
-			if (DataStringMaps.TryGetValue(key, out Dictionary<string, string>? value))
-			{
-				value.Clear();
-			}
-		}
-
-		foreach (string key in GlobalStatic.ConstantData.StaticXmls)
-		{
-			DataXmlDocument.Remove(key);
-		}
-
-		foreach (string key in GlobalStatic.ConstantData.StaticDTs)
-		{
-			if (DataDataTables.TryGetValue(key, out DataTable? value))
-			{
-				value.Clear();
-			}
-		}
+		EMData.ClearEMData(EMDataKeySets.Static());
 	}
 
 	#endregion
