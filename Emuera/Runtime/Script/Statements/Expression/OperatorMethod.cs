@@ -475,7 +475,7 @@ internal static class OperatorMethodManager
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
 		{
 			int c = string.Compare(arguments[0].GetStrValue(exm), arguments[1].GetStrValue(exm), Config.Config.SCExpression);
-			if (c < 0)
+			if (c >= 0)
 				return 1L;
 			return 0L;
 		}
@@ -506,7 +506,7 @@ internal static class OperatorMethodManager
 		public override long GetIntValue(ExpressionMediator exm, List<AExpression> arguments)
 		{
 			int c = string.Compare(arguments[0].GetStrValue(exm), arguments[1].GetStrValue(exm), Config.Config.SCExpression);
-			if (c < 0)
+			if (c <= 0)
 				return 1L;
 			return 0L;
 		}
