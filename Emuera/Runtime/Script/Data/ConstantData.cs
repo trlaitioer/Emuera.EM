@@ -1168,12 +1168,14 @@ internal sealed class ConstantData
 		if (index < 0)
 			return ret;
 		if (ret == null)
-			throw new CodeEE(string.Format(trerror.CanNotSpecifiedByString.Text, code.ToString()));
-		if (index != allowIndex)
+			throw new CodeEE(string.Format(trerror.CanNotSpecifiedByString.Text, varname));
+		if (index > allowIndex)
 		{
 			if (allowIndex < 0)//GETNUM専用
-				throw new CodeEE(string.Format(trerror.CanNotSpecifiedByString.Text, code.ToString()));
-			throw new CodeEE(string.Format(trerror.CannotIndexSpecifiedByString.Text, code.ToString(), (index + 1).ToString()));
+				throw new CodeEE(string.Format(trerror.CanNotSpecifiedByString.Text, varname));
+
+			//throw new CodeEE(string.Format(trerror.CannotIndexSpecifiedByString.Text, code.ToString(), (index + 1).ToString()));
+			throw new CodeEE(string.Format(trerror.CannotIndexSpecifiedByString.Text, varname, (index + 1).ToString()));
 		}
 		return ret;
 	}
