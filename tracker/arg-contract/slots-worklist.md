@@ -5,7 +5,7 @@
 > **冻结声明（2026-10 补）**：本文件是**阶段 A 的冻结快照**（口径见 [slots-worklist.py](slots-worklist.py) 头注释的「冻结提示」）。
 > 在当前 HEAD 上重跑该脚本会**覆盖**本文件、且数字必然漂移——已知漂移：`arguments.Required(` 405→26、
 > 「被 `Required`(字面量) 读取」76→2、E 段补车道 20→94、`ArgType.NotNull` 含注释口径 87/76→88/77。
-> 阶段 B 的验收口径改用 [slots-progress.md](slots-progress.md)。
+> 阶段 B 的验收口径改用 [arg-slots.py](arg-slots.py) 生成的 `slots-progress.md`。
 
 ## 计数
 
@@ -192,5 +192,5 @@ A/B 两段的 76 项 + E 段的 20 项 = 可省略 (类,槽) 全集 96 项。E �
 - [x] **本表已从 76 扩到 96**（可省略 (类,槽) 全集）：补车道的 20 项见 E 段——其中「有意可空」的 5 项已按完成标准第 1 类在规则段旁写明空槽语义（`DataTableRowSetMethod[2]`、`DataTableCellSetMethod[3]` 为本次补写），转发槽保持可空不标 `NotNull`，「无意且可达」的 7 项已标 `NotNull` 并补用例，「硬转型解引用」的 4 项已由 arg-contract/issues/04 阶段 A 标 `ArgType.NotNull`（输出数组；显式空槽应拒绝；cast 的类型化移除归 issues/05）
 - [x] UDF 侧 `UserDefinedRefMethodTerm` 已确认为死代码（见票内「UDF 族」），**不是**本表工作面；活路径的「省略实参 → 取 `FunctionLabelLine.Def` 默认值」已由 `CalledFunctionTests` 一条用例钉住
 - [ ] 仍未纳入本表：活 `arguments[i]` 站点里落在**非可省略槽**上的那些（硬转型解引用共 24 处，落在可省略槽上的 4 项已见 E 段，其余归 arg-contract/issues/05（cast 的类型化移除））。变量下标 `Required(i)` 与 helper 传参路径已随 E 段核过
-- [x] **片 5（B 表执行期语义）与片 6（指令侧两轴模型定案）已落地**：片 5 的用例在 `Emuera.Tests/Runtime/Script/Statements/Function/IntentionalEmptySlotExecutionTests.cs`（46 条用例；覆盖了 B 表哪些槽、各项钉住的默认值、未覆盖槽的理由均见 issues/03 片 5，逐槽证据留在票内而不在此处硬编码）；片 6 的工件是 [instruction-args.py](instruction-args.py) → [instruction-args.md](instruction-args.md)（不并入本表——它扫的是 `ArgumentBuilder.cs`，口径与本站点清单不同）
+- [x] **片 5（B 表执行期语义）与片 6（指令侧两轴模型定案）已落地**：片 5 的用例在 `Emuera.Tests/Runtime/Script/Statements/Function/IntentionalEmptySlotExecutionTests.cs`（46 条用例；覆盖了 B 表哪些槽、各项钉住的默认值、未覆盖槽的理由均见 issues/03 片 5，逐槽证据留在票内而不在此处硬编码）；片 6 的工件是 [instruction-args.py](instruction-args.py) → `instruction-args.md`（由该脚本生成；不并入本表——它扫的是 `ArgumentBuilder.cs`，口径与本站点清单不同）
 - [ ] 本票仍未做的一件（见票内「余项」7）：`docs/` 侧的内建函数契约表

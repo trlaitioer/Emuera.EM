@@ -22,12 +22,24 @@ import re
 # ── 扫描源：阶段 A（backlog/issues/18）之后 183 个子类分居 BuiltinMethod/*.cs 的顶层 `internal sealed
 #    class`。顺序 = 拆分前 Creator.Method.cs 的区域顺序，产物行序才不随文件布局漂移。 ──────────────
 BUILTIN_METHOD_DIR = "Emuera/Runtime/Script/Statements/Function/BuiltinMethod"
-BUILTIN_METHOD_SRC = [os.path.join(BUILTIN_METHOD_DIR, name) for name in (
-    "PrivateAdditions.cs", "CsvData.cs", "GeneralPurpose.cs", "Constants.cs", "MathMethods.cs",
-    "ArrayOperations.cs", "StringOperations.cs", "Html.cs",
-    # 6 个图形实参 helper 随搬迁落进 BuiltinArgReaders.cs（原在 FunctionMethodCreator 里、包在
-    # Graphics 区域开头），G 段要把它们当**文件作用域 helper** 扫到，故位置与原顺序一致。
-    "BuiltinArgReaders.cs", "Graphics.cs", "EeAndPatches.cs")]
+BUILTIN_METHOD_SRC = [
+    os.path.join(BUILTIN_METHOD_DIR, name)
+    for name in (
+        "PrivateAdditions.cs",
+        "CsvData.cs",
+        "GeneralPurpose.cs",
+        "Constants.cs",
+        "MathMethods.cs",
+        "ArrayOperations.cs",
+        "StringOperations.cs",
+        "Html.cs",
+        # 6 个图形实参 helper 随搬迁落进 BuiltinArgReaders.cs（原在 FunctionMethodCreator 里、包在
+        # Graphics 区域开头），G 段要把它们当**文件作用域 helper** 扫到，故位置与原顺序一致。
+        "BuiltinArgReaders.cs",
+        "Graphics.cs",
+        "EeAndPatches.cs",
+    )
+]
 
 
 def load_sources(paths=None):
@@ -42,7 +54,7 @@ def load_sources(paths=None):
 # ── 类签名：缩进不敏感，同时覆盖两族布局 —— 阶段 A（backlog/issues/18）之后 183 个内建函数子类是
 #    BuiltinMethod/*.cs 的顶层 `internal sealed class`，而 `ArgumentBuilder.cs` 一族仍是
 #    `\t` 缩进的嵌套类。 ────────────────────────────────────────────────────────────────
-CLASS_RE = re.compile(r"^\t*(?:public |private |internal )?sealed class (\w+)\s*:", re.M)
+CLASS_RE = re.compile(r"^\t*(?:public |private |internal )?sealed class (\w+)\s*:", re.MULTILINE)
 
 # ── 方法签名：只认「<\t+> 访问修饰符 … 名字 (」形态（成员缩进随族的布局分别是 1 或 2 个 Tab），否则
 #    `throw new CodeEE(` 一类语句也会命中 —— 语句不可能以访问修饰符开头 ──
@@ -50,15 +62,10 @@ _METHOD_SIG_BODY = (
     r"(?:(?:static|override|virtual|sealed|async|partial|new|unsafe|extern)\s+)*"
     r"(?:[\w<>\[\],?.]+\s+)?(\w+)\s*\("
 )
-METHOD_SIG_RE = re.compile(
-    r"^\t+(?:\[[^\]]*\]\s*)?(?:public|private|protected|internal)\s+" + _METHOD_SIG_BODY
-)
+METHOD_SIG_RE = re.compile(r"^\t+(?:\[[^\]]*\]\s*)?(?:public|private|protected|internal)\s+" + _METHOD_SIG_BODY)
 # 供 `finditer` 在类体上扫（`^` 需 `re.M` 才逐行生效；上面那份是逐行 `match`，不需要）
-METHOD_SIG_RE_PLAIN = re.compile(
-    r"^\t+(?:public|private|protected|internal)\s+" + _METHOD_SIG_BODY, re.M
-)
-METHOD_KEYWORDS = {"if", "for", "while", "switch", "return", "throw", "catch", "using", "lock",
-                   "foreach", "else", "new", "get", "set"}
+METHOD_SIG_RE_PLAIN = re.compile(r"^\t+(?:public|private|protected|internal)\s+" + _METHOD_SIG_BODY, re.MULTILINE)
+METHOD_KEYWORDS = {"if", "for", "while", "switch", "return", "throw", "catch", "using", "lock", "foreach", "else", "new", "get", "set"}
 
 
 def strip_keep_lines(text, strip_regions=False):
@@ -98,14 +105,12 @@ def line_of(text, pos):
 def class_spans(text):
     """`sealed class` 的 (名字, 起点, 终点)：终点 = 下一个类起点或文本末尾。"""
     marks = [(m.start(), m.group(1)) for m in CLASS_RE.finditer(text)]
-    return [(name, pos, marks[idx + 1][0] if idx + 1 < len(marks) else len(text))
-            for idx, (pos, name) in enumerate(marks)]
+    return [(name, pos, marks[idx + 1][0] if idx + 1 < len(marks) else len(text)) for idx, (pos, name) in enumerate(marks)]
 
 
 def method_marks(text, regex=METHOD_SIG_RE):
     """方法签名的 (位置, 方法名)；剔掉语言关键字（`if`/`throw` 等语句也满足上面的正则）。"""
-    return [(m.start(), m.group(1)) for m in regex.finditer(text)
-            if m.group(1) not in METHOD_KEYWORDS]
+    return [(m.start(), m.group(1)) for m in regex.finditer(text) if m.group(1) not in METHOD_KEYWORDS]
 
 
 def method_of(text, lines, pos):
@@ -123,10 +128,7 @@ def method_of(text, lines, pos):
 def methods_of(text, lines, positions):
     """把若干位置折成「方法名×N」，按首次出现排序（`lines` = `text.split("\\n")`）。"""
     names = [method_of(text, lines, p) for p in positions]
-    return "、".join(
-        "%s×%d" % (nm, names.count(nm)) if names.count(nm) > 1 else nm
-        for nm in dict.fromkeys(names)
-    ) or "—"
+    return "、".join(f"{nm}×{names.count(nm)}" if names.count(nm) > 1 else nm for nm in dict.fromkeys(names)) or "—"
 
 
 def null_handling_points(text, base_pos, slot):
@@ -173,7 +175,7 @@ def parse_blocks(src, pos, end):
                 if d == 0:
                     break
             i += 1
-        body = text[m.end():i]
+        body = text[m.end() : i]
         om = re.search(r"OmitStart\s*=\s*(-?\d+)", body)
         om = int(om.group(1)) if om else -1
         am = re.search(r"ArgTypes\s*=\s*\{", body)
@@ -190,7 +192,7 @@ def parse_blocks(src, pos, end):
                     if dd == 0:
                         break
                 j += 1
-            entries = [x.strip() for x in body[am.end():j].split(",") if x.strip()]
+            entries = [x.strip() for x in body[am.end() : j].split(",") if x.strip()]
             argc = len(entries)
         out.append({"om": om, "argc": argc, "entries": entries, "line": line_of(src, pos + m.start())})
     return out
@@ -214,14 +216,14 @@ FREEZE_NOTE_CONSUMPTION = [
     "> **冻结声明（2026-10 补）**：本文件是**阶段 A 片 0 的冻结快照**（`arg-slots.py --phase-a` 的产物）。默认运行",
     "> `arg-slots.py` 不写本文件；重生成只应在阶段 A 的 HEAD 上进行，否则「读取形态」那批表必然漂移——阶段 B",
     "> （`arg-contract-05`）已把消费面全部换成 `ArgumentSlots` 访问器。阶段 B 的验收口径见",
-    "> [slots-progress.md](slots-progress.md)。",
+    "> [arg-slots.py](arg-slots.py) 生成的 `slots-progress.md`。",
 ]
 
 FREEZE_NOTE_WORKLIST = [
     "> **冻结声明（2026-10 补）**：本文件是**阶段 A 的冻结快照**（口径见 [slots-worklist.py](slots-worklist.py) 头注释的「冻结提示」）。",
     "> 在当前 HEAD 上重跑该脚本会**覆盖**本文件、且数字必然漂移——已知漂移：`arguments.Required(` 405→26、",
     "> 「被 `Required`(字面量) 读取」76→2、E 段补车道 20→94、`ArgType.NotNull` 含注释口径 87/76→88/77。",
-    "> 阶段 B 的验收口径改用 [slots-progress.md](slots-progress.md)。",
+    "> 阶段 B 的验收口径改用 [arg-slots.py](arg-slots.py) 生成的 `slots-progress.md`。",
 ]
 
 

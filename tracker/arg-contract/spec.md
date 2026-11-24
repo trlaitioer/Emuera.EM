@@ -6,6 +6,8 @@ status: implemented
 
 # 实参契约(Argument Contract)
 
+本目录的 `instruction-args.md`、`slots-progress.md` 是现场生成物，不随仓库分发；分别运行 [instruction-args.py](instruction-args.py)、[arg-slots.py](arg-slots.py) 生成（命令见脚本头注释）。`slots-consumption.md`、`slots-worklist.md` 是阶段 A 冻结快照，保留在仓库。
+
 ## 问题/背景
 
 来源：2026-09-27 的只读架构审查（五处热点并行），结论落在 `backlog-02`（深化）与 `backlog-03/backlog-04/backlog-16`（缺陷）。本 effort 承接它们。
@@ -18,7 +20,7 @@ status: implemented
 
 三者之间没有任何机制保持同步，而编译器无法介入，因为形状是**数据不是类型**：183 个子类的 C# 签名完全相同（阶段 B 前是 `GetIntValue(ExpressionMediator, List<AExpression?>)`，落地后是 `GetIntValue(ExpressionMediator, ArgumentSlots)`——签名依旧一一相同，故「各函数的形状在类型上不可区分」这一点不变；旧签名一度留下非虚门面，已由 `arg-contract-08` 删除）。
 
-### 代价（均已核实；数字为**阶段 A 基线**，阶段 B 落地后消费面该口径为 0，见 [slots-progress.md](slots-progress.md)）
+### 代价（均已核实；数字为**阶段 A 基线**，阶段 B 落地后消费面该口径为 0，见 [arg-slots.py](arg-slots.py) 生成的 `slots-progress.md`）
 
 - 函数体侧消费面约 **682 处取值 + 264 处计数**：`arguments.Required(` 405、`arguments[<字面量>]` 227、`arguments[i]` 47、`arguments[b…]` 3、`arguments.Count` 264；另有 `as VariableTerm` 24、`(VariableTerm)` 16、`is VariableTerm` 21（其中 6 处位于注释 ⇒ 33 处活 cast）
 - 33 处活 cast 逐点判决：23 处类型可证且 null 安全、**10 处可达 null**、0 处可达 InvalidCastException
@@ -60,7 +62,7 @@ status: implemented
 
 ### 接口可行性（访问形态普查）
 
-`Int`/`Str`/`IsInteger`/`IsString` 覆盖 **372/404 = 92.1%**（**阶段 A 基线**的 live 口径，见 `arg-contract-04` 的「核对」#10；阶段 B 落地后消费面该口径为 0，见 [slots-progress.md](slots-progress.md)）。难点在剩下的 7.9%，设计必须逐个消化：
+`Int`/`Str`/`IsInteger`/`IsString` 覆盖 **372/404 = 92.1%**（**阶段 A 基线**的 live 口径，见 `arg-contract-04` 的「核对」#10；阶段 B 落地后消费面该口径为 0，见 [arg-slots.py](arg-slots.py) 生成的 `slots-progress.md`）。难点在剩下的 7.9%，设计必须逐个消化：
 
 1. 可能为 null 的槽 → 访问器须显式选语义（抛异常 / 返回「可能有」句柄）
 2. **20 处 `Restructure` 站点是折叠期 API、不是函数体 API** → 不可能用只读访问器覆盖，必须留在另一接口上或并入检查器

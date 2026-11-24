@@ -339,7 +339,7 @@ public void OmittableSlot_WithExplicitEmptySlot_IsRejected(string name, string i
 
 ### 片 6：指令侧两轴模型的核查与定案
 
-余项 6 问的是「`ArgumentBuilder` 这一侧是否需要与规则表的 `OmitStart`/`ArgType.NotNull` 对齐」。机械预筛 + 逐 builder 裁定的产物是新工件：[instruction-args.py](../instruction-args.py) → [instruction-args.md](../instruction-args.md)（口径与校验同 `slots-worklist.py`：走模型/自校验的分类、缺项与多项一律报警）。
+余项 6 问的是「`ArgumentBuilder` 这一侧是否需要与规则表的 `OmitStart`/`ArgType.NotNull` 对齐」。机械预筛 + 逐 builder 裁定的产物是新工件：[instruction-args.py](../instruction-args.py) → `instruction-args.md`（由该脚本生成；口径与校验同 `slots-worklist.py`：走模型/自校验的分类、缺项与多项一律报警）。
 
 - **编码形状已量清**：50 个 `ArgumentBuilder` 子类里 **28** 个走 `checkArgumentType`（受两轴支配）、**22** 个在 `CreateArgument` 里自建解析（两轴不生效，逐槽处置引 `nullable-migration-15` 的决策表）。数量轴 = `minArg`（未设 = -1 时判据是「少于类型表长度即报错」，等价于整表必填）+ `argAny`（数量不限，尾部取末位类型位）；槽位轴 = `argumentTypeArray[i]`：`null!` = 该槽可省**且不做类型检查**，`typeof(void)` = 必填、类型由 builder 自检，具体 `Type` = 必填且类型固定
 - **全库唯一 `null!` 位**：`SP_FOR_NEXT` 槽 1（`FOR_NEXT` 的 start），调用点判空后取默认 0——即「可省 + 可空」在指令侧只此一处
@@ -375,7 +375,7 @@ public void OmittableSlot_WithExplicitEmptySlot_IsRejected(string name, string i
 3. 变量下标 `Required(i)` 与 helper 传参路径**已随片 2-D 并入**：这 20 项就是由这两条路读取的槽（如 `XmlAddNodeMethod` 的 `methodPos`/`setAllPos`、`DataTableRowSetMethod.SetValue`、`ReadPoint`/`ReadColormatrix`）；片 2-A 另有一条例外记录——`DT_ROW_ADD` 的槽 1 虽由变量下标读取，但已举证 `DT_ROW_ADD("t",,"c")` 修前 NRE，故在片 2-A 一并补标 `NotNull`
 4. **（见片 5）** B 表执行期语义抽查：34 槽覆盖 **27**（46 条用例：24 行等价断言 + 18 条绝对值断言 + 4 行「无兜底」断言；覆盖的 27 槽里 21 项钉住默认值，另 4 项只证「空槽 ≡ 缺席」、2 项为「无兜底」），未覆盖的 7 个槽（CSV 数据 / 角色数据 / 游戏根 / `ARRAYMSORTEX` 的变量名表）与 `GDRAWG` 的 10 实参形态逐槽写明原因，只能人工抽查。「每一段都标了标志」这条另由 `slots-worklist.py` 的 `已带标志` 列机械校验（A 表逐行 + E 段逐槽，缺标即报警），不只靠用例
 5. **（已落地）完成标准第 1 类点名的「另加未被 `Required` 读取的同类 3 项」**：3 项即余项 1 清单里的 `DataTableSelectMethod[1]`/`[2]` 与 `GraphicsDrawGMethod[10]`；已按片 2-B 的落地形态在各自规则段旁补英文语义注释（此前全库含 `empty slot`/`omitted slot` 的 32 行注释里没有这两个类）。`DataTableSelectMethod[3]`（输出数组的硬转型）**不在此列**，它属余项 2 的 cast 车道
-6. **（见片 6）** 指令侧（`ArgumentBuilder.cs`）的同一条「可省略 + 可空」两轴模型：`spec.md` 把 `ArgumentBuilder.CreateArgument` 列为同一份声明的第 4 个解释者，而它用的是另一套模型（`argumentTypeArray[i] == null` = 该槽可省且不检查类型、`minArg` = 最少几个实参，见 `ArgumentBuilder.checkArgumentType`）。本片把形状量清（50 个子类 / 28 走模型 / 22 自校验 / 唯一 `null!` 位）、两把尺子逐 builder 核过，**定案为「不对齐」**——指令侧即函数侧被否决的 A 极性，且不存在「默认放行 + 靠枚举兜底」的结构；产物见 [instruction-args.py](../instruction-args.py) 与 [instruction-args.md](../instruction-args.md)
+6. **（见片 6）** 指令侧（`ArgumentBuilder.cs`）的同一条「可省略 + 可空」两轴模型：`spec.md` 把 `ArgumentBuilder.CreateArgument` 列为同一份声明的第 4 个解释者，而它用的是另一套模型（`argumentTypeArray[i] == null` = 该槽可省且不检查类型、`minArg` = 最少几个实参，见 `ArgumentBuilder.checkArgumentType`）。本片把形状量清（50 个子类 / 28 走模型 / 22 自校验 / 唯一 `null!` 位）、两把尺子逐 builder 核过，**定案为「不对齐」**——指令侧即函数侧被否决的 A 极性，且不存在「默认放行 + 靠枚举兜底」的结构；产物见 [instruction-args.py](../instruction-args.py)（生成 `instruction-args.md`）
 7. **（已落地）** `docs/` 侧的内建函数契约表：已产出 [docs/builtin-functions.md](../../../docs/builtin-functions.md)——覆盖 `Creator.cs` 里全部 **266 个注册名**（183 个 `FunctionMethod` 子类）的逐槽形状、返回类型、合法实参数与空槽语义，附一句话说明；形状来自代码（生成器 [builtin-contract.py](../builtin-contract.py) + 说明文件 [builtin-notes.json](../builtin-notes.json)，可复跑），说明参考 upstream 在线文档并逐条按代码核对（**不一致处以代码为准**，差异写在各行的「说明」里）。原「约 54 个内建槽上显式空槽由 NRE 变 `CodeEE`」那条也随该表逐槽可查；`docs/csv-erb-syntax.md` §10 第 8 条改为指向该表
 
 ## 曾考虑的替代方案
