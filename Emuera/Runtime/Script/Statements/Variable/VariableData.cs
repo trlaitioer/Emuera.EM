@@ -1379,16 +1379,13 @@ internal sealed partial class VariableData : IDisposable
 		return new EMDataLoadScope(this, EMDataKeySets.GlobalSave());
 	}
 
-	/// <summary>RESETDATA: resets the slot's MAP/XML/DT entries at once. A LOADDATA read instead goes
-	/// through <see cref="EMDataState.ClearEMData"/> on the state it is about to publish, with the keys the
-	/// file provided left alone (nullable-migration-36).</summary>
+	/// <summary>Resets the slot's MAP/XML/DT entries immediately for RESETDATA.</summary>
 	public void RemoveEMSaveData()
 	{
 		EMData.ClearEMData(EMDataKeySets.Save());
 	}
 
-	/// <summary>RESETGLOBAL: resets global.sav's MAP/XML/DT entries at once; LOADGLOBAL goes through
-	/// <see cref="EMDataState.ClearEMData"/> instead (nullable-migration-36).</summary>
+	/// <summary>Resets global.sav's MAP/XML/DT entries immediately for RESETGLOBAL.</summary>
 	public void RemoveEMGlobalData()
 	{
 		EMData.ClearEMData(EMDataKeySets.GlobalSave());

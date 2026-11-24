@@ -1,11 +1,14 @@
 ﻿using MinorShift.Emuera;
 using MinorShift.Emuera.GameData.Variable;
 using MinorShift.Emuera.Runtime.Script.Data;
+using MinorShift.Emuera.Runtime.Script.Statements;
+using MinorShift.Emuera.Runtime.Script.Statements.Expression;
 using MinorShift.Emuera.Runtime.Script.Statements.Variable;
 using MinorShift.Emuera.Runtime.Utils;
 using System.Data;
 using System.Xml;
 using Xunit;
+using static Emuera.Tests.Runtime.Script.Statements.Function.BuiltinFunctionTestKit;
 using trerror = MinorShift.Emuera.Runtime.Utils.EvilMask.Lang.Error;
 
 namespace Emuera.Tests.Runtime.Script.Statements.Variable;
@@ -738,6 +741,337 @@ public class EMDataLoadScopeTests : IDisposable
 		Assert.False(data.DataXmlDocument.ContainsKey("STATICXML"));
 		Assert.Empty(data.DataDataTables["STATICDT"].Rows);
 		Assert.Equal("slot", data.DataStringMaps["SLOTMAP"]["k"]);
+	}
+
+	/// <summary>有效的全局档也可能在清理旧表时失败。外键在删行前拒绝清理，插件回调可在删行后报错。</summary>
+	[Theory]
+	[InlineData(false, false)]
+	[InlineData(true, false)]
+	[InlineData(true, true)]
+	public void LoadGlobalFile_WhenClearingOldTablesFails_PreservesCurrentData(bool throwAfterClear, bool insertBeforeThrow)
+	{
+		using IsolatedEvaluator isolated = new();
+		VariableData data = isolated.Data;
+		EMDataGuard guard = GlobalGuard(data, "KEEPMAP", "KEEPXML", "FIRSTDT");
+		DataTable first = data.DataDataTables["FIRSTDT"];
+		first.AcceptChanges();
+		first.Rows[0]["C"] = 2L;
+		first.Rows[0].BeginEdit();
+		first.Rows[0]["C"] = 3L;
+
+		using DataSet set = new();
+		DataTable parent = set.Tables.Add("PARENT");
+		DataColumn id = parent.Columns.Add("Id", typeof(int));
+		parent.Rows.Add(7);
+		AddGlobalKey(GlobalStatic.ConstantData.GlobalSaveDTs, "PARENT");
+		data.DataDataTables["PARENT"] = parent;
+		if (throwAfterClear)
+		{
+			parent.TableCleared += (_, _) =>
+			{
+				if (insertBeforeThrow)
+				{
+					parent.Rows.Add(99);
+				}
+				throw new InvalidOperationException("plugin rejected clear");
+			};
+		}
+		else
+		{
+			DataTable child = set.Tables.Add("CHILD");
+			DataColumn parentId = child.Columns.Add("ParentId", typeof(int));
+			set.Relations.Add("references", id, parentId);
+			child.Rows.Add(7);
+		}
+
+		Assert.False(isolated.Evaluator.LoadGlobalFile(WriteGlobalSaveWithNewMap(), out string? reason));
+		Assert.NotNull(reason);
+		guard.AssertPreserved();
+		Assert.False(data.DataStringMaps.ContainsKey("NEWMAP"));
+		Assert.Same(parent, data.DataDataTables["PARENT"]);
+		Assert.Equal(7, Assert.Single(parent.Rows.Cast<DataRow>()).Field<int>("Id"));
+		DataRow restored = Assert.Single(first.Rows.Cast<DataRow>());
+		Assert.Equal(DataRowState.Modified, restored.RowState);
+		Assert.Equal(1L, restored.Field<long>("C", DataRowVersion.Original));
+		Assert.Equal(2L, restored.Field<long>("C", DataRowVersion.Current));
+		Assert.Equal(3L, restored.Field<long>("C", DataRowVersion.Proposed));
+	}
+
+	[Theory]
+	[InlineData(true)]
+	[InlineData(false)]
+	public void LoadGlobalFile_WhenTableClearingChangesRowsThenThrows_RestoresRows(bool removeSecond)
+	{
+		using IsolatedEvaluator isolated = new();
+		using DataSet set = new();
+		DataTable table = set.Tables.Add("parent");
+		DataColumn parentId = table.Columns.Add("Id", typeof(int));
+		DataTable child = set.Tables.Add("child");
+		DataColumn childId = child.Columns.Add("ParentId", typeof(int));
+		set.Relations.Add("references", parentId, childId);
+		foreach (int id in new[] { 7, 8, 9 })
+		{
+			table.Rows.Add(id);
+		}
+		child.Rows.Add(7);
+		set.AcceptChanges();
+		AddGlobalKey(GlobalStatic.ConstantData.GlobalSaveDTs, "OLD");
+		isolated.Data.DataDataTables["OLD"] = table;
+		table.TableClearing += (_, _) =>
+		{
+			if (removeSecond)
+			{
+				table.Rows.RemoveAt(1);
+			}
+			else
+			{
+				table.Rows[1]["Id"] = 99;
+			}
+			throw new InvalidOperationException("partial clear");
+		};
+
+		Assert.False(isolated.Evaluator.LoadGlobalFile(WriteGlobalSaveWithNewMap(), out string? reason));
+		Assert.Contains("partial clear", reason);
+		Assert.Same(table, isolated.Data.DataDataTables["OLD"]);
+		Assert.Equal(new[] { 7, 8, 9 }, table.Rows.Cast<DataRow>().Select(row => row.Field<int>("Id")));
+		Assert.All(table.Rows.Cast<DataRow>(), row => Assert.Equal(DataRowState.Unchanged, row.RowState));
+		DataRow childRow = Assert.Single(child.Rows.Cast<DataRow>());
+		Assert.Equal(DataRowState.Unchanged, childRow.RowState);
+		Assert.Equal(7, childRow.Field<int>("ParentId"));
+		Assert.True(set.EnforceConstraints);
+		Assert.False(isolated.Data.DataStringMaps.ContainsKey("NEWMAP"));
+	}
+
+	[Fact]
+	public void LoadGlobalFile_WhenPluginIsBulkLoading_LeavesConstraintCheckingToPlugin()
+	{
+		using IsolatedEvaluator isolated = new();
+		using DataTable table = new();
+		DataColumn id = table.Columns.Add("Id", typeof(int));
+		table.PrimaryKey = [id];
+		table.Rows.Add(7);
+		AddGlobalKey(GlobalStatic.ConstantData.GlobalSaveDTs, "BULK");
+		isolated.Data.DataDataTables["BULK"] = table;
+		table.TableCleared += (_, _) => throw new InvalidOperationException("bulk clear");
+
+		table.BeginLoadData();
+		Assert.False(isolated.Evaluator.LoadGlobalFile(WriteGlobalSaveWithNewMap(), out string? reason));
+		Assert.Contains("bulk clear", reason);
+		Assert.Equal(7, Assert.Single(table.Rows.Cast<DataRow>()).Field<int>("Id"));
+		// 批量加载允许临时重复键，由插件结束批次时才检查约束。
+		table.Rows.Add(7);
+		Assert.Throws<ConstraintException>(() => table.EndLoadData());
+	}
+
+	[Fact]
+	public void LoadGlobalFile_WhenTheFileReplacesAParentButOmitsItsChild_ClearsBothOldTables()
+	{
+		using IsolatedEvaluator isolated = new();
+		using DataSet set = new();
+		(string parentKey, string childKey) = AddOrderedGlobalTableKeys();
+		DataTable parent = set.Tables.Add(parentKey);
+		DataTable child = set.Tables.Add(childKey);
+		DataColumn id = parent.Columns.Add("Id", typeof(int));
+		DataColumn parentId = child.Columns.Add("ParentId", typeof(int));
+		set.Relations.Add("references", id, parentId);
+		parent.Rows.Add(7);
+		child.Rows.Add(7);
+		isolated.Data.DataDataTables[parentKey] = parent;
+		isolated.Data.DataDataTables[childKey] = child;
+		using DataTable replacement = new(parentKey);
+		replacement.Columns.Add("Id", typeof(int));
+		replacement.Rows.Add(42);
+
+		Assert.True(isolated.Evaluator.LoadGlobalFile(WriteGlobalSaveWithNewMap((parentKey, replacement)), out string? reason), reason);
+		Assert.Empty(parent.Rows);
+		Assert.Empty(child.Rows);
+		Assert.Same(child, isolated.Data.DataDataTables[childKey]);
+		DataTable loaded = isolated.Data.DataDataTables[parentKey];
+		Assert.NotSame(parent, loaded);
+		Assert.Equal(42, Assert.Single(loaded.Rows.Cast<DataRow>()).Field<int>("Id"));
+	}
+
+	[Fact]
+	public void LoadGlobalFile_WhenClearingAParentCascadesBeforeThrowing_RestoresBothTablesAndEnforcement()
+	{
+		using IsolatedEvaluator isolated = new();
+		using DataSet set = new();
+		(string parentKey, string childKey) = AddOrderedGlobalTableKeys();
+		DataTable parent = set.Tables.Add(parentKey);
+		DataTable child = set.Tables.Add(childKey);
+		DataColumn id = parent.Columns.Add("Id", typeof(int));
+		DataColumn parentId = child.Columns.Add("ParentId", typeof(int));
+		DataRelation relation = set.Relations.Add("references", id, parentId);
+		parent.Rows.Add(7);
+		child.Rows.Add(7);
+		set.AcceptChanges();
+		isolated.Data.DataDataTables[parentKey] = parent;
+		isolated.Data.DataDataTables[childKey] = child;
+		parent.TableClearing += (_, _) =>
+		{
+			parent.Rows[0][id] = 99;
+			throw new InvalidOperationException("parent rejected clear");
+		};
+
+		Assert.False(isolated.Evaluator.LoadGlobalFile(WriteGlobalSaveWithNewMap(), out string? reason));
+		Assert.Contains("parent rejected clear", reason);
+		Assert.Same(parent, isolated.Data.DataDataTables[parentKey]);
+		Assert.Same(child, isolated.Data.DataDataTables[childKey]);
+		Assert.Equal(7, Assert.Single(parent.Rows.Cast<DataRow>()).Field<int>(id));
+		DataRow restored = Assert.Single(child.Rows.Cast<DataRow>());
+		Assert.Equal(7, restored.Field<int>(parentId));
+		Assert.Equal(DataRowState.Unchanged, restored.RowState);
+		Assert.Equal(Rule.Cascade, relation.ChildKeyConstraint!.UpdateRule);
+		Assert.True(set.EnforceConstraints);
+	}
+
+	[Theory]
+	[InlineData("binary")]
+	[InlineData("DT_CREATE")]
+	[InlineData("DT_FROMXML")]
+	public void LoadGlobalFile_WhenAPluginRejectsRowInsertion_RestoresRowsAndKeepsTheSubscription(string source)
+	{
+		using IsolatedEvaluator isolated = new();
+		(string firstKey, string secondKey) = AddOrderedGlobalTableKeys();
+		using DataTable saved = new(firstKey);
+		saved.Columns.Add("id", typeof(long));
+		if (source == "binary")
+		{
+			Assert.True(isolated.Evaluator.LoadGlobalFile(WriteGlobalSaveWithNewMap((firstKey, saved)), out string? loadReason), loadReason);
+		}
+		else
+		{
+			List<AExpression?> args = [new SingleStrTerm(firstKey)];
+			if (source == "DT_FROMXML")
+			{
+				using StringWriter schema = new();
+				using StringWriter data = new();
+				saved.WriteXmlSchema(schema);
+				saved.WriteXml(data);
+				args.Add(new SingleStrTerm(schema.ToString()));
+				args.Add(new SingleStrTerm(data.ToString()));
+			}
+			ExpressionMediator mediator = new(null!, isolated.Evaluator, null!);
+			Assert.Equal(1L, InvokeWith(Method(source), args, mediator));
+		}
+
+		DataTable first = isolated.Data.DataDataTables[firstKey];
+		first.Rows.Add(7L);
+		first.RowChanging += (_, e) =>
+		{
+			if (e.Action == DataRowAction.Add)
+			{
+				throw new InvalidOperationException("plugin rejected insert");
+			}
+		};
+		using DataTable second = new(secondKey);
+		second.Columns.Add("id", typeof(long));
+		second.Rows.Add(9L);
+		second.TableClearing += (_, _) => throw new InvalidOperationException("plugin rejected clear");
+		isolated.Data.DataDataTables[secondKey] = second;
+
+		Assert.False(isolated.Evaluator.LoadGlobalFile(WriteGlobalSaveWithNewMap(), out string? reason));
+		Assert.Contains("plugin rejected clear", reason);
+		Assert.Same(first, isolated.Data.DataDataTables[firstKey]);
+		Assert.Equal(7L, Assert.Single(first.Rows.Cast<DataRow>()).Field<long>("id"));
+		Assert.Equal("plugin rejected insert", Assert.Throws<InvalidOperationException>(() => first.Rows.Add(11L)).Message);
+	}
+
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void LoadGlobalFile_WhenACallbackPopulatesAnInitiallyEmptyTarget_LeavesItEmpty(bool rejectClear)
+	{
+		using IsolatedEvaluator isolated = new();
+		(string firstKey, string secondKey) = AddOrderedGlobalTableKeys();
+		using DataTable first = new(firstKey);
+		using DataTable second = new(secondKey);
+		first.Columns.Add("id", typeof(long));
+		second.Columns.Add("id", typeof(long));
+		first.Rows.Add(7L);
+		isolated.Data.DataDataTables[firstKey] = first;
+		isolated.Data.DataDataTables[secondKey] = second;
+		first.TableCleared += (_, _) =>
+		{
+			second.Rows.Add(9L);
+			if (rejectClear)
+			{
+				throw new InvalidOperationException("plugin rejected after inserting");
+			}
+		};
+
+		bool loaded = isolated.Evaluator.LoadGlobalFile(WriteGlobalSaveWithNewMap(), out string? reason);
+		if (rejectClear)
+		{
+			Assert.False(loaded);
+			Assert.Contains("plugin rejected after inserting", reason);
+			Assert.Equal(7L, Assert.Single(first.Rows.Cast<DataRow>()).Field<long>("id"));
+		}
+		else
+		{
+			Assert.True(loaded, reason);
+			Assert.Empty(first.Rows);
+		}
+		Assert.Same(second, isolated.Data.DataDataTables[secondKey]);
+		Assert.Empty(second.Rows);
+	}
+
+	[Fact]
+	public void LoadGlobalFile_WhenAColumnBecomesReadOnlyDuringAnEdit_RestoresItsProposedValue()
+	{
+		using IsolatedEvaluator isolated = new();
+		const string key = "EDITED";
+		AddGlobalKey(GlobalStatic.ConstantData.GlobalSaveDTs, key);
+		using DataTable table = new(key);
+		DataColumn value = table.Columns.Add("Value", typeof(long));
+		DataRow row = table.Rows.Add(7L);
+		table.AcceptChanges();
+		row[value] = 8L;
+		row.BeginEdit();
+		row[value] = 9L;
+		value.ReadOnly = true;
+		isolated.Data.DataDataTables[key] = table;
+		table.TableCleared += (_, _) => throw new InvalidOperationException("plugin rejected after clear");
+
+		Assert.False(isolated.Evaluator.LoadGlobalFile(WriteGlobalSaveWithNewMap(), out string? reason));
+		Assert.Contains("plugin rejected after clear", reason);
+		Assert.Same(table, isolated.Data.DataDataTables[key]);
+		DataRow restored = Assert.Single(table.Rows.Cast<DataRow>());
+		Assert.Equal(DataRowState.Modified, restored.RowState);
+		Assert.Equal(7L, restored.Field<long>(value, DataRowVersion.Original));
+		Assert.Equal(8L, restored.Field<long>(value, DataRowVersion.Current));
+		Assert.Equal(9L, restored.Field<long>(value, DataRowVersion.Proposed));
+		Assert.True(value.ReadOnly);
+	}
+
+	private (string First, string Second) AddOrderedGlobalTableKeys()
+	{
+		HashSet<string> keys = GlobalStatic.ConstantData.GlobalSaveDTs;
+		AddGlobalKey(keys, "ORDER_A");
+		AddGlobalKey(keys, "ORDER_B");
+		// 共享键集合可能复用此前用例留下的空位。按实际遍历顺序布置两张表。
+		string[] ordered = keys.Where(key => key is "ORDER_A" or "ORDER_B").ToArray();
+		return (ordered[0], ordered[1]);
+	}
+
+	private string WriteGlobalSaveWithNewMap((string Key, DataTable Table)? fileTable = null)
+	{
+		string path = NewSavePath();
+		using FileStream fs = File.Create(path);
+		using EraBinaryDataWriter writer = new(fs);
+		writer.WriteHeader();
+		writer.WriteFileType(EraSaveFileType.Global);
+		writer.WriteInt64(0);
+		writer.WriteInt64(1000);
+		writer.WriteString("");
+		writer.WriteEOF();
+		writer.WriteWithKey("NEWMAP", new Dictionary<string, string> { ["k"] = "loaded" });
+		if (fileTable is { } entry)
+		{
+			writer.WriteWithKey(entry.Key, entry.Table);
+		}
+		writer.WriteEOF();
+		return path;
 	}
 
 	private void AddSaveKey(HashSet<string> keySet, string key)

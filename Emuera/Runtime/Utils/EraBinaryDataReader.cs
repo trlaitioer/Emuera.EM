@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MinorShift.Emuera.GameData.Variable;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -465,7 +466,7 @@ internal abstract class EraBinaryDataReader : IDisposable
 		{
 			return GuardedContent(() =>
 			{
-				DataTable dt = new();
+				EMDataTable dt = new();
 				StringReader ss = new(reader.ReadString());
 				dt.ReadXmlSchema(ss);
 				ss = new StringReader(reader.ReadString());

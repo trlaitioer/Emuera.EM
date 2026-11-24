@@ -2254,7 +2254,7 @@ internal sealed class DataTableManagementMethod : FunctionMethod
 			return 0;
 		}
 
-		DataTable dt = new(key) { CaseSensitive = true };
+		EMDataTable dt = new(key) { CaseSensitive = true };
 		DataColumn c = dt.Columns.Add("id", typeof(long));
 		c.AllowDBNull = false;
 		c.Unique = true;
@@ -3073,7 +3073,7 @@ internal sealed class DataTableFromXmlMethod : FunctionMethod
 		DataTable dt;
 		try
 		{
-			dt = new DataTable(key);
+			dt = new EMDataTable(key);
 			using (StringReader reader = new(slots.Str(exm, 1)))
 			{
 				dt.ReadXmlSchema(reader);

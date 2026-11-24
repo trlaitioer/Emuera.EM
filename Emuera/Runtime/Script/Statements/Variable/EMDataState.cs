@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Xml;
 
@@ -48,37 +49,112 @@ internal sealed class EMDataState
 		}
 	}
 
-	/// <summary>
-	/// The one reset that both RESETDATA/RESETGLOBAL and a successful LOADDATA/LOADGLOBAL apply: maps and
-	/// DataTables are emptied in place (whoever holds the instance — a plugin that kept the table from
-	/// <see cref="MinorShift.Emuera.Runtime.Utils.PluginSystem.PluginManager.GetDataTable"/>, say — sees it
-	/// emptied), XML entries are removed. Keys <paramref name="provided"/> carries came from the file and are
-	/// left alone; without it every target key is reset.
-	/// </summary>
-	public void ClearEMData(EMDataKeySets targets, EMDataState? provided = null)
+	/// <summary>Immediately resets the declared entries for RESETDATA or RESETGLOBAL.</summary>
+	public void ClearEMData(EMDataKeySets targets)
+	{
+		ClearMaps(targets);
+		RemoveXmls(targets);
+		foreach (string key in targets.DataTables)
+		{
+			if (Tables.TryGetValue(key, out DataTable? table))
+			{
+				table.Clear();
+			}
+		}
+	}
+
+	public void ClearMaps(EMDataKeySets targets)
 	{
 		foreach (string key in targets.Maps)
 		{
-			if (provided?.Maps.ContainsKey(key) != true && Maps.TryGetValue(key, out Dictionary<string, string>? map))
+			if (Maps.TryGetValue(key, out Dictionary<string, string>? map))
 			{
 				map.Clear();
 			}
 		}
+	}
 
+	public void RemoveXmls(EMDataKeySets targets)
+	{
 		foreach (string key in targets.Xmls)
 		{
-			if (provided?.Xmls.ContainsKey(key) != true)
-			{
-				Xmls.Remove(key);
-			}
+			Xmls.Remove(key);
 		}
+	}
+}
 
-		foreach (string key in targets.DataTables)
+/// <summary>A save table whose rollback writes do not run plugin row or column handlers.</summary>
+internal sealed class EMDataTable : DataTable
+{
+	private bool restoring;
+
+	public EMDataTable()
+	{
+	}
+
+	public EMDataTable(string name) : base(name)
+	{
+	}
+
+	public void RestoreRows(Action restore)
+	{
+		bool wasRestoring = restoring;
+		restoring = true;
+		try
 		{
-			if (provided?.Tables.ContainsKey(key) != true && Tables.TryGetValue(key, out DataTable? table))
-			{
-				table.Clear();
-			}
+			restore();
+		}
+		finally
+		{
+			restoring = wasRestoring;
+		}
+	}
+
+	protected override void OnRowChanging(DataRowChangeEventArgs e)
+	{
+		if (!restoring)
+		{
+			base.OnRowChanging(e);
+		}
+	}
+
+	protected override void OnRowChanged(DataRowChangeEventArgs e)
+	{
+		if (!restoring)
+		{
+			base.OnRowChanged(e);
+		}
+	}
+
+	protected override void OnRowDeleting(DataRowChangeEventArgs e)
+	{
+		if (!restoring)
+		{
+			base.OnRowDeleting(e);
+		}
+	}
+
+	protected override void OnRowDeleted(DataRowChangeEventArgs e)
+	{
+		if (!restoring)
+		{
+			base.OnRowDeleted(e);
+		}
+	}
+
+	protected override void OnColumnChanging(DataColumnChangeEventArgs e)
+	{
+		if (!restoring)
+		{
+			base.OnColumnChanging(e);
+		}
+	}
+
+	protected override void OnColumnChanged(DataColumnChangeEventArgs e)
+	{
+		if (!restoring)
+		{
+			base.OnColumnChanged(e);
 		}
 	}
 }
