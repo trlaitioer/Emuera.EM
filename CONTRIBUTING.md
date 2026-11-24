@@ -1,6 +1,8 @@
 # 贡献指南
 
-规范仅约束新增内容，违反规范的旧有内容按需修正
+规范仅约束新增内容；旧内容在实质修改时顺手升级，或由迁移任务统一处理。
+
+文档分层与单一真相见 [docs/README.md](docs/README.md) 的「文档分层」。
 
 ## 代码风格
 
@@ -18,27 +20,28 @@
 
 命名规则（接口加 `I` 前缀、类型与成员 PascalCase）在 editorconfig 中为 `suggestion` 级，即建议而非强制
 
-仓库内的 Python 脚本使用 [ruff](ruff.toml)（行长 150）：`ruff check` 按默认规则集 lint，`ruff format` 格式化（含 Markdown 文件中的 python 代码块）；`tracker/arg-contract/` 的存量脚本尚未按此收编，改动时会触发整体重排
+仓库内的 Python 脚本使用 [ruff](ruff.toml)（行长 150）：`ruff check` 按默认规则集 lint，`ruff format` 格式化（含 Markdown 文件中的 python 代码块）
 
 ### 编码
 
 - `Emuera/`、`Emuera.Tests/` 下的 `.cs` 为 **UTF-8 with BOM**
   - 编码差异不影响程序运行，由 pre-commit 钩子 `restore-bom` 处理
-- `tracker/` 下的 `.md` 为 UTF-8
+- `docs/` 下的 `.md` 为 UTF-8
 
 ### 文档 / 注释
 
 - `Emuera/` 的新增代码注释用英文，`Emuera.Tests/` 用中文
-- 非过程性文档仅记录最终状态，历史记录通过 git 查询
+- 非过程性文档（`docs/`、README、注释）仅记录最终状态；历史记录通过 git 与 `docs/adr/` 的决策记录查询
 - 引用文件或目录时需遵循以下规范：
-  - 引用 `tracker/` 下 issue 或 spec 时使用 `id`，见 [issue-tracker.md](docs/tracking/issue-tracker.md)
-    - 使用 `markdown` 链接引用文件时，文本部分使用 `id`
-  - 对于其他文件或目录，根据所处文件类型选择合适的形式：
+  - 根据所处文件类型选择合适的形式：
     - `markdown` 文档中使用 `markdown` 链接
     - 其余情况下使用相对路径（未显式说明时相对于项目根目录）
 - 引用文件内容时需遵循以下规范：
   - 无法推断引用内容所处的文件时，需额外显式引用文件
-  - 不使用行号定位
+  - **非快照文档**（`docs/` 下所有文件、ADR、issue 正文、README、注释）不使用行号定位；用类型、成员、函数名、标题/小节或稳定 ID
+  - **现场生成、不跟踪的产物**可以含行号；行号在生成时有效，不需要 baseline
+  - **冻结快照**（不可复现的生成物或手写证据）用稳定 ID + 基线，不用行号
+  - 原始输出（堆栈、日志、测试输出）保留原文行号；引用外补稳定定位
   - 需保证引用精确，不与其他相似内容混淆
   - 引用代码时可使用类型、成员或函数名
     - `C#` 优先使用 [文档注释的 `<see cref>` 或 `<seealso cref>`](https://learn.microsoft.com/zh-cn/dotnet/csharp/language-reference/language-specification/documentation-comments#d314-see)
@@ -47,16 +50,31 @@
   - 引用文档时可引用 `markdown` 标题/小节
     - 单一小节内容过多可额外附原文片段
 
-### C# 语言特性
+## commit 规范
 
-其他改动时顺带修改，详细见 [dotnet-modernization-06](tracker/dotnet-modernization/issues/06-csharp-modernization-policy.md)
+- 使用 `type(scope): 中文摘要` 格式
+  - `type` 使用 `feat`/`fix`/`refactor`/`perf`/`docs`/`chore`/`test`/`build` 等
+  - `scope` 可写 `script`/`build`/`ui` 等
+  - 引用 issue 时用 `#N`，引用 ADR 时用 `ADR-NNNN`
+    - 单票：`fix(script): 摘要 (#36)`
+    - 多票：`(#34, #35)`
+    - ADR：`docs(adr): 可空迁移决策 (ADR-0002)`
 
-可空引用类型（NRT）由 [nullable-migration-spec](tracker/nullable-migration/spec.md) 单独推进
+## 议题与规格
 
-### 提交前检查
+- 工作项在 GitHub Issues 中跟踪，见[议题规范](docs/issue-tracker.md)。现行行为写 `docs/specs/`，决策写 `docs/adr/`。
+- 收尾提交前确认 issue 状态不落后于代码。
+- docs 生成物见 [docs/README.md](docs/README.md)。
+
+## C# 语言特性
+
+C# 写法在修改相关代码时按需更新，适用范围见 [dotnet-modernization-06](tracker/dotnet-modernization/issues/06-csharp-modernization-policy.md)。
+
+可空引用类型（NRT）的迁移范围和完成条件见 [nullable-migration-spec](tracker/nullable-migration/spec.md)。
+
+## 提交前检查
 
 仓库使用 [pre-commit](.pre-commit-config.yaml)，钩子如下：
 - `ruff-check` / `ruff-format`（Python lint 与格式化，见上方「格式化」）
 - [restore-bom](scripts/restore_bom.py)（补回 C# 的 BOM）
-- [check-tracker-yaml](scripts/check_tracker_yaml.py)（校验 `tracker/` 文档的 front matter）
 - 通用检查（check-merge-conflict、check-added-large-files、check-yaml）

@@ -13,8 +13,6 @@ Emuera/obj/*
 *.patch
 
 .codegraph
-CLAUDE.md
-AGENTS.md
 .agents/*
 .claude/*
 bin/
