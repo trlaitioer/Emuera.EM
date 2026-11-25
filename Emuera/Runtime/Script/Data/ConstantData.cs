@@ -1412,22 +1412,23 @@ internal sealed class ConstantData
 			return dic != null;
 		}
 
+		string variableName = varname ?? code.ToString();
 		if (dic == null)
 		{
-			throw new CodeEE(string.Format(trerror.CanNotSpecifiedByString.Text, code.ToString()));
+			throw new CodeEE(string.Format(trerror.CanNotSpecifiedByString.Text, variableName));
 		}
 
-		if (index == allowIndex)
+		if (index <= allowIndex)
 		{
 			return dic != null;
 		}
 
 		if (allowIndex < 0) //GETNUM専用
 		{
-			throw new CodeEE(string.Format(trerror.CanNotSpecifiedByString.Text, code.ToString()));
+			throw new CodeEE(string.Format(trerror.CanNotSpecifiedByString.Text, variableName));
 		}
 
-		throw new CodeEE(string.Format(trerror.CannotIndexSpecifiedByString.Text, code.ToString(), (index + 1).ToString()));
+		throw new CodeEE(string.Format(trerror.CannotIndexSpecifiedByString.Text, variableName, (index + 1).ToString()));
 	}
 
 	/// <summary>
@@ -1439,7 +1440,7 @@ internal sealed class ConstantData
 	{
 		if (!TryGetKeywordDictionary(out Dictionary<string, int>? dic, out errPos, code, index, varname))
 		{
-			throw new CodeEE(string.Format(trerror.CanNotSpecifiedByString.Text, code.ToString()));
+			throw new CodeEE(string.Format(trerror.CanNotSpecifiedByString.Text, varname ?? code.ToString()));
 		}
 
 		return dic;
