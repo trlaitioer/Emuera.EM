@@ -40,6 +40,6 @@ Issue 记录本次范围与验收结果。后续开发仍须遵守的行为和�
 
 ## 迁移与引用
 
-日常讨论用 GitHub 实际分配的 `#N` 引用 Issue。从旧 tracker 迁入的票在正文保留完整旧 ID，例如 `原议题：nullable-migration-36`。历史提交中的 `issues/36` 是主题目录内的编号，应先按当时的主题确定完整旧 ID，再据此查找迁入的票。
+日常讨论用 GitHub 实际分配的 `#N` 引用 Issue。从旧 tracker 迁入的票在正文保留完整旧 ID，例如 `原议题：nullable-migration-37` 对应 [#3](https://github.com/trlaitioer/Emuera.EM/issues/3)。历史提交中的 `issues/37` 是主题目录内的编号，查找前应按当时的主题补全旧 ID。
 
-导入顺序、剩余数量、附属脚本的去向和移除 `tracker/` 的条件集中记录在一张迁移 Issue 中。
+迁入票可按完整旧 ID 搜索，旧票和旧规格的原文见[旧 tracker 归档](legacy-tracker.md)。导入和仓库清理记录见[迁移议题 #2](https://github.com/trlaitioer/Emuera.EM/issues/2)。

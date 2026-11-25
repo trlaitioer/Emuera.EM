@@ -27,6 +27,27 @@
 | ---- | ---- |
 | [architecture.md](architecture.md) | 架构大图景：仓库与历史、启动链、解释器核心、UI 层、配置与多语言、插件系统、杂项 |
 | [csv-erb-syntax.md](csv-erb-syntax.md) | eraBasic / `.erb` / `csv` 语法速查 |
-| [builtin-functions.md](builtin-functions.md) | 内建函数契约表；生成物，契约或行为变化时重跑，命令见 [builtin-contract.py](../tracker/arg-contract/builtin-contract.py) 头注释 |
+| [builtin-functions.md](builtin-functions.md) | 内建函数契约表，由 [builtin-contract.py](../scripts/arg-contract/builtin-contract.py) 生成 |
 | [issue-tracker.md](issue-tracker.md) | GitHub Issues 规则 |
+| [legacy-tracker.md](legacy-tracker.md) | 旧 tracker 归档及议题查找方法 |
 | [../Emuera.Tests/README.md](../Emuera.Tests/README.md) | 测试工程：配置差异、运行时初始化(TestBootstrap) |
+
+## 现行规格与决策
+
+- [游戏路径与文件名](specs/paths.md)
+- [内建函数实参槽](specs/argument-slots.md)
+- [C# 可空引用契约](specs/nullable.md)
+- [读档暂存与扩展数据](specs/save-load.md)
+- [游戏画布](specs/console-rendering.md)
+- [ADR-0001 按需采用 C# 新特性和 .NET API](adr/0001-dotnet-modernization.md)
+
+## 生成文档与审计报告
+
+在仓库根运行以下命令。内建函数契约或说明变化后，重新生成并检查 `docs/builtin-functions.md` 的差异。两个实参审计报告保存在 `.temp/arg-contract/`，非空断言计数输出到终端。
+
+```powershell
+python3.14 scripts/arg-contract/builtin-contract.py
+python3.14 scripts/arg-contract/arg-slots.py
+python3.14 scripts/arg-contract/instruction-args.py
+pwsh -File scripts/count-bang-sites.ps1
+```

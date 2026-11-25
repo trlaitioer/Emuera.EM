@@ -68,9 +68,9 @@
 
 ## C# 语言特性
 
-C# 写法在修改相关代码时按需更新，适用范围见 [dotnet-modernization-06](tracker/dotnet-modernization/issues/06-csharp-modernization-policy.md)。
+C# 写法在修改相关代码时按需更新，参见 [ADR-0001](docs/adr/0001-dotnet-modernization.md)。
 
-可空引用类型（NRT）的迁移范围和完成条件见 [nullable-migration-spec](tracker/nullable-migration/spec.md)。
+可空声明与非空断言遵循 [C# 可空引用契约](docs/specs/nullable.md)。
 
 ## 提交前检查
 

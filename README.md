@@ -20,7 +20,7 @@ Emuera 是 eramaker 的 C# 模拟器，本质是一个 **eraBasic 语言解释�
 | `Emuera.Tests/` | xUnit 单元测试工程，不在解决方案内 |
 | `EmueraPluginExample/` | 插件 API 示例 |
 | `docs/` | 长期参考文档，索引见 [docs/README.md](docs/README.md) |
-| `tracker/` | 旧议题与规格，迁移到 GitHub Issues 后删除 |
+| `scripts/` | 文档生成、源码审计和贡献工具 |
 | `Readme/` | 上游各版本的 readme 与 changelog，以及许可文件。readme 与 changelog 长期未更新且混有其他改版，以当前代码为准 |
 
 工作项与验收在 GitHub Issues，见[议题规范](docs/issue-tracker.md)。
