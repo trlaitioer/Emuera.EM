@@ -1,16 +1,15 @@
-"""三个 arg-contract 生成器（`slots-worklist.py` / `arg-slots.py` / `instruction-args.py`）共用的扫描原语。
+"""内建函数契约表和实参审计共用的源码扫描原语。
 
-用途：把三份重复的「剥注释 / 保留行」扫描、类与方法签名正则、方法归因、规则段（`ArgTypeList`）切分、
-槽位判空点识别、`ArgType.NotNull` 计数收在一处。三份实现此前各自漂移，收拢时**不统一语义**，
-有差异的地方一律做成显式参数，产物才能逐字节不变。
+涵盖剥注释、保留行号、类与方法签名识别、方法归因、规则段（`ArgTypeList`）切分、
+槽位判空点识别和 `ArgType.NotNull` 计数。扫描口径差异由参数和正则分别表达。
 
 口径差异（写在参数上，改这里会改产物字节）：
   · `strip_keep_lines(text, strip_regions=False)`：只剥 `//` 与 `/* */`；`#` 开头的行
     （`#region`/`#endregion`/`#pragma`）仅在 `strip_regions=True` 时连内容抹成空格。
     `instruction-args.py` 传 `True`（它要在 `ArgumentBuilder` 子类的类体文本里切方法体，
-    `#region` 行会干扰）；`slots-worklist.py` 与 `arg-slots.py` 传 `False`（原实现就只剥注释）。
-  · `METHOD_SIG_RE` / `METHOD_SIG_RE_PLAIN`：前者允许行首属性前缀 `[...]`，供 `slots-worklist.py`
-    与 `arg-slots.py` 逐行 `match` 用；后者不许属性前缀，供 `instruction-args.py` 在类体上
+    `#region` 行会干扰）；`arg-slots.py` 的扫描只剥注释。
+  · `METHOD_SIG_RE` / `METHOD_SIG_RE_PLAIN`：前者允许行首属性前缀 `[...]`，供
+    `arg-slots.py` 逐行 `match` 用；后者不许属性前缀，供 `instruction-args.py` 在类体上
     `finditer`（`^` 锚点 + `re.M`）用。两者对两族现行文本结果一致，仍分开放置以免被无意统一。
   · 剥注释是逐行朴素实现（不识别字符串字面量里的 `//`），命中处仍需人工确认。
   · 所有函数的字符位置都指向**传入文本**的坐标系（剥注释不改长度，故位置可与原文互认）。
@@ -19,7 +18,7 @@
 import os
 import re
 
-# ── 扫描源：阶段 A（backlog/issues/18）之后 183 个子类分居 BuiltinMethod/*.cs 的顶层 `internal sealed
+# ── 扫描源：阶段 A（backlog-18）之后 183 个子类分居 BuiltinMethod/*.cs 的顶层 `internal sealed
 #    class`。顺序 = 拆分前 Creator.Method.cs 的区域顺序，产物行序才不随文件布局漂移。 ──────────────
 BUILTIN_METHOD_DIR = "Emuera/Runtime/Script/Statements/Function/BuiltinMethod"
 BUILTIN_METHOD_SRC = [
@@ -46,12 +45,12 @@ def load_sources(paths=None):
     """按给定顺序拼接多份源文件（阶段 A 之前这里是单文件 `Creator.Method.cs`）。
 
     位置沿用**拼接文本**坐标系：类不跨文件，故类边界与类内方法归因不受影响；`parse_blocks` 的 `line`
-    只在拼接文本内有意义，产物里不输出它（`slots-worklist.py` 的 `sites` 也不进表）。
+    只在拼接文本内有意义。
     """
     return "".join(open(p, encoding="utf-8-sig").read() for p in (paths or BUILTIN_METHOD_SRC))
 
 
-# ── 类签名：缩进不敏感，同时覆盖两族布局 —— 阶段 A（backlog/issues/18）之后 183 个内建函数子类是
+# ── 类签名：缩进不敏感，同时覆盖两族布局 —— 阶段 A（backlog-18）之后 183 个内建函数子类是
 #    BuiltinMethod/*.cs 的顶层 `internal sealed class`，而 `ArgumentBuilder.cs` 一族仍是
 #    `\t` 缩进的嵌套类。 ────────────────────────────────────────────────────────────────
 CLASS_RE = re.compile(r"^\t*(?:public |private |internal )?sealed class (\w+)\s*:", re.MULTILINE)
@@ -198,41 +197,18 @@ def parse_blocks(src, pos, end):
     return out
 
 
-# ── `ArgType.NotNull` 计数（issues/04 的自校验项之一）─────────────────────────────────
+# ── `ArgType.NotNull` 计数（arg-contract-04 的自校验项之一）─────────────────────────────────
 NOT_NULL_FLAG = "ArgType.NotNull"
 # `BuiltinMethod/*.cs` 的期望值：(含注释 处数, 含注释 行数, 剥注释 处数, 剥注释 行数)。
 # 两套口径不同是因为注释里也提到过该标志；数值变化只在改 `BuiltinMethod/*.cs` 时发生，届时同步此处与票面。
 NOT_NULL_EXPECTED = (88, 77, 81, 70)
 
 
-# ── 冻结声明：由 `arg-slots.py` / `slots-worklist.py` 写进各自产物的头部 ──────────────────
-# 两份产物都是阶段 A 的快照：正文（读取形态 / 被 `Required` 读取的车道）只在阶段 A 的 HEAD 上
-# 可逐字节复现，在当前 HEAD 上重跑必然漂移（已知漂移量写在下面的声明里）。
-#
-# 声明放生成器、不手工插进产物：手工插的会被下一次重生成吞掉，且会让「产物 = 生成器输出」这条
-# 复现口径在头部出现无法复现的例外。改这两段文本会改产物字节，故须同步重跑生成器（各自的票面
-# 记有该口径）。
-FREEZE_NOTE_CONSUMPTION = [
-    "> **冻结声明（2026-10 补）**：本文件是**阶段 A 片 0 的冻结快照**（`arg-slots.py --phase-a` 的产物）。默认运行",
-    "> `arg-slots.py` 不写本文件；重生成只应在阶段 A 的 HEAD 上进行，否则「读取形态」那批表必然漂移——阶段 B",
-    "> （`arg-contract-05`）已把消费面全部换成 `ArgumentSlots` 访问器。阶段 B 的验收口径见",
-    "> [arg-slots.py](arg-slots.py) 生成的 `slots-progress.md`。",
-]
-
-FREEZE_NOTE_WORKLIST = [
-    "> **冻结声明（2026-10 补）**：本文件是**阶段 A 的冻结快照**（口径见 [slots-worklist.py](slots-worklist.py) 头注释的「冻结提示」）。",
-    "> 在当前 HEAD 上重跑该脚本会**覆盖**本文件、且数字必然漂移——已知漂移：`arguments.Required(` 405→26、",
-    "> 「被 `Required`(字面量) 读取」76→2、E 段补车道 20→94、`ArgType.NotNull` 含注释口径 87/76→88/77。",
-    "> 阶段 B 的验收口径改用 [arg-slots.py](arg-slots.py) 生成的 `slots-progress.md`。",
-]
-
-
 def not_null_counts(text, strip_regions=False):
     """`ArgType.NotNull` 的计数：含注释与剥注释两套，各给 (处数, 行数)。
 
     剥注释口径 = `strip_keep_lines(text, strip_regions)`。「处数」按子串出现次数（`count`），
-    「行数」按含该子串的行数。`arg-slots.py` 与 `slots-worklist.py` 必须都走这个函数，
-    否则两边口径会各自漂移（本项正是 issues/04 承诺的自校验点）。
+    「行数」按含该子串的行数。计数口径沿用 `arg-contract-04` 的自校验规则。
     """
     live = strip_keep_lines(text, strip_regions)
     return {

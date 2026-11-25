@@ -87,7 +87,7 @@ internal abstract class FunctionMethod
 		// Reference slot that admits a constant array. nullable-migration-18 then requires the class
 		// to set HasUniqueRestructure, otherwise the constant array is folded into a SingleTerm and the cast fails.
 		// Exempt: SumArrayMethod's character-data slot, where CONST and CHARADATA are mutually exclusive so a constant
-		// array never reaches the fold (the exemption is recorded in tracker/arg-contract/arg-slots.py).
+		// array never reaches the fold (the exemption is recorded in scripts/arg-contract/arg-slots.py).
 		AllowConstRef = 1 << 5,
 
 		// Slot belongs to a variadic tail: governed by LastVariadics, not by the slot number.

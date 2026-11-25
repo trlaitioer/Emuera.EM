@@ -14,12 +14,12 @@
   · 「合法实参数」按 `FunctionMethod.CheckArgumentTypeEx` 的判据机械推出：
     非变长段必须 `min <= Count <= ArgTypes.Count`（`min` = `OmitStart`，未写则 `ArgTypes.Count`）；
     变长段只要求 `Count >= min`；`MatchVariadicGroup` 另加 `(Count - 变长组起点) % 变长组长 == 0`。
-  · 「空槽语义」来自 `tracker/arg-contract/builtin-notes.json`（人工/子 Agent 编写的说明，参考
+  · 「空槽语义」来自 `scripts/arg-contract/builtin-notes.json`（参考
     upstream 在线文档并按代码核对）。缺说明的名字在产物里写 `（待补）`，脚本在控制台报告缺口。
 
-用法：python3.14 tracker/arg-contract/builtin-contract.py            # 写 docs/builtin-functions.md
-      python3.14 tracker/arg-contract/builtin-contract.py --dump    # 只打印解析结果（调试）
-      python3.14 tracker/arg-contract/builtin-contract.py --merge   # 合并 .temp/notes/*.json 进 notes
+用法：python3.14 scripts/arg-contract/builtin-contract.py            # 写 docs/builtin-functions.md
+      python3.14 scripts/arg-contract/builtin-contract.py --dump    # 只打印解析结果（调试）
+      python3.14 scripts/arg-contract/builtin-contract.py --merge   # 合并 .temp/notes/*.json 进 notes
 """
 
 import glob
@@ -30,21 +30,21 @@ import sys
 
 from _scan import class_spans, load_sources, parse_blocks, strip_keep_lines
 
-# 阶段 A/C（backlog/issues/18）把 183 个活子类搬出 Creator.Method.cs、把注册名搬成类体上的 attribute 工厂，
+# 阶段 A/C（backlog-18）把 183 个活子类搬出 Creator.Method.cs、把注册名搬成类体上的 attribute 工厂，
 # 故注册名与规则表/函数体一律由 `_scan.load_sources()` 扫描（顺序 = 拆分前的区域顺序，
 # 见 `_scan.BUILTIN_METHOD_SRC`）；`Creator.cs` 只剩建表逻辑，不再有字面量可读。
 FUNCTION_SRC = "Emuera/Runtime/Script/Statements/Function/FunctionMethod.cs"
-NOTES_SRC = "tracker/arg-contract/builtin-notes.json"
-FRAGMENT_DIRS = (".temp/notes", ".temp/notes2")   # 第一轮（按 upstream 页面分桶）/ 第二轮（索引命不中的补漏）
+NOTES_SRC = "scripts/arg-contract/builtin-notes.json"
+FRAGMENT_DIRS = (".temp/notes", ".temp/notes2")  # 第一轮（按 upstream 页面分桶）/ 第二轮（索引命不中的补漏）
 DST = "docs/builtin-functions.md"
 
-EXPECTED_NAMES = 266         # [BuiltinMethod] 工厂数 == 注册名数（改动即在此同步）
-EXPECTED_CLASSES = 183       # 被注册的 FunctionMethod 子类数
-EXPECTED_BLOCKS = 114        # BuiltinMethod/ 内 `new ArgTypeList` 总数
-# 拒绝侧不变量（arg-contract/issues/03 的裁定值）。这两个数字的权威副本就是这里：
+EXPECTED_NAMES = 266  # [BuiltinMethod] 工厂数 == 注册名数（改动即在此同步）
+EXPECTED_CLASSES = 183  # 被注册的 FunctionMethod 子类数
+EXPECTED_BLOCKS = 114  # BuiltinMethod/ 内 `new ArgTypeList` 总数
+# 拒绝侧不变量（arg-contract-03 的裁定值）。这两个数字的权威副本就是这里：
 # 票据/文档不再各自维护一份，改为引用本脚本自校验打印的那一行。
-EXPECTED_OMITTABLE = 96      # 可省略 (类,槽) 全集（不论是否被 Required 读取）
-EXPECTED_REJECT_EMPTY = 54   # 其中「全部可省略段都带 ArgType.NotNull」的 (类,槽) 数
+EXPECTED_OMITTABLE = 96  # 可省略 (类,槽) 全集（不论是否被 Required 读取）
+EXPECTED_REJECT_EMPTY = 54  # 其中「全部可省略段都带 ArgType.NotNull」的 (类,槽) 数
 
 # 没有规则表、由类自己 override `CheckArgumentType` 的注册名：逐槽形状读不出来，只能人工裁定。
 # 依据 `MesSkipMethod`：`argumentTypeArray = null`，自写的检查只做「实参多于 0 个报 TooManyFuncArgs」。
@@ -147,7 +147,7 @@ def split_top(text, sep=","):
 
 # ── ArgType 枚举（从源码解析位值，避免手抄）────────────────────────────────────
 def parse_argtype(enum_text):
-    m = re.search(r"protected enum ArgType\s*\{(.*?)\n\t\}", enum_text, re.S)
+    m = re.search(r"protected enum ArgType\s*\{(.*?)\n\t\}", enum_text, re.DOTALL)
     if not m:
         raise SystemExit("找不到 ArgType 枚举定义")
     entries = []
@@ -196,11 +196,12 @@ def eval_bits(expr, vals):
 # 构造实参用括号配对从 `new(` 取出。任何漏匹配由 main() 的 attribute 处数交叉校验报出来。
 _FACTORY_RE = re.compile(
     r'(?m)^\t*\[BuiltinMethod\("([^"]+)"\)\]\n'
-    r'\t*(?:private|internal|public) static (\w+) \w+\(\)')
+    r"\t*(?:private|internal|public) static (\w+) \w+\(\)"
+)
 # 工厂签名与 `new(` 之间只允许：空白、`=> `、或块体的 `{` + 可选 `return`
-_FACTORY_GAP_RE = re.compile(r'^\s*(?:=>[ \t]*|\{[ \t]*\n[ \t]*(?:return[ \t]+)?)?$')
+_FACTORY_GAP_RE = re.compile(r"^\s*(?:=>[ \t]*|\{[ \t]*\n[ \t]*(?:return[ \t]+)?)?$")
 # 构造调用：`new Xxx(...)`（`new` 与类型名、类型名与 `(` 之间都可能有空白）
-_FACTORY_NEW_RE = re.compile(r'\bnew\s+[\w.]+(?:<[^<>()]*>)?[ \t]*\(')
+_FACTORY_NEW_RE = re.compile(r"\bnew\s+[\w.]+(?:<[^<>()]*>)?[ \t]*\(")
 
 
 def parse_registrations(text):
@@ -212,18 +213,20 @@ def parse_registrations(text):
         if not call:
             continue
         # `new(` 必须紧接工厂签名（中间只允许 `=>` 或块体开头），否则它属于工厂后面的构造器/方法体
-        if not _FACTORY_GAP_RE.match(text[start:call.start()]):
+        if not _FACTORY_GAP_RE.match(text[start : call.start()]):
             continue
         paren = call.end() - 1
         c = match_paren(text, paren)
-        if not re.match(r'[ \t]*;', text[c + 1:]):
+        if not re.match(r"[ \t]*;", text[c + 1 :]):
             continue
-        out.append({
-            "name": m.group(1),
-            "cls": m.group(2),
-            "args": split_top(text[paren + 1:c]),
-            "line": text.count("\n", 0, m.start()) + 1,
-        })
+        out.append(
+            {
+                "name": m.group(1),
+                "cls": m.group(2),
+                "args": split_top(text[paren + 1 : c]),
+                "line": text.count("\n", 0, m.start()) + 1,
+            }
+        )
     return out
 
 
@@ -243,7 +246,6 @@ def eval_value(rhs, env):
 def cond_holds(cond, env):
     """够用即可的条件求值：|| / && / ! / == / != / 裸标识符（含 true/false）。"""
     cond = cond.strip()
-    i = find_top(cond, "|")  # 这里只在 depth 0 找 '|'；'||' 与位或都够用
     parts = [p for p in re.split(r"\|\|", cond)]
     if len(parts) > 1:
         return any(cond_holds(p, env) for p in parts)
@@ -255,9 +257,9 @@ def cond_holds(cond, env):
         return not cond_holds(cond[1:], env)
     for op in ("==", "!="):
         k = find_top(cond, op[0])
-        if k > 0 and cond[k:k + 2] == op:
+        if k > 0 and cond[k : k + 2] == op:
             lhs = enum_tail(eval_value(cond[:k], env))
-            rhs = enum_tail(eval_value(cond[k + 2:], env))
+            rhs = enum_tail(eval_value(cond[k + 2 :], env))
             return (lhs == rhs) if op == "==" else (lhs != rhs)
     if cond in ("true", "false"):
         return cond == "true"
@@ -271,7 +273,7 @@ def parse_stmt(text, i):
     i = skip_ws(text, i)
     if i < len(text) and text[i] == "{":
         j = match_brace(text, i)
-        return text[i + 1:j], j + 1, True
+        return text[i + 1 : j], j + 1, True
     end = text.find(";", i)
     if end < 0:
         end = len(text)
@@ -291,10 +293,9 @@ def run_body(body, env, out):
         i = skip_ws(body, i)
         if i >= len(body):
             return
-        c = body[i]
         if body.startswith("if", i) and re.match(r"if\s*\(", body[i:]):
             o = body.index("(", i)
-            cond = body[o + 1:match_paren(body, o)]
+            cond = body[o + 1 : match_paren(body, o)]
             then_text, j, _ = parse_stmt(body, match_paren(body, o) + 1)
             taken = False
             if cond_holds(cond, env):
@@ -307,7 +308,7 @@ def run_body(body, env, out):
                 k = skip_ws(body, k + 4)
                 if body.startswith("if", k):
                     o2 = body.index("(", k)
-                    cond2 = body[o2 + 1:match_paren(body, o2)]
+                    cond2 = body[o2 + 1 : match_paren(body, o2)]
                     t2, j, _ = parse_stmt(body, match_paren(body, o2) + 1)
                     if not taken and cond_holds(cond2, env):
                         run_body(t2, env, out)
@@ -320,17 +321,17 @@ def run_body(body, env, out):
             i = j
         elif body.startswith("switch", i) and re.match(r"switch\s*\(", body[i:]):
             o = body.index("(", i)
-            subject = body[o + 1:match_paren(body, o)]
+            subject = body[o + 1 : match_paren(body, o)]
             brace = skip_ws(body, match_paren(body, o) + 1)
             end = match_brace(body, brace)
-            inner = body[brace + 1:end]
+            inner = body[brace + 1 : end]
             subject_value = enum_tail(eval_value(subject, env))
             # 按 case/default 标签分组（case A: case B: 共享同一段代码）
             labels = list(re.finditer(r"(?m)^\s*(?:case\s+([^:]+)|(default))\s*:", inner))
             groups = []
             for idx, m in enumerate(labels):
                 stop = labels[idx + 1].start() if idx + 1 < len(labels) else len(inner)
-                groups.append((m.group(1), inner[m.end():stop]))
+                groups.append((m.group(1), inner[m.end() : stop]))
             # case 标签是分组边界，`case A: case B: 代码` 的两个标签各成一组（A 组代码为空），
             # 故落空贯穿要单独跟一遍：某组运行过且没有 break，下一组就继承它的匹配结果。
             prev_matched, prev_fell, any_case = False, False, False
@@ -360,7 +361,7 @@ def run_body(body, env, out):
             if end < 0:
                 return
             stmt = body[i:end]
-            m = re.match(r"\s*(\w+)\s*=\s*(.+)$", stmt, re.S)
+            m = re.match(r"\s*(\w+)\s*=\s*(.+)$", stmt, re.DOTALL)
             if m:
                 prop, rhs = m.group(1), " ".join(m.group(2).split())
                 if prop in ("argumentTypeArray", "argumentTypeArrayEx", "ReturnType"):
@@ -372,17 +373,17 @@ def run_body(body, env, out):
 
 # ── 类与构造器 ────────────────────────────────────────────────────────────────
 def class_ctors(code, cls):
-    spans = dict((n, (p, e)) for n, p, e in class_spans(code))
+    spans = {name: (start, end) for name, start, end in class_spans(code)}
     if cls not in spans:
         return None
     pos, end = spans[cls]
     body = code[pos:end]
     ctors = []
     # 类成员缩进随族的布局（阶段 A 之后 BuiltinMethod/ 是 1 个 Tab，此前是 2 个）
-    for m in re.finditer(r"^\t+(?:public|private|internal)\s+%s\s*\(" % re.escape(cls), body, re.M):
+    for m in re.finditer(rf"^\t+(?:public|private|internal)\s+{re.escape(cls)}\s*\(", body, re.MULTILINE):
         o = body.index("(", m.end() - 1)
         c = match_paren(body, o)
-        params = split_top(body[o + 1:c])
+        params = split_top(body[o + 1 : c])
         # 构造器初始化器（`: this(...)` / `: base(...)`）：C# 会先跑被委派的那个构造器，而
         # `ReturnType` 之类常只写在无参重载里（`XmlGetMethod(bool byname) : this()`），故记下来先跑。
         delegate, j = None, skip_ws(body, c + 1)
@@ -390,15 +391,15 @@ def class_ctors(code, cls):
             o2 = body.find("(", j)
             if o2 < 0:
                 break
-            if body[j + 1:o2].strip().endswith("this"):
-                argtext = body[o2 + 1:match_paren(body, o2)].strip()
+            if body[j + 1 : o2].strip().endswith("this"):
+                argtext = body[o2 + 1 : match_paren(body, o2)].strip()
                 delegate = split_top(argtext) if argtext else []
             j = skip_ws(body, match_paren(body, o2) + 1)
         brace = j
         if brace >= len(body) or body[brace] != "{":
             continue  # 声明与实现分离（本文件不存在这种写法）
         close = match_brace(body, brace)
-        ctors.append({"params": params, "body": body[brace + 1:close], "delegate": delegate})
+        ctors.append({"params": params, "body": body[brace + 1 : close], "delegate": delegate})
     return ctors
 
 
@@ -438,34 +439,38 @@ def decode_rule_table(rhs, kind, flags):
             else:
                 problems.append(f"{rhs}：Type[] 里的类型 {t} 未登记")
                 decoded.append(0)
-        return [{"om": -1, "argc": len(decoded), "entries": types, "flags": decoded,
-                 "rejects_empty": [True] * len(decoded), "match_variadic_group": False}]
+        return [
+            {
+                "om": -1,
+                "argc": len(decoded),
+                "entries": types,
+                "flags": decoded,
+                "rejects_empty": [True] * len(decoded),
+                "match_variadic_group": False,
+            }
+        ]
     blocks = parse_blocks(rhs, 0, len(rhs))
     if not blocks:
         return None
     bodies = []
     for m in re.finditer(r"new ArgTypeList\s*\{", rhs):
-        bodies.append(rhs[m.end():match_brace(rhs, m.end() - 1)])
+        bodies.append(rhs[m.end() : match_brace(rhs, m.end() - 1)])
     for b, body in zip(blocks, bodies):
         b["match_variadic_group"] = "MatchVariadicGroup = true" in body
         decoded = []
         for e in b["entries"]:
             v = 0
-            ok = True
             for tok in split_top(e, "|"):
                 tok = tok.strip()
-                if tok.startswith("ArgType."):
-                    tok = tok[len("ArgType."):]
+                tok = tok.removeprefix("ArgType.")
                 if tok in flags:
                     v |= flags[tok]
                 else:
                     problems.append(f"槽位表达式无法解码：{e}")
-                    ok = False
             decoded.append(v)
         b["flags"] = decoded
         b["rejects_empty"] = [
-            b["om"] < 0 or i < b["om"] or (v & flags["NotNull"]) != 0
-            or (i == 0 and b["om"] == 0 and any(x & flags["SameAsFirst"] for x in decoded))
+            b["om"] < 0 or i < b["om"] or (v & flags["NotNull"]) != 0 or (i == 0 and b["om"] == 0 and any(x & flags["SameAsFirst"] for x in decoded))
             for i, v in enumerate(decoded)
         ]
     return blocks
@@ -473,7 +478,7 @@ def decode_rule_table(rhs, kind, flags):
 
 def slot_text(value, flags, omittable, rejects_empty, variadic):
     if value & flags["SameAsFirst"]:
-        t = "随槽0"          # 类型跟随 0 号槽（ArgType.SameAsFirst），不与「可省略」的 `?` 混用
+        t = "随槽0"  # 类型跟随 0 号槽（ArgType.SameAsFirst），不与「可省略」的 `?` 混用
     elif value & flags["Any"]:
         t = "any"
     elif value & flags["String"]:
@@ -482,8 +487,17 @@ def slot_text(value, flags, omittable, rejects_empty, variadic):
         t = "int"
     else:
         t = "?"
-    dims = ("[,,]" if value & flags["Array3D"] else "[,]" if value & flags["Array2D"]
-            else "[]" if value & flags["Array1D"] else "[…]" if value & flags["Array"] else "")
+    dims = (
+        "[,,]"
+        if value & flags["Array3D"]
+        else "[,]"
+        if value & flags["Array2D"]
+        else "[]"
+        if value & flags["Array1D"]
+        else "[…]"
+        if value & flags["Array"]
+        else ""
+    )
     if value & flags["Ref"]:
         # `ref*`：该槽还接受 const 变量（ArgType.AllowConstRef），字面量与表达式照样被拒
         t = ("ref* " if value & flags["AllowConstRef"] else "ref ") + t
@@ -563,9 +577,9 @@ def eval_ternary(rhs, env):
     if q <= 0:
         return rhs
     cond = rhs[:q].strip()
-    rest = rhs[q + 1:]
+    rest = rhs[q + 1 :]
     colon = find_top(rest, ":")
-    left, right = rest[:colon].strip(), rest[colon + 1:].strip()
+    left, right = rest[:colon].strip(), rest[colon + 1 :].strip()
     return left if cond_holds(cond, env) else right
 
 
@@ -733,8 +747,10 @@ def render(regs, flags, notes, dump=False):
 def dump_mode(rows):
     for e in rows:
         blocks = e["blocks"]
-        print(f"{e['reg']['name']:26s} {e['reg']['cls']:32s} ret={e['ret'] or '?':4s} blocks={0 if blocks is None else len(blocks)}"
-              f" note={'有' if e['note'].get('desc') else '—'}")
+        print(
+            f"{e['reg']['name']:26s} {e['reg']['cls']:32s} ret={e['ret'] or '?':4s} blocks={0 if blocks is None else len(blocks)}"
+            f" note={'有' if e['note'].get('desc') else '—'}"
+        )
         if blocks:
             for b in blocks:
                 print(f"      om={b['om']:<3} flags={b['flags']} reject={b['rejects_empty']} mvg={b['match_variadic_group']}")
@@ -752,7 +768,8 @@ def say(text):
 def main():
     global CODE
     raw = load_sources()
-    func_src = open(FUNCTION_SRC, encoding="utf-8-sig").read()
+    with open(FUNCTION_SRC, encoding="utf-8-sig") as source:
+        func_src = source.read()
     CODE = strip_keep_lines(raw)
     flags = parse_argtype(func_src)
 
@@ -768,7 +785,7 @@ def main():
         problems.append(f"扫到 {len(regs)} 个工厂，但文本里有 {attr_count} 处 [BuiltinMethod(（工厂形态变了？）")
     if len(regs) != EXPECTED_NAMES:
         problems.append(f"注册名 {len(regs)} != 期望 {EXPECTED_NAMES}（BuiltinMethod/ 目录改了要同步本脚本）")
-    classes = sorted(set(r["cls"] for r in regs))
+    classes = sorted({r["cls"] for r in regs})
     if len(classes) != EXPECTED_CLASSES:
         problems.append(f"注册类 {len(classes)} != 期望 {EXPECTED_CLASSES}")
     total_blocks = sum(len(parse_blocks(CODE, p, e)) for _, p, e in class_spans(raw))
@@ -786,11 +803,11 @@ def main():
     else:
         write_doc(rows, flags, notes)
 
-    # 与 arg-contract/issues/03 的裁定对齐：可省略 (类,槽) 全集、其中拒绝显式空槽的个数
-    # （A 表 41 + 片 2-C 消费型变长尾 2 + 片 2-D 的 7 + issues/04 阶段 A 的 4）。改规则表就要同步这两个常量。
+    # 与 arg-contract-03 的裁定对齐：可省略 (类,槽) 全集、其中拒绝显式空槽的个数
+    # （A 表 41 + 片 2-C 消费型变长尾 2 + 片 2-D 的 7 + arg-contract-04 阶段 A 的 4）。改规则表就要同步这两个常量。
     omittable, reject = set(), set()
     for e in rows:
-        for b in (e["blocks"] or []):
+        for b in e["blocks"] or []:
             for i, fv in enumerate(b["flags"]):
                 if b["om"] >= 0 and i >= b["om"]:
                     omittable.add((e["reg"]["cls"], i))
@@ -839,14 +856,13 @@ def main():
         if not mech and "留空" in txt and not any(w in txt for w in deny):
             problems.append(f"{e['reg']['name']} 无可留空槽，说明却像在说留空可用（{txt[:24]}…）")
     # 反空跑：类体里明明有规则表，却没解析到该注册名的规则段 ⇒ 构造器解释器漏了分支
-    spans = dict((n, (p, e)) for n, p, e in class_spans(raw))
+    spans = {name: (start, end) for name, start, end in class_spans(raw)}
     for e in rows:
         if e["blocks"] is not None:
             continue
         pos, end = spans.get(e["reg"]["cls"], (0, 0))
         body = CODE[pos:end]
-        has_table = re.search(r"new ArgTypeList\s*\{", body) or re.search(
-            r"argumentTypeArray\w*\s*=\s*\[", body)
+        has_table = re.search(r"new ArgTypeList\s*\{", body) or re.search(r"argumentTypeArray\w*\s*=\s*\[", body)
         if has_table:
             problems.append(f"{e['reg']['name']}（类 {e['reg']['cls']}）没解析到规则段，但类体里有规则表")
     say(f"注册名 {len(regs)} / 类 {len(classes)} / 规则段 {total_blocks}")
@@ -880,13 +896,17 @@ def write_doc(rows, flags, notes):
     lines = []
     lines.append("# 内建函数（式中関数）契约表")
     lines.append("")
-    lines.append("本表覆盖 `Emuera/Runtime/Script/Statements/Function/BuiltinMethod/` 目录下 `[BuiltinMethod]` 工厂注册的全部 "
-                 "**%d 个式中関数注册名**（%d 个 `FunctionMethod` 子类）的实参契约。"
-                 % (len(rows), len(set(e["reg"]["cls"] for e in rows))))
-    lines.append("形状、合法实参数与返回类型由代码机械推出（生成器 [`tracker/arg-contract/builtin-contract.py`]"
-                 "(../tracker/arg-contract/builtin-contract.py)，可复跑）；"
-                 "说明列参考 [upstream 在线文档](https://evilmask.gitlab.io/emuera.em.doc/Reference/index.html) "
-                 "并逐条按本仓代码核对，**不一致时以代码为准**。")
+    class_count = len({e["reg"]["cls"] for e in rows})
+    lines.append(
+        "本表覆盖 `Emuera/Runtime/Script/Statements/Function/BuiltinMethod/` 目录下 `[BuiltinMethod]` 工厂注册的全部 "
+        f"**{len(rows)} 个式中関数注册名**（{class_count} 个 `FunctionMethod` 子类）的实参契约。"
+    )
+    lines.append(
+        "形状、合法实参数与返回类型由代码机械推出（生成器 [`scripts/arg-contract/builtin-contract.py`]"
+        "(../scripts/arg-contract/builtin-contract.py)，可复跑）；"
+        "说明列参考 [upstream 在线文档](https://evilmask.gitlab.io/emuera.em.doc/Reference/index.html) "
+        "并逐条按本仓代码核对，**不一致时以代码为准**。"
+    )
     lines.append("")
     lines.append(LEGEND)
     lines.append("")
@@ -915,12 +935,13 @@ def write_doc(rows, flags, notes):
                 # 无规则表 = 类自己 override 了 CheckArgumentType，形状只能取人工裁定（NO_TABLE_RULED）
                 ruled = NO_TABLE_RULED.get(e["reg"]["name"])
                 if ruled is None:
-                    lines.append(f"| `{e['reg']['name']}` | {e['ret'] or '—'} | —（无规则表，自检） | — | — "
-                                 f"| {cell(note.get('desc'))} |")
+                    lines.append(f"| `{e['reg']['name']}` | {e['ret'] or '—'} | —（无规则表，自检） | — | — | {cell(note.get('desc'))} |")
                 else:
-                    lines.append(f"| `{e['reg']['name']}` | {e['ret'] or '—'} | {ruled['shape']} | {ruled['count']} "
-                                 f"| {cell(note.get('empty_slot'), '—')} | 手工裁定（无规则表，类自行检查）："
-                                 f"{cell(note.get('desc'))} |")
+                    lines.append(
+                        f"| `{e['reg']['name']}` | {e['ret'] or '—'} | {ruled['shape']} | {ruled['count']} "
+                        f"| {cell(note.get('empty_slot'), '—')} | 手工裁定（无规则表，类自行检查）："
+                        f"{cell(note.get('desc'))} |"
+                    )
                 continue
             for idx, b in enumerate(blocks):
                 shape = shape_of(b, flags)
@@ -931,15 +952,17 @@ def write_doc(rows, flags, notes):
                     # 片段里 desc 与 notes 各自带句末标点，直接拼会出现「。；」这种双标点
                     desc = desc.rstrip("。；") + "；" + cell(note["notes"])
                 desc = desc.rstrip("。")
-                lines.append(f"| `{e['reg']['name']}`{'（候选 %d）' % (idx + 1) if len(blocks) > 1 else ''} "
-                             f"| {e['ret'] or '—'} | {shape} | {cnt} | {ep} | {desc} |")
+                candidate = f"（候选 {idx + 1}）" if len(blocks) > 1 else ""
+                lines.append(f"| `{e['reg']['name']}`{candidate} | {e['ret'] or '—'} | {shape} | {cnt} | {ep} | {desc} |")
         lines.append("")
 
     # 显式留空（槽位记号的 `-`）集中一览：这一维与「数量省略」正交，写脚本时最常踩
     lines.append("## 显式留空（记号 `-`）语义一览")
     lines.append("")
-    lines.append("只列**允许显式留空**的注册名（`f(a,,c)` 这种写法能过检查器的那些槽）——这一维与「数量省略」正交，"
-                 "写脚本时最容易踩。空槽语义取自本表「空槽语义」列；有可留空槽却没写清语义的会在生成时报警。")
+    lines.append(
+        "只列**允许显式留空**的注册名（`f(a,,c)` 这种写法能过检查器的那些槽）——这一维与「数量省略」正交，"
+        "写脚本时最容易踩。空槽语义取自本表「空槽语义」列；有可留空槽却没写清语义的会在生成时报警。"
+    )
     lines.append("")
     lines.append("| 注册名 | 可留空的槽 | 空槽语义 |")
     lines.append("| --- | --- | --- |")
@@ -950,8 +973,7 @@ def write_doc(rows, flags, notes):
         nullable = sorted({i + 1 for b in blocks for i, r in enumerate(b["rejects_empty"]) if not r})
         if not nullable:
             continue
-        lines.append(f"| `{e['reg']['name']}` | {'、'.join(str(x) for x in nullable)} | "
-                     f"{cell(e['note'].get('empty_slot'), '（待补）')} |")
+        lines.append(f"| `{e['reg']['name']}` | {'、'.join(str(x) for x in nullable)} | {cell(e['note'].get('empty_slot'), '（待补）')} |")
     lines.append("")
     text = "\n".join(lines).rstrip() + "\n"
     os.makedirs(os.path.dirname(DST), exist_ok=True)
@@ -979,10 +1001,9 @@ def shape_of(block, flags):
     out = []
     for i in range(argc):
         omittable = block["om"] >= 0 and i >= block["om"]
-        out.append(slot_text(entries[i], flags, omittable, block["rejects_empty"][i],
-                             bool(entries[i] & flags["Variadic"])))
+        out.append(slot_text(entries[i], flags, omittable, block["rejects_empty"][i], bool(entries[i] & flags["Variadic"])))
     if last_variadics:
-        out.append("（尾部：自第 %d 槽起按末位规则重复）" % (start + 1))
+        out.append(f"（尾部：自第 {start + 1} 槽起按末位规则重复）")
     return ", ".join(out)
 
 
